@@ -1,0 +1,237 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* Base Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Chart Colors */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Sidebar Colors */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Radius Variants - Complete Set */
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  /* Fonts (optional - uncomment if using) */
+  /* --font-sans: var(--font-geist-sans); */
+  /* --font-mono: var(--font-geist-mono); */
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
+}
+
+/* ==========================================
+   PINK + WHITE THEME (Light Mode - Default)
+   Friendly, warm, ramah UMKM Indonesia 🇮🇩
+   ✨ Optimized for maximum appeal & conversion
+   ========================================== */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Base - Clean White Background */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+
+  /* Card - Pure White */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+
+  /* Popover - White */
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  /* Primary - Pink 500 (Main Brand Color) */
+  --primary: oklch(0.656 0.241 354.308);
+  --primary-foreground: oklch(1 0 0);
+
+  /* Secondary - Pink 50 (Light Accent) */
+  --secondary: oklch(0.971 0.014 343.198);
+  --secondary-foreground: oklch(0.345 0.212 349.761);
+
+  /* Muted - Pink 50/100 (Subtle Backgrounds) */
+  --muted: oklch(0.971 0.014 343.198);
+  --muted-foreground: oklch(0.556 0 0);
+
+  /* Accent - Pink 100 (Hover States) */
+  --accent: oklch(0.948 0.028 342.258);
+  --accent-foreground: oklch(0.345 0.212 349.761);
+
+  /* Destructive - Red (Error States) */
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(1 0 0);
+
+  /* Border & Input - Light Pink Tint */
+  --border: oklch(0.922 0.01 340);
+  --input: oklch(0.922 0.01 340);
+  --ring: oklch(0.656 0.241 354.308);
+
+  /* Charts - Pink Variations for Data Viz */
+  --chart-1: oklch(0.656 0.241 354.308); /* Pink 500 */
+  --chart-2: oklch(0.718 0.202 349.761); /* Pink 400 */
+  --chart-3: oklch(0.808 0.151 343.198); /* Pink 300 */
+  --chart-4: oklch(0.345 0.212 349.761); /* Pink 700 */
+  --chart-5: oklch(0.496 0.265 354.308); /* Pink 600 */
+
+  /* Sidebar - Soft Pink Background */
+  --sidebar: oklch(0.985 0.007 343.198);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.656 0.241 354.308);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.948 0.028 342.258);
+  --sidebar-accent-foreground: oklch(0.345 0.212 349.761);
+  --sidebar-border: oklch(0.922 0.01 340);
+  --sidebar-ring: oklch(0.656 0.241 354.308);
+}
+
+/* ==========================================
+   DARK MODE (Professional Dark Theme)
+   ========================================== */
+
+.dark {
+  /* Base - Dark Background */
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+
+  /* Card - Slightly Lighter Dark */
+  --card: oklch(0.178 0.005 343.198);
+  --card-foreground: oklch(0.985 0 0);
+
+  /* Popover */
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+
+  /* Primary - Lighter Pink for Dark BG */
+  --primary: oklch(0.718 0.202 349.761);
+  --primary-foreground: oklch(0.145 0 0);
+
+  /* Secondary - Dark Pink Tint */
+  --secondary: oklch(0.269 0.02 343.198);
+  --secondary-foreground: oklch(0.985 0 0);
+
+  /* Muted - Dark Subtle */
+  --muted: oklch(0.269 0.02 343.198);
+  --muted-foreground: oklch(0.708 0 0);
+
+  /* Accent */
+  --accent: oklch(0.269 0.02 343.198);
+  --accent-foreground: oklch(0.985 0 0);
+
+  /* Destructive - Muted Red */
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+
+  /* Border & Input */
+  --border: oklch(0.269 0.02 343.198);
+  --input: oklch(0.269 0.02 343.198);
+  --ring: oklch(0.718 0.202 349.761);
+
+  /* Charts - Adjusted for Dark Mode */
+  --chart-1: oklch(0.718 0.202 349.761);
+  --chart-2: oklch(0.808 0.151 343.198);
+  --chart-3: oklch(0.656 0.241 354.308);
+  --chart-4: oklch(0.948 0.028 342.258);
+  --chart-5: oklch(0.496 0.265 354.308);
+
+  /* Sidebar */
+  --sidebar: oklch(0.178 0.005 343.198);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.718 0.202 349.761);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0.02 343.198);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0.02 343.198);
+  --sidebar-ring: oklch(0.718 0.202 349.761);
+}
+
+/* ==========================================
+   BASE STYLES
+   ========================================== */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  .container {
+    @apply mx-auto;
+  }
+}
+/* ==========================================
+   CUSTOM UTILITIES
+   ========================================== */
+
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Add more custom utilities here as needed */
+}
+
+::view-transition-old(root), ::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
