@@ -28,7 +28,7 @@ export const tenantsApi = {
 
   // Get dashboard stats (protected)
   getStats: async (): Promise<TenantStats> => {
-    return api.get<TenantStats>('/tenants/stats');
+    return api.get<TenantStats>('/tenants/me/stats');
   },
 
   // Upload logo
