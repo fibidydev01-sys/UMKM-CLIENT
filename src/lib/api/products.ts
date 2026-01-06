@@ -1,4 +1,3 @@
-// src/lib/api/products.ts
 import { api } from './client';
 import type {
   Product,
@@ -66,8 +65,8 @@ export const productsApi = {
    * Delete product
    * DELETE /products/:id
    */
-  delete: async (id: string): Promise<void> => {
-    return api.delete<void>(`/products/${id}`);
+  delete: async (id: string): Promise<{ message: string; softDeleted: boolean }> => {
+    return api.delete<{ message: string; softDeleted: boolean }>(`/products/${id}`);
   },
 
   /**
@@ -114,16 +113,14 @@ export const productsApi = {
   },
 
   /**
-   * ✅ FIXED: Bulk delete products using API client
+   * Bulk delete products
    * DELETE /products/bulk
    */
   bulkDelete: async (ids: string[]): Promise<{ count: number; message: string }> => {
-    // ✅ Use api.deleteWithBody instead of raw fetch
-    // This ensures consistent auth handling via cookies
     return api.deleteWithBody<{ count: number; message: string }>(
       '/products/bulk',
       { ids },
-      { timeout: 60000 } // 60s timeout for bulk operations
+      { timeout: 60000 }
     );
   },
 };

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ColumnFiltersState,
@@ -21,16 +21,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { getProductColumns } from './products-table-columns';
-import { ProductsTableToolbar } from './products-table-toolbar';
-import { ProductDeleteDialog } from './product-delete-dialog';
-import { useDeleteProduct, useUpdateProduct } from '@/hooks';
-import { toast } from '@/providers';
-import { productsApi, getErrorMessage, isApiError } from '@/lib/api';
-import type { Product } from '@/types';
-
-// ✅ Import AlertDialog for bulk delete
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -40,7 +30,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Button } from '@/components/ui/button';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+
+import { getProductColumns } from './products-table-columns';
+import { ProductsTableToolbar } from './products-table-toolbar';
+import { ProductDeleteDialog } from './product-delete-dialog';
+import { useDeleteProduct, useUpdateProduct } from '@/hooks';
+import { toast } from '@/providers';
+import { productsApi, getErrorMessage, isApiError } from '@/lib/api';
+import type { Product } from '@/types';
 
 // ==========================================
 // PRODUCTS TABLE COMPONENT
@@ -49,10 +48,20 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 interface ProductsTableProps {
   products: Product[];
   categories: string[];
-  onRefresh?: () => void; // ✅ Callback untuk refetch data
+  isRefreshing?: boolean;
+  onRefresh?: () => Promise<void>;
+  onOptimisticDelete?: (ids: string[]) => void;
+  onRollback?: (products: Product[]) => void;
 }
 
-export function ProductsTable({ products, categories, onRefresh }: ProductsTableProps) {
+export function ProductsTable({
+  products,
+  categories,
+  isRefreshing = false,
+  onRefresh,
+  onOptimisticDelete,
+  onRollback,
+}: ProductsTableProps) {
   const router = useRouter();
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -62,7 +71,7 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
   // Delete dialog state (single)
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
 
-  // ✅ Bulk delete dialog state
+  // Bulk delete dialog state
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
@@ -71,14 +80,14 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
   const { deleteProduct: performDelete, isLoading: isDeleting } = useDeleteProduct();
   const { updateProduct } = useUpdateProduct();
 
-  // ✅ Helper: Refresh data
-  const refreshData = () => {
+  // Helper to refresh data properly
+  const refreshData = useCallback(async () => {
     if (onRefresh) {
-      onRefresh(); // Use callback if provided
+      await onRefresh();
     } else {
-      router.refresh(); // Fallback to router refresh
+      router.refresh();
     }
-  };
+  }, [onRefresh, router]);
 
   // Column actions
   const columnActions = {
@@ -91,7 +100,7 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
     onToggleActive: async (product: Product) => {
       try {
         await updateProduct(product.id, { isActive: !product.isActive });
-        refreshData(); // ✅ Use helper
+        await refreshData();
       } catch {
         // Error handled in hook
       }
@@ -119,57 +128,102 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
     },
   });
 
-  // Handle single delete
-  const handleDelete = async () => {
+  // Handle single delete with optimistic update
+  const handleDelete = useCallback(async () => {
     if (!deleteProduct) return;
 
-    const success = await performDelete(deleteProduct.id);
-    if (success) {
-      setDeleteProduct(null);
-      refreshData(); // ✅ Use helper
-    }
-    // ✅ If not success (e.g. 401), dialog stays open but user will be redirected
-  };
+    const productId = deleteProduct.id;
+    const previousProducts = [...products];
 
-  // ✅ Open bulk delete dialog (tidak langsung delete)
-  const openBulkDeleteDialog = () => {
+    // Close dialog immediately
+    setDeleteProduct(null);
+
+    // Optimistic update - remove from UI immediately
+    if (onOptimisticDelete) {
+      onOptimisticDelete([productId]);
+    }
+
+    try {
+      const success = await performDelete(productId);
+
+      if (success) {
+        // Force refresh to ensure data consistency
+        await refreshData();
+      } else {
+        // Rollback if delete failed
+        if (onRollback) {
+          onRollback(previousProducts);
+        }
+      }
+    } catch {
+      // Rollback on error
+      if (onRollback) {
+        onRollback(previousProducts);
+      }
+    }
+  }, [deleteProduct, products, performDelete, refreshData, onOptimisticDelete, onRollback]);
+
+  // Open bulk delete dialog
+  const openBulkDeleteDialog = useCallback(() => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const ids = selectedRows.map((row) => row.original.id);
+
+    const ids = selectedRows
+      .map((row) => row.original?.id)
+      .filter((id): id is string => Boolean(id));
 
     if (ids.length === 0) return;
 
     setBulkDeleteIds(ids);
     setIsBulkDeleteOpen(true);
-  };
+  }, [table]);
 
-  // ✅ Perform bulk delete with proper error handling
-  const handleBulkDelete = async () => {
+  // Handle bulk delete with optimistic update
+  const handleBulkDelete = useCallback(async () => {
     if (bulkDeleteIds.length === 0) return;
+
+    const previousProducts = [...products];
 
     setIsBulkDeleting(true);
 
+    // Close dialog and reset selection immediately
+    setIsBulkDeleteOpen(false);
+    setRowSelection({});
+
+    // Optimistic update
+    if (onOptimisticDelete) {
+      onOptimisticDelete(bulkDeleteIds);
+    }
+
     try {
       const result = await productsApi.bulkDelete(bulkDeleteIds);
-
       toast.success(result.message || `${result.count} produk berhasil dihapus`);
-      setRowSelection({});
-      setIsBulkDeleteOpen(false);
+
+      // Clear bulk delete IDs
       setBulkDeleteIds([]);
-      refreshData(); // ✅ Use helper instead of router.refresh()
+
+      // Force refresh
+      await refreshData();
     } catch (err) {
-      // ✅ Check if it's a 401 error
+      // Check if 401 - user will be redirected
       if (isApiError(err) && err.isUnauthorized()) {
-        // Don't show toast - user will be redirected
-        console.log('[ProductsTable] 401 error on bulk delete, redirecting...');
         return;
       }
 
-      // Show error for other errors
+      // Rollback on error
+      if (onRollback) {
+        onRollback(previousProducts);
+      }
+
       toast.error('Gagal menghapus produk', getErrorMessage(err));
     } finally {
       setIsBulkDeleting(false);
     }
-  };
+  }, [bulkDeleteIds, products, refreshData, onOptimisticDelete, onRollback]);
+
+  // Manual refresh handler
+  const handleManualRefresh = useCallback(async () => {
+    await refreshData();
+  }, [refreshData]);
 
   return (
     <div className="space-y-4">
@@ -178,7 +232,9 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
         table={table}
         categories={categories}
         onBulkDelete={openBulkDeleteDialog}
+        onRefresh={handleManualRefresh}
         isBulkDeleting={isBulkDeleting}
+        isRefreshing={isRefreshing}
       />
 
       {/* Table */}
@@ -266,7 +322,7 @@ export function ProductsTable({ products, categories, onRefresh }: ProductsTable
         onConfirm={handleDelete}
       />
 
-      {/* ✅ Bulk Delete Dialog - styled like single delete */}
+      {/* Bulk Delete Dialog */}
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

@@ -8,7 +8,8 @@ import type { ApiError } from '@/types';
 export interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   timeout?: number;
-  skipAuthRedirect?: boolean; // ✅ NEW: Option to skip auto-redirect
+  skipAuthRedirect?: boolean;
+  skipCache?: boolean; // 🔥 NEW: Option to bypass cache
 }
 
 export interface ApiClientConfig {
@@ -32,6 +33,7 @@ class ApiClient {
   private buildURL(
     endpoint: string,
     params?: Record<string, string | number | boolean | undefined>,
+    skipCache?: boolean,
   ): string {
     const fullURL = `${this.baseURL}${endpoint}`;
     const url = new URL(fullURL);
@@ -44,6 +46,11 @@ class ApiClient {
       });
     }
 
+    // 🔥 FIX: Add cache buster for GET requests
+    if (skipCache !== false) {
+      url.searchParams.append('_t', String(Date.now()));
+    }
+
     return url.toString();
   }
 
@@ -53,6 +60,10 @@ class ApiClient {
     if (!headers.has('Content-Type')) {
       headers.set('Content-Type', 'application/json');
     }
+
+    // 🔥 FIX: Add cache control headers
+    headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    headers.set('Pragma', 'no-cache');
 
     return headers;
   }
@@ -69,7 +80,6 @@ class ApiClient {
     const isJson = contentType?.includes('application/json');
 
     if (!response.ok) {
-      // ✅ Only trigger unauthorized handler if not skipped
       if (response.status === 401 && !skipAuthRedirect) {
         this.onUnauthorized?.();
       }
@@ -106,7 +116,7 @@ class ApiClient {
       const response = await fetch(url, {
         ...options,
         signal: controller.signal,
-        credentials: 'include', // ✅ Include cookies for auth
+        credentials: 'include',
       });
       return response;
     } finally {
@@ -115,7 +125,7 @@ class ApiClient {
   }
 
   async get<T>(endpoint: string, config?: RequestConfig): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, config?.skipCache);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -132,7 +142,7 @@ class ApiClient {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false); // No cache bust for POST
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -154,7 +164,7 @@ class ApiClient {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -176,7 +186,7 @@ class ApiClient {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -194,7 +204,7 @@ class ApiClient {
   }
 
   async delete<T>(endpoint: string, config?: RequestConfig): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -206,13 +216,12 @@ class ApiClient {
     return this.handleResponse<T>(response, config?.skipAuthRedirect);
   }
 
-  // ✅ NEW: Delete with body (for bulk operations)
   async deleteWithBody<T>(
     endpoint: string,
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -223,7 +232,7 @@ class ApiClient {
         body: data ? JSON.stringify(data) : undefined,
         ...config,
       },
-      config?.timeout || 60000, // Longer timeout for bulk ops
+      config?.timeout || 60000,
     );
 
     return this.handleResponse<T>(response, config?.skipAuthRedirect);
@@ -234,7 +243,7 @@ class ApiClient {
     formData: FormData,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params);
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = new Headers(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -296,27 +305,19 @@ export class ApiRequestError extends Error {
 // CREATE API CLIENT INSTANCE
 // ==========================================
 
-/**
- * ✅ IMPROVED: Handle unauthorized with proper state cleanup
- */
 function handleUnauthorized(): void {
   if (typeof window === 'undefined') return;
 
-  // Skip if already on login page
   if (window.location.pathname === '/login') return;
 
-  // ✅ Clear any localStorage tokens (legacy cleanup)
   try {
     localStorage.removeItem('fibidy_token');
   } catch {
     // Ignore localStorage errors
   }
 
-  // ✅ Dispatch custom event for auth store to listen
-  // This allows the store to reset before redirect
   window.dispatchEvent(new CustomEvent('auth:unauthorized'));
 
-  // ✅ Small delay to allow store cleanup, then redirect
   setTimeout(() => {
     const currentPath = window.location.pathname + window.location.search;
     const loginUrl = `/login?from=${encodeURIComponent(currentPath)}`;

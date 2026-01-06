@@ -1,16 +1,13 @@
 /**
  * ============================================================================
- * PRODUCTS PAGE
+ * PRODUCTS PAGE - FINAL VERSION
  * ============================================================================
  * Route: /dashboard/products
- * Description: Display and manage all products
  * 
  * Features:
  * - Product listing with search & filter
- * - Category filter (extracted from products)
- * - Loading skeleton
- * - Error handling with retry
- * - ✅ Instant refresh after delete (no manual refresh needed)
+ * - Optimistic updates on delete
+ * - Proper cache invalidation via backend
  * ============================================================================
  */
 
@@ -36,6 +33,7 @@ interface PageState {
   products: Product[];
   categories: string[];
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
 }
 
@@ -43,9 +41,6 @@ interface PageState {
 // HELPER FUNCTIONS
 // ============================================================================
 
-/**
- * Extract unique categories from products array
- */
 function extractCategories(products: Product[]): string[] {
   const categories = products
     .map((p) => p.category)
@@ -54,9 +49,6 @@ function extractCategories(products: Product[]): string[] {
   return [...new Set(categories)].sort();
 }
 
-/**
- * Safely parse categories response
- */
 function parseCategories(response: unknown): string[] | null {
   if (Array.isArray(response)) {
     return response.filter((item): item is string => typeof item === 'string');
@@ -69,30 +61,31 @@ function parseCategories(response: unknown): string[] | null {
 // ============================================================================
 
 export default function ProductsPage() {
-  // ---------------------------------------------------------------------------
-  // State
-  // ---------------------------------------------------------------------------
   const [state, setState] = useState<PageState>({
     products: [],
     categories: [],
     isLoading: true,
+    isRefreshing: false,
     error: null,
   });
 
-  const { products, categories, isLoading, error } = state;
+  const { products, categories, isLoading, isRefreshing, error } = state;
 
   // ---------------------------------------------------------------------------
   // Data Fetching
   // ---------------------------------------------------------------------------
-  const fetchData = useCallback(async () => {
-    setState((prev) => ({ ...prev, isLoading: true, error: null }));
+  const fetchData = useCallback(async (showFullLoading = true) => {
+    setState((prev) => ({
+      ...prev,
+      isLoading: showFullLoading ? true : prev.isLoading,
+      isRefreshing: !showFullLoading,
+      error: null,
+    }));
 
     try {
-      // 1. Fetch products (required)
       const productsRes = await productsApi.getAll({ limit: 100 });
       const fetchedProducts = productsRes.data;
 
-      // 2. Fetch categories (optional, with fallback)
       let fetchedCategories: string[];
 
       try {
@@ -100,15 +93,14 @@ export default function ProductsPage() {
         const parsed = parseCategories(categoriesRes);
         fetchedCategories = parsed ?? extractCategories(fetchedProducts);
       } catch {
-        // API failed, extract from products
         fetchedCategories = extractCategories(fetchedProducts);
       }
 
-      // 3. Update state
       setState({
         products: fetchedProducts,
         categories: fetchedCategories,
         isLoading: false,
+        isRefreshing: false,
         error: null,
       });
     } catch (err) {
@@ -116,20 +108,39 @@ export default function ProductsPage() {
       setState((prev) => ({
         ...prev,
         isLoading: false,
+        isRefreshing: false,
         error: getErrorMessage(err),
       }));
     }
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // Effects
-  // ---------------------------------------------------------------------------
   useEffect(() => {
-    fetchData();
+    fetchData(true);
   }, [fetchData]);
 
   // ---------------------------------------------------------------------------
-  // Render: Loading
+  // Handlers
+  // ---------------------------------------------------------------------------
+  const handleRefresh = useCallback(async () => {
+    await fetchData(false);
+  }, [fetchData]);
+
+  const handleOptimisticDelete = useCallback((deletedIds: string[]) => {
+    setState((prev) => ({
+      ...prev,
+      products: prev.products.filter((p) => !deletedIds.includes(p.id)),
+    }));
+  }, []);
+
+  const handleRollback = useCallback((previousProducts: Product[]) => {
+    setState((prev) => ({
+      ...prev,
+      products: previousProducts,
+    }));
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // Render
   // ---------------------------------------------------------------------------
   if (isLoading) {
     return (
@@ -145,9 +156,6 @@ export default function ProductsPage() {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Render: Error
-  // ---------------------------------------------------------------------------
   if (error) {
     return (
       <>
@@ -163,7 +171,7 @@ export default function ProductsPage() {
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
           <p className="text-destructive font-medium">Gagal memuat produk</p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={fetchData}>
+          <Button variant="outline" className="mt-4" onClick={() => fetchData(true)}>
             Coba Lagi
           </Button>
         </div>
@@ -171,9 +179,6 @@ export default function ProductsPage() {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Render: Success
-  // ---------------------------------------------------------------------------
   return (
     <>
       <PageHeader title="Produk" description="Kelola produk toko Anda">
@@ -185,31 +190,30 @@ export default function ProductsPage() {
         </Button>
       </PageHeader>
 
-      {/* ✅ Pass onRefresh callback for instant data refresh */}
       <ProductsTable
         products={products}
         categories={categories}
-        onRefresh={fetchData}
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        onOptimisticDelete={handleOptimisticDelete}
+        onRollback={handleRollback}
       />
     </>
   );
 }
 
 // ============================================================================
-// SKELETON COMPONENT
+// SKELETON
 // ============================================================================
 
 function ProductsTableSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
       <div className="flex gap-2">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-10 w-32" />
         <Skeleton className="h-10 w-32" />
       </div>
-
-      {/* Table */}
       <div className="rounded-md border">
         <div className="p-4 space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (

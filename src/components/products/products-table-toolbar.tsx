@@ -1,7 +1,7 @@
 'use client';
 
 import { Table } from '@tanstack/react-table';
-import { X, Search, Trash2, Loader2 } from 'lucide-react';
+import { X, Search, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,14 +21,18 @@ interface ProductsTableToolbarProps {
   table: Table<Product>;
   categories: string[];
   onBulkDelete?: () => void;
-  isBulkDeleting?: boolean;  // ✅ ADDED
+  onRefresh?: () => void; // 🔥 NEW: Manual refresh button
+  isBulkDeleting?: boolean;
+  isRefreshing?: boolean; // 🔥 NEW: Loading state for refresh
 }
 
 export function ProductsTableToolbar({
   table,
   categories,
   onBulkDelete,
-  isBulkDeleting = false,  // ✅ ADDED with default
+  onRefresh,
+  isBulkDeleting = false,
+  isRefreshing = false,
 }: ProductsTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
@@ -107,6 +111,19 @@ export function ProductsTableToolbar({
             <X className="ml-2 h-4 w-4" />
           </Button>
         )}
+
+        {/* 🔥 NEW: Manual Refresh Button */}
+        {onRefresh && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            title="Refresh data"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
+        )}
       </div>
 
       {/* Bulk Actions */}
@@ -119,7 +136,7 @@ export function ProductsTableToolbar({
             variant="destructive"
             size="sm"
             onClick={onBulkDelete}
-            disabled={isBulkDeleting}  // ✅ ADDED
+            disabled={isBulkDeleting}
           >
             {isBulkDeleting ? (
               <>

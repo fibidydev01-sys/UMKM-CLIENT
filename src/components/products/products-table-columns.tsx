@@ -70,7 +70,7 @@ export function getProductColumns(actions: ColumnActions): ColumnDef<Product>[] 
         return (
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 overflow-hidden rounded-lg bg-muted flex-shrink-0">
-              {product.images[0] ? (
+              {product.images?.[0] ? (
                 <Image
                   src={product.images[0]}
                   alt={product.name}
@@ -105,6 +105,10 @@ export function getProductColumns(actions: ColumnActions): ColumnDef<Product>[] 
         ) : (
           <span className="text-muted-foreground">-</span>
         );
+      },
+      filterFn: (row, id, value) => {
+        if (!value || value === '') return true;
+        return row.getValue(id) === value;
       },
     },
 
@@ -166,6 +170,10 @@ export function getProductColumns(actions: ColumnActions): ColumnDef<Product>[] 
           </Badge>
         );
       },
+      filterFn: (row, id, value) => {
+        if (value === undefined) return true;
+        return row.getValue(id) === value;
+      },
     },
 
     // Created At
@@ -212,7 +220,7 @@ export function getProductColumns(actions: ColumnActions): ColumnDef<Product>[] 
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => actions.onDelete(product)}
-                className="text-destructive"
+                className="text-destructive focus:text-destructive"
               >
                 Hapus
               </DropdownMenuItem>
