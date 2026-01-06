@@ -31,7 +31,27 @@ export const metadata: Metadata = {
 // ==========================================
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const { stats, error } = await getStats();
+
+  // ❌ SHOW ERROR IF API FAILED
+  if (error) {
+    return (
+      <>
+        <PageHeader
+          title="Dashboard"
+          description="Selamat datang di panel admin toko Anda"
+        />
+        <Card className="border-red-200 bg-red-50">
+          <CardHeader>
+            <CardTitle className="text-red-700">⚠️ Error Loading Stats</CardTitle>
+            <CardDescription className="text-red-600">
+              {error}
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </>
+    );
+  }
 
   return (
     <>
@@ -127,14 +147,23 @@ export default async function DashboardPage() {
 }
 
 // ==========================================
-// DATA FETCHING
+// DATA FETCHING - WITH ERROR HANDLING
 // ==========================================
 
-async function getStats(): Promise<DashboardStats | null> {
+async function getStats(): Promise<{
+  stats: DashboardStats | null;
+  error: string | null
+}> {
   try {
-    return await serverApi.getStats();
-  } catch {
-    return null;
+    const stats = await serverApi.getStats();
+    return { stats, error: null };
+  } catch (err) {
+    // ✅ LOG ERROR + RETURN ERROR MESSAGE
+    console.error('❌ Dashboard Stats Error:', err);
+    return {
+      stats: null,
+      error: err instanceof Error ? err.message : 'Failed to load dashboard stats'
+    };
   }
 }
 
