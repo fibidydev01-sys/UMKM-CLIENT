@@ -1,19 +1,6 @@
-/**
- * ============================================================================
- * PRODUCTS PAGE - FIXED VERSION
- * ============================================================================
- * Route: /dashboard/products
- * 
- * Changes:
- * - Simplified delete flow (no optimistic update)
- * - Always fetch fresh data after mutations
- * - Cache-busting with timestamp
- * ============================================================================
- */
-
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Plus } from 'lucide-react';
 
@@ -69,12 +56,19 @@ export default function ProductsPage() {
     error: null,
   });
 
+  // ✅ FIX 1: Use ref to track if initial fetch has been done
+  const hasFetched = useRef(false);
+
+  // ✅ FIX 2: Use ref to track if component is mounted (prevent state updates after unmount)
+  const isMounted = useRef(true);
+
   const { products, categories, isLoading, isRefreshing, error } = state;
 
-  // ---------------------------------------------------------------------------
-  // Data Fetching - FIXED: Added timestamp for cache busting
-  // ---------------------------------------------------------------------------
-  const fetchData = useCallback(async (showFullLoading = true) => {
+  // ✅ FIX 3: Fetch data function - NOT in useCallback to avoid dependency issues
+  const fetchData = async (showFullLoading = true) => {
+    // Prevent duplicate calls
+    if (!isMounted.current) return;
+
     setState((prev) => ({
       ...prev,
       isLoading: showFullLoading ? true : prev.isLoading,
@@ -83,13 +77,16 @@ export default function ProductsPage() {
     }));
 
     try {
-      // ✅ FIX: Add timestamp to bust any caching
+      // Single API call for products
       const productsRes = await productsApi.getAll({
         limit: 100,
-        _t: Date.now(), // Cache buster
       });
+
+      if (!isMounted.current) return;
+
       const fetchedProducts = productsRes.data;
 
+      // Try to get categories, fallback to extracting from products
       let fetchedCategories: string[];
 
       try {
@@ -100,15 +97,18 @@ export default function ProductsPage() {
         fetchedCategories = extractCategories(fetchedProducts);
       }
 
-      // ✅ FIX: Use functional update to ensure latest state
-      setState(() => ({
+      if (!isMounted.current) return;
+
+      setState({
         products: fetchedProducts,
         categories: fetchedCategories,
         isLoading: false,
         isRefreshing: false,
         error: null,
-      }));
+      });
     } catch (err) {
+      if (!isMounted.current) return;
+
       console.error('[ProductsPage] Failed to fetch:', err);
       setState((prev) => ({
         ...prev,
@@ -117,21 +117,29 @@ export default function ProductsPage() {
         error: getErrorMessage(err),
       }));
     }
-  }, []);
+  };
 
+  // ✅ FIX 4: Initial fetch - runs ONLY ONCE
   useEffect(() => {
-    fetchData(true);
-  }, [fetchData]);
+    // Set mounted flag
+    isMounted.current = true;
 
-  // ---------------------------------------------------------------------------
-  // Handlers - SIMPLIFIED
-  // ---------------------------------------------------------------------------
-  const handleRefresh = useCallback(async () => {
+    // Only fetch if not already fetched
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchData(true);
+    }
+
+    // Cleanup on unmount
+    return () => {
+      isMounted.current = false;
+    };
+  }, []); // ← Empty deps, runs once on mount
+
+  // ✅ FIX 5: Refresh handler - manual trigger only
+  const handleRefresh = async () => {
     await fetchData(false);
-  }, [fetchData]);
-
-  // ✅ REMOVED: Optimistic update handlers (caused sync issues)
-  // Now table handles delete and calls onRefresh to get fresh data
+  };
 
   // ---------------------------------------------------------------------------
   // Render
@@ -165,7 +173,14 @@ export default function ProductsPage() {
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
           <p className="text-destructive font-medium">Gagal memuat produk</p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={() => fetchData(true)}>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              hasFetched.current = false;
+              fetchData(true);
+            }}
+          >
             Coba Lagi
           </Button>
         </div>
@@ -184,7 +199,6 @@ export default function ProductsPage() {
         </Button>
       </PageHeader>
 
-      {/* ✅ SIMPLIFIED: Only pass products, categories, and refresh handler */}
       <ProductsTable
         products={products}
         categories={categories}

@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useProductsStore } from '@/stores';
 import { productsApi, getErrorMessage, isApiError } from '@/lib/api';
 import { toast } from '@/providers';
 import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams } from '@/types';
 
 // ==========================================
-// USE PRODUCTS HOOK
-// Products list with filters & pagination
+// USE PRODUCTS HOOK - FIXED
 // ==========================================
 
 export function useProducts(initialParams?: ProductQueryParams) {
@@ -26,33 +25,58 @@ export function useProducts(initialParams?: ProductQueryParams) {
     setCategories,
   } = useProductsStore();
 
-  // Initialize filters
+  // ✅ FIX: Track if initial fetch done
+  const hasFetched = useRef(false);
+  const isMounted = useRef(true);
+
+  // Initialize filters once
   useEffect(() => {
-    if (initialParams) {
+    if (initialParams && !hasFetched.current) {
       setFilters(initialParams);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, []); // Run once
 
   // Fetch products
   const fetchProducts = useCallback(async () => {
+    if (!isMounted.current) return;
+
     setLoading(true);
 
     try {
       const response = await productsApi.getAll(filters);
+
+      if (!isMounted.current) return;
+
       setProducts(response.data);
       setPagination(response.meta);
     } catch (err) {
+      if (!isMounted.current) return;
       setError(getErrorMessage(err));
     }
   }, [filters, setLoading, setProducts, setPagination, setError]);
 
-  // Fetch on filter change
+  // ✅ FIX: Fetch only once on mount, then on filter change
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    isMounted.current = true;
 
-  // Fetch categories with fallback
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchProducts();
+    }
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, []); // Mount only
+
+  // ✅ FIX: Separate effect for filter changes (after initial fetch)
+  useEffect(() => {
+    if (hasFetched.current) {
+      fetchProducts();
+    }
+  }, [filters]); // Only when filters change
+
+  // Fetch categories - only once
   const fetchCategories = useCallback(async () => {
     try {
       const categories = await productsApi.getCategories();
@@ -64,7 +88,6 @@ export function useProducts(initialParams?: ProductQueryParams) {
       console.warn('Categories API failed, extracting from products...', err);
     }
 
-    // Fallback: extract from loaded products
     const currentProducts = useProductsStore.getState().products;
     if (currentProducts.length > 0) {
       const extracted = [...new Set(
@@ -79,9 +102,14 @@ export function useProducts(initialParams?: ProductQueryParams) {
     }
   }, [setCategories]);
 
+  // ✅ FIX: Categories fetch once
+  const categoriesFetched = useRef(false);
   useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    if (!categoriesFetched.current) {
+      categoriesFetched.current = true;
+      fetchCategories();
+    }
+  }, []);
 
   return {
     products,
@@ -95,8 +123,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
 }
 
 // ==========================================
-// USE PRODUCT HOOK
-// Single product by ID
+// USE PRODUCT HOOK - Single product
 // ==========================================
 
 export function useProduct(id: string | null) {
@@ -104,11 +131,49 @@ export function useProduct(id: string | null) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProduct = useCallback(async () => {
-    if (!id) {
-      setProduct(null);
-      return;
-    }
+  const hasFetched = useRef(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+
+    const fetchProduct = async () => {
+      if (!id || hasFetched.current) {
+        setProduct(null);
+        return;
+      }
+
+      hasFetched.current = true;
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const data = await productsApi.getById(id);
+        if (isMounted.current) {
+          setProduct(data);
+        }
+      } catch (err) {
+        if (isMounted.current) {
+          setError(getErrorMessage(err));
+          setProduct(null);
+        }
+      } finally {
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProduct();
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [id]);
+
+  const refetch = useCallback(async () => {
+    if (!id) return;
+    hasFetched.current = false;
 
     setIsLoading(true);
     setError(null);
@@ -124,21 +189,16 @@ export function useProduct(id: string | null) {
     }
   }, [id]);
 
-  useEffect(() => {
-    fetchProduct();
-  }, [fetchProduct]);
-
   return {
     product,
     isLoading,
     error,
-    refetch: fetchProduct,
+    refetch,
   };
 }
 
 // ==========================================
 // USE CREATE PRODUCT HOOK
-// Create product mutation
 // ==========================================
 
 export function useCreateProduct() {
@@ -169,7 +229,6 @@ export function useCreateProduct() {
 
 // ==========================================
 // USE UPDATE PRODUCT HOOK
-// Update product mutation
 // ==========================================
 
 export function useUpdateProduct() {
@@ -200,7 +259,6 @@ export function useUpdateProduct() {
 
 // ==========================================
 // USE DELETE PRODUCT HOOK
-// ✅ FIXED: Better error handling, don't swallow 401
 // ==========================================
 
 export function useDeleteProduct() {
@@ -216,14 +274,11 @@ export function useDeleteProduct() {
       toast.success('Produk berhasil dihapus');
       return true;
     } catch (err) {
-      // ✅ Check if it's a 401 error - don't show toast, let redirect happen
       if (isApiError(err) && err.isUnauthorized()) {
         console.log('[useDeleteProduct] 401 error, auth redirect will handle');
-        // Don't show error toast for 401 - user will be redirected
         return false;
       }
 
-      // Show error for other errors
       toast.error('Gagal menghapus produk', getErrorMessage(err));
       return false;
     } finally {
@@ -238,8 +293,7 @@ export function useDeleteProduct() {
 }
 
 // ==========================================
-// USE STORE PRODUCTS HOOK
-// Products for public store (by slug)
+// USE STORE PRODUCTS HOOK - Public store
 // ==========================================
 
 export function useStoreProducts(slug: string, params?: ProductQueryParams) {
@@ -253,16 +307,58 @@ export function useStoreProducts(slug: string, params?: ProductQueryParams) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = useCallback(async () => {
+  const hasFetched = useRef(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+
+    const fetchProducts = async () => {
+      if (!slug || hasFetched.current) return;
+
+      hasFetched.current = true;
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await productsApi.getByStore(slug, {
+          ...params,
+          isActive: true,
+        });
+
+        if (isMounted.current) {
+          setProducts(response.data);
+          setPagination(response.meta);
+        }
+      } catch (err) {
+        if (isMounted.current) {
+          setError(getErrorMessage(err));
+        }
+      } finally {
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted.current = false;
+    };
+  }, [slug]); // Only slug change triggers refetch
+
+  const refetch = useCallback(async () => {
     if (!slug) return;
 
+    hasFetched.current = false;
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await productsApi.getByStore(slug, {
         ...params,
-        isActive: true, // Only active products for store
+        isActive: true,
       });
       setProducts(response.data);
       setPagination(response.meta);
@@ -273,15 +369,11 @@ export function useStoreProducts(slug: string, params?: ProductQueryParams) {
     }
   }, [slug, params]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   return {
     products,
     pagination,
     isLoading,
     error,
-    refetch: fetchProducts,
+    refetch,
   };
 }
