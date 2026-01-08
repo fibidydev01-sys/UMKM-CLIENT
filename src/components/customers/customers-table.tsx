@@ -26,13 +26,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCustomerColumns } from './customers-table-columns';
 import { CustomerDeleteDialog } from './customer-delete-dialog';
-import { useDeleteCustomer } from '@/hooks';
+import { customersApi, getErrorMessage } from '@/lib/api';
 import { generateWhatsAppLink } from '@/lib/format';
 import { toast } from '@/providers';
 import type { Customer } from '@/types';
 
 // ==========================================
 // CUSTOMERS TABLE COMPONENT
+// ✅ FIXED: Single toast for bulk delete
+// ✅ FIXED: Removed totalOrders column
 // ==========================================
 
 interface CustomersTableProps {
@@ -49,7 +51,10 @@ export function CustomersTable({ customers }: CustomersTableProps) {
 
   // Delete dialog state
   const [deleteCustomer, setDeleteCustomer] = useState<Customer | null>(null);
-  const { deleteCustomer: performDelete, isLoading: isDeleting } = useDeleteCustomer();
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Bulk delete state
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
   // Column actions
   const columnActions = {
@@ -70,7 +75,6 @@ export function CustomersTable({ customers }: CustomersTableProps) {
 
   const columns = getCustomerColumns(columnActions);
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: customers,
     columns,
@@ -93,29 +97,76 @@ export function CustomersTable({ customers }: CustomersTableProps) {
     },
   });
 
-  // Handle delete
+  // Handle single delete
   const handleDelete = async () => {
     if (!deleteCustomer) return;
 
-    const success = await performDelete(deleteCustomer.id);
-    if (success) {
+    setIsDeleting(true);
+
+    try {
+      await customersApi.delete(deleteCustomer.id);
+      toast.success('Pelanggan berhasil dihapus');
       setDeleteCustomer(null);
       router.refresh();
+    } catch (err) {
+      toast.error('Gagal menghapus pelanggan', getErrorMessage(err));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
-  // Handle bulk delete
+  // ==========================================
+  // ✅ FIXED: Bulk delete with single summary toast
+  // ==========================================
   const handleBulkDelete = async () => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const ids = selectedRows.map((row) => row.original.id);
 
-    for (const id of ids) {
-      await performDelete(id);
+    if (ids.length === 0) return;
+
+    setIsBulkDeleting(true);
+
+    // Track results
+    let successCount = 0;
+    const failedItems: string[] = [];
+
+    // Delete one by one and collect results
+    for (const row of selectedRows) {
+      const customer = row.original;
+      try {
+        await customersApi.delete(customer.id);
+        successCount++;
+      } catch (err) {
+        // Collect error with customer name for context
+        const errorMsg = getErrorMessage(err);
+        failedItems.push(`${customer.name}: ${errorMsg}`);
+      }
     }
 
+    // Clear selection
     setRowSelection({});
+    setIsBulkDeleting(false);
+
+    // ✅ Single toast based on results
+    if (successCount === ids.length) {
+      // All success
+      toast.success(`${successCount} pelanggan berhasil dihapus`);
+    } else if (successCount === 0) {
+      // All failed
+      toast.error(
+        'Gagal menghapus pelanggan',
+        failedItems.join('\n')
+      );
+    } else {
+      // Partial success - show warning with details
+      toast.warning(
+        `${successCount} berhasil, ${failedItems.length} gagal`,
+        failedItems.join('\n')
+      );
+    }
+
+    // Refresh data
     router.refresh();
-    toast.success(`${ids.length} pelanggan berhasil dihapus`);
   };
 
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
@@ -145,9 +196,16 @@ export function CustomersTable({ customers }: CustomersTableProps) {
               variant="destructive"
               size="sm"
               onClick={handleBulkDelete}
+              disabled={isBulkDeleting}
             >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Hapus
+              {isBulkDeleting ? (
+                <>Menghapus...</>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus
+                </>
+              )}
             </Button>
           </div>
         )}

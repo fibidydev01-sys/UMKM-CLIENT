@@ -1,22 +1,18 @@
 import { ComponentPropsWithoutRef, ReactNode } from "react"
 import { ArrowRightIcon } from "@radix-ui/react-icons"
+import Link from "next/link"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
+// ==========================================
+// BENTO GRID COMPONENT
+// Flexible grid with customizable rows/cols
+// ==========================================
+
 interface BentoGridProps extends ComponentPropsWithoutRef<"div"> {
   children: ReactNode
   className?: string
-}
-
-interface BentoCardProps extends ComponentPropsWithoutRef<"div"> {
-  name: string
-  className: string
-  background: ReactNode
-  Icon: React.ElementType
-  description: string
-  href: string
-  cta: string
 }
 
 const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
@@ -33,6 +29,20 @@ const BentoGrid = ({ children, className, ...props }: BentoGridProps) => {
   )
 }
 
+// ==========================================
+// BENTO CARD - Standard (with CTA button)
+// ==========================================
+
+interface BentoCardProps extends ComponentPropsWithoutRef<"div"> {
+  name: string
+  className?: string
+  background?: ReactNode
+  Icon: React.ElementType
+  description: string
+  href: string
+  cta?: string
+}
+
 const BentoCard = ({
   name,
   className,
@@ -40,7 +50,7 @@ const BentoCard = ({
   Icon,
   description,
   href,
-  cta,
+  cta = "Buka",
   ...props
 }: BentoCardProps) => (
   <div
@@ -106,4 +116,75 @@ const BentoCard = ({
   </div>
 )
 
-export { BentoCard, BentoGrid }
+// ==========================================
+// BENTO ACTION CARD - For Dashboard Quick Actions
+// Simpler design with gradient background
+// ==========================================
+
+interface BentoActionCardProps {
+  name: string
+  description: string
+  href: string
+  Icon: React.ElementType
+  iconColor?: string
+  gradient?: string
+  className?: string
+}
+
+const BentoActionCard = ({
+  name,
+  description,
+  href,
+  Icon,
+  iconColor = "text-primary",
+  gradient = "from-primary/20 via-primary/5",
+  className,
+}: BentoActionCardProps) => (
+  <Link
+    href={href}
+    className={cn(
+      "group relative flex flex-col justify-between overflow-hidden rounded-xl",
+      // Base styles
+      "bg-card border transition-all duration-300",
+      // Hover effects
+      "hover:shadow-lg hover:border-primary/50 hover:scale-[1.02]",
+      // Padding responsive
+      "p-3 sm:p-4 md:p-5 lg:p-6",
+      className
+    )}
+  >
+    {/* Gradient Background */}
+    <div
+      className={cn(
+        "absolute inset-0 bg-gradient-to-br to-transparent opacity-60 group-hover:opacity-80 transition-opacity",
+        gradient
+      )}
+    />
+
+    {/* Icon */}
+    <div className="relative z-10">
+      <Icon
+        className={cn(
+          "h-6 w-6 sm:h-8 sm:w-8 md:h-9 md:w-9 lg:h-11 lg:w-11 xl:h-12 xl:w-12",
+          "transition-transform duration-300 group-hover:scale-110",
+          iconColor
+        )}
+      />
+    </div>
+
+    {/* Text Content */}
+    <div className="relative z-10 mt-auto">
+      <h3 className="font-semibold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">
+        {name}
+      </h3>
+      <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground line-clamp-2 mt-0.5 md:mt-1">
+        {description}
+      </p>
+    </div>
+
+    {/* Hover overlay */}
+    <div className="pointer-events-none absolute inset-0 transform-gpu transition-all duration-300 group-hover:bg-black/[.02] group-hover:dark:bg-white/[.02]" />
+  </Link>
+)
+
+export { BentoCard, BentoGrid, BentoActionCard }

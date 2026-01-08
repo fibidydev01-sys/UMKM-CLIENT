@@ -4,10 +4,13 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from './dashboard-sidebar';
 import { DashboardHeader } from './dashboard-header';
 import { DashboardShell } from './dashboard-shell';
+import { MobileNavbar } from './mobile-navbar';
 
 // ==========================================
 // DASHBOARD LAYOUT COMPONENT
-// Main layout wrapper using shadcn sidebar
+// - Sidebar (Desktop)
+// - Sticky Header
+// - Mobile Bottom Navbar
 // ==========================================
 
 interface DashboardLayoutProps {
@@ -17,13 +20,21 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <SidebarProvider>
+      {/* Desktop Sidebar - Hidden on mobile */}
       <DashboardSidebar />
-      <SidebarInset>
+
+      <SidebarInset className="pb-20 md:pb-0">
+        {/* Sticky Header */}
         <DashboardHeader />
+
+        {/* Main Content */}
         <DashboardShell>
           {children}
         </DashboardShell>
       </SidebarInset>
+
+      {/* Mobile Bottom Navbar - Only on mobile */}
+      <MobileNavbar />
     </SidebarProvider>
   );
 }

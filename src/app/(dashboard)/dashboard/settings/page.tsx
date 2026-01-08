@@ -3,7 +3,7 @@
  * FILE: app/(dashboard)/dashboard/settings/page.tsx
  * ============================================================================
  * Route: /dashboard/settings
- * Description: Store settings with state persistence across tabs
+ * Description: Store settings with mobile Sheet navigation & desktop Tabs
  * ============================================================================
  */
 'use client';
@@ -11,7 +11,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Store,
-  Bell,
   CreditCard,
   Truck,
   Shield,
@@ -23,6 +22,7 @@ import {
   Check,
   Moon,
   Sun,
+  Menu,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -51,6 +51,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { PageHeader } from '@/components/dashboard';
 import { LandingBuilder } from '@/components/landing';
 import { ImageUpload } from '@/components/upload';
@@ -74,6 +81,17 @@ const THEME_COLORS = [
 ] as const;
 
 // ============================================================================
+// SETTINGS MENU ITEMS
+// ============================================================================
+const SETTINGS_MENU = [
+  { key: 'store', label: 'Toko', icon: Store },
+  { key: 'landing', label: 'Landing', icon: Layout },
+  { key: 'payment', label: 'Pembayaran', icon: CreditCard },
+  { key: 'shipping', label: 'Pengiriman', icon: Truck },
+  { key: 'appearance', label: 'Tampilan', icon: Palette },
+] as const;
+
+// ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
@@ -89,6 +107,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('store');
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingAppearance, setIsSavingAppearance] = useState(false);
@@ -109,11 +128,6 @@ export default function SettingsPage() {
   // ✅ LANDING CONFIG STATE - Lifted to parent
   const [landingConfig, setLandingConfig] = useState<TenantLandingConfig | null>(null);
   const savedLandingConfigRef = useRef<TenantLandingConfig | null>(null);
-
-  // Notification Settings
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [orderNotifications, setOrderNotifications] = useState(true);
-  const [stockNotifications, setStockNotifications] = useState(true);
 
   // Payment Settings
   const [currency, setCurrency] = useState('IDR');
@@ -157,6 +171,19 @@ export default function SettingsPage() {
   const tenantLoading = tenant === null;
 
   // ---------------------------------------------------------------------------
+  // Get current tab label for mobile
+  // ---------------------------------------------------------------------------
+  const getCurrentTabLabel = () => {
+    const item = SETTINGS_MENU.find((m) => m.key === activeTab);
+    return item?.label || 'Pengaturan';
+  };
+
+  const getCurrentTabIcon = () => {
+    const item = SETTINGS_MENU.find((m) => m.key === activeTab);
+    return item?.icon || Store;
+  };
+
+  // ---------------------------------------------------------------------------
   // Check for unsaved landing changes
   // ---------------------------------------------------------------------------
   const hasUnsavedLandingChanges = useCallback(() => {
@@ -175,6 +202,7 @@ export default function SettingsPage() {
       return;
     }
     setActiveTab(newTab);
+    setSheetOpen(false); // Close sheet on mobile
   }, [activeTab, hasUnsavedLandingChanges]);
 
   const handleDiscardChanges = useCallback(() => {
@@ -299,6 +327,8 @@ export default function SettingsPage() {
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+  const CurrentIcon = getCurrentTabIcon();
+
   return (
     <div>
       <PageHeader
@@ -328,7 +358,54 @@ export default function SettingsPage() {
       </AlertDialog>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="mt-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 lg:w-auto">
+        {/* ✅ Mobile: Sheet Navigation */}
+        <div className="md:hidden mb-4">
+          <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full justify-between">
+                <span className="flex items-center gap-2">
+                  <CurrentIcon className="h-4 w-4" />
+                  {getCurrentTabLabel()}
+                </span>
+                <Menu className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72">
+              <SheetHeader>
+                <SheetTitle>Pengaturan</SheetTitle>
+              </SheetHeader>
+              <nav className="mt-6 space-y-1">
+                {SETTINGS_MENU.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.key;
+                  const hasIndicator = item.key === 'landing' && hasUnsavedLandingChanges();
+
+                  return (
+                    <button
+                      key={item.key}
+                      onClick={() => handleTabChange(item.key)}
+                      className={cn(
+                        'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative',
+                        isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                      {hasIndicator && (
+                        <span className="absolute right-3 h-2 w-2 rounded-full bg-yellow-500" />
+                      )}
+                    </button>
+                  );
+                })}
+              </nav>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* ✅ Desktop: Tabs */}
+        <TabsList className="hidden md:grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="store" className="gap-2">
             <Store className="h-4 w-4" />
             <span className="hidden sm:inline">Toko</span>
@@ -340,10 +417,6 @@ export default function SettingsPage() {
             {hasUnsavedLandingChanges() && (
               <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-yellow-500" />
             )}
-          </TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2">
-            <Bell className="h-4 w-4" />
-            <span className="hidden sm:inline">Notifikasi</span>
           </TabsTrigger>
           <TabsTrigger value="payment" className="gap-2">
             <CreditCard className="h-4 w-4" />
@@ -486,62 +559,6 @@ export default function SettingsPage() {
               ) : (
                 <p className="text-muted-foreground">Gagal memuat data tenant</p>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Notification Settings */}
-        <TabsContent value="notifications" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferensi Notifikasi</CardTitle>
-              <CardDescription>
-                Atur notifikasi yang ingin Anda terima.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Notifikasi Email</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Terima notifikasi melalui email
-                  </p>
-                </div>
-                <Switch
-                  checked={emailNotifications}
-                  onCheckedChange={setEmailNotifications}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Notifikasi Pesanan Baru</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Dapatkan notifikasi saat ada pesanan baru
-                  </p>
-                </div>
-                <Switch
-                  checked={orderNotifications}
-                  onCheckedChange={setOrderNotifications}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Peringatan Stok Rendah</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Dapatkan notifikasi saat stok produk menipis
-                  </p>
-                </div>
-                <Switch
-                  checked={stockNotifications}
-                  onCheckedChange={setStockNotifications}
-                />
-              </div>
             </CardContent>
           </Card>
         </TabsContent>

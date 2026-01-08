@@ -2,15 +2,19 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Menu, Search } from 'lucide-react';
+import { Menu, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from './cart-sheet';
 import { StoreNav } from './store-nav';
+import { useIsAuthenticated } from '@/stores';
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE HEADER COMPONENT
+// - Dashboard icon (only if logged in)
+// - Cart icon with badge
+// - PWA Friendly - No target="_blank"
 // ==========================================
 
 interface StoreHeaderProps {
@@ -19,6 +23,7 @@ interface StoreHeaderProps {
 
 export function StoreHeader({ tenant }: StoreHeaderProps) {
   const storeUrl = `/store/${tenant.slug}`;
+  const isAuthenticated = useIsAuthenticated();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -80,15 +85,19 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
           </Link>
         </nav>
 
-        {/* Right: Search + Cart */}
+        {/* Right: Dashboard (if logged in) + Cart */}
         <div className="flex items-center gap-2">
-          {/* Search Button (Optional - for future) */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Search className="h-5 w-5" />
-            <span className="sr-only">Cari</span>
-          </Button>
+          {/* Dashboard Button - Only show if user is authenticated */}
+          {isAuthenticated && (
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/dashboard">
+                <LayoutDashboard className="h-5 w-5" />
+                <span className="sr-only">Dashboard</span>
+              </Link>
+            </Button>
+          )}
 
-          {/* Cart - Fix: provide default empty string for whatsapp */}
+          {/* Cart */}
           <CartSheet
             storeSlug={tenant.slug}
             storeName={tenant.name}

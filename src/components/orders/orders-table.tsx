@@ -42,6 +42,8 @@ import type { OrderListItem } from '@/types';
 
 // ==========================================
 // ORDERS TABLE COMPONENT
+// ✅ FIXED: Single toast for bulk delete
+// ✅ FIXED: Only PENDING can be deleted
 // ==========================================
 
 interface OrdersTableProps {
@@ -66,10 +68,8 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
   const [deleteOrder, setDeleteOrder] = useState<OrderListItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Bulk delete dialog state
-  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  // Bulk delete state
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
-  const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
 
   // Helper: Refresh data
   const refreshData = () => {
@@ -89,6 +89,14 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
       setCancelOrder(order);
     },
     onDelete: (order: OrderListItem) => {
+      // ✅ Validate: Only PENDING can be deleted
+      if (order.status !== 'PENDING') {
+        toast.error(
+          'Tidak dapat menghapus',
+          `Pesanan #${order.orderNumber} berstatus ${order.status}. Hanya pesanan PENDING yang dapat dihapus.`
+        );
+        return;
+      }
       setDeleteOrder(order);
     },
   };
@@ -118,10 +126,12 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
   const handleCancel = async () => {
     if (!cancelOrder) return;
 
-    const success = await performCancel(cancelOrder.id);
-    if (success) {
+    try {
+      await performCancel(cancelOrder.id);
       setCancelOrder(null);
       refreshData();
+    } catch {
+      // Error handled in hook
     }
   };
 
@@ -143,48 +153,65 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
     }
   };
 
-  // Open bulk delete dialog
-  const openBulkDeleteDialog = () => {
-    const selectedRows = table.getFilteredSelectedRowModel().rows;
-    const ids = selectedRows.map((row) => row.original.id);
-
-    if (ids.length === 0) return;
-
-    setBulkDeleteIds(ids);
-    setIsBulkDeleteOpen(true);
-  };
-
-  // Handle bulk delete
+  // ==========================================
+  // ✅ FIXED: Bulk delete with single summary toast
+  // ==========================================
   const handleBulkDelete = async () => {
-    if (bulkDeleteIds.length === 0) return;
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+
+    if (selectedRows.length === 0) return;
 
     setIsBulkDeleting(true);
 
-    try {
-      // Delete one by one (or implement bulk delete endpoint)
-      let successCount = 0;
-      for (const id of bulkDeleteIds) {
-        try {
-          await ordersApi.delete(id);
-          successCount++;
-        } catch {
-          // Continue with others
-        }
+    // Track results
+    let successCount = 0;
+    const failedItems: string[] = [];
+
+    // Delete one by one and collect results
+    for (const row of selectedRows) {
+      const order = row.original;
+
+      // ✅ Skip non-PENDING orders
+      if (order.status !== 'PENDING') {
+        failedItems.push(`#${order.orderNumber}: Status ${order.status} tidak dapat dihapus`);
+        continue;
       }
 
-      toast.success(`${successCount} pesanan berhasil dihapus`);
-      setRowSelection({});
-      setIsBulkDeleteOpen(false);
-      setBulkDeleteIds([]);
-      refreshData();
-    } catch (err) {
-      toast.error('Gagal menghapus pesanan', getErrorMessage(err));
-    } finally {
-      setIsBulkDeleting(false);
+      try {
+        await ordersApi.delete(order.id);
+        successCount++;
+      } catch (err) {
+        const errorMsg = getErrorMessage(err);
+        failedItems.push(`#${order.orderNumber}: ${errorMsg}`);
+      }
     }
+
+    // Clear selection
+    setRowSelection({});
+    setIsBulkDeleting(false);
+
+    // ✅ Single toast based on results
+    if (successCount === selectedRows.length) {
+      // All success
+      toast.success(`${successCount} pesanan berhasil dihapus`);
+    } else if (successCount === 0) {
+      // All failed
+      toast.error(
+        'Gagal menghapus pesanan',
+        failedItems.join('\n')
+      );
+    } else {
+      // Partial success
+      toast.warning(
+        `${successCount} berhasil, ${failedItems.length} gagal`,
+        failedItems.join('\n')
+      );
+    }
+
+    // Refresh data
+    refreshData();
   };
 
-  // Check if any selected
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;
 
   return (
@@ -199,10 +226,20 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
           <Button
             variant="destructive"
             size="sm"
-            onClick={openBulkDeleteDialog}
+            onClick={handleBulkDelete}
+            disabled={isBulkDeleting}
           >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Hapus
+            {isBulkDeleting ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Menghapus...
+              </>
+            ) : (
+              <>
+                <Trash2 className="h-4 w-4 mr-2" />
+                Hapus
+              </>
+            )}
           </Button>
         </div>
       )}
@@ -314,41 +351,6 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
               disabled={isDeleting}
             >
               {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menghapus...
-                </>
-              ) : (
-                'Hapus'
-              )}
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      {/* Bulk Delete Dialog */}
-      <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-              </div>
-              <AlertDialogTitle>Hapus {bulkDeleteIds.length} Pesanan</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="pt-2">
-              Apakah Anda yakin ingin menghapus <strong>{bulkDeleteIds.length} pesanan</strong> yang dipilih?
-              Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBulkDeleting}>Batal</AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleBulkDelete}
-              disabled={isBulkDeleting}
-            >
-              {isBulkDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Menghapus...

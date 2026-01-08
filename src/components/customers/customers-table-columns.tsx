@@ -18,6 +18,8 @@ import type { Customer } from '@/types';
 
 // ==========================================
 // CUSTOMERS TABLE COLUMNS
+// ✅ FIXED: Removed totalOrders column
+// Columns: Checkbox | Pelanggan | Telepon | Alamat | Total Belanja | Terdaftar | Actions
 // ==========================================
 
 interface ColumnActions {
@@ -53,7 +55,7 @@ export function getCustomerColumns(actions: ColumnActions): ColumnDef<Customer>[
       enableHiding: false,
     },
 
-    // Name
+    // Pelanggan (Name + Email)
     {
       accessorKey: 'name',
       header: ({ column }) => (
@@ -85,7 +87,7 @@ export function getCustomerColumns(actions: ColumnActions): ColumnDef<Customer>[
       },
     },
 
-    // Phone
+    // Telepon
     {
       accessorKey: 'phone',
       header: 'Telepon',
@@ -100,7 +102,7 @@ export function getCustomerColumns(actions: ColumnActions): ColumnDef<Customer>[
       },
     },
 
-    // Address
+    // Alamat
     {
       accessorKey: 'address',
       header: 'Alamat',
@@ -114,25 +116,10 @@ export function getCustomerColumns(actions: ColumnActions): ColumnDef<Customer>[
       },
     },
 
-    // Total Orders
-    {
-      accessorKey: 'totalOrders',
-      header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Pesanan
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      ),
-      cell: ({ row }) => {
-        const total = row.getValue('totalOrders') as number;
-        return <span>{total || 0}</span>;
-      },
-    },
+    // ❌ REMOVED: totalOrders column
+    // User tidak perlu lihat count pesanan di list view
 
-    // Total Spent
+    // Total Belanja
     {
       accessorKey: 'totalSpent',
       header: ({ column }) => (
@@ -150,7 +137,7 @@ export function getCustomerColumns(actions: ColumnActions): ColumnDef<Customer>[
       },
     },
 
-    // Created At
+    // Terdaftar
     {
       accessorKey: 'createdAt',
       header: ({ column }) => (

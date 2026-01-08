@@ -1,9 +1,11 @@
 // ==========================================
-// CUSTOMERS COMPONENTS INDEX
+// CUSTOMERS COMPONENTS BARREL EXPORT
 // ==========================================
 
-export { CustomersTable } from './customers-table';
-export { getCustomerColumns } from './customers-table-columns';
-export { CustomerForm } from './customer-form';
-export { CustomerDeleteDialog } from './customer-delete-dialog';
 export { CustomerDetail } from './customer-detail';
+export { CustomerForm } from './customer-form';
+export { CustomersTable } from './customers-table';
+export { CustomerDeleteDialog } from './customer-delete-dialog';
+
+// Internal - not exported (used by CustomersTable)
+// - customers-table-columns.tsx

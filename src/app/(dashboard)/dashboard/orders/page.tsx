@@ -1,6 +1,5 @@
 // src/app/(dashboard)/dashboard/orders/page.tsx
 // Route: /dashboard/orders
-// ✅ FINAL: Pola skeleton sama dengan Customers Page
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';

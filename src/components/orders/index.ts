@@ -11,7 +11,7 @@ export { OrderDetail } from './order-detail';
 export { OrderForm } from './order-form';
 
 // Status
-export { OrderStatusBadge } from './order-status-badge';
+export { OrderStatusBadge, PaymentStatusBadge } from './order-status-badge';
 export { OrderStatusSelect } from './order-status-select';
 
 // Dialogs

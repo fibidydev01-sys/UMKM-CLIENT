@@ -1,13 +1,13 @@
 /**
  * ============================================================================
- * PRODUCTS PAGE - FINAL VERSION
+ * PRODUCTS PAGE - FIXED VERSION
  * ============================================================================
  * Route: /dashboard/products
  * 
- * Features:
- * - Product listing with search & filter
- * - Optimistic updates on delete
- * - Proper cache invalidation via backend
+ * Changes:
+ * - Simplified delete flow (no optimistic update)
+ * - Always fetch fresh data after mutations
+ * - Cache-busting with timestamp
  * ============================================================================
  */
 
@@ -72,7 +72,7 @@ export default function ProductsPage() {
   const { products, categories, isLoading, isRefreshing, error } = state;
 
   // ---------------------------------------------------------------------------
-  // Data Fetching
+  // Data Fetching - FIXED: Added timestamp for cache busting
   // ---------------------------------------------------------------------------
   const fetchData = useCallback(async (showFullLoading = true) => {
     setState((prev) => ({
@@ -83,7 +83,11 @@ export default function ProductsPage() {
     }));
 
     try {
-      const productsRes = await productsApi.getAll({ limit: 100 });
+      // ✅ FIX: Add timestamp to bust any caching
+      const productsRes = await productsApi.getAll({
+        limit: 100,
+        _t: Date.now(), // Cache buster
+      });
       const fetchedProducts = productsRes.data;
 
       let fetchedCategories: string[];
@@ -96,13 +100,14 @@ export default function ProductsPage() {
         fetchedCategories = extractCategories(fetchedProducts);
       }
 
-      setState({
+      // ✅ FIX: Use functional update to ensure latest state
+      setState(() => ({
         products: fetchedProducts,
         categories: fetchedCategories,
         isLoading: false,
         isRefreshing: false,
         error: null,
-      });
+      }));
     } catch (err) {
       console.error('[ProductsPage] Failed to fetch:', err);
       setState((prev) => ({
@@ -119,25 +124,14 @@ export default function ProductsPage() {
   }, [fetchData]);
 
   // ---------------------------------------------------------------------------
-  // Handlers
+  // Handlers - SIMPLIFIED
   // ---------------------------------------------------------------------------
   const handleRefresh = useCallback(async () => {
     await fetchData(false);
   }, [fetchData]);
 
-  const handleOptimisticDelete = useCallback((deletedIds: string[]) => {
-    setState((prev) => ({
-      ...prev,
-      products: prev.products.filter((p) => !deletedIds.includes(p.id)),
-    }));
-  }, []);
-
-  const handleRollback = useCallback((previousProducts: Product[]) => {
-    setState((prev) => ({
-      ...prev,
-      products: previousProducts,
-    }));
-  }, []);
+  // ✅ REMOVED: Optimistic update handlers (caused sync issues)
+  // Now table handles delete and calls onRefresh to get fresh data
 
   // ---------------------------------------------------------------------------
   // Render
@@ -190,13 +184,12 @@ export default function ProductsPage() {
         </Button>
       </PageHeader>
 
+      {/* ✅ SIMPLIFIED: Only pass products, categories, and refresh handler */}
       <ProductsTable
         products={products}
         categories={categories}
         isRefreshing={isRefreshing}
         onRefresh={handleRefresh}
-        onOptimisticDelete={handleOptimisticDelete}
-        onRollback={handleRollback}
       />
     </>
   );

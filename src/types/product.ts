@@ -68,6 +68,7 @@ export interface UpdateStockInput {
 /**
  * Product query parameters
  */
+// In ProductQueryParams type (src/types/product.ts)
 export interface ProductQueryParams {
   search?: string;
   category?: string;
@@ -78,9 +79,9 @@ export interface ProductQueryParams {
   sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
+  _t?: number;
   [key: string]: string | number | boolean | undefined;
 }
-
 /**
  * Low stock product
  */

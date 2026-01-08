@@ -26,42 +26,47 @@ export function TenantTestimonials({ config }: TenantTestimonialsProps) {
 
       {/* Testimonials Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item) => (
-          <Card key={item.id} className="relative">
-            <CardContent className="pt-6">
-              {/* Quote Icon */}
-              <Quote className="h-8 w-8 text-primary/20 absolute top-4 right-4" />
+        {items.map((item, index) => {
+          // Use item.id if available, otherwise use index
+          const key = item.id || `testimonial-${index}`;
 
-              {/* Rating */}
-              {item.rating && (
-                <div className="flex gap-1 mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star
-                      key={`${item.id}-star-${i}`}
-                      className={`h-4 w-4 ${i < item.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted'
-                        }`}
-                    />
-                  ))}
+          return (
+            <Card key={key} className="relative">
+              <CardContent className="pt-6">
+                {/* Quote Icon */}
+                <Quote className="h-8 w-8 text-primary/20 absolute top-4 right-4" />
+
+                {/* Rating */}
+                {item.rating && (
+                  <div className="flex gap-1 mb-4">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={`${key}-star-${i}`}
+                        className={`h-4 w-4 ${i < item.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted'
+                          }`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Content */}
+                <p className="text-muted-foreground mb-4 italic">&quot;{item.content}&quot;</p>
+
+                {/* Author */}
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={item.avatar} alt={item.name} />
+                    <AvatarFallback>{item.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    {item.role && <p className="text-sm text-muted-foreground">{item.role}</p>}
+                  </div>
                 </div>
-              )}
-
-              {/* Content */}
-              <p className="text-muted-foreground mb-4 italic">&quot;{item.content}&quot;</p>
-
-              {/* Author */}
-              <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={item.avatar} alt={item.name} />
-                  <AvatarFallback>{item.name.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{item.name}</p>
-                  {item.role && <p className="text-sm text-muted-foreground">{item.role}</p>}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );

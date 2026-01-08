@@ -11,32 +11,33 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import type { OrderListItem } from '@/types';
+import type { OrderListItem, OrderStatus, PaymentStatus } from '@/types';
 
 // ==========================================
 // ORDERS TABLE TOOLBAR
+// ✅ FIXED: Filter options sesuai Backend DTO
 // ==========================================
 
 interface OrdersTableToolbarProps {
   table: Table<OrderListItem>;
 }
 
-const orderStatusOptions = [
+// ✅ FIXED: Sesuai Backend - UPPERCASE
+const orderStatusOptions: { value: 'all' | OrderStatus; label: string }[] = [
   { value: 'all', label: 'Semua Status' },
-  { value: 'pending', label: 'Menunggu' },
-  { value: 'confirmed', label: 'Dikonfirmasi' },
-  { value: 'processing', label: 'Diproses' },
-  { value: 'shipped', label: 'Dikirim' },
-  { value: 'delivered', label: 'Selesai' },
-  { value: 'cancelled', label: 'Dibatalkan' },
+  { value: 'PENDING', label: 'Menunggu' },
+  { value: 'PROCESSING', label: 'Diproses' },
+  { value: 'COMPLETED', label: 'Selesai' },
+  { value: 'CANCELLED', label: 'Dibatalkan' },
 ];
 
-const paymentStatusOptions = [
+// ✅ FIXED: Sesuai Backend - UPPERCASE
+const paymentStatusOptions: { value: 'all' | PaymentStatus; label: string }[] = [
   { value: 'all', label: 'Semua Pembayaran' },
-  { value: 'unpaid', label: 'Belum Bayar' },
-  { value: 'partial', label: 'Sebagian' },
-  { value: 'paid', label: 'Lunas' },
-  { value: 'refunded', label: 'Refund' },
+  { value: 'PENDING', label: 'Belum Bayar' },
+  { value: 'PARTIAL', label: 'Sebagian' },
+  { value: 'PAID', label: 'Lunas' },
+  { value: 'FAILED', label: 'Gagal' },
 ];
 
 export function OrdersTableToolbar({ table }: OrdersTableToolbarProps) {
@@ -48,7 +49,7 @@ export function OrdersTableToolbar({ table }: OrdersTableToolbarProps) {
       <div className="relative w-full sm:w-64">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Cari pesanan..."
+          placeholder="Cari no. pesanan..."
           value={(table.getColumn('orderNumber')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('orderNumber')?.setFilterValue(event.target.value)

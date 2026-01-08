@@ -19,12 +19,13 @@ import type { OrderListItem } from '@/types';
 
 // ==========================================
 // ORDERS TABLE COLUMNS
+// ✅ FIXED: Delete only visible for PENDING
 // ==========================================
 
 interface ColumnActions {
   onView: (order: OrderListItem) => void;
   onCancel: (order: OrderListItem) => void;
-  onDelete: (order: OrderListItem) => void; // ✅ ADD: Delete action
+  onDelete: (order: OrderListItem) => void;
 }
 
 export function getOrderColumns(actions: ColumnActions): ColumnDef<OrderListItem>[] {
@@ -93,8 +94,7 @@ export function getOrderColumns(actions: ColumnActions): ColumnDef<OrderListItem
       header: 'Item',
       cell: ({ row }) => {
         const order = row.original;
-        // Use _count if available from API
-        const count = (order as unknown as { _count?: { items: number } })._count?.items;
+        const count = order._count?.items;
         return (
           <span className="text-muted-foreground">
             {count !== undefined ? count : '-'}
@@ -176,6 +176,8 @@ export function getOrderColumns(actions: ColumnActions): ColumnDef<OrderListItem
       cell: ({ row }) => {
         const order = row.original;
         const canCancel = order.status !== 'CANCELLED' && order.status !== 'COMPLETED';
+        // ✅ FIXED: Only PENDING can be deleted
+        const canDelete = order.status === 'PENDING';
 
         return (
           <DropdownMenu>
@@ -207,14 +209,16 @@ export function getOrderColumns(actions: ColumnActions): ColumnDef<OrderListItem
                 </DropdownMenuItem>
               )}
 
-              {/* ✅ Delete - selalu tampil */}
-              <DropdownMenuItem
-                onClick={() => actions.onDelete(order)}
-                className="text-destructive focus:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Hapus Pesanan
-              </DropdownMenuItem>
+              {/* ✅ Delete - hanya untuk PENDING */}
+              {canDelete && (
+                <DropdownMenuItem
+                  onClick={() => actions.onDelete(order)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Hapus Pesanan
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );

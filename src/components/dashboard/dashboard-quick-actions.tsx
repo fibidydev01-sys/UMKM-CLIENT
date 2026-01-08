@@ -1,71 +1,136 @@
-import Link from 'next/link';
-import { Plus, Users, ShoppingCart, Settings } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+'use client';
+
+import {
+  Package,
+  Users,
+  ShoppingCart,
+  Settings,
+  PlusCircle,
+  LayoutGrid,
+  Store,
+} from 'lucide-react';
+import { cn } from '@/lib/cn';
+import { useAuth } from '@/hooks';
+import { BentoGrid, BentoActionCard } from '@/components/ui/bento-grid';
 
 // ==========================================
 // DASHBOARD QUICK ACTIONS
+// Using BentoGrid & BentoActionCard components
+// 3x3 Layout with Lihat Toko + Settings row
 // ==========================================
 
-const actions = [
+interface QuickAction {
+  icon: React.ElementType;
+  name: string;
+  description: string;
+  href: string;
+  gradient: string;
+  iconColor: string;
+  gridClass: string;
+}
+
+const quickActions: QuickAction[] = [
   {
-    title: 'Tambah Produk',
-    description: 'Tambah produk baru ke toko',
+    icon: PlusCircle,
+    name: 'Tambah Produk',
+    description: 'Tambah produk baru',
     href: '/dashboard/products/new',
-    icon: Plus,
-    variant: 'default' as const,
+    gradient: 'from-pink-500/20 via-pink-500/5',
+    iconColor: 'text-pink-500',
+    gridClass: 'col-span-1 row-span-2',
   },
   {
-    title: 'Lihat Pesanan',
-    description: 'Kelola pesanan masuk',
-    href: '/dashboard/orders',
     icon: ShoppingCart,
-    variant: 'outline' as const,
+    name: 'Buat Pesanan',
+    description: 'Catat pesanan baru',
+    href: '/dashboard/orders/new',
+    gradient: 'from-green-500/20 via-green-500/5',
+    iconColor: 'text-green-500',
+    gridClass: 'col-span-1 row-span-1',
   },
   {
-    title: 'Tambah Pelanggan',
-    description: 'Catat pelanggan baru',
-    href: '/dashboard/customers/new',
+    icon: Package,
+    name: 'Produk',
+    description: 'Lihat semua produk',
+    href: '/dashboard/products',
+    gradient: 'from-orange-500/20 via-orange-500/5',
+    iconColor: 'text-orange-500',
+    gridClass: 'col-span-1 row-span-1',
+  },
+  {
     icon: Users,
-    variant: 'outline' as const,
+    name: 'Pelanggan',
+    description: 'Tambah pelanggan baru',
+    href: '/dashboard/customers/new',
+    gradient: 'from-blue-500/20 via-blue-500/5',
+    iconColor: 'text-blue-500',
+    gridClass: 'col-span-1 row-span-1',
   },
   {
-    title: 'Pengaturan Toko',
-    description: 'Atur profil dan toko',
-    href: '/dashboard/settings',
+    icon: LayoutGrid,
+    name: 'Pesanan',
+    description: 'Kelola semua pesanan',
+    href: '/dashboard/orders',
+    gradient: 'from-purple-500/20 via-purple-500/5',
+    iconColor: 'text-purple-500',
+    gridClass: 'col-span-1 row-span-1',
+  },
+];
+
+// Bottom row items generator (needs tenant slug for store link)
+const getBottomRowItems = (tenantSlug: string) => [
+  {
+    icon: Store,
+    name: 'Buka Toko',
+    description: 'Kunjungi toko online',
+    href: `/store/${tenantSlug}`,
+    gradient: 'from-cyan-500/20 via-cyan-500/5',
+    iconColor: 'text-cyan-500',
+    gridClass: 'col-span-1 row-span-1',
+  },
+  {
     icon: Settings,
-    variant: 'outline' as const,
+    name: 'Pengaturan',
+    description: 'Konfigurasi toko',
+    href: '/dashboard/settings',
+    gradient: 'from-gray-500/20 via-gray-500/5',
+    iconColor: 'text-gray-500',
+    gridClass: 'col-span-2 row-span-1',
   },
 ];
 
 export function DashboardQuickActions() {
+  const { tenant } = useAuth();
+  const bottomRowItems = getBottomRowItems(tenant?.slug || '');
+
+  // Combine all actions
+  const allActions = [...quickActions, ...bottomRowItems];
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Aksi Cepat</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {actions.map((action) => (
-            <Button
-              key={action.href}
-              asChild
-              variant={action.variant}
-              className="h-auto flex-col items-start gap-1 p-4"
-            >
-              <Link href={action.href}>
-                <div className="flex items-center gap-2 w-full">
-                  <action.icon className="h-4 w-4" />
-                  <span className="font-medium">{action.title}</span>
-                </div>
-                <span className="text-xs font-normal text-muted-foreground w-full text-left">
-                  {action.description}
-                </span>
-              </Link>
-            </Button>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <BentoGrid
+      className={cn(
+        "grid-cols-3 h-full",
+        // Gap responsive
+        "gap-2 sm:gap-2.5 md:gap-3 lg:gap-4",
+        // Remove default auto-rows, use explicit rows
+        "auto-rows-auto"
+      )}
+      style={{
+        gridTemplateRows: 'repeat(3, 1fr)',
+      }}
+    >
+      {allActions.map((action) => (
+        <BentoActionCard
+          key={action.name}
+          name={action.name}
+          description={action.description}
+          href={action.href}
+          Icon={action.icon}
+          iconColor={action.iconColor}
+          gradient={action.gradient}
+          className={action.gridClass}
+        />
+      ))}
+    </BentoGrid>
   );
 }
