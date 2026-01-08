@@ -1,21 +1,31 @@
 // ==========================================
-// STORE URL HELPER
+// STORE URL HELPER (CLIENT-SIDE)
 // src/lib/store-url.ts
 //
-// Smart URL generation that works for:
-// - Development: localhost:3000/store/{slug}/products
-// - Production: {slug}.fibidy.com/products
+// Smart path generation for internal navigation:
+// - Development (localhost): /store/{slug}/products
+// - Production (subdomain): /products
+//
+// NOTE: Ini BERBEDA dengan getTenantUrl di seo.ts!
+// - seo.ts → Full URL untuk canonical/SEO
+// - store-url.ts → Path saja untuk <Link href="">
+// ==========================================
+
+'use client';
+
+import { useMemo } from 'react';
+
+// ==========================================
+// ENVIRONMENT DETECTION
 // ==========================================
 
 /**
- * Check if current environment uses subdomain routing
- * - Production with subdomain = true
- * - Development (localhost) = false
- * - Direct domain access (fibidy.com) = false
+ * Check if currently running on subdomain
+ * Returns true ONLY when on {slug}.fibidy.com
  */
 export function isSubdomainRouting(): boolean {
+  // Server-side: can't detect, assume based on NODE_ENV
   if (typeof window === 'undefined') {
-    // Server-side: check environment
     return process.env.NODE_ENV === 'production';
   }
 
@@ -38,7 +48,7 @@ export function isSubdomainRouting(): boolean {
     return false;
   }
 
-  // Subdomain (xxx.fibidy.com) = subdomain routing
+  // Subdomain (xxx.fibidy.com) = subdomain routing!
   if (hostname.endsWith(`.${rootDomain}`)) {
     return true;
   }
@@ -46,29 +56,33 @@ export function isSubdomainRouting(): boolean {
   return false;
 }
 
+// ==========================================
+// PATH GENERATORS
+// ==========================================
+
 /**
  * Get store base path
- * - Subdomain: "" (empty, relative to root)
+ * - Subdomain: "" (empty)
  * - Path-based: "/store/{slug}"
  */
 export function getStoreBasePath(storeSlug: string): string {
   if (isSubdomainRouting()) {
-    return '';
+    return ''; // No prefix needed on subdomain
   }
   return `/store/${storeSlug}`;
 }
 
 /**
- * Generate store URL
+ * Generate store internal path
  *
  * @example
- * // Development (localhost)
- * storeUrl('warung', '/products') => '/store/warung/products'
- * storeUrl('warung', '/') => '/store/warung'
+ * // On localhost:
+ * storeUrl('warung', '/products') → '/store/warung/products'
+ * storeUrl('warung', '/') → '/store/warung'
  *
- * // Production (subdomain)
- * storeUrl('warung', '/products') => '/products'
- * storeUrl('warung', '/') => '/'
+ * // On warung.fibidy.com:
+ * storeUrl('warung', '/products') → '/products'
+ * storeUrl('warung', '/') → '/'
  */
 export function storeUrl(storeSlug: string, path: string = '/'): string {
   const basePath = getStoreBasePath(storeSlug);
@@ -84,77 +98,101 @@ export function storeUrl(storeSlug: string, path: string = '/'): string {
 }
 
 /**
- * Generate product URL
+ * Generate product detail URL
  *
  * @example
- * // Development
- * productUrl('warung', 'abc123') => '/store/warung/products/abc123'
- *
- * // Production (subdomain)
- * productUrl('warung', 'abc123') => '/products/abc123'
+ * productUrl('warung', 'abc123')
+ * // localhost → '/store/warung/products/abc123'
+ * // subdomain → '/products/abc123'
  */
 export function productUrl(storeSlug: string, productId: string): string {
   return storeUrl(storeSlug, `/products/${productId}`);
 }
 
 /**
- * Generate products list URL with optional query params
+ * Generate products list URL with query params
  *
  * @example
- * productsUrl('warung', { category: 'food', page: '2' })
- * // Dev: '/store/warung/products?category=food&page=2'
- * // Prod: '/products?category=food&page=2'
+ * productsUrl('warung', { category: 'makanan', page: '2' })
+ * // localhost → '/store/warung/products?category=makanan&page=2'
+ * // subdomain → '/products?category=makanan&page=2'
  */
 export function productsUrl(
   storeSlug: string,
-  params?: Record<string, string>
+  params?: Record<string, string | undefined>
 ): string {
   const base = storeUrl(storeSlug, '/products');
 
-  if (!params || Object.keys(params).length === 0) {
-    return base;
-  }
+  if (!params) return base;
 
-  const searchParams = new URLSearchParams();
+  // Filter out undefined values
+  const filteredParams: Record<string, string> = {};
   Object.entries(params).forEach(([key, value]) => {
-    if (value) searchParams.set(key, value);
+    if (value !== undefined && value !== '') {
+      filteredParams[key] = value;
+    }
   });
 
-  const queryString = searchParams.toString();
-  return queryString ? `${base}?${queryString}` : base;
+  if (Object.keys(filteredParams).length === 0) return base;
+
+  const searchParams = new URLSearchParams(filteredParams);
+  return `${base}?${searchParams.toString()}`;
 }
 
 // ==========================================
-// REACT HOOK VERSION
+// REACT HOOK
 // ==========================================
 
-import { useMemo } from 'react';
-
 /**
- * Hook to get store URL generator bound to a specific store
+ * Hook untuk generate store URLs
+ * Memoized untuk performance
  *
  * @example
- * const { home, products, product } = useStoreUrls('warung');
- * <Link href={home}>Home</Link>
- * <Link href={products()}>All Products</Link>
- * <Link href={product('abc123')}>Product</Link>
+ * const urls = useStoreUrls('warung');
+ *
+ * <Link href={urls.home}>Home</Link>
+ * <Link href={urls.products()}>All Products</Link>
+ * <Link href={urls.products({ category: 'food' })}>Food</Link>
+ * <Link href={urls.product('abc123')}>Product Detail</Link>
  */
 export function useStoreUrls(storeSlug: string) {
   return useMemo(
     () => ({
-      /** Store home URL */
+      /** Store home: "/" or "/store/{slug}" */
       home: storeUrl(storeSlug, '/'),
 
-      /** Products list URL (with optional params) */
-      products: (params?: Record<string, string>) =>
+      /** Products list with optional params */
+      products: (params?: Record<string, string | undefined>) =>
         productsUrl(storeSlug, params),
 
-      /** Single product URL */
+      /** Single product detail */
       product: (productId: string) => productUrl(storeSlug, productId),
 
-      /** Generic path URL */
+      /** Generic path */
       path: (path: string) => storeUrl(storeSlug, path),
     }),
     [storeSlug]
   );
+}
+
+// ==========================================
+// DEBUG HELPER
+// ==========================================
+
+/**
+ * Debug: Log current routing mode
+ * Call this in console to check: window.__debugStoreUrl()
+ */
+if (typeof window !== 'undefined') {
+  (window as unknown as Record<string, unknown>).__debugStoreUrl = () => {
+    const hostname = window.location.hostname;
+    const isSubdomain = isSubdomainRouting();
+    console.log({
+      hostname,
+      isSubdomain,
+      exampleHome: storeUrl('test', '/'),
+      exampleProducts: storeUrl('test', '/products'),
+      exampleProduct: productUrl('test', 'abc123'),
+    });
+  };
 }
