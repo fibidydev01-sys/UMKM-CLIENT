@@ -9,9 +9,11 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Fragment } from 'react';
+import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
 
 // ==========================================
 // STORE BREADCRUMB COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
 // ==========================================
 
 interface BreadcrumbItemData {
@@ -30,13 +32,16 @@ export function StoreBreadcrumb({
   storeSlug,
   storeName,
 }: StoreBreadcrumbProps) {
+  // ✅ Smart URL for home
+  const homeUrl = storeUrl(storeSlug, '/');
+
   return (
     <Breadcrumb>
       <BreadcrumbList>
         {/* Home */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href={`/store/${storeSlug}`} className="flex items-center gap-1">
+            <Link href={homeUrl} className="flex items-center gap-1">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">{storeName}</span>
             </Link>

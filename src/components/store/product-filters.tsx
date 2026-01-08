@@ -21,6 +21,12 @@ import {
 } from '@/components/ui/sheet';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/cn';
+import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
+
+// ==========================================
+// PRODUCT FILTERS COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
+// ==========================================
 
 interface ProductFiltersProps {
   storeSlug: string;
@@ -51,62 +57,65 @@ export function ProductFilters({
   // Debounce search
   const debouncedSearch = useDebounce(search, 400);
 
-  // ✅ FIXED: Update URL when debounced search changes
+  // Helper to build params
+  const buildParams = (overrides: Record<string, string | null> = {}) => {
+    const params: Record<string, string> = {};
+
+    // Current values
+    if (debouncedSearch) params.search = debouncedSearch;
+    if (category && category !== 'all') params.category = category;
+    if (sort && sort !== 'newest') params.sort = sort;
+
+    // Apply overrides
+    Object.entries(overrides).forEach(([key, value]) => {
+      if (value === null) {
+        delete params[key];
+      } else if (value) {
+        params[key] = value;
+      }
+    });
+
+    // Remove page on filter change
+    delete params.page;
+
+    return params;
+  };
+
+  // Update URL when debounced search changes
   useEffect(() => {
-    // Skip first render
     if (isFirstRender.current) {
       isFirstRender.current = false;
       return;
     }
 
-    // Get current search from URL
     const currentSearch = searchParams.get('search') || '';
-
-    // Only update if actually changed
     if (debouncedSearch === currentSearch) return;
 
-    const params = new URLSearchParams(searchParams.toString());
+    const params = buildParams({
+      search: debouncedSearch || null,
+    });
 
-    if (debouncedSearch) {
-      params.set('search', debouncedSearch);
-    } else {
-      params.delete('search');
-    }
-    params.delete('page'); // Reset page on search
-
-    router.push(`/store/${storeSlug}/products?${params.toString()}`);
+    // ✅ Smart URL
+    router.push(productsUrl(storeSlug, params));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearch, storeSlug]);
+  }, [debouncedSearch]);
 
   // Handle category change
   const handleCategoryChange = (value: string) => {
     setCategory(value);
-
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (value && value !== 'all') {
-      params.set('category', value);
-    } else {
-      params.delete('category');
-    }
-    params.delete('page');
-
-    router.push(`/store/${storeSlug}/products?${params.toString()}`);
+    const params = buildParams({
+      category: value === 'all' ? null : value,
+    });
+    router.push(productsUrl(storeSlug, params));
   };
 
   // Handle sort change
   const handleSortChange = (value: string) => {
     setSort(value);
-
-    const params = new URLSearchParams(searchParams.toString());
-
-    if (value && value !== 'newest') {
-      params.set('sort', value);
-    } else {
-      params.delete('sort');
-    }
-
-    router.push(`/store/${storeSlug}/products?${params.toString()}`);
+    const params = buildParams({
+      sort: value === 'newest' ? null : value,
+    });
+    router.push(productsUrl(storeSlug, params));
   };
 
   // Clear all filters
@@ -114,7 +123,8 @@ export function ProductFilters({
     setSearch('');
     setCategory('');
     setSort('newest');
-    router.push(`/store/${storeSlug}/products`);
+    // ✅ Smart URL - no params
+    router.push(productsUrl(storeSlug));
   };
 
   const hasActiveFilters = search || category || sort !== 'newest';
@@ -154,7 +164,6 @@ export function ProductFilters({
               <SheetTitle>Filter</SheetTitle>
             </SheetHeader>
             <div className="mt-6 space-y-4">
-              {/* Category Filter Mobile */}
               {categories.length > 0 && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Kategori</label>
@@ -174,7 +183,6 @@ export function ProductFilters({
                 </div>
               )}
 
-              {/* Sort Mobile */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">Urutkan</label>
                 <Select value={sort} onValueChange={handleSortChange}>
@@ -211,7 +219,6 @@ export function ProductFilters({
 
       {/* Desktop Filters */}
       <div className="hidden md:flex items-center gap-4">
-        {/* Category Filter */}
         {categories.length > 0 && (
           <Select value={category} onValueChange={handleCategoryChange}>
             <SelectTrigger className="w-[180px]">
@@ -228,7 +235,6 @@ export function ProductFilters({
           </Select>
         )}
 
-        {/* Sort */}
         <Select value={sort} onValueChange={handleSortChange}>
           <SelectTrigger className="w-[180px]">
             <SelectValue />
@@ -243,7 +249,6 @@ export function ProductFilters({
           </SelectContent>
         </Select>
 
-        {/* Clear Filters */}
         {hasActiveFilters && (
           <Button variant="ghost" size="sm" onClick={clearFilters}>
             <X className="h-4 w-4 mr-1" />

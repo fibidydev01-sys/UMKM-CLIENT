@@ -6,10 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { formatPhone } from '@/lib/format';
 import { siteConfig } from '@/config/site';
+import { useStoreUrls } from '@/lib/store-url'; // ✅ Import hook
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE FOOTER COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
 // ==========================================
 
 interface StoreFooterProps {
@@ -17,8 +19,10 @@ interface StoreFooterProps {
 }
 
 export function StoreFooter({ tenant }: StoreFooterProps) {
-  const storeUrl = `/store/${tenant.slug}`;
   const currentYear = new Date().getFullYear();
+
+  // ✅ Smart URLs
+  const urls = useStoreUrls(tenant.slug);
 
   return (
     <footer className="border-t bg-muted/30">
@@ -33,7 +37,6 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
               </p>
             )}
 
-            {/* WhatsApp CTA */}
             <Button asChild className="mt-4">
               <a
                 href={`https://wa.me/${tenant.whatsapp}`}
@@ -52,7 +55,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href={storeUrl}
+                  href={urls.home}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Beranda
@@ -60,7 +63,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
               </li>
               <li>
                 <Link
-                  href={`${storeUrl}/products`}
+                  href={urls.products()}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Semua Produk
@@ -116,10 +119,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
           </p>
           <p>
             Dibuat dengan{' '}
-            <Link
-              href="/"
-              className="font-medium text-primary hover:underline"
-            >
+            <Link href="/" className="font-medium text-primary hover:underline">
               {siteConfig.name}
             </Link>
           </p>

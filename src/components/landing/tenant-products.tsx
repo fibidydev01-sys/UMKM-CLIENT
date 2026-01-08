@@ -4,7 +4,13 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/store/product-card';
+import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
 import type { Product, TenantLandingConfig } from '@/types';
+
+// ==========================================
+// TENANT PRODUCTS COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
+// ==========================================
 
 interface TenantProductsProps {
   products: Product[];
@@ -22,6 +28,9 @@ export function TenantProducts({ products, storeSlug, config }: TenantProductsPr
 
   if (displayProducts.length === 0) return null;
 
+  // ✅ Smart URL
+  const productsPageUrl = storeUrl(storeSlug, '/products');
+
   return (
     <section id="products" className="py-12">
       {/* Section Header */}
@@ -31,7 +40,7 @@ export function TenantProducts({ products, storeSlug, config }: TenantProductsPr
           {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         {showViewAll && (
-          <Link href={`/store/${storeSlug}/products`}>
+          <Link href={productsPageUrl}>
             <Button variant="outline" className="gap-2">
               Lihat Semua <ArrowRight className="h-4 w-4" />
             </Button>

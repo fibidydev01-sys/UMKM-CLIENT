@@ -1,78 +1,109 @@
+'use client';
+
+import Link from 'next/link';
 import Image from 'next/image';
-import { MessageCircle } from 'lucide-react';
+import { Menu, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { CartSheet } from './cart-sheet';
+import { StoreNav } from './store-nav';
+import { useIsAuthenticated } from '@/stores';
+import { useStoreUrls } from '@/lib/store-url'; // ✅ Import hook
 import type { PublicTenant } from '@/types';
 
 // ==========================================
-// STORE HERO COMPONENT
-// Banner section with CTA
+// STORE HEADER COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
 // ==========================================
 
-interface StoreHeroProps {
+interface StoreHeaderProps {
   tenant: PublicTenant;
 }
 
-export function StoreHero({ tenant }: StoreHeroProps) {
-  if (tenant.banner) {
-    return (
-      <section className="relative h-48 md:h-64 lg:h-80 rounded-xl overflow-hidden bg-muted">
-        <Image
-          src={tenant.banner}
-          alt={tenant.name}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold">
-            {tenant.name}
-          </h1>
-          {tenant.description && (
-            <p className="mt-2 text-white/80 max-w-2xl line-clamp-2">
-              {tenant.description}
-            </p>
-          )}
-          <Button
-            asChild
-            className="mt-4"
-            size="lg"
-          >
-            <a
-              href={`https://wa.me/${tenant.whatsapp}`}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <MessageCircle className="h-5 w-5 mr-2" />
-              Hubungi Kami
-            </a>
-          </Button>
-        </div>
-      </section>
-    );
-  }
+export function StoreHeader({ tenant }: StoreHeaderProps) {
+  const isAuthenticated = useIsAuthenticated();
 
-  // No banner - simple hero
+  // ✅ Smart URLs: auto-detects dev vs prod
+  const urls = useStoreUrls(tenant.slug);
+
   return (
-    <section className="text-center py-12 px-4 bg-gradient-to-b from-primary/5 to-transparent rounded-xl">
-      <h1 className="text-3xl md:text-4xl font-bold mb-3">
-        Selamat Datang di {tenant.name}
-      </h1>
-      {tenant.description && (
-        <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
-          {tenant.description}
-        </p>
-      )}
-      <Button asChild size="lg">
-        <a
-          href={`https://wa.me/${tenant.whatsapp}`}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <MessageCircle className="h-5 w-5 mr-2" />
-          Hubungi Kami
-        </a>
-      </Button>
-    </section>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between px-4">
+        {/* Left: Mobile Menu + Logo */}
+        <div className="flex items-center gap-3">
+          {/* Mobile Menu */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[280px] p-0">
+              <StoreNav tenant={tenant} />
+            </SheetContent>
+          </Sheet>
+
+          {/* Logo & Store Name */}
+          <Link href={urls.home} className="flex items-center gap-3">
+            {tenant.logo ? (
+              <Image
+                src={tenant.logo}
+                alt={tenant.name}
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold">
+                {tenant.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+            <div className="hidden sm:block">
+              <h1 className="font-semibold text-lg leading-tight">
+                {tenant.name}
+              </h1>
+              <p className="text-xs text-muted-foreground">
+                {tenant.category.replace(/_/g, ' ')}
+              </p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Center: Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link
+            href={urls.home}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Beranda
+          </Link>
+          <Link
+            href={urls.products()}
+            className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Produk
+          </Link>
+        </nav>
+
+        {/* Right: Dashboard (if logged in) + Cart */}
+        <div className="flex items-center gap-2">
+          {isAuthenticated && (
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/dashboard">
+                <LayoutDashboard className="h-5 w-5" />
+                <span className="sr-only">Dashboard</span>
+              </Link>
+            </Button>
+          )}
+
+          <CartSheet
+            storeSlug={tenant.slug}
+            storeName={tenant.name}
+            storeWhatsApp={tenant.whatsapp || ''}
+          />
+        </div>
+      </div>
+    </header>
   );
 }

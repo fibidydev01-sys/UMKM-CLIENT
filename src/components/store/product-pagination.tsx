@@ -10,9 +10,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
+import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
 
 // ==========================================
 // PRODUCT PAGINATION COMPONENT
+// ✅ Uses smart URL helper for dev/prod compatibility
 // ==========================================
 
 interface ProductPaginationProps {
@@ -36,9 +38,15 @@ export function ProductPagination({
   }
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', page.toString());
-    router.push(`/store/${storeSlug}/products?${params.toString()}`);
+    // Build params from current search params
+    const params: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      params[key] = value;
+    });
+    params.page = page.toString();
+
+    // ✅ Smart URL
+    router.push(productsUrl(storeSlug, params));
   };
 
   // Generate page numbers to show
@@ -50,14 +58,11 @@ export function ProductPagination({
       return Array.from({ length: totalPages }, (_, i) => i + 1);
     }
 
-    // Always show first page
     pages.push(1);
 
-    // Calculate range around current page
     let start = Math.max(2, currentPage - 1);
     let end = Math.min(totalPages - 1, currentPage + 1);
 
-    // Adjust if at start or end
     if (currentPage <= 3) {
       end = Math.min(4, totalPages - 1);
     }
@@ -65,22 +70,18 @@ export function ProductPagination({
       start = Math.max(2, totalPages - 3);
     }
 
-    // Add ellipsis if needed
     if (start > 2) {
       pages.push('ellipsis');
     }
 
-    // Add middle pages
     for (let i = start; i <= end; i++) {
       pages.push(i);
     }
 
-    // Add ellipsis if needed
     if (end < totalPages - 1) {
       pages.push('ellipsis');
     }
 
-    // Always show last page
     if (totalPages > 1) {
       pages.push(totalPages);
     }
@@ -90,15 +91,12 @@ export function ProductPagination({
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-8">
-      {/* Info */}
       <p className="text-sm text-muted-foreground">
         Menampilkan halaman {currentPage} dari {totalPages} ({total} produk)
       </p>
 
-      {/* Pagination */}
       <Pagination>
         <PaginationContent>
-          {/* Previous */}
           <PaginationItem>
             <PaginationPrevious
               href="#"
@@ -110,7 +108,6 @@ export function ProductPagination({
             />
           </PaginationItem>
 
-          {/* Page Numbers */}
           {getPageNumbers().map((page, index) =>
             page === 'ellipsis' ? (
               <PaginationItem key={`ellipsis-${index}`}>
@@ -132,7 +129,6 @@ export function ProductPagination({
             )
           )}
 
-          {/* Next */}
           <PaginationItem>
             <PaginationNext
               href="#"

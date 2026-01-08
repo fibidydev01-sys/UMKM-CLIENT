@@ -3,10 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
 
 // ==========================================
 // CATEGORY LIST COMPONENT
-// Horizontal scrollable category chips
+// ✅ Uses smart URL helper for dev/prod compatibility
 // ==========================================
 
 interface CategoryListProps {
@@ -24,16 +25,22 @@ export function CategoryList({
   const searchParams = useSearchParams();
 
   const handleCategoryClick = (category: string | null) => {
-    const params = new URLSearchParams(searchParams.toString());
+    const params: Record<string, string> = {};
 
+    // Keep existing params except category and page
+    searchParams.forEach((value, key) => {
+      if (key !== 'category' && key !== 'page') {
+        params[key] = value;
+      }
+    });
+
+    // Add category if selected
     if (category) {
-      params.set('category', category);
-    } else {
-      params.delete('category');
+      params.category = category;
     }
-    params.delete('page'); // Reset page on category change
 
-    router.push(`/store/${storeSlug}/products?${params.toString()}`);
+    // ✅ Smart URL
+    router.push(productsUrl(storeSlug, params));
   };
 
   if (categories.length === 0) {
@@ -45,7 +52,7 @@ export function CategoryList({
       <div className="flex gap-2 pb-2">
         {/* All Category */}
         <Button
-          variant={!currentCategory ? "default" : "outline"}
+          variant={!currentCategory ? 'default' : 'outline'}
           size="sm"
           className="rounded-full"
           onClick={() => handleCategoryClick(null)}
@@ -57,7 +64,7 @@ export function CategoryList({
         {categories.map((category) => (
           <Button
             key={category}
-            variant={currentCategory === category ? "default" : "outline"}
+            variant={currentCategory === category ? 'default' : 'outline'}
             size="sm"
             className="rounded-full"
             onClick={() => handleCategoryClick(category)}
