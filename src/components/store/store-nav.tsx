@@ -6,12 +6,12 @@ import { Home, Package, Phone, MapPin } from 'lucide-react';
 import { SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { formatPhone } from '@/lib/format';
-import { useStoreUrls } from '@/lib/store-url'; // ✅ Import hook
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE NAVIGATION (Mobile Sidebar)
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface StoreNavProps {
@@ -22,6 +22,7 @@ export function StoreNav({ tenant }: StoreNavProps) {
   // ✅ Smart URLs
   const urls = useStoreUrls(tenant.slug);
 
+  // ✅ FIXED: Use smart URLs instead of hardcoded paths
   const navItems = [
     { href: urls.home, label: 'Beranda', icon: Home },
     { href: urls.products(), label: 'Semua Produk', icon: Package },

@@ -3,11 +3,11 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
+import { productsUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
 
 // ==========================================
 // CATEGORY LIST COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface CategoryListProps {
@@ -25,9 +25,8 @@ export function CategoryList({
   const searchParams = useSearchParams();
 
   const handleCategoryClick = (category: string | null) => {
+    // Build params from current search params (except category and page)
     const params: Record<string, string> = {};
-
-    // Keep existing params except category and page
     searchParams.forEach((value, key) => {
       if (key !== 'category' && key !== 'page') {
         params[key] = value;
@@ -39,7 +38,7 @@ export function CategoryList({
       params.category = category;
     }
 
-    // ✅ Smart URL
+    // ✅ FIXED: Use smart URL helper
     router.push(productsUrl(storeSlug, params));
   };
 

@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import { ChevronRight, Home } from 'lucide-react';
 import {
@@ -9,11 +11,11 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Fragment } from 'react';
-import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 
 // ==========================================
 // STORE BREADCRUMB COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface BreadcrumbItemData {
@@ -32,16 +34,16 @@ export function StoreBreadcrumb({
   storeSlug,
   storeName,
 }: StoreBreadcrumbProps) {
-  // ✅ Smart URL for home
-  const homeUrl = storeUrl(storeSlug, '/');
+  // ✅ Smart URLs
+  const urls = useStoreUrls(storeSlug);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {/* Home */}
+        {/* Home - ✅ FIXED */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href={homeUrl} className="flex items-center gap-1">
+            <Link href={urls.home} className="flex items-center gap-1">
               <Home className="h-4 w-4" />
               <span className="hidden sm:inline">{storeName}</span>
             </Link>

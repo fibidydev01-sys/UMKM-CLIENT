@@ -21,11 +21,11 @@ import {
 } from '@/components/ui/sheet';
 import { useDebounce } from '@/hooks';
 import { cn } from '@/lib/cn';
-import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
+import { productsUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
 
 // ==========================================
 // PRODUCT FILTERS COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface ProductFiltersProps {
@@ -57,7 +57,7 @@ export function ProductFilters({
   // Debounce search
   const debouncedSearch = useDebounce(search, 400);
 
-  // Helper to build params
+  // Helper to build params object
   const buildParams = (overrides: Record<string, string | null> = {}) => {
     const params: Record<string, string> = {};
 
@@ -74,9 +74,6 @@ export function ProductFilters({
         params[key] = value;
       }
     });
-
-    // Remove page on filter change
-    delete params.page;
 
     return params;
   };
@@ -95,7 +92,7 @@ export function ProductFilters({
       search: debouncedSearch || null,
     });
 
-    // ✅ Smart URL
+    // ✅ FIXED: Use smart URL helper
     router.push(productsUrl(storeSlug, params));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
@@ -123,7 +120,7 @@ export function ProductFilters({
     setSearch('');
     setCategory('');
     setSort('newest');
-    // ✅ Smart URL - no params
+    // ✅ FIXED: Use smart URL helper
     router.push(productsUrl(storeSlug));
   };
 

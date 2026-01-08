@@ -10,11 +10,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import { productsUrl } from '@/lib/store-url'; // ✅ Import helper
+import { productsUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
 
 // ==========================================
 // PRODUCT PAGINATION COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface ProductPaginationProps {
@@ -45,7 +45,7 @@ export function ProductPagination({
     });
     params.page = page.toString();
 
-    // ✅ Smart URL
+    // ✅ FIXED: Use smart URL helper
     router.push(productsUrl(storeSlug, params));
   };
 

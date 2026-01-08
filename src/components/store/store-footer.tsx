@@ -6,12 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { formatPhone } from '@/lib/format';
 import { siteConfig } from '@/config/site';
-import { useStoreUrls } from '@/lib/store-url'; // ✅ Import hook
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE FOOTER COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface StoreFooterProps {
@@ -49,7 +49,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
             </Button>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links - ✅ FIXED */}
           <div className="space-y-4">
             <h3 className="font-semibold">Menu</h3>
             <ul className="space-y-2">

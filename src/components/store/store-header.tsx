@@ -8,13 +8,12 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from './cart-sheet';
 import { StoreNav } from './store-nav';
 import { useIsAuthenticated } from '@/stores';
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE HEADER COMPONENT
-// - Dashboard icon (only if logged in)
-// - Cart icon with badge
-// - PWA Friendly - No target="_blank"
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface StoreHeaderProps {
@@ -22,8 +21,10 @@ interface StoreHeaderProps {
 }
 
 export function StoreHeader({ tenant }: StoreHeaderProps) {
-  const storeUrl = `/store/${tenant.slug}`;
   const isAuthenticated = useIsAuthenticated();
+
+  // ✅ Smart URLs - auto-detects subdomain vs localhost
+  const urls = useStoreUrls(tenant.slug);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -43,8 +44,8 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
             </SheetContent>
           </Sheet>
 
-          {/* Logo & Store Name */}
-          <Link href={storeUrl} className="flex items-center gap-3">
+          {/* Logo & Store Name - ✅ FIXED */}
+          <Link href={urls.home} className="flex items-center gap-3">
             {tenant.logo ? (
               <Image
                 src={tenant.logo}
@@ -69,16 +70,16 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
           </Link>
         </div>
 
-        {/* Center: Desktop Navigation */}
+        {/* Center: Desktop Navigation - ✅ FIXED */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
-            href={storeUrl}
+            href={urls.home}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Beranda
           </Link>
           <Link
-            href={`${storeUrl}/products`}
+            href={urls.products()}
             className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             Produk
@@ -87,7 +88,6 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
 
         {/* Right: Dashboard (if logged in) + Cart */}
         <div className="flex items-center gap-2">
-          {/* Dashboard Button - Only show if user is authenticated */}
           {isAuthenticated && (
             <Button variant="ghost" size="icon" asChild>
               <Link href="/dashboard">
@@ -97,7 +97,6 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
             </Button>
           )}
 
-          {/* Cart */}
           <CartSheet
             storeSlug={tenant.slug}
             storeName={tenant.name}

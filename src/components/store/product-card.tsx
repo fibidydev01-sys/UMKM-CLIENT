@@ -10,12 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { productUrl } from '@/lib/store-url'; // ✅ Import helper
+import { productUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { Product } from '@/types';
 
 // ==========================================
 // PRODUCT CARD COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface ProductCardProps {
@@ -33,7 +33,7 @@ export function ProductCard({
   const { addItem } = useCartStore();
   const itemQty = useItemQty(product.id);
 
-  // ✅ Smart URL: works for both localhost and subdomain
+  // ✅ FIXED: Use smart URL helper
   const url = productUrl(storeSlug, product.id);
 
   const hasDiscount = product.comparePrice && product.comparePrice > product.price;

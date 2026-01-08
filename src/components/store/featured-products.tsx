@@ -1,13 +1,15 @@
+'use client';
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductGrid } from './product-grid';
-import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { Product } from '@/types';
 
 // ==========================================
 // FEATURED PRODUCTS SECTION
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface FeaturedProductsProps {
@@ -23,12 +25,12 @@ export function FeaturedProducts({
   title = 'Produk Unggulan',
   showViewAll = true,
 }: FeaturedProductsProps) {
+  // ✅ Smart URLs
+  const urls = useStoreUrls(storeSlug);
+
   if (products.length === 0) {
     return null;
   }
-
-  // ✅ Smart URL
-  const productsPageUrl = storeUrl(storeSlug, '/products');
 
   return (
     <section>
@@ -36,7 +38,8 @@ export function FeaturedProducts({
         <h2 className="text-xl md:text-2xl font-semibold">{title}</h2>
         {showViewAll && (
           <Button asChild variant="ghost" size="sm">
-            <Link href={productsPageUrl}>
+            {/* ✅ FIXED */}
+            <Link href={urls.products()}>
               Lihat Semua
               <ArrowRight className="h-4 w-4 ml-1" />
             </Link>

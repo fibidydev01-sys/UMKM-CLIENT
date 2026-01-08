@@ -4,12 +4,12 @@ import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/store/product-card';
-import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { Product, TenantLandingConfig } from '@/types';
 
 // ==========================================
 // TENANT PRODUCTS COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface TenantProductsProps {
@@ -19,6 +19,9 @@ interface TenantProductsProps {
 }
 
 export function TenantProducts({ products, storeSlug, config }: TenantProductsProps) {
+  // ✅ Smart URLs
+  const urls = useStoreUrls(storeSlug);
+
   const title = config?.title || 'Produk Kami';
   const subtitle = config?.subtitle || '';
   const showViewAll = config?.config?.showViewAll ?? true;
@@ -27,9 +30,6 @@ export function TenantProducts({ products, storeSlug, config }: TenantProductsPr
   const displayProducts = products.slice(0, limit);
 
   if (displayProducts.length === 0) return null;
-
-  // ✅ Smart URL
-  const productsPageUrl = storeUrl(storeSlug, '/products');
 
   return (
     <section id="products" className="py-12">
@@ -40,7 +40,8 @@ export function TenantProducts({ products, storeSlug, config }: TenantProductsPr
           {subtitle && <p className="text-muted-foreground mt-1">{subtitle}</p>}
         </div>
         {showViewAll && (
-          <Link href={productsPageUrl}>
+          // ✅ FIXED
+          <Link href={urls.products()}>
             <Button variant="outline" className="gap-2">
               Lihat Semua <ArrowRight className="h-4 w-4" />
             </Button>

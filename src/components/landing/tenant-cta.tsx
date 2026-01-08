@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { storeUrl } from '@/lib/store-url'; // ✅ Import helper
+import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
 import type { TenantLandingConfig } from '@/types';
 
 // ==========================================
 // TENANT CTA COMPONENT
-// ✅ Uses smart URL helper for dev/prod compatibility
+// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface TenantCtaProps {
@@ -17,13 +17,16 @@ interface TenantCtaProps {
 }
 
 export function TenantCta({ storeSlug, config }: TenantCtaProps) {
+  // ✅ Smart URLs
+  const urls = useStoreUrls(storeSlug);
+
   const title = config?.title || 'Siap Berbelanja?';
   const subtitle = config?.subtitle || '';
   const buttonText = config?.config?.buttonText || 'Mulai Belanja';
   const style = config?.config?.style || 'primary';
 
-  // ✅ Smart URL - use config link or default to products
-  const buttonLink = config?.config?.buttonLink || storeUrl(storeSlug, '/products');
+  // ✅ FIXED: Use smart URL as default, or custom link if provided
+  const buttonLink = config?.config?.buttonLink || urls.products();
 
   const buttonVariant =
     style === 'outline' ? 'outline' : style === 'secondary' ? 'secondary' : 'default';
