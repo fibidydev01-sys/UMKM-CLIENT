@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ColumnFiltersState,
@@ -40,17 +40,11 @@ import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import type { Product } from '@/types';
 
-// ==========================================
-// PRODUCTS TABLE COMPONENT
-// ✅ FIXED: Simplified state management, no optimistic updates
-// ==========================================
-
 interface ProductsTableProps {
   products: Product[];
   categories: string[];
   isRefreshing?: boolean;
   onRefresh?: () => Promise<void>;
-  // ❌ REMOVED: onOptimisticDelete and onRollback (caused issues)
 }
 
 export function ProductsTable({
@@ -65,16 +59,13 @@ export function ProductsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // Delete dialog state (single)
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Bulk delete state
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
 
-  // ✅ FIXED: Simple refresh that always fetches from API
   const refreshData = useCallback(async () => {
     if (onRefresh) {
       await onRefresh();
@@ -83,26 +74,37 @@ export function ProductsTable({
     }
   }, [onRefresh, router]);
 
-  // Column actions
-  const columnActions = {
-    onEdit: (product: Product) => {
-      router.push(`/dashboard/products/${product.id}/edit`);
-    },
-    onDelete: (product: Product) => {
-      setDeleteProduct(product);
-    },
-    onToggleActive: async (product: Product) => {
-      try {
-        await productsApi.update(product.id, { isActive: !product.isActive });
-        toast.success(product.isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
-        await refreshData();
-      } catch (err) {
-        toast.error('Gagal mengubah status', getErrorMessage(err));
-      }
-    },
-  };
+  // ✅ FIX: Stabilize callbacks with useCallback
+  const onEdit = useCallback((product: Product) => {
+    router.push(`/dashboard/products/${product.id}/edit`);
+  }, [router]);
 
-  const columns = getProductColumns(columnActions);
+  const onDelete = useCallback((product: Product) => {
+    setDeleteProduct(product);
+  }, []);
+
+  const onToggleActive = useCallback(async (product: Product) => {
+    try {
+      await productsApi.update(product.id, { isActive: !product.isActive });
+      toast.success(product.isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
+      await refreshData();
+    } catch (err) {
+      toast.error('Gagal mengubah status', getErrorMessage(err));
+    }
+  }, [refreshData]);
+
+  // ✅ FIX: Memoize columnActions to prevent recreation
+  const columnActions = useMemo(() => ({
+    onEdit,
+    onDelete,
+    onToggleActive,
+  }), [onEdit, onDelete, onToggleActive]);
+
+  // ✅ FIX: Memoize columns
+  const columns = useMemo(
+    () => getProductColumns(columnActions),
+    [columnActions]
+  );
 
   const table = useReactTable({
     data: products,
@@ -123,9 +125,6 @@ export function ProductsTable({
     },
   });
 
-  // ==========================================
-  // ✅ FIXED: Simple single delete (no optimistic update)
-  // ==========================================
   const handleDelete = useCallback(async () => {
     if (!deleteProduct) return;
 
@@ -135,8 +134,6 @@ export function ProductsTable({
       await productsApi.delete(deleteProduct.id);
       toast.success('Produk berhasil dihapus');
       setDeleteProduct(null);
-
-      // ✅ Always refresh from API after delete
       await refreshData();
     } catch (err) {
       toast.error('Gagal menghapus produk', getErrorMessage(err));
@@ -145,7 +142,6 @@ export function ProductsTable({
     }
   }, [deleteProduct, refreshData]);
 
-  // Open bulk delete dialog
   const openBulkDeleteDialog = useCallback(() => {
     const selectedRows = table.getFilteredSelectedRowModel().rows;
     const ids = selectedRows
@@ -158,27 +154,17 @@ export function ProductsTable({
     setIsBulkDeleteOpen(true);
   }, [table]);
 
-  // ==========================================
-  // ✅ FIXED: Bulk delete with single summary toast
-  // ==========================================
   const handleBulkDelete = useCallback(async () => {
     if (bulkDeleteIds.length === 0) return;
 
     setIsBulkDeleting(true);
 
     try {
-      // Use bulk delete endpoint
       const result = await productsApi.bulkDelete(bulkDeleteIds);
-
-      // Single success toast
       toast.success(result.message || `${result.count} produk berhasil dihapus`);
-
-      // Reset state
       setRowSelection({});
       setIsBulkDeleteOpen(false);
       setBulkDeleteIds([]);
-
-      // ✅ Always refresh from API
       await refreshData();
     } catch (err) {
       toast.error('Gagal menghapus produk', getErrorMessage(err));
@@ -189,7 +175,6 @@ export function ProductsTable({
 
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
       <ProductsTableToolbar
         table={table}
         categories={categories}
@@ -199,7 +184,6 @@ export function ProductsTable({
         isRefreshing={isRefreshing}
       />
 
-      {/* Table */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -249,7 +233,6 @@ export function ProductsTable({
         </Table>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} dari{' '}
@@ -275,7 +258,6 @@ export function ProductsTable({
         </div>
       </div>
 
-      {/* Single Delete Dialog */}
       <ProductDeleteDialog
         product={deleteProduct}
         isOpen={!!deleteProduct}
@@ -284,7 +266,6 @@ export function ProductsTable({
         onConfirm={handleDelete}
       />
 
-      {/* Bulk Delete Dialog */}
       <AlertDialog open={isBulkDeleteOpen} onOpenChange={setIsBulkDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

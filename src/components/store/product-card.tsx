@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart, Plus, Check } from 'lucide-react';
@@ -10,13 +10,9 @@ import { Badge } from '@/components/ui/badge';
 import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/cn';
-import { productUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
+import { productUrl } from '@/lib/store-url';
+import { getThumbnailUrl } from '@/lib/cloudinary';
 import type { Product } from '@/types';
-
-// ==========================================
-// PRODUCT CARD COMPONENT
-// ✅ FIXED: Uses store-url helper for subdomain routing
-// ==========================================
 
 interface ProductCardProps {
   product: Product;
@@ -24,25 +20,40 @@ interface ProductCardProps {
   showAddToCart?: boolean;
 }
 
+// ✅ FIX: Blur placeholder for images
+const BLUR_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3C/svg%3E";
+
 export function ProductCard({
   product,
   storeSlug,
   showAddToCart = true,
 }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
-  const { addItem } = useCartStore();
+  const addItem = useCartStore((state) => state.addItem);
   const itemQty = useItemQty(product.id);
 
-  // ✅ FIXED: Use smart URL helper
-  const url = productUrl(storeSlug, product.id);
+  // ✅ FIX: Memoize computed values
+  const { hasDiscount, discountPercent, isOutOfStock } = useMemo(() => {
+    const hasDiscount = product.comparePrice && product.comparePrice > product.price;
+    return {
+      hasDiscount,
+      discountPercent: hasDiscount
+        ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
+        : 0,
+      isOutOfStock: product.trackStock && (product.stock ?? 0) <= 0,
+    };
+  }, [product.comparePrice, product.price, product.trackStock, product.stock]);
 
-  const hasDiscount = product.comparePrice && product.comparePrice > product.price;
-  const discountPercent = hasDiscount
-    ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
-    : 0;
-  const isOutOfStock = product.trackStock && (product.stock ?? 0) <= 0;
+  // ✅ FIX: Memoize image URL with thumbnail optimization
+  const imageUrl = useMemo(() => {
+    return product.images?.[0] ? getThumbnailUrl(product.images[0]) : null;
+  }, [product.images]);
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  // ✅ FIX: Memoize URL
+  const url = useMemo(() => productUrl(storeSlug, product.id), [storeSlug, product.id]);
+
+  // ✅ FIX: Stabilize callback
+  const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -53,26 +64,29 @@ export function ProductCard({
       id: product.id,
       name: product.name,
       price: product.price,
-      image: product.images[0],
+      image: product.images?.[0],
       unit: product.unit || undefined,
       maxStock: product.trackStock ? product.stock ?? undefined : undefined,
     });
 
     setTimeout(() => setIsAdding(false), 500);
-  };
+  }, [isOutOfStock, addItem, product]);
 
   return (
     <Card className="group overflow-hidden transition-shadow hover:shadow-md">
       <Link href={url}>
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          {product.images[0] ? (
+          {imageUrl ? (
             <Image
-              src={product.images[0]}
+              src={imageUrl}
               alt={product.name}
               fill
               className="object-cover transition-transform group-hover:scale-105"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              loading="lazy"
+              placeholder="blur"
+              blurDataURL={BLUR_DATA_URL}
             />
           ) : (
             <div className="flex h-full items-center justify-center">
@@ -101,9 +115,9 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Quick Add Button (Desktop) */}
+          {/* Quick Add Button (Desktop only) */}
           {showAddToCart && !isOutOfStock && (
-            <div className="absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+            <div className="hidden md:block absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 size="icon"
                 className={cn(

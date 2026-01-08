@@ -139,7 +139,7 @@ export const useCartStore = create<CartStore>()(
 );
 
 // ==========================================
-// SELECTORS
+// SELECTORS (Memoized)
 // ==========================================
 
 export const selectCartItems = (state: CartStore) => state.items;
@@ -161,33 +161,43 @@ export const selectItemQty = (id: string) => (state: CartStore) =>
   state.items.find((item) => item.id === id)?.qty || 0;
 
 // ==========================================
-// HOOKS
+// HOOKS (Optimized)
 // ==========================================
 
-const emptySubscribe = () => () => { };
-
-export const useCartItems = () => {
-  return useCartStore(selectCartItems);
-};
-
-export const useCartTotalItems = () => {
-  return useCartStore(selectCartTotalItems);
-};
-
-export const useCartTotalPrice = () => {
-  return useCartStore(selectCartTotalPrice);
-};
-
-export const useCartIsEmpty = () => {
-  return useCartStore(selectCartIsEmpty);
-};
-
+// ✅ FIX: Proper sync external store subscription
 export const useCartHydrated = (): boolean => {
   return useSyncExternalStore(
-    emptySubscribe,
+    (callback) => useCartStore.subscribe(callback),
     () => useCartStore.getState().isHydrated,
     () => false
   );
+};
+
+// ✅ FIX: Memoized selectors
+export const useCartItems = () => {
+  const selector = useCallback((state: CartStore) => state.items, []);
+  return useCartStore(selector);
+};
+
+export const useCartTotalItems = () => {
+  const selector = useCallback(
+    (state: CartStore) => state.items.reduce((sum, item) => sum + item.qty, 0),
+    []
+  );
+  return useCartStore(selector);
+};
+
+export const useCartTotalPrice = () => {
+  const selector = useCallback(
+    (state: CartStore) => state.items.reduce((sum, item) => sum + item.price * item.qty, 0),
+    []
+  );
+  return useCartStore(selector);
+};
+
+export const useCartIsEmpty = () => {
+  const selector = useCallback((state: CartStore) => state.items.length === 0, []);
+  return useCartStore(selector);
 };
 
 export const useCartItem = (id: string) => {
@@ -200,7 +210,10 @@ export const useCartItem = (id: string) => {
 
 export const useItemQty = (id: string): number => {
   const selector = useCallback(
-    (state: CartStore) => state.items.find((item) => item.id === id)?.qty || 0,
+    (state: CartStore) => {
+      const item = state.items.find((item) => item.id === id);
+      return item?.qty || 0;
+    },
     [id]
   );
   return useCartStore(selector);
