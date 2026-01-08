@@ -11,8 +11,11 @@ import type { NextRequest } from 'next/server';
 // CONFIGURATION
 // ==========================================
 
-const PROD_DOMAIN = 'fibidy.com';
+const PROD_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
+
+// Enable debug logging
+const DEBUG = true;
 
 /**
  * Reserved subdomains (cannot be tenant slugs)
@@ -61,6 +64,11 @@ const AUTH_ROUTES = [
 function extractSubdomain(hostname: string): string | null {
   // Skip localhost (development)
   if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+    return null;
+  }
+
+  // Skip Vercel preview deployments
+  if (hostname.includes('.vercel.app')) {
     return null;
   }
 
@@ -118,6 +126,15 @@ export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
 
+  if (DEBUG) {
+    console.log('[Proxy] Request:', {
+      hostname,
+      pathname,
+      prodDomain: PROD_DOMAIN,
+      isProduction: IS_PRODUCTION,
+    });
+  }
+
   // ==========================================
   // 1. SKIP STATIC FILES & INTERNALS
   // ==========================================
@@ -127,29 +144,36 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/static') ||
     pathname.includes('.') // files with extensions
   ) {
+    if (DEBUG) console.log('[Proxy] Skipping static/internal:', pathname);
     return NextResponse.next();
   }
 
   // ==========================================
-  // 2. SUBDOMAIN ROUTING (Production Only)
+  // 2. SUBDOMAIN ROUTING
   // ==========================================
-  if (IS_PRODUCTION) {
-    const subdomain = extractSubdomain(hostname);
+  const subdomain = extractSubdomain(hostname);
 
-    if (subdomain) {
-      // Rewrite {slug}.fibidy.com → /store/{slug}/*
-      // URL in browser stays as subdomain
-      const url = request.nextUrl.clone();
+  if (DEBUG) {
+    console.log('[Proxy] Subdomain extracted:', subdomain);
+  }
 
-      // Handle root path
-      if (pathname === '/') {
-        url.pathname = `/store/${subdomain}`;
-      } else {
-        url.pathname = `/store/${subdomain}${pathname}`;
-      }
+  if (subdomain) {
+    // Rewrite {slug}.fibidy.com → /store/{slug}/*
+    // URL in browser stays as subdomain
+    const url = request.nextUrl.clone();
 
-      return NextResponse.rewrite(url);
+    // Handle root path
+    if (pathname === '/') {
+      url.pathname = `/store/${subdomain}`;
+    } else {
+      url.pathname = `/store/${subdomain}${pathname}`;
     }
+
+    if (DEBUG) {
+      console.log('[Proxy] Rewriting to:', url.pathname);
+    }
+
+    return NextResponse.rewrite(url);
   }
 
   // ==========================================
@@ -179,6 +203,7 @@ export function proxy(request: NextRequest) {
   // ==========================================
   // 4. DEFAULT: Continue
   // ==========================================
+  if (DEBUG) console.log('[Proxy] No action, continuing...');
   return NextResponse.next();
 }
 
