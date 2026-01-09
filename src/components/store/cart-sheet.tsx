@@ -24,14 +24,13 @@ import {
 import { formatPrice } from '@/lib/format';
 import { getThumbnailUrl } from '@/lib/cloudinary';
 import { WhatsAppCheckoutDialog } from './whatsapp-checkout-dialog';
+import type { PublicTenant } from '@/types';
 
 interface CartSheetProps {
-  storeSlug: string;
-  storeName: string;
-  storeWhatsApp: string;
+  tenant: PublicTenant;
 }
 
-export function CartSheet({ storeSlug, storeName, storeWhatsApp }: CartSheetProps) {
+export function CartSheet({ tenant }: CartSheetProps) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -215,8 +214,7 @@ export function CartSheet({ storeSlug, storeName, storeWhatsApp }: CartSheetProp
       <WhatsAppCheckoutDialog
         open={checkoutOpen}
         onOpenChange={setCheckoutOpen}
-        storeName={storeName}
-        storeWhatsApp={storeWhatsApp}
+        tenant={tenant}
       />
     </>
   );

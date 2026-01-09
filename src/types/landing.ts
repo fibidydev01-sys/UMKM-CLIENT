@@ -3,7 +3,7 @@
 // ==========================================
 
 export interface LandingSection {
-  enabled: boolean;
+  enabled?: boolean;  // ✅ Changed to optional
   title?: string;
   subtitle?: string;
   config?: Record<string, unknown>;
@@ -35,15 +35,20 @@ export interface ProductsSectionConfig {
   showViewAll?: boolean;
 }
 
+// ==========================================
+// TESTIMONIAL TYPE (EXPORTED FOR REUSE)
+// ==========================================
+export interface Testimonial {
+  id: string;
+  name: string;
+  role?: string;
+  avatar?: string;
+  content: string;
+  rating?: number;
+}
+
 export interface TestimonialsSectionConfig {
-  items?: Array<{
-    id: string;
-    name: string;
-    role?: string;
-    avatar?: string;
-    content: string;
-    rating?: number;
-  }>;
+  items?: Testimonial[];
 }
 
 export interface ContactSectionConfig {
@@ -69,7 +74,7 @@ export interface TenantLandingConfig {
 }
 
 export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
-  enabled: false, // Default: disabled, use existing StoreHero
+  enabled: false,
   hero: {
     enabled: true,
     title: '',

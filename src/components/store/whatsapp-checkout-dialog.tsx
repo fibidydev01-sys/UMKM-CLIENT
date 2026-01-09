@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { MessageCircle } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { MessageCircle, Truck, CreditCard, Banknote, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,33 +16,106 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatPrice, generateWhatsAppLink } from '@/lib/format';
 import { useCartStore, useCartItems, useCartTotalPrice } from '@/stores';
-
-// ==========================================
-// WHATSAPP CHECKOUT DIALOG
-// Modal for cart checkout via WhatsApp
-// ==========================================
+import type { PublicTenant, PaymentMethods, ShippingMethods } from '@/types';
 
 interface WhatsAppCheckoutDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  storeName: string;
-  storeWhatsApp: string;
+  tenant: PublicTenant;
 }
 
 export function WhatsAppCheckoutDialog({
   open,
   onOpenChange,
-  storeName,
-  storeWhatsApp,
+  tenant,
 }: WhatsAppCheckoutDialogProps) {
   const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedCourier, setSelectedCourier] = useState<string>('');
+  const [selectedPayment, setSelectedPayment] = useState<string>('');
 
   const items = useCartItems();
-  const totalPrice = useCartTotalPrice();
+  const subtotal = useCartTotalPrice();
   const clearCart = useCartStore((state) => state.clearCart);
+
+  // ✅ FIXED: Add null safety checks
+  // Get payment methods with safe access
+  const paymentMethods = (tenant?.paymentMethods as PaymentMethods | undefined) ?? {
+    bankAccounts: [],
+    eWallets: [],
+    cod: { enabled: false, note: '' },
+  };
+
+  const shippingMethods = (tenant?.shippingMethods as ShippingMethods | undefined) ?? {
+    couriers: [],
+  };
+
+  // Get enabled payment options
+  const enabledBanks = useMemo(() =>
+    paymentMethods?.bankAccounts?.filter(b => b.enabled) || [],
+    [paymentMethods]
+  );
+  const enabledEwallets = useMemo(() =>
+    paymentMethods?.eWallets?.filter(e => e.enabled) || [],
+    [paymentMethods]
+  );
+  const codEnabled = paymentMethods?.cod?.enabled || false;
+
+  // Get enabled couriers
+  const enabledCouriers = useMemo(() =>
+    shippingMethods?.couriers?.filter(c => c.enabled) || [],
+    [shippingMethods]
+  );
+
+  // Calculate totals with null safety
+  const taxRate = tenant?.taxRate || 0;
+  const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
+
+  const freeShippingThreshold = tenant?.freeShippingThreshold;
+  const defaultShippingCost = tenant?.defaultShippingCost || 0;
+  const shipping = (freeShippingThreshold && subtotal >= freeShippingThreshold)
+    ? 0
+    : defaultShippingCost;
+
+  const total = subtotal + tax + shipping;
+
+  // Build payment options for radio group
+  const paymentOptions = useMemo(() => {
+    const options: { id: string; label: string; sublabel: string; type: 'bank' | 'ewallet' | 'cod' }[] = [];
+
+    enabledBanks.forEach(bank => {
+      options.push({
+        id: `bank-${bank.id}`,
+        label: bank.bank,
+        sublabel: `${bank.accountNumber} (${bank.accountName})`,
+        type: 'bank',
+      });
+    });
+
+    enabledEwallets.forEach(ewallet => {
+      options.push({
+        id: `ewallet-${ewallet.id}`,
+        label: ewallet.provider,
+        sublabel: ewallet.number + (ewallet.name ? ` (${ewallet.name})` : ''),
+        type: 'ewallet',
+      });
+    });
+
+    if (codEnabled) {
+      options.push({
+        id: 'cod',
+        label: 'COD (Bayar di Tempat)',
+        sublabel: paymentMethods?.cod?.note || 'Bayar saat barang diterima',
+        type: 'cod',
+      });
+    }
+
+    return options;
+  }, [enabledBanks, enabledEwallets, codEnabled, paymentMethods]);
 
   const handleOrder = () => {
     // Build items list
@@ -50,19 +123,45 @@ export function WhatsAppCheckoutDialog({
       .map((item) => `• ${item.name} x${item.qty} = ${formatPrice(item.price * item.qty)}`)
       .join('\n');
 
+    // Get selected payment info
+    let paymentInfo = '';
+    if (selectedPayment) {
+      const option = paymentOptions.find(o => o.id === selectedPayment);
+      if (option) {
+        if (option.type === 'bank') {
+          paymentInfo = `Transfer ${option.label}: ${option.sublabel}`;
+        } else if (option.type === 'ewallet') {
+          paymentInfo = `${option.label}: ${option.sublabel}`;
+        } else {
+          paymentInfo = 'COD (Bayar di Tempat)';
+        }
+      }
+    }
+
+    // Get selected courier
+    const courierInfo = selectedCourier
+      ? enabledCouriers.find(c => c.id === selectedCourier)?.name || ''
+      : '';
+
+    // Build the WhatsApp message
+    const storeName = tenant?.name || 'Toko';
     const message = `Halo ${storeName},
 
 Saya ingin memesan:
 
 ${itemsList}
 
-*Total: ${formatPrice(totalPrice)}*
-${name ? `\nNama: ${name}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
+---
+Subtotal: ${formatPrice(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${formatPrice(tax)}` : ''}
+Ongkir: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}${freeShippingThreshold && shipping === 0 ? ` (min. belanja ${formatPrice(freeShippingThreshold)})` : ''}
+*Total: ${formatPrice(total)}*
+---
+${name ? `\nNama: ${name}` : ''}${address ? `\nAlamat: ${address}` : ''}${courierInfo ? `\nKurir: ${courierInfo}` : ''}${paymentInfo ? `\nPembayaran: ${paymentInfo}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
 
 Mohon konfirmasi ketersediaan.
-Terima kasih!`;
+Terima kasih! 🙏`;
 
-    const link = generateWhatsAppLink(storeWhatsApp, message);
+    const link = generateWhatsAppLink(tenant?.whatsapp || '', message);
     window.open(link, '_blank');
 
     // Clear cart after order
@@ -70,82 +169,185 @@ Terima kasih!`;
     onOpenChange(false);
   };
 
+  const hasPaymentOptions = paymentOptions.length > 0;
+  const hasCouriers = enabledCouriers.length > 0;
+
+  // ✅ Early return if tenant is not available
+  if (!tenant) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Pesan via WhatsApp</DialogTitle>
+          <DialogTitle>Checkout via WhatsApp</DialogTitle>
           <DialogDescription>
-            Isi detail pesanan Anda, lalu klik tombol pesan untuk langsung
-            terhubung dengan penjual via WhatsApp.
+            Lengkapi detail pesanan Anda untuk dikirim ke {tenant.name}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Order Items */}
-          <div className="rounded-lg bg-muted p-4">
-            <ScrollArea className="max-h-[200px]">
-              <div className="space-y-2">
+        <ScrollArea className="flex-1 -mx-6 px-6">
+          <div className="space-y-6 py-4">
+            {/* Order Items */}
+            <div className="rounded-lg bg-muted p-4">
+              <h4 className="font-medium mb-3 flex items-center gap-2">
+                <MessageCircle className="h-4 w-4" />
+                Ringkasan Pesanan
+              </h4>
+              <div className="space-y-2 text-sm">
                 {items.map((item) => (
-                  <div key={item.id} className="flex justify-between text-sm">
-                    <div>
-                      <span className="font-medium">{item.name}</span>
-                      <span className="text-muted-foreground"> x{item.qty}</span>
-                    </div>
+                  <div key={item.id} className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      {item.name} x{item.qty}
+                    </span>
                     <span>{formatPrice(item.price * item.qty)}</span>
                   </div>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
+
+            <Separator />
+
+            {/* Customer Info */}
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="checkout-name">Nama</Label>
+                <Input
+                  id="checkout-name"
+                  placeholder="Nama lengkap"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkout-address">Alamat Pengiriman</Label>
+                <Textarea
+                  id="checkout-address"
+                  placeholder="Alamat lengkap untuk pengiriman"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={2}
+                />
+              </div>
+            </div>
+
+            {/* Courier Selection */}
+            {hasCouriers && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <Truck className="h-4 w-4" />
+                    Pilih Kurir
+                  </Label>
+                  <RadioGroup value={selectedCourier} onValueChange={setSelectedCourier}>
+                    <div className="grid grid-cols-2 gap-2">
+                      {enabledCouriers.map((courier) => (
+                        <div key={courier.id} className="flex items-center space-x-2">
+                          <RadioGroupItem value={courier.id} id={`courier-${courier.id}`} />
+                          <Label htmlFor={`courier-${courier.id}`} className="text-sm cursor-pointer">
+                            {courier.name}
+                            {courier.note && (
+                              <span className="text-xs text-muted-foreground block">
+                                {courier.note}
+                              </span>
+                            )}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+
+            {/* Payment Method Selection */}
+            {hasPaymentOptions && (
+              <>
+                <Separator />
+                <div className="space-y-3">
+                  <Label className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    Metode Pembayaran
+                  </Label>
+                  <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
+                    <div className="space-y-2">
+                      {paymentOptions.map((option) => (
+                        <div
+                          key={option.id}
+                          className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+                        >
+                          <RadioGroupItem value={option.id} id={option.id} className="mt-0.5" />
+                          <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+                            <div className="flex items-center gap-2">
+                              {option.type === 'bank' && <Banknote className="h-4 w-4 text-muted-foreground" />}
+                              {option.type === 'ewallet' && <Wallet className="h-4 w-4 text-muted-foreground" />}
+                              {option.type === 'cod' && <Truck className="h-4 w-4 text-muted-foreground" />}
+                              <span className="font-medium">{option.label}</span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">{option.sublabel}</span>
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </RadioGroup>
+                </div>
+              </>
+            )}
+
+            {/* Notes */}
+            <Separator />
+            <div className="space-y-2">
+              <Label htmlFor="checkout-notes">Catatan (Opsional)</Label>
+              <Textarea
+                id="checkout-notes"
+                placeholder="Catatan tambahan untuk penjual..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            {/* Order Summary */}
+            <div className="rounded-lg border p-4 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatPrice(subtotal)}</span>
+              </div>
+              {tax > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
+                  <span>{formatPrice(tax)}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Ongkos Kirim</span>
+                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
+                  {shipping === 0 ? 'GRATIS' : formatPrice(shipping)}
+                </span>
+              </div>
+              {freeShippingThreshold && shipping > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  💡 Belanja min. {formatPrice(freeShippingThreshold)} untuk gratis ongkir!
+                </p>
+              )}
+              <Separator />
+              <div className="flex justify-between font-semibold text-lg">
+                <span>Total</span>
+                <span>{formatPrice(total)}</span>
+              </div>
+            </div>
           </div>
+        </ScrollArea>
 
-          <Separator />
-
-          {/* Name (Optional) */}
-          <div className="space-y-2">
-            <Label htmlFor="checkout-name">Nama (opsional)</Label>
-            <Input
-              id="checkout-name"
-              placeholder="Nama Anda"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          {/* Notes (Optional) */}
-          <div className="space-y-2">
-            <Label htmlFor="checkout-notes">Catatan (opsional)</Label>
-            <Textarea
-              id="checkout-notes"
-              placeholder="Catatan tambahan untuk penjual..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-            />
-          </div>
-
-          {/* Total */}
-          <div className="flex items-center justify-between rounded-lg bg-primary/10 p-4">
-            <span className="font-medium">Total</span>
-            <span className="text-xl font-bold text-primary">
-              {formatPrice(totalPrice)}
-            </span>
-          </div>
-        </div>
-
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Batal
           </Button>
           <Button onClick={handleOrder} disabled={items.length === 0}>
-            <svg
-              className="h-5 w-5 mr-2"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            Pesan Sekarang
+            <MessageCircle className="mr-2 h-4 w-4" />
+            Kirim Pesanan
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -17,8 +17,37 @@ import {
   ProductListSchema,
   generateTenantBreadcrumbs,
 } from '@/components/seo';
-import { DEFAULT_LANDING_CONFIG } from '@/types/landing';
-import type { PublicTenant, Product } from '@/types';
+import type {
+  PublicTenant,
+  Product,
+  Testimonial,
+} from '@/types';
+
+// ==========================================
+// HELPER: Flatten nested array untuk testimonials
+// ==========================================
+function flattenTestimonialItems(items: unknown): Testimonial[] {
+  if (!items) return [];
+
+  let result = items;
+
+  // Flatten nested arrays [[item]] -> [item]
+  while (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
+    result = result[0];
+  }
+
+  if (!Array.isArray(result)) return [];
+
+  return result.filter(
+    (item): item is Testimonial =>
+      item &&
+      typeof item === 'object' &&
+      typeof item.name === 'string' &&
+      item.name.trim() !== '' &&
+      typeof item.content === 'string' &&
+      item.content.trim() !== ''
+  );
+}
 
 // ==========================================
 // STORE HOMEPAGE
@@ -83,11 +112,10 @@ export default async function StorePage({ params }: StorePageProps) {
     notFound();
   }
 
-  // Merge tenant config with defaults
-  const landingConfig = {
-    ...DEFAULT_LANDING_CONFIG,
-    ...tenant.landingConfig,
-  };
+  // ==========================================
+  // LANGSUNG PAKAI DATA DARI DB - GA ADA DEFAULT!
+  // ==========================================
+  const landingConfig = tenant.landingConfig;
 
   // Generate breadcrumbs for SEO
   const breadcrumbs = generateTenantBreadcrumbs({
@@ -96,16 +124,14 @@ export default async function StorePage({ params }: StorePageProps) {
   });
 
   // ==========================================
-  // MODE 1: DEFAULT VIEW (landingConfig.enabled = false)
-  // Uses existing StoreHero + FeaturedProducts components
+  // MODE 1: DEFAULT VIEW (tidak ada config atau tidak enabled)
   // ==========================================
-  if (!landingConfig.enabled) {
+  if (!landingConfig?.enabled) {
     const [featuredProducts, latestProducts] = await Promise.all([
       getFeaturedProducts(slug),
       getLatestProducts(slug),
     ]);
 
-    // Combine all products for ProductListSchema
     const allProducts = [...featuredProducts, ...latestProducts].filter(
       (product, index, self) =>
         index === self.findIndex((p) => p.id === product.id)
@@ -113,9 +139,6 @@ export default async function StorePage({ params }: StorePageProps) {
 
     return (
       <>
-        {/* ==========================================
-            SEO: Structured Data (JSON-LD)
-        ========================================== */}
         <BreadcrumbSchema items={breadcrumbs} />
         {allProducts.length > 0 && (
           <ProductListSchema
@@ -131,14 +154,9 @@ export default async function StorePage({ params }: StorePageProps) {
           />
         )}
 
-        {/* ==========================================
-            PAGE CONTENT
-        ========================================== */}
         <div className="container px-4 py-8 space-y-12">
-          {/* Hero Section - EXISTING COMPONENT */}
           <StoreHero tenant={tenant} />
 
-          {/* Featured Products - EXISTING COMPONENT */}
           {featuredProducts.length > 0 && (
             <FeaturedProducts
               products={featuredProducts}
@@ -147,7 +165,6 @@ export default async function StorePage({ params }: StorePageProps) {
             />
           )}
 
-          {/* Latest Products - EXISTING COMPONENT */}
           {latestProducts.length > 0 && (
             <FeaturedProducts
               products={latestProducts}
@@ -156,7 +173,6 @@ export default async function StorePage({ params }: StorePageProps) {
             />
           )}
 
-          {/* Empty State */}
           {featuredProducts.length === 0 && latestProducts.length === 0 && (
             <div className="text-center py-12 bg-muted/30 rounded-lg">
               <p className="text-muted-foreground mb-2">
@@ -173,17 +189,19 @@ export default async function StorePage({ params }: StorePageProps) {
   }
 
   // ==========================================
-  // MODE 2: CUSTOM LANDING PAGE (landingConfig.enabled = true)
-  // Uses new Landing components
+  // MODE 2: CUSTOM LANDING PAGE
+  // Langsung pakai nilai dari DB, GA ADA FALLBACK!
   // ==========================================
-  const productLimit = landingConfig.products?.config?.limit || 8;
+  const productLimit = (landingConfig.products?.config?.limit as number) || 8;
   const products = await getProducts(slug, productLimit);
+
+  // Get testimonials - langsung dari DB
+  const testimonialItems = flattenTestimonialItems(landingConfig.testimonials?.config?.items);
+  const testimonialsEnabled = landingConfig.testimonials?.enabled === true;
+  const hasTestimonials = testimonialsEnabled && testimonialItems.length > 0;
 
   return (
     <>
-      {/* ==========================================
-          SEO: Structured Data (JSON-LD)
-      ========================================== */}
       <BreadcrumbSchema items={breadcrumbs} />
       {products.length > 0 && (
         <ProductListSchema
@@ -199,21 +217,18 @@ export default async function StorePage({ params }: StorePageProps) {
         />
       )}
 
-      {/* ==========================================
-          PAGE CONTENT
-      ========================================== */}
       <div className="container px-4 py-8 space-y-8">
-        {/* Hero - NEW COMPONENT */}
+        {/* Hero - langsung cek enabled dari DB */}
         {landingConfig.hero?.enabled && (
           <TenantHero tenant={tenant} config={landingConfig.hero} />
         )}
 
-        {/* About - NEW COMPONENT */}
+        {/* About - langsung cek enabled dari DB */}
         {landingConfig.about?.enabled && (
           <TenantAbout tenant={tenant} config={landingConfig.about} />
         )}
 
-        {/* Products - NEW COMPONENT */}
+        {/* Products - langsung cek enabled dari DB */}
         {landingConfig.products?.enabled && products.length > 0 && (
           <TenantProducts
             products={products}
@@ -222,26 +237,33 @@ export default async function StorePage({ params }: StorePageProps) {
           />
         )}
 
-        {/* Testimonials - NEW COMPONENT */}
-        {landingConfig.testimonials?.enabled && (
-          <TenantTestimonials config={landingConfig.testimonials} />
+        {/* Testimonials - langsung cek enabled dari DB */}
+        {hasTestimonials && (
+          <TenantTestimonials
+            config={{
+              ...landingConfig.testimonials,
+              config: {
+                items: testimonialItems,
+              },
+            }}
+          />
         )}
 
-        {/* CTA - NEW COMPONENT */}
+        {/* CTA - langsung cek enabled dari DB */}
         {landingConfig.cta?.enabled && (
           <TenantCta storeSlug={slug} config={landingConfig.cta} />
         )}
 
-        {/* Contact - NEW COMPONENT */}
+        {/* Contact - langsung cek enabled dari DB */}
         {landingConfig.contact?.enabled && (
           <TenantContact tenant={tenant} config={landingConfig.contact} />
         )}
 
-        {/* Empty State - All sections disabled */}
+        {/* Empty state jika semua section disabled */}
         {!landingConfig.hero?.enabled &&
           !landingConfig.about?.enabled &&
           !landingConfig.products?.enabled &&
-          !landingConfig.testimonials?.enabled &&
+          !hasTestimonials &&
           !landingConfig.cta?.enabled &&
           !landingConfig.contact?.enabled && (
             <div className="text-center py-12 bg-muted/30 rounded-lg">

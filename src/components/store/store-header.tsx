@@ -8,12 +8,11 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from './cart-sheet';
 import { StoreNav } from './store-nav';
 import { useIsAuthenticated } from '@/stores';
-import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
+import { useStoreUrls } from '@/lib/store-url';
 import type { PublicTenant } from '@/types';
 
 // ==========================================
 // STORE HEADER COMPONENT
-// ✅ FIXED: Uses store-url helper for subdomain routing
 // ==========================================
 
 interface StoreHeaderProps {
@@ -23,7 +22,7 @@ interface StoreHeaderProps {
 export function StoreHeader({ tenant }: StoreHeaderProps) {
   const isAuthenticated = useIsAuthenticated();
 
-  // ✅ Smart URLs - auto-detects subdomain vs localhost
+  // Smart URLs - auto-detects subdomain vs localhost
   const urls = useStoreUrls(tenant.slug);
 
   return (
@@ -44,7 +43,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
             </SheetContent>
           </Sheet>
 
-          {/* Logo & Store Name - ✅ FIXED */}
+          {/* Logo & Store Name */}
           <Link href={urls.home} className="flex items-center gap-3">
             {tenant.logo ? (
               <Image
@@ -70,7 +69,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
           </Link>
         </div>
 
-        {/* Center: Desktop Navigation - ✅ FIXED */}
+        {/* Center: Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href={urls.home}
@@ -97,11 +96,8 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
             </Button>
           )}
 
-          <CartSheet
-            storeSlug={tenant.slug}
-            storeName={tenant.name}
-            storeWhatsApp={tenant.whatsapp || ''}
-          />
+          {/* ✅ FIXED: Pass tenant object instead of separate props */}
+          <CartSheet tenant={tenant} />
         </div>
       </div>
     </header>

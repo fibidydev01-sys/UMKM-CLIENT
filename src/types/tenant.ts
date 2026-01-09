@@ -15,6 +15,60 @@ export interface SocialLinks {
   twitter?: string;
 }
 
+// ==========================================
+// PAYMENT SETTINGS TYPES (NEW)
+// ==========================================
+
+export type BankName = 'BCA' | 'Mandiri' | 'BNI' | 'BRI' | 'BSI' | 'CIMB' | 'Permata' | 'Danamon' | 'Other';
+export type EWalletProvider = 'GoPay' | 'OVO' | 'DANA' | 'ShopeePay' | 'LinkAja' | 'Other';
+export type CourierName = 'JNE' | 'J&T Express' | 'SiCepat' | 'AnterAja' | 'Ninja Express' | 'ID Express' | 'SAP Express' | 'Lion Parcel' | 'Pos Indonesia' | 'TIKI' | 'Other';
+
+export interface BankAccount {
+  id: string;
+  bank: BankName;
+  accountNumber: string;
+  accountName: string;
+  enabled: boolean;
+}
+
+export interface EWallet {
+  id: string;
+  provider: EWalletProvider;
+  number: string;
+  name?: string;
+  enabled: boolean;
+}
+
+export interface CodSettings {
+  enabled: boolean;
+  note?: string;
+}
+
+export interface PaymentMethods {
+  bankAccounts: BankAccount[];
+  eWallets: EWallet[];
+  cod: CodSettings;
+}
+
+// ==========================================
+// SHIPPING SETTINGS TYPES (NEW)
+// ==========================================
+
+export interface Courier {
+  id: string;
+  name: CourierName;
+  enabled: boolean;
+  note?: string;
+}
+
+export interface ShippingMethods {
+  couriers: Courier[];
+}
+
+// ==========================================
+// TENANT INTERFACES
+// ==========================================
+
 export interface Tenant {
   id: string;
   slug: string;
@@ -33,6 +87,15 @@ export interface Tenant {
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
+  // Payment Settings (NEW)
+  currency: string;
+  taxRate: number;
+  paymentMethods?: PaymentMethods;
+  // Shipping Settings (NEW)
+  freeShippingThreshold?: number | null;
+  defaultShippingCost: number;
+  shippingMethods?: ShippingMethods;
+  // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
   updatedAt?: string;
@@ -55,6 +118,15 @@ export interface PublicTenant {
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
+  // Payment Settings (NEW)
+  currency: string;
+  taxRate: number;
+  paymentMethods?: PaymentMethods;
+  // Shipping Settings (NEW)
+  freeShippingThreshold?: number | null;
+  defaultShippingCost: number;
+  shippingMethods?: ShippingMethods;
+  // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
   _count?: { products: number };
@@ -74,6 +146,14 @@ export interface UpdateTenantInput {
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
+  // Payment Settings (NEW)
+  currency?: string;
+  taxRate?: number;
+  paymentMethods?: PaymentMethods;
+  // Shipping Settings (NEW)
+  freeShippingThreshold?: number | null;
+  defaultShippingCost?: number;
+  shippingMethods?: ShippingMethods;
 }
 
 // ==========================================

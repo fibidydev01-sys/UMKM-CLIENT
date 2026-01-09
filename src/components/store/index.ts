@@ -1,42 +1,30 @@
-// ==========================================
-// STORE COMPONENTS INDEX
-// ==========================================
+// Layout
+export * from './store-header';
+export * from './store-hero';
+export * from './store-footer';
+export * from './store-nav';
+export * from './store-not-found';
 
-// Layout components
-export { StoreHeader } from './store-header';
-export { StoreFooter } from './store-footer';
-export { StoreNav } from './store-nav';
-export { StoreNotFound } from './store-not-found';
-export { StoreHero } from './store-hero';
-export { StoreBreadcrumb } from './store-breadcrumb';
+// Cart
+export * from './cart-badge';
+export * from './cart-sheet';
+export * from './add-to-cart-button';
 
-// Cart components
-export { CartBadge } from './cart-badge';
-export { CartSheet } from './cart-sheet';
+// Products
+export * from './product-card';
+export * from './product-grid';
+export * from './product-filters';
+export * from './product-pagination';
+export * from './product-gallery';
+export * from './product-info';
 
-// Product components
-export { ProductCard } from './product-card';
-export { ProductGrid } from './product-grid';
-export { AddToCartButton } from './add-to-cart-button';
-export { FeaturedProducts } from './featured-products';
-export { RelatedProducts } from './related-products';
+// Actions
+export * from './whatsapp-order-button';
+export * from './whatsapp-checkout-dialog';
+export * from './product-share';
 
-// Product Detail components
-export { ProductGallery } from './product-gallery';
-export { ProductInfo } from './product-info';
-export { ProductActions } from './product-actions';
-export { ProductShare } from './product-share';
-export { WhatsAppOrderButton } from './whatsapp-order-button';
-export { WhatsAppCheckoutDialog } from './whatsapp-checkout-dialog';
-
-// Filter & Navigation
-export { CategoryList } from './category-list';
-export { ProductFilters } from './product-filters';
-export { ProductPagination } from './product-pagination';
-
-// Skeletons
-export {
-  StoreHeaderSkeleton,
-  ProductCardSkeleton,
-  ProductGridSkeleton,
-} from './store-skeleton';
+// Navigation
+export * from './store-breadcrumb';
+export * from './category-list';
+export * from './featured-products';
+export * from './related-products';
