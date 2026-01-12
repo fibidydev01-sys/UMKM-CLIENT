@@ -1,13 +1,17 @@
-// ==========================================
+// ══════════════════════════════════════════════════════════════
 // PLATFORM LANDING COMPONENTS - BARREL EXPORTS
-// For fibidy.com main landing page
-// ==========================================
+// V8.2 — Discover Style
+// ══════════════════════════════════════════════════════════════
 
-// Layout Components
+// ══════════════════════════════════════════════════════════════════
+// LAYOUT COMPONENTS
+// ══════════════════════════════════════════════════════════════════
 export { LandingHeader } from './landing-header';
 export { LandingFooter } from './landing-footer';
 
-// Section Components (14 Sections)
+// ══════════════════════════════════════════════════════════════════
+// SECTION COMPONENTS
+// ══════════════════════════════════════════════════════════════════
 export { HeroSection } from './hero-section';
 export { LogosSection } from './logos-section';
 export { ProblemSection } from './problem-section';
@@ -18,5 +22,19 @@ export { FeaturesSection } from './features-section';
 export { TestimonialsSection } from './testimonials-section';
 export { PricingSection } from './pricing-section';
 export { FAQSection } from './faq-section';
-export { BlogSection } from './blog-section';
 export { CTASection } from './cta-section';
+export { TargetUserSection } from './target-user-section';
+export { FibidyAISection } from './fibidy-ai-section';
+export { CategoriesSection } from './categories-section';
+export { HonestSection } from './honest-section';
+
+// ══════════════════════════════════════════════════════════════════
+// UMKM DISCOVER (V8.2)
+// ══════════════════════════════════════════════════════════════════
+export { UMKMShowcaseSection } from './umkm-showcase-section';
+export { UMKMDiscoverSection } from './umkm-discover-section';
+
+// ══════════════════════════════════════════════════════════════════
+// LAZY WRAPPERS
+// ══════════════════════════════════════════════════════════════════
+export { LazyTestimonialsSection } from './lazy-testimonials';

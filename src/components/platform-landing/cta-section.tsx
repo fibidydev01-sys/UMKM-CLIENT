@@ -1,66 +1,98 @@
+// ══════════════════════════════════════════════════════════════
+// CTA SECTION - V8.1 Copywriting (No DotPattern, No Emojis)
+// "Siap Punya Alamat Usaha yang Lebih Gampang Dicari?"
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import {
   ArrowRight,
   Rocket,
-  CheckCircle2,
-  Zap,
-  Shield,
-  Clock,
-  HeartHandshake,
+  Home,
+  Bot,
+  Ban,
+  Handshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { DotPattern } from '@/components/ui/dot-pattern';
 import { cn } from '@/lib/cn';
+
+// ══════════════════════════════════════════════════════════════
+// DATA - V8.1 Copywriting (Icons instead of emojis)
+// ══════════════════════════════════════════════════════════════
 
 const benefits = [
   {
-    icon: Zap,
-    text: 'Setup 5 menit',
+    icon: Home,
+    text: 'Alamat sendiri',
   },
   {
-    icon: Shield,
-    text: 'Gratis selamanya',
+    icon: Bot,
+    text: 'Fibidy AI bantuin',
   },
   {
-    icon: Clock,
-    text: 'Tanpa kartu kredit',
+    icon: Ban,
+    text: 'Tanpa iklan',
   },
   {
-    icon: HeartHandshake,
-    text: 'Support responsif',
+    icon: Handshake,
+    text: 'Bareng-bareng',
   },
 ];
+
+// ══════════════════════════════════════════════════════════════
+// COMPONENT
+// ══════════════════════════════════════════════════════════════
 
 export function CTASection() {
   return (
     <section className="py-20 md:py-32 relative overflow-hidden">
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* BACKGROUND (CSS dots instead of DotPattern)              */}
+      {/* ════════════════════════════════════════════════════════ */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-pink-600" />
 
-      <DotPattern
-        className={cn(
-          'absolute inset-0 z-0 opacity-20',
-          '[mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]'
-        )}
+      <div
+        className="absolute inset-0 z-0 opacity-20"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0)`,
+          backgroundSize: '20px 20px',
+          maskImage: 'radial-gradient(ellipse at center, white, transparent 70%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at center, white, transparent 70%)',
+        }}
       />
 
+      {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
+      {/* ════════════════════════════════════════════════════════ */}
+      {/* CONTENT                                                  */}
+      {/* ════════════════════════════════════════════════════════ */}
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center text-primary-foreground">
+          {/* Icon */}
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/20 backdrop-blur mb-8">
             <Rocket className="h-8 w-8" />
           </div>
 
+          {/* Headline - V8.1 */}
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6">
-            Siap Memulai Bisnis Online Anda?
+            Siap Punya Alamat Usaha yang Lebih Gampang Dicari?
           </h2>
 
-          <p className="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-            Bergabung dengan 10,000+ UMKM Indonesia yang sudah sukses jualan online
-            dengan Fibidy. Gratis, mudah, dan tanpa ribet.
+          {/* Copy - V8.1 */}
+          <p className="text-lg md:text-xl opacity-90 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Mau jualan produk atau nawarin jasa semua bisa.
+            <br /><br />
+            Kami siapin tokonya.
+            <br />
+            Fibidy AI bantuin nulis.
+            <br />
+            Kamu isi produk atau layanannya.
+            <br /><br />
+            <span className="font-semibold">Tanpa iklan. Bareng-bareng.</span>
           </p>
 
+          {/* Benefits (Icons instead of emojis) */}
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 mb-10">
             {benefits.map((benefit) => (
               <div
@@ -73,7 +105,8 @@ export function CTASection() {
             ))}
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
             <Button
               size="lg"
               variant="secondary"
@@ -81,7 +114,7 @@ export function CTASection() {
               className="text-base px-8 h-12 shadow-xl hover:shadow-2xl transition-shadow"
             >
               <Link href="/register">
-                Daftar Gratis Sekarang
+                Buat Toko Sekarang
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
@@ -95,10 +128,24 @@ export function CTASection() {
             </Button>
           </div>
 
-          <p className="mt-8 text-sm opacity-70 flex items-center justify-center gap-2">
-            <CheckCircle2 className="h-4 w-4" />
-            Dipercaya oleh 10,000+ UMKM di seluruh Indonesia
+          {/* Micro-copy */}
+          <p className="text-sm opacity-70">
+            5 menit udah punya alamat sendiri.
           </p>
+
+          {/* Secondary Links */}
+          <div className="mt-8 flex items-center justify-center gap-4 text-sm opacity-70">
+            <span>atau eksplor dulu:</span>
+            <Link href="/about" className="hover:opacity-100 underline underline-offset-4">
+              Tentang
+            </Link>
+            <Link href="/fitur" className="hover:opacity-100 underline underline-offset-4">
+              Fitur
+            </Link>
+            <Link href="/harga" className="hover:opacity-100 underline underline-offset-4">
+              Harga
+            </Link>
+          </div>
         </div>
       </div>
     </section>

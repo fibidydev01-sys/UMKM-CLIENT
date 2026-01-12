@@ -6,14 +6,18 @@
 // - Development (localhost): /store/{slug}/products
 // - Production (subdomain): /products
 //
-// NOTE: Ini BERBEDA dengan getTenantUrl di seo.ts!
-// - seo.ts → Full URL untuk canonical/SEO
-// - store-url.ts → Path saja untuk <Link href="">
+// + NEW: getTenantFullUrl for external links
 // ==========================================
 
 'use client';
 
 import { useMemo } from 'react';
+
+// ==========================================
+// CONSTANTS
+// ==========================================
+
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
 
 // ==========================================
 // ENVIRONMENT DETECTION
@@ -41,23 +45,88 @@ export function isSubdomainRouting(): boolean {
     return false;
   }
 
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
-
   // Main domain (fibidy.com, www.fibidy.com) = path-based routing
-  if (hostname === rootDomain || hostname === `www.${rootDomain}`) {
+  if (hostname === ROOT_DOMAIN || hostname === `www.${ROOT_DOMAIN}`) {
     return false;
   }
 
   // Subdomain (xxx.fibidy.com) = subdomain routing!
-  if (hostname.endsWith(`.${rootDomain}`)) {
+  if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     return true;
   }
 
   return false;
 }
 
+/**
+ * Check if currently in development/localhost
+ */
+export function isLocalhost(): boolean {
+  if (typeof window === 'undefined') {
+    return process.env.NODE_ENV === 'development';
+  }
+
+  const hostname = window.location.hostname;
+  return hostname === 'localhost' || hostname === '127.0.0.1';
+}
+
 // ==========================================
-// PATH GENERATORS
+// FULL URL GENERATOR (NEW!)
+// For external links / showcase cards
+// ==========================================
+
+/**
+ * Get full tenant URL (for external navigation)
+ * 
+ * @example
+ * // On localhost:
+ * getTenantFullUrl('warung-busari') → '/store/warung-busari'
+ * 
+ * // On production (fibidy.com):
+ * getTenantFullUrl('warung-busari') → 'https://warung-busari.fibidy.com'
+ * 
+ * // With path:
+ * getTenantFullUrl('warung-busari', '/products') → 'https://warung-busari.fibidy.com/products'
+ */
+export function getTenantFullUrl(slug: string, path: string = '/'): string {
+  // Normalize path
+  const normalizedPath = path === '/' ? '' : path.startsWith('/') ? path : `/${path}`;
+
+  // Server-side detection
+  if (typeof window === 'undefined') {
+    if (process.env.NODE_ENV === 'production') {
+      return `https://${slug}.${ROOT_DOMAIN}${normalizedPath}`;
+    }
+    return `/store/${slug}${normalizedPath}`;
+  }
+
+  const hostname = window.location.hostname;
+
+  // Localhost = path-based
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const fullPath = `/store/${slug}${normalizedPath}`;
+    return fullPath || `/store/${slug}`;
+  }
+
+  // Vercel preview = path-based
+  if (hostname.includes('.vercel.app')) {
+    const fullPath = `/store/${slug}${normalizedPath}`;
+    return fullPath || `/store/${slug}`;
+  }
+
+  // Production = subdomain
+  return `https://${slug}.${ROOT_DOMAIN}${normalizedPath}`;
+}
+
+/**
+ * Get tenant home URL (shorthand)
+ */
+export function getTenantHomeUrl(slug: string): string {
+  return getTenantFullUrl(slug, '/');
+}
+
+// ==========================================
+// PATH GENERATORS (Internal Navigation)
 // ==========================================
 
 /**
@@ -140,11 +209,11 @@ export function productsUrl(
 }
 
 // ==========================================
-// REACT HOOK
+// REACT HOOKS
 // ==========================================
 
 /**
- * Hook untuk generate store URLs
+ * Hook untuk generate store URLs (internal navigation)
  * Memoized untuk performance
  *
  * @example
@@ -175,6 +244,19 @@ export function useStoreUrls(storeSlug: string) {
   );
 }
 
+/**
+ * Hook untuk generate tenant full URL (external navigation)
+ * Useful for showcase cards, sharing, etc.
+ *
+ * @example
+ * const tenantUrl = useTenantFullUrl('warung-busari');
+ * // localhost → '/store/warung-busari'
+ * // production → 'https://warung-busari.fibidy.com'
+ */
+export function useTenantFullUrl(slug: string) {
+  return useMemo(() => getTenantFullUrl(slug), [slug]);
+}
+
 // ==========================================
 // DEBUG HELPER
 // ==========================================
@@ -187,12 +269,17 @@ if (typeof window !== 'undefined') {
   (window as unknown as Record<string, unknown>).__debugStoreUrl = () => {
     const hostname = window.location.hostname;
     const isSubdomain = isSubdomainRouting();
+    const isLocal = isLocalhost();
     console.log({
       hostname,
       isSubdomain,
+      isLocal,
+      rootDomain: ROOT_DOMAIN,
       exampleHome: storeUrl('test', '/'),
       exampleProducts: storeUrl('test', '/products'),
       exampleProduct: productUrl('test', 'abc123'),
+      exampleFullUrl: getTenantFullUrl('test'),
+      exampleFullUrlWithPath: getTenantFullUrl('test', '/products'),
     });
   };
 }

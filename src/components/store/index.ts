@@ -1,6 +1,5 @@
 // Layout
 export * from './store-header';
-export * from './store-hero';
 export * from './store-footer';
 export * from './store-nav';
 export * from './store-not-found';
@@ -17,6 +16,8 @@ export * from './product-filters';
 export * from './product-pagination';
 export * from './product-gallery';
 export * from './product-info';
+export * from './product-actions';
+export * from './store-skeleton';
 
 // Actions
 export * from './whatsapp-order-button';
@@ -26,5 +27,4 @@ export * from './product-share';
 // Navigation
 export * from './store-breadcrumb';
 export * from './category-list';
-export * from './featured-products';
 export * from './related-products';

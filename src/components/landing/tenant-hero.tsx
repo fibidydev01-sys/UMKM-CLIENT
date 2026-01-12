@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
 import type { PublicTenant, TenantLandingConfig } from '@/types';
 
 interface TenantHeroProps {
@@ -28,17 +28,21 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
 
   return (
     <section className="relative min-h-[400px] flex items-center justify-center overflow-hidden rounded-xl">
-      {/* Background Image */}
+      {/* ✅ OPTIMIZED: Hero Background */}
       {backgroundImage && (
         <>
           <div className="absolute inset-0">
-            <Image
+            <OptimizedImage
               src={backgroundImage}
               alt={tenant.name}
               fill
-              className="object-cover"
+              crop="fill"
+              gravity="auto"
+              sizes="100vw"
               priority
-              unoptimized={backgroundImage.startsWith('http')}
+              loading="eager"
+              fetchPriority="high"
+              className="object-cover"
             />
           </div>
           <div
@@ -50,32 +54,30 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
 
       {/* Content */}
       <div className={`relative z-10 max-w-3xl px-6 py-12 flex flex-col gap-4 ${layoutClasses[layout]}`}>
-        {/* Logo */}
+        {/* ✅ OPTIMIZED: Logo */}
         {tenant.logo && (
           <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg">
-            <Image
+            <OptimizedImage
               src={tenant.logo}
               alt={tenant.name}
               fill
+              crop="fill"
+              gravity="auto"
               className="object-cover"
-              unoptimized={tenant.logo.startsWith('http')}
             />
           </div>
         )}
 
-        {/* Title */}
         <h1 className={`text-3xl md:text-5xl font-bold ${backgroundImage ? 'text-white' : 'text-foreground'}`}>
           {title}
         </h1>
 
-        {/* Subtitle */}
         {subtitle && (
           <p className={`text-lg md:text-xl max-w-2xl ${backgroundImage ? 'text-white/90' : 'text-muted-foreground'}`}>
             {subtitle}
           </p>
         )}
 
-        {/* CTA Button */}
         {showCta && (
           <Link href={config?.config?.ctaLink || '#products'}>
             <Button size="lg" className="mt-4 gap-2">
@@ -86,7 +88,6 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
         )}
       </div>
 
-      {/* Gradient Background (no image) */}
       {!backgroundImage && (
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-primary/10 -z-10" />
       )}

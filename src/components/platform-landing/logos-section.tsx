@@ -1,48 +1,78 @@
-import { cn } from '@/lib/cn';
+// ══════════════════════════════════════════════════════════════
+// VALUE STRIP SECTION (formerly LogosSection)
+// V8.1 - No fake stats, real value propositions
+// ══════════════════════════════════════════════════════════════
+
+import { Home, Search, Bot, Ban } from 'lucide-react';
+
+// ══════════════════════════════════════════════════════════════
+// DATA - V8.1 Copywriting (Icons instead of emojis)
+// ══════════════════════════════════════════════════════════════
+
+const values = [
+  {
+    icon: Home,
+    text: 'Alamat toko sendiri',
+    color: 'text-blue-500',
+  },
+  {
+    icon: Search,
+    text: 'Lebih gampang dicari',
+    color: 'text-green-500',
+  },
+  {
+    icon: Bot,
+    text: 'Fibidy AI bantuin nulis',
+    color: 'text-purple-500',
+  },
+  {
+    icon: Ban,
+    text: 'Tanpa iklan',
+    color: 'text-red-500',
+  },
+];
 
 const stats = [
-  { value: '10,000+', label: 'UMKM Terdaftar' },
-  { value: '34', label: 'Provinsi' },
-  { value: '50,000+', label: 'Produk Aktif' },
-  { value: '100,000+', label: 'Transaksi/Bulan' },
+  { value: '15+', label: 'Kategori Bisnis' },
+  { value: '5 menit', label: 'Setup Toko' },
+  { value: 'Rp 0', label: 'Biaya Starter' },
 ];
 
-const partners = [
-  { name: 'WhatsApp Business', initial: 'WA' },
-  { name: 'Cloudinary', initial: 'CL' },
-  { name: 'Vercel', initial: 'VC' },
-  { name: 'Supabase', initial: 'SB' },
-  { name: 'Stripe', initial: 'ST' },
-  { name: 'Google Cloud', initial: 'GC' },
-];
+// ══════════════════════════════════════════════════════════════
+// COMPONENT
+// ══════════════════════════════════════════════════════════════
 
 export function LogosSection() {
   return (
-    <section className="py-16 border-y bg-muted/30">
+    <section className="py-12 border-y bg-muted/30">
       <div className="container mx-auto px-4">
-        <p className="text-center text-sm font-medium text-muted-foreground mb-8">
-          Dipercaya oleh ribuan UMKM & bermitra dengan platform terpercaya
-        </p>
-
-        <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 mb-12">
-          {partners.map((partner) => (
+        {/* ════════════════════════════════════════════════════ */}
+        {/* VALUE PROPOSITIONS                                   */}
+        {/* ════════════════════════════════════════════════════ */}
+        <div className="flex flex-wrap justify-center items-center gap-6 md:gap-12 mb-8">
+          {values.map((value) => (
             <div
-              key={partner.name}
-              className="flex items-center justify-center w-20 h-12 rounded-lg bg-background border text-muted-foreground hover:text-foreground hover:border-primary/50 transition-colors"
-              title={partner.name}
+              key={value.text}
+              className="flex items-center gap-2 text-sm md:text-base"
             >
-              <span className="font-bold text-lg">{partner.initial}</span>
+              <value.icon className={`h-5 w-5 ${value.color}`} />
+              <span className="text-muted-foreground">{value.text}</span>
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
+        {/* ════════════════════════════════════════════════════ */}
+        {/* STATS (Real, not fake)                               */}
+        {/* ════════════════════════════════════════════════════ */}
+        <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
           {stats.map((stat) => (
             <div key={stat.label} className="text-center">
               <div className="text-2xl md:text-3xl font-bold text-primary mb-1">
                 {stat.value}
               </div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>

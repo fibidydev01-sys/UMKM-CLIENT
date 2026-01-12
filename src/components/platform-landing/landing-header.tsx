@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Store, Menu, ChevronDown } from 'lucide-react';
+import { Store, Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -16,35 +16,44 @@ import {
 } from '@/components/ui/navigation-menu';
 import { cn } from '@/lib/cn';
 
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION DATA - V8.1 Copywriting (UPDATED)
+// ══════════════════════════════════════════════════════════════
+
 const features = [
   {
-    title: 'Toko Online Instan',
-    href: '#features',
-    description: 'Buat toko online profesional dalam 5 menit tanpa coding.',
+    title: 'Alamat Sendiri',
+    href: '/fitur#alamat',
+    description: 'namakamu.fibidy.com bukan numpang, ini punya kamu.',
   },
   {
-    title: 'Order via WhatsApp',
-    href: '#features',
-    description: 'Terima pesanan langsung ke WhatsApp dengan detail lengkap.',
+    title: 'Fibidy AI',
+    href: '/fitur#ai',
+    description: 'Bantuin nulis deskripsi, caption, promo.',
   },
   {
-    title: 'Kelola Produk',
-    href: '#features',
-    description: 'Tambah produk unlimited dengan foto, harga, dan kategori.',
+    title: 'Order/Booking WhatsApp',
+    href: '/fitur#whatsapp',
+    description: 'Langsung masuk ke WhatsApp, familiar.',
   },
   {
-    title: 'Dashboard Analytics',
-    href: '#features',
-    description: 'Pantau omzet dan performa toko dari dashboard.',
+    title: '15+ Kategori',
+    href: '/fitur#kategori',
+    description: 'Produk, jasa, atau dua-duanya.',
   },
 ];
 
+// UPDATED: Tambah About
 const navItems = [
-  { label: 'Cara Kerja', href: '#how-it-works' },
-  { label: 'Harga', href: '#pricing' },
-  { label: 'Testimoni', href: '#testimonials' },
-  { label: 'FAQ', href: '#faq' },
+  { label: 'Tentang', href: '/about' },
+  { label: 'Fitur', href: '/fitur' },
+  { label: 'Cara Kerja', href: '/cara-kerja' },
+  { label: 'Harga', href: '/harga' },
 ];
+
+// ══════════════════════════════════════════════════════════════
+// COMPONENT
+// ══════════════════════════════════════════════════════════════
 
 export function LandingHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -58,16 +67,6 @@ export function LandingHeader() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    setIsOpen(false);
-    if (href.startsWith('#')) {
-      const element = document.querySelector(href);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
-
   return (
     <header
       className={cn(
@@ -79,6 +78,9 @@ export function LandingHeader() {
     >
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
+          {/* ════════════════════════════════════════════════════ */}
+          {/* LOGO                                                 */}
+          {/* ════════════════════════════════════════════════════ */}
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
               <Store className="h-5 w-5 text-primary-foreground" />
@@ -86,8 +88,21 @@ export function LandingHeader() {
             <span className="font-bold text-xl">Fibidy</span>
           </Link>
 
+          {/* ════════════════════════════════════════════════════ */}
+          {/* DESKTOP NAVIGATION                                   */}
+          {/* ════════════════════════════════════════════════════ */}
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList>
+              {/* About Link (NEW) */}
+              <NavigationMenuItem>
+                <Link href="/about" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Tentang
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
+
+              {/* Fitur Dropdown */}
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Fitur</NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -95,12 +110,8 @@ export function LandingHeader() {
                     {features.map((feature) => (
                       <li key={feature.title}>
                         <NavigationMenuLink asChild>
-                          <a
+                          <Link
                             href={feature.href}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              scrollToSection(feature.href);
-                            }}
                             className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                           >
                             <div className="text-sm font-medium leading-none">
@@ -109,7 +120,7 @@ export function LandingHeader() {
                             <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                               {feature.description}
                             </p>
-                          </a>
+                          </Link>
                         </NavigationMenuLink>
                       </li>
                     ))}
@@ -117,32 +128,41 @@ export function LandingHeader() {
                 </NavigationMenuContent>
               </NavigationMenuItem>
 
-              {navItems.map((item) => (
-                <NavigationMenuItem key={item.href}>
-                  <NavigationMenuLink
-                    className={navigationMenuTriggerStyle()}
-                    href={item.href}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      scrollToSection(item.href);
-                    }}
-                  >
-                    {item.label}
+              {/* Cara Kerja */}
+              <NavigationMenuItem>
+                <Link href="/cara-kerja" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Cara Kerja
                   </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
+                </Link>
+              </NavigationMenuItem>
+
+              {/* Harga */}
+              <NavigationMenuItem>
+                <Link href="/harga" legacyBehavior passHref>
+                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                    Harga
+                  </NavigationMenuLink>
+                </Link>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
 
+          {/* ════════════════════════════════════════════════════ */}
+          {/* DESKTOP CTA                                          */}
+          {/* ════════════════════════════════════════════════════ */}
           <div className="hidden md:flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link href="/login">Masuk</Link>
             </Button>
             <Button asChild>
-              <Link href="/register">Daftar Gratis</Link>
+              <Link href="/register">Buat Toko</Link>
             </Button>
           </div>
 
+          {/* ════════════════════════════════════════════════════ */}
+          {/* MOBILE MENU                                          */}
+          {/* ════════════════════════════════════════════════════ */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild className="md:hidden">
               <Button variant="ghost" size="icon">
@@ -151,42 +171,58 @@ export function LandingHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-80">
               <SheetTitle className="sr-only">Menu Navigasi</SheetTitle>
+
+              {/* Mobile Logo */}
               <div className="flex items-center gap-2 mb-8">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
                   <Store className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <span className="font-bold text-xl">Fibidy</span>
               </div>
+
               <nav className="flex flex-col gap-2">
-                <div className="mb-2">
-                  <p className="text-sm font-semibold text-muted-foreground mb-2">Fitur</p>
-                  {features.map((feature) => (
-                    <button
-                      key={feature.title}
-                      onClick={() => scrollToSection(feature.href)}
-                      className="block w-full text-left px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
-                    >
-                      {feature.title}
-                    </button>
-                  ))}
-                </div>
-                <div className="border-t pt-4">
+                {/* Main Nav Links */}
+                <div className="space-y-1">
                   {navItems.map((item) => (
-                    <button
+                    <Link
                       key={item.href}
-                      onClick={() => scrollToSection(item.href)}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
                       className="block w-full text-left px-3 py-3 rounded-md font-medium hover:bg-accent transition-colors"
                     >
                       {item.label}
-                    </button>
+                    </Link>
                   ))}
                 </div>
+
+                {/* Fitur Section */}
+                <div className="border-t pt-4 mt-2">
+                  <p className="text-sm font-semibold text-muted-foreground mb-2 px-3">
+                    Fitur Unggulan
+                  </p>
+                  {features.map((feature) => (
+                    <Link
+                      key={feature.title}
+                      href={feature.href}
+                      onClick={() => setIsOpen(false)}
+                      className="block w-full text-left px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
+                    >
+                      {feature.title}
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Mobile CTA */}
                 <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
                   <Button variant="outline" asChild className="w-full">
-                    <Link href="/login">Masuk</Link>
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      Masuk
+                    </Link>
                   </Button>
                   <Button asChild className="w-full">
-                    <Link href="/register">Daftar Gratis</Link>
+                    <Link href="/register" onClick={() => setIsOpen(false)}>
+                      Buat Toko
+                    </Link>
                   </Button>
                 </div>
               </nav>

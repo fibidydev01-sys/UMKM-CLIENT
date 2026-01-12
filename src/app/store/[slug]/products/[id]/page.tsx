@@ -166,7 +166,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         tenant={{
           name: tenant.name,
           slug: tenant.slug,
-          whatsapp: tenant.whatsapp,
+          whatsapp: tenant.whatsapp || '', // ✅ FIX: Provide default empty string
         }}
       />
 

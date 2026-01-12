@@ -1,67 +1,45 @@
-import type { Metadata } from 'next';
-import {
-  LandingHeader,
-  LandingFooter,
-  HeroSection,
-  LogosSection,
-  ProblemSection,
-  SolutionSection,
-  HowItWorksSection,
-  TestimonialHighlightSection,
-  FeaturesSection,
-  TestimonialsSection,
-  PricingSection,
-  FAQSection,
-  BlogSection,
-  CTASection,
-} from '@/components/platform-landing';
+// ══════════════════════════════════════════════════════════════
+// HOME PAGE - V8.2
+// UMKM Discover - Dribbble/Behance Style
+// ══════════════════════════════════════════════════════════════
 
+import type { Metadata } from 'next';
+import { LandingHeader, LandingFooter } from '@/components/platform-landing';
+import { UMKMDiscoverSection } from '@/components/platform-landing/umkm-discover-section';
+
+// ══════════════════════════════════════════════════════════════
+// METADATA
+// ══════════════════════════════════════════════════════════════
 export const metadata: Metadata = {
-  title: 'Fibidy - Platform Toko Online Gratis untuk UMKM Indonesia',
+  title: 'Fibidy - Discover UMKM Indonesia | Toko Online Lokal',
   description:
-    'Buat toko online profesional dalam hitungan menit. Kelola produk, terima pesanan via WhatsApp, dan tingkatkan penjualan Anda dengan mudah. Gratis selamanya!',
+    'Temukan berbagai UMKM lokal Indonesia. Warung makan, salon, laundry, bengkel, dan ribuan usaha lainnya. Semua punya toko online sendiri di Fibidy.',
   keywords: [
-    'toko online gratis',
-    'platform UMKM',
-    'jualan online',
-    'toko online Indonesia',
-    'buat toko online',
-    'WhatsApp order',
-    'katalog online',
-    'UMKM digital',
+    'umkm indonesia',
+    'toko online lokal',
+    'discover umkm',
+    'warung online',
+    'jasa lokal',
     'fibidy',
   ],
   openGraph: {
-    title: 'Fibidy - Platform Toko Online Gratis untuk UMKM Indonesia',
-    description: 'Buat toko online profesional dalam hitungan menit. Gratis selamanya!',
+    title: 'Fibidy - Discover UMKM Indonesia',
+    description: 'Temukan berbagai UMKM lokal Indonesia dengan toko online sendiri.',
     type: 'website',
     locale: 'id_ID',
     siteName: 'Fibidy',
   },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Fibidy - Platform Toko Online Gratis untuk UMKM',
-    description: 'Buat toko online profesional dalam hitungan menit. Gratis selamanya!',
-  },
 };
 
+// ══════════════════════════════════════════════════════════════
+// PAGE COMPONENT
+// ══════════════════════════════════════════════════════════════
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-background">
       <LandingHeader />
       <main className="flex-1">
-        <HeroSection />
-        <LogosSection />
-        <ProblemSection />
-        <SolutionSection />
-        <HowItWorksSection />
-        <TestimonialHighlightSection />
-        <FeaturesSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <FAQSection />
-        <BlogSection />
-        <CTASection />
+        <UMKMDiscoverSection />
       </main>
       <LandingFooter />
     </div>

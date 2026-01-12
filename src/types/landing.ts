@@ -3,7 +3,7 @@
 // ==========================================
 
 export interface LandingSection {
-  enabled?: boolean;  // ✅ Changed to optional
+  enabled?: boolean;
   title?: string;
   subtitle?: string;
   config?: Record<string, unknown>;
@@ -73,40 +73,45 @@ export interface TenantLandingConfig {
   cta?: LandingSection & { config?: CtaSectionConfig };
 }
 
+// ==========================================
+// DEFAULT LANDING CONFIG - ALL DISABLED!
+// Including all toggles inside config!
+// ==========================================
+
 export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
-  enabled: false,
+  enabled: false, // ❌ Disabled
   hero: {
-    enabled: true,
+    enabled: false, // ❌ Disabled
     title: '',
     subtitle: '',
     config: {
       layout: 'centered',
-      showCta: true,
+      showCta: false, // ❌ Disabled
       ctaText: 'Lihat Produk',
       overlayOpacity: 0.5,
     },
   },
   about: {
-    enabled: false,
+    enabled: false, // ❌ Disabled
     title: 'Tentang Kami',
     subtitle: '',
     config: {
-      showImage: true,
+      showImage: false, // ❌ Disabled
       features: [],
     },
   },
   products: {
-    enabled: true,
+    enabled: false, // ❌ Disabled
     title: 'Produk Kami',
     subtitle: 'Pilihan produk terbaik untuk Anda',
     config: {
       displayMode: 'featured',
       limit: 8,
-      showViewAll: true,
+      showViewAll: false, // ❌ Disabled
     },
   },
   testimonials: {
-    enabled: false,
+    enabled: false, // ❌ Disabled
     title: 'Testimoni',
     subtitle: 'Apa kata pelanggan kami',
     config: {
@@ -114,17 +119,17 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     },
   },
   contact: {
-    enabled: true,
+    enabled: false, // ❌ Disabled
     title: 'Hubungi Kami',
     subtitle: '',
     config: {
-      showMap: false,
-      showForm: false,
-      showSocialMedia: true,
+      showMap: false, // ❌ Disabled
+      showForm: false, // ❌ Disabled
+      showSocialMedia: false, // ❌ Disabled
     },
   },
   cta: {
-    enabled: false,
+    enabled: false, // ❌ Disabled
     title: 'Siap Berbelanja?',
     subtitle: '',
     config: {

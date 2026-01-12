@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-import Image from 'next/image';
+// ❌ REMOVE: import Image from 'next/image';
+// ❌ REMOVE: import { CldImage } from 'next-cloudinary';
+import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
 import Link from 'next/link';
 import { ShoppingCart, Plus, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,7 +13,7 @@ import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { productUrl } from '@/lib/store-url';
-import { getThumbnailUrl } from '@/lib/cloudinary';
+// ❌ REMOVE: import { getThumbnailUrl } from '@/lib/cloudinary';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -19,9 +21,6 @@ interface ProductCardProps {
   storeSlug: string;
   showAddToCart?: boolean;
 }
-
-// ✅ FIX: Blur placeholder for images
-const BLUR_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3C/svg%3E";
 
 export function ProductCard({
   product,
@@ -32,7 +31,6 @@ export function ProductCard({
   const addItem = useCartStore((state) => state.addItem);
   const itemQty = useItemQty(product.id);
 
-  // ✅ FIX: Memoize computed values
   const { hasDiscount, discountPercent, isOutOfStock } = useMemo(() => {
     const hasDiscount = product.comparePrice && product.comparePrice > product.price;
     return {
@@ -44,19 +42,14 @@ export function ProductCard({
     };
   }, [product.comparePrice, product.price, product.trackStock, product.stock]);
 
-  // ✅ FIX: Memoize image URL with thumbnail optimization
-  const imageUrl = useMemo(() => {
-    return product.images?.[0] ? getThumbnailUrl(product.images[0]) : null;
-  }, [product.images]);
+  // ✅ SIMPLIFIED: Just use the first image URL directly
+  const imageUrl = product.images?.[0];
 
-  // ✅ FIX: Memoize URL
   const url = useMemo(() => productUrl(storeSlug, product.id), [storeSlug, product.id]);
 
-  // ✅ FIX: Stabilize callback
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (isOutOfStock) return;
 
     setIsAdding(true);
@@ -77,22 +70,21 @@ export function ProductCard({
       <Link href={url}>
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          {imageUrl ? (
-            <Image
-              src={imageUrl}
-              alt={product.name}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              loading="lazy"
-              placeholder="blur"
-              blurDataURL={BLUR_DATA_URL}
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <ShoppingCart className="h-12 w-12 text-muted-foreground/30" />
-            </div>
-          )}
+          {/* ✅ OPTIMIZED: Auto-detects Cloudinary vs External */}
+          <OptimizedImage
+            src={imageUrl}
+            alt={product.name}
+            fill
+            crop="fill"
+            gravity="auto"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform group-hover:scale-105"
+            fallback={
+              <div className="flex h-full items-center justify-center">
+                <ShoppingCart className="h-12 w-12 text-muted-foreground/30" />
+              </div>
+            }
+          />
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
@@ -115,7 +107,7 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Quick Add Button (Desktop only) */}
+          {/* Quick Add Button */}
           {showAddToCart && !isOutOfStock && (
             <div className="hidden md:block absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
@@ -132,18 +124,16 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Content */}
+        {/* Content - unchanged */}
         <CardContent className="p-3">
           {product.category && (
             <p className="text-xs text-muted-foreground mb-1 truncate">
               {product.category}
             </p>
           )}
-
           <h3 className="font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
-
           <div className="mt-2 flex items-baseline gap-2">
             <span className="font-semibold text-primary">
               {formatPrice(product.price)}
@@ -154,11 +144,9 @@ export function ProductCard({
               </span>
             )}
           </div>
-
           {product.unit && (
             <p className="text-xs text-muted-foreground mt-1">per {product.unit}</p>
           )}
-
           {itemQty > 0 && (
             <div className="mt-2 flex items-center gap-1 text-xs text-primary">
               <ShoppingCart className="h-3 w-3" />
@@ -168,25 +156,14 @@ export function ProductCard({
         </CardContent>
       </Link>
 
-      {/* Mobile Add to Cart */}
+      {/* Mobile Add to Cart - unchanged */}
       {showAddToCart && !isOutOfStock && (
         <div className="px-3 pb-3 md:hidden">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full"
-            onClick={handleAddToCart}
-          >
+          <Button size="sm" variant="outline" className="w-full" onClick={handleAddToCart}>
             {isAdding ? (
-              <>
-                <Check className="h-4 w-4 mr-2" />
-                Ditambahkan
-              </>
+              <><Check className="h-4 w-4 mr-2" />Ditambahkan</>
             ) : (
-              <>
-                <Plus className="h-4 w-4 mr-2" />
-                Tambah
-              </>
+              <><Plus className="h-4 w-4 mr-2" />Tambah</>
             )}
           </Button>
         </div>

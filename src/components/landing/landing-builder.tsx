@@ -1,10 +1,16 @@
+// ============================================================================
+// FILE: src/components/landing/landing-builder.tsx
+// PURPOSE: Landing page builder with proper Publish flow (NO AUTO-SAVE!)
+// ✅ UPDATED: Added validation errors display
+// ============================================================================
+
 'use client';
 
 import { useState, useCallback } from 'react';
 import {
   Loader2,
   Eye,
-  Save,
+  Upload,
   RotateCcw,
   Target,
   BookOpen,
@@ -12,13 +18,18 @@ import {
   Star,
   Phone,
   Rocket,
+  AlertCircle,
+  AlertTriangle,
+  ChevronDown,
+  X,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Accordion,
   AccordionContent,
@@ -32,149 +43,144 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
 
 import { TestimonialEditor } from './testimonial-editor';
-import { tenantsApi } from '@/lib/api';
+import { normalizeTestimonials } from '@/lib/landing-utils';
+import { cn } from '@/lib/utils';
 import type { TenantLandingConfig, Testimonial } from '@/types';
 
-// ==========================================
+// ============================================================================
 // TYPES
-// ==========================================
+// ============================================================================
 
 interface LandingBuilderProps {
   config: TenantLandingConfig;
   onConfigChange: (config: TenantLandingConfig) => void;
   tenantSlug: string;
-  onSave?: () => void;
-  hasUnsavedChanges?: boolean;
+  hasUnsavedChanges: boolean;
+  isSaving: boolean;
+  validationErrors?: string[];
+  onPublish: () => Promise<boolean>;
+  onDiscard: () => void;
+  onReset: () => Promise<boolean>;
+  onClearErrors?: () => void;
 }
 
-// ==========================================
+// ============================================================================
 // SECTION DEFINITIONS
-// ==========================================
+// ============================================================================
 
 const SECTIONS = [
-  { key: 'hero', title: 'Hero Section', description: 'Banner utama di bagian atas halaman', icon: Target },
-  { key: 'about', title: 'Tentang Kami', description: 'Informasi tentang toko Anda', icon: BookOpen },
-  { key: 'products', title: 'Produk', description: 'Tampilkan produk unggulan', icon: ShoppingBag },
-  { key: 'testimonials', title: 'Testimoni', description: 'Ulasan dari pelanggan', icon: Star },
-  { key: 'contact', title: 'Kontak', description: 'Informasi kontak toko', icon: Phone },
-  { key: 'cta', title: 'Call to Action', description: 'Ajakan untuk berbelanja', icon: Rocket },
+  {
+    key: 'hero',
+    title: 'Hero Section',
+    description: 'Banner utama di bagian atas halaman',
+    icon: Target
+  },
+  {
+    key: 'about',
+    title: 'Tentang Kami',
+    description: 'Informasi tentang toko Anda',
+    icon: BookOpen
+  },
+  {
+    key: 'products',
+    title: 'Produk Unggulan',
+    description: 'Tampilkan produk terbaik Anda',
+    icon: ShoppingBag
+  },
+  {
+    key: 'testimonials',
+    title: 'Testimoni',
+    description: 'Ulasan dari pelanggan',
+    icon: Star
+  },
+  {
+    key: 'contact',
+    title: 'Kontak',
+    description: 'Informasi kontak toko',
+    icon: Phone
+  },
+  {
+    key: 'cta',
+    title: 'Call to Action',
+    description: 'Ajakan untuk berbelanja',
+    icon: Rocket
+  },
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
 
-// ==========================================
-// HELPER: Flatten nested array (untuk testimonials)
-// ==========================================
-function flattenItems(items: unknown): Testimonial[] {
-  if (!items) return [];
-
-  let result = items;
-  while (Array.isArray(result) && result.length > 0 && Array.isArray(result[0])) {
-    result = result[0];
-  }
-
-  if (!Array.isArray(result)) return [];
-
-  return result.filter(
-    (item): item is Testimonial =>
-      item && typeof item === 'object' &&
-      typeof item.id === 'string' &&
-      typeof item.name === 'string' && item.name.trim() !== '' &&
-      typeof item.content === 'string' && item.content.trim() !== ''
-  );
-}
-
-// ==========================================
+// ============================================================================
 // MAIN COMPONENT
-// ==========================================
+// ============================================================================
 
 export function LandingBuilder({
   config,
   onConfigChange,
   tenantSlug,
-  onSave,
   hasUnsavedChanges,
+  isSaving,
+  validationErrors = [],
+  onPublish,
+  onDiscard,
+  onReset,
+  onClearErrors,
 }: LandingBuilderProps) {
-  const [isSaving, setIsSaving] = useState(false);
   const [expandedSections, setExpandedSections] = useState<string[]>(['hero']);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  // ==========================================
-  // SAVE - Langsung save apa adanya, GA ADA DEFAULT!
-  // ==========================================
-  const saveToDb = useCallback(async (configToSave: TenantLandingConfig) => {
-    const testimonialItems = flattenItems(configToSave.testimonials?.config?.items);
-
-    // Check any section enabled = global enabled
-    const hasActive =
-      configToSave.hero?.enabled ||
-      configToSave.about?.enabled ||
-      configToSave.products?.enabled ||
-      (configToSave.testimonials?.enabled && testimonialItems.length > 0) ||
-      configToSave.contact?.enabled ||
-      configToSave.cta?.enabled;
-
-    const toSave: TenantLandingConfig = {
-      ...configToSave,
-      enabled: hasActive || false,
-      testimonials: {
-        ...configToSave.testimonials,
-        config: { items: testimonialItems },
-      },
-    };
-
-    await tenantsApi.update({ landingConfig: toSave });
-    return toSave;
-  }, []);
-
-  // ==========================================
-  // TOGGLE SECTION - AUTO SAVE!
-  // ==========================================
-  const handleToggleSection = async (key: SectionKey, enabled: boolean) => {
-    const newConfig = {
-      ...config,
-      [key]: {
-        ...config[key],
-        enabled,
-      },
-    };
-
-    onConfigChange(newConfig);
-
-    // AUTO SAVE!
-    try {
-      await saveToDb(newConfig);
-      const sectionTitle = SECTIONS.find(s => s.key === key)?.title;
-      toast.success(`${sectionTitle} ${enabled ? 'aktif' : 'nonaktif'}`);
-    } catch {
-      toast.error('Gagal menyimpan');
-    }
-  };
-
-  // ==========================================
-  // UPDATE HANDLERS
-  // ==========================================
-  const handleUpdateSection = (key: SectionKey, updates: Record<string, unknown>) => {
+  // ==========================================================================
+  // TOGGLE SECTION - LOCAL ONLY, NO AUTO-SAVE!
+  // ==========================================================================
+  const handleToggleSection = useCallback((key: SectionKey, enabled: boolean) => {
     const currentSection = config[key] || {};
-    const currentConfig = (currentSection as Record<string, unknown>).config || {};
-    const updatesConfig = (updates as Record<string, unknown>).config || {};
-
     onConfigChange({
       ...config,
       [key]: {
         ...currentSection,
-        ...updates,
-        config: { ...currentConfig, ...updatesConfig },
+        enabled,
       },
     });
-  };
+  }, [config, onConfigChange]);
 
-  const handleUpdateSectionConfig = (key: SectionKey, configUpdates: Record<string, unknown>) => {
+  // ==========================================================================
+  // UPDATE HANDLERS
+  // ==========================================================================
+  const handleUpdateSection = useCallback((
+    key: SectionKey,
+    field: string,
+    value: string
+  ) => {
+    const currentSection = config[key] || {};
+    onConfigChange({
+      ...config,
+      [key]: {
+        ...currentSection,
+        [field]: value,
+      },
+    });
+  }, [config, onConfigChange]);
+
+  const handleUpdateSectionConfig = useCallback((
+    key: SectionKey,
+    configUpdates: Record<string, unknown>
+  ) => {
     const currentSection = config[key] || {};
     const currentConfig = (currentSection as Record<string, unknown>).config || {};
-
     onConfigChange({
       ...config,
       [key]: {
@@ -182,111 +188,199 @@ export function LandingBuilder({
         config: { ...currentConfig, ...configUpdates },
       },
     });
-  };
+  }, [config, onConfigChange]);
 
-  const handleTestimonialsChange = (items: Testimonial[]) => {
+  const handleTestimonialsChange = useCallback((items: Testimonial[]) => {
     onConfigChange({
       ...config,
       testimonials: {
         ...config.testimonials,
-        config: { items: flattenItems(items) },
+        config: { items: normalizeTestimonials(items) },
       },
     });
+  }, [config, onConfigChange]);
+
+  // ==========================================================================
+  // ACTION HANDLERS
+  // ==========================================================================
+  const handlePublish = async () => {
+    await onPublish();
   };
 
-  const handleTestimonialsTitleChange = (field: 'title' | 'subtitle', value: string) => {
-    onConfigChange({
-      ...config,
-      testimonials: {
-        ...config.testimonials,
-        [field]: value,
-      },
-    });
-  };
-
-  // ==========================================
-  // MANUAL SAVE
-  // ==========================================
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      await saveToDb(config);
-      toast.success('Landing page berhasil disimpan');
-      onSave?.();
-    } catch {
-      toast.error('Gagal menyimpan');
-    } finally {
-      setIsSaving(false);
+  const handleDiscard = () => {
+    if (hasUnsavedChanges) {
+      setShowDiscardDialog(true);
     }
   };
 
-  const handleReset = async () => {
-    // Reset = semua section disabled
-    const resetConfig: TenantLandingConfig = {
-      enabled: false,
-      hero: { enabled: false, title: '', subtitle: '', config: {} },
-      about: { enabled: false, title: '', subtitle: '', config: {} },
-      products: { enabled: false, title: '', subtitle: '', config: {} },
-      testimonials: { enabled: false, title: '', subtitle: '', config: { items: [] } },
-      contact: { enabled: false, title: '', subtitle: '', config: {} },
-      cta: { enabled: false, title: '', subtitle: '', config: {} },
-    };
-    onConfigChange(resetConfig);
-    await saveToDb(resetConfig);
-    toast.info('Landing page direset');
+  const handleConfirmDiscard = () => {
+    onDiscard();
+    setShowDiscardDialog(false);
+  };
+
+  const handleReset = () => {
+    setShowResetDialog(true);
+  };
+
+  const handleConfirmReset = async () => {
+    await onReset();
+    setShowResetDialog(false);
   };
 
   const handlePreview = () => {
     window.open(`/store/${tenantSlug}`, '_blank');
   };
 
-  // ==========================================
+  // ==========================================================================
   // RENDER
-  // ==========================================
+  // ==========================================================================
   return (
     <div className="space-y-6">
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+      {/* ✅ NEW: Validation Errors Display */}
+      {validationErrors.length > 0 && (
+        <Card className="p-4 border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-medium text-red-800 dark:text-red-200">
+                  Validasi Gagal ({validationErrors.length} error)
+                </p>
+                {onClearErrors && (
+                  <button
+                    onClick={onClearErrors}
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-200 p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <ul className="mt-2 space-y-1">
+                {validationErrors.map((error, index) => (
+                  <li key={index} className="text-xs text-red-700 dark:text-red-300 flex items-start gap-1">
+                    <span className="text-red-500">•</span>
+                    <span>{error}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Unsaved Changes Warning */}
+      {hasUnsavedChanges && validationErrors.length === 0 && (
+        <Card className="p-4 border-yellow-300 bg-yellow-50 dark:bg-yellow-950/30 dark:border-yellow-800">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                Ada perubahan yang belum dipublish
+              </p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
+                Klik &quot;Publish&quot; untuk menyimpan perubahan ke toko online Anda
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Header & Actions */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Landing Page Builder</h3>
-          <p className="text-sm text-muted-foreground">Kustomisasi halaman landing toko Anda</p>
+          <h3 className="text-lg font-semibold">Konfigurasi Section</h3>
+          <p className="text-sm text-muted-foreground">
+            Aktifkan dan atur setiap bagian landing page
+          </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleReset}>
+        <div className="flex gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            disabled={isSaving}
+          >
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset
           </Button>
-          <Button variant="outline" size="sm" onClick={handlePreview}>
+          {hasUnsavedChanges && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleDiscard}
+              disabled={isSaving}
+            >
+              Batalkan
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePreview}
+          >
             <Eye className="h-4 w-4 mr-2" />
             Preview
           </Button>
           <Button
             size="sm"
-            onClick={handleSave}
+            onClick={handlePublish}
             disabled={isSaving || !hasUnsavedChanges}
-            className={hasUnsavedChanges ? 'animate-pulse' : ''}
+            className={cn(
+              hasUnsavedChanges && !isSaving && 'bg-green-600 hover:bg-green-700'
+            )}
           >
-            {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-            Simpan
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4 mr-2" />
+            )}
+            {isSaving ? 'Publishing...' : 'Publish'}
           </Button>
         </div>
       </div>
 
-      {/* Sections */}
-      <Accordion type="multiple" value={expandedSections} onValueChange={setExpandedSections} className="space-y-4">
+      {/* Sections Accordion */}
+      <Accordion
+        type="multiple"
+        value={expandedSections}
+        onValueChange={setExpandedSections}
+        className="space-y-3"
+      >
         {SECTIONS.map((section) => {
           const IconComponent = section.icon;
           const sectionConfig = config[section.key];
           const isEnabled = sectionConfig?.enabled ?? false;
 
           return (
-            <AccordionItem key={section.key} value={section.key} className="border rounded-lg">
-              <div className="flex items-center gap-4 px-4 py-2">
-                <div className="flex items-center gap-3 flex-1">
-                  <IconComponent className="h-5 w-5 text-muted-foreground" />
-                  <div className="text-left">
-                    <p className="font-medium">{section.title}</p>
-                    <p className="text-sm text-muted-foreground">{section.description}</p>
+            <AccordionItem
+              key={section.key}
+              value={section.key}
+              className={cn(
+                'border rounded-lg overflow-hidden transition-colors',
+                isEnabled && 'border-primary/50 bg-primary/5'
+              )}
+            >
+              {/* Section Header */}
+              <div className="flex items-center gap-4 px-4 py-3">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className={cn(
+                    'p-2 rounded-lg',
+                    isEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                  )}>
+                    <IconComponent className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium truncate">{section.title}</p>
+                      {isEnabled && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
+                          Aktif
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {section.description}
+                    </p>
                   </div>
                 </div>
                 <Switch
@@ -294,44 +388,28 @@ export function LandingBuilder({
                   onCheckedChange={(enabled) => handleToggleSection(section.key, enabled)}
                   onClick={(e) => e.stopPropagation()}
                 />
-                <AccordionTrigger className="hover:no-underline py-2" />
+                <AccordionTrigger className="hover:no-underline p-0 [&[data-state=open]>svg]:rotate-180">
+                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                </AccordionTrigger>
               </div>
+
+              {/* Section Content */}
               <AccordionContent className="px-4 pb-4">
                 <Separator className="mb-4" />
                 {section.key === 'testimonials' ? (
-                  <div className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label htmlFor="testimonials-title">Judul</Label>
-                        <Input
-                          id="testimonials-title"
-                          value={config.testimonials?.title || ''}
-                          onChange={(e) => handleTestimonialsTitleChange('title', e.target.value)}
-                          placeholder="Masukkan judul..."
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="testimonials-subtitle">Subtitle</Label>
-                        <Input
-                          id="testimonials-subtitle"
-                          value={config.testimonials?.subtitle || ''}
-                          onChange={(e) => handleTestimonialsTitleChange('subtitle', e.target.value)}
-                          placeholder="Masukkan subtitle..."
-                        />
-                      </div>
-                    </div>
-                    <Separator />
-                    <TestimonialEditor
-                      items={flattenItems(config.testimonials?.config?.items)}
-                      onChange={handleTestimonialsChange}
-                    />
-                  </div>
+                  <TestimonialsSection
+                    config={config.testimonials}
+                    onTitleChange={(value) => handleUpdateSection('testimonials', 'title', value)}
+                    onSubtitleChange={(value) => handleUpdateSection('testimonials', 'subtitle', value)}
+                    onItemsChange={handleTestimonialsChange}
+                  />
                 ) : (
-                  <SectionEditor
+                  <GenericSection
                     sectionKey={section.key}
-                    config={config[section.key]}
-                    onUpdate={(updates) => handleUpdateSection(section.key, updates)}
-                    onUpdateConfig={(configUpdates) => handleUpdateSectionConfig(section.key, configUpdates)}
+                    config={sectionConfig}
+                    onTitleChange={(value) => handleUpdateSection(section.key, 'title', value)}
+                    onSubtitleChange={(value) => handleUpdateSection(section.key, 'subtitle', value)}
+                    onConfigChange={(updates) => handleUpdateSectionConfig(section.key, updates)}
                   />
                 )}
               </AccordionContent>
@@ -339,151 +417,369 @@ export function LandingBuilder({
           );
         })}
       </Accordion>
+
+      {/* Reset Confirmation Dialog */}
+      <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Landing Page?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Semua konfigurasi landing page akan direset ke default.
+              Perubahan ini akan langsung dipublish. Lanjutkan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmReset}>
+              Ya, Reset
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Discard Confirmation Dialog */}
+      <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Batalkan Perubahan?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Semua perubahan yang belum dipublish akan hilang. Lanjutkan?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Kembali</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDiscard}>
+              Ya, Batalkan
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-// ==========================================
-// SECTION EDITOR
-// ==========================================
+// ============================================================================
+// TESTIMONIALS SECTION
+// ============================================================================
 
-interface SectionEditorProps {
-  sectionKey: Exclude<SectionKey, 'testimonials'>;
-  config: TenantLandingConfig[SectionKey];
-  onUpdate: (updates: Record<string, unknown>) => void;
-  onUpdateConfig: (configUpdates: Record<string, unknown>) => void;
+interface TestimonialsSectionProps {
+  config: TenantLandingConfig['testimonials'];
+  onTitleChange: (value: string) => void;
+  onSubtitleChange: (value: string) => void;
+  onItemsChange: (items: Testimonial[]) => void;
 }
 
-function SectionEditor({ sectionKey, config, onUpdate, onUpdateConfig }: SectionEditorProps) {
+function TestimonialsSection({
+  config,
+  onTitleChange,
+  onSubtitleChange,
+  onItemsChange,
+}: TestimonialsSectionProps) {
+  const items = normalizeTestimonials(config?.config?.items);
+
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor={`${sectionKey}-title`}>Judul</Label>
+          <Label htmlFor="testimonials-title">Judul Section</Label>
           <Input
-            id={`${sectionKey}-title`}
+            id="testimonials-title"
             value={config?.title || ''}
-            onChange={(e) => onUpdate({ title: e.target.value })}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="Apa Kata Mereka?"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="testimonials-subtitle">Subtitle</Label>
+          <Input
+            id="testimonials-subtitle"
+            value={config?.subtitle || ''}
+            onChange={(e) => onSubtitleChange(e.target.value)}
+            placeholder="Testimoni dari pelanggan kami"
+          />
+        </div>
+      </div>
+      <Separator />
+      <div>
+        <Label className="mb-3 block">Daftar Testimoni ({items.length})</Label>
+        <TestimonialEditor
+          items={items}
+          onChange={onItemsChange}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// GENERIC SECTION (Hero, About, Products, Contact, CTA)
+// ============================================================================
+
+interface GenericSectionProps {
+  sectionKey: Exclude<SectionKey, 'testimonials'>;
+  config: TenantLandingConfig[SectionKey];
+  onTitleChange: (value: string) => void;
+  onSubtitleChange: (value: string) => void;
+  onConfigChange: (updates: Record<string, unknown>) => void;
+}
+
+function GenericSection({
+  sectionKey,
+  config,
+  onTitleChange,
+  onSubtitleChange,
+  onConfigChange,
+}: GenericSectionProps) {
+  const sectionConfig = (config?.config || {}) as Record<string, unknown>;
+
+  return (
+    <div className="space-y-4">
+      {/* Common Fields */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Judul Section</Label>
+          <Input
+            value={config?.title || ''}
+            onChange={(e) => onTitleChange(e.target.value)}
             placeholder="Masukkan judul..."
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`${sectionKey}-subtitle`}>Subtitle</Label>
+          <Label>Subtitle</Label>
           <Input
-            id={`${sectionKey}-subtitle`}
             value={config?.subtitle || ''}
-            onChange={(e) => onUpdate({ subtitle: e.target.value })}
+            onChange={(e) => onSubtitleChange(e.target.value)}
             placeholder="Masukkan subtitle..."
           />
         </div>
       </div>
 
-      {sectionKey === 'hero' && <HeroFields config={config?.config as Record<string, unknown>} onUpdate={onUpdateConfig} />}
-      {sectionKey === 'about' && <AboutFields config={config?.config as Record<string, unknown>} onUpdate={onUpdateConfig} />}
-      {sectionKey === 'products' && <ProductsFields config={config?.config as Record<string, unknown>} onUpdate={onUpdateConfig} />}
-      {sectionKey === 'cta' && <CtaFields config={config?.config as Record<string, unknown>} onUpdate={onUpdateConfig} />}
+      {/* Section-specific Fields */}
+      {sectionKey === 'hero' && (
+        <HeroFields config={sectionConfig} onChange={onConfigChange} />
+      )}
+      {sectionKey === 'about' && (
+        <AboutFields config={sectionConfig} onChange={onConfigChange} />
+      )}
+      {sectionKey === 'products' && (
+        <ProductsFields config={sectionConfig} onChange={onConfigChange} />
+      )}
+      {sectionKey === 'contact' && (
+        <ContactFields config={sectionConfig} onChange={onConfigChange} />
+      )}
+      {sectionKey === 'cta' && (
+        <CtaFields config={sectionConfig} onChange={onConfigChange} />
+      )}
     </div>
   );
 }
 
-// ==========================================
+// ============================================================================
 // FIELD COMPONENTS
-// ==========================================
+// ============================================================================
 
 interface FieldProps {
-  config: Record<string, unknown> | undefined;
-  onUpdate: (updates: Record<string, unknown>) => void;
+  config: Record<string, unknown>;
+  onChange: (updates: Record<string, unknown>) => void;
 }
 
-function HeroFields({ config, onUpdate }: FieldProps) {
+function HeroFields({ config, onChange }: FieldProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Layout</Label>
-        <Select value={(config?.layout as string) || 'centered'} onValueChange={(value) => onUpdate({ layout: value })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="centered">Tengah</SelectItem>
-            <SelectItem value="left">Kiri</SelectItem>
-            <SelectItem value="right">Kanan</SelectItem>
-          </SelectContent>
-        </Select>
+    <>
+      <Separator />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Layout</Label>
+          <Select
+            value={(config.layout as string) || 'centered'}
+            onValueChange={(value) => onChange({ layout: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="centered">Tengah</SelectItem>
+              <SelectItem value="left">Kiri</SelectItem>
+              <SelectItem value="right">Kanan</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Teks Tombol CTA</Label>
+          <Input
+            value={(config.ctaText as string) || ''}
+            onChange={(e) => onChange({ ctaText: e.target.value })}
+            placeholder="Lihat Produk"
+          />
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label>Teks Tombol CTA</Label>
-        <Input value={(config?.ctaText as string) || ''} onChange={(e) => onUpdate({ ctaText: e.target.value })} placeholder="Lihat Produk" />
+      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        <div>
+          <Label>Tampilkan Tombol CTA</Label>
+          <p className="text-xs text-muted-foreground">Tombol ajakan di hero section</p>
+        </div>
+        <Switch
+          checked={(config.showCta as boolean) ?? true}
+          onCheckedChange={(checked) => onChange({ showCta: checked })}
+        />
       </div>
-      <div className="flex items-center justify-between">
-        <Label>Tampilkan Tombol CTA</Label>
-        <Switch checked={(config?.showCta as boolean) ?? true} onCheckedChange={(checked) => onUpdate({ showCta: checked })} />
-      </div>
-    </div>
+    </>
   );
 }
 
-function AboutFields({ config, onUpdate }: FieldProps) {
+function AboutFields({ config, onChange }: FieldProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label>Tampilkan Gambar</Label>
-        <Switch checked={(config?.showImage as boolean) ?? true} onCheckedChange={(checked) => onUpdate({ showImage: checked })} />
+    <>
+      <Separator />
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label>Deskripsi Lengkap</Label>
+          <Textarea
+            value={(config.description as string) || ''}
+            onChange={(e) => onChange({ description: e.target.value })}
+            placeholder="Ceritakan tentang toko Anda..."
+            rows={4}
+          />
+        </div>
+        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div>
+            <Label>Tampilkan Gambar</Label>
+            <p className="text-xs text-muted-foreground">Gambar di samping deskripsi</p>
+          </div>
+          <Switch
+            checked={(config.showImage as boolean) ?? true}
+            onCheckedChange={(checked) => onChange({ showImage: checked })}
+          />
+        </div>
+        {(config.showImage as boolean) !== false && (
+          <div className="space-y-2">
+            <Label>URL Gambar</Label>
+            <Input
+              value={(config.image as string) || ''}
+              onChange={(e) => onChange({ image: e.target.value })}
+              placeholder="https://..."
+            />
+          </div>
+        )}
       </div>
-      <div className="space-y-2">
-        <Label>URL Gambar</Label>
-        <Input value={(config?.image as string) || ''} onChange={(e) => onUpdate({ image: e.target.value })} placeholder="https://..." />
-      </div>
-    </div>
+    </>
   );
 }
 
-function ProductsFields({ config, onUpdate }: FieldProps) {
+function ProductsFields({ config, onChange }: FieldProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Mode Tampilan</Label>
-        <Select value={(config?.displayMode as string) || 'featured'} onValueChange={(value) => onUpdate({ displayMode: value })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="featured">Produk Unggulan</SelectItem>
-            <SelectItem value="latest">Produk Terbaru</SelectItem>
-            <SelectItem value="all">Semua Produk</SelectItem>
-          </SelectContent>
-        </Select>
+    <>
+      <Separator />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Mode Tampilan</Label>
+          <Select
+            value={(config.displayMode as string) || 'featured'}
+            onValueChange={(value) => onChange({ displayMode: value })}
+          >
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="featured">Produk Unggulan</SelectItem>
+              <SelectItem value="latest">Produk Terbaru</SelectItem>
+              <SelectItem value="all">Semua Produk</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Jumlah Produk</Label>
+          <Input
+            type="number"
+            min={1}
+            max={20}
+            value={(config.limit as number) || 8}
+            onChange={(e) => onChange({ limit: parseInt(e.target.value) || 8 })}
+          />
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label>Jumlah Produk</Label>
-        <Input type="number" min={1} max={20} value={(config?.limit as number) || 8} onChange={(e) => onUpdate({ limit: parseInt(e.target.value) || 8 })} />
+      <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+        <div>
+          <Label>Tombol Lihat Semua</Label>
+          <p className="text-xs text-muted-foreground">Link ke halaman produk</p>
+        </div>
+        <Switch
+          checked={(config.showViewAll as boolean) ?? true}
+          onCheckedChange={(checked) => onChange({ showViewAll: checked })}
+        />
       </div>
-      <div className="flex items-center justify-between">
-        <Label>Tampilkan Tombol Lihat Semua</Label>
-        <Switch checked={(config?.showViewAll as boolean) ?? true} onCheckedChange={(checked) => onUpdate({ showViewAll: checked })} />
-      </div>
-    </div>
+    </>
   );
 }
 
-function CtaFields({ config, onUpdate }: FieldProps) {
+function ContactFields({ config, onChange }: FieldProps) {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label>Teks Tombol</Label>
-        <Input value={(config?.buttonText as string) || ''} onChange={(e) => onUpdate({ buttonText: e.target.value })} placeholder="Mulai Belanja" />
+    <>
+      <Separator />
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div>
+            <Label>Tampilkan Map</Label>
+            <p className="text-xs text-muted-foreground">Embed Google Maps</p>
+          </div>
+          <Switch
+            checked={(config.showMap as boolean) ?? false}
+            onCheckedChange={(checked) => onChange({ showMap: checked })}
+          />
+        </div>
+        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+          <div>
+            <Label>Tampilkan Form Kontak</Label>
+            <p className="text-xs text-muted-foreground">Form untuk mengirim pesan</p>
+          </div>
+          <Switch
+            checked={(config.showForm as boolean) ?? true}
+            onCheckedChange={(checked) => onChange({ showForm: checked })}
+          />
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label>Link Tombol</Label>
-        <Input value={(config?.buttonLink as string) || ''} onChange={(e) => onUpdate({ buttonLink: e.target.value })} placeholder="/products" />
+    </>
+  );
+}
+
+function CtaFields({ config, onChange }: FieldProps) {
+  return (
+    <>
+      <Separator />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="space-y-2">
+          <Label>Teks Tombol</Label>
+          <Input
+            value={(config.buttonText as string) || ''}
+            onChange={(e) => onChange({ buttonText: e.target.value })}
+            placeholder="Mulai Belanja"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Link Tombol</Label>
+          <Input
+            value={(config.buttonLink as string) || ''}
+            onChange={(e) => onChange({ buttonLink: e.target.value })}
+            placeholder="/products"
+          />
+        </div>
       </div>
       <div className="space-y-2">
         <Label>Style Tombol</Label>
-        <Select value={(config?.style as string) || 'primary'} onValueChange={(value) => onUpdate({ style: value })}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Select
+          value={(config.style as string) || 'primary'}
+          onValueChange={(value) => onChange({ style: value })}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            <SelectItem value="primary">Primary</SelectItem>
+            <SelectItem value="primary">Primary (Warna Utama)</SelectItem>
             <SelectItem value="secondary">Secondary</SelectItem>
             <SelectItem value="outline">Outline</SelectItem>
           </SelectContent>
         </Select>
       </div>
-    </div>
+    </>
   );
 }

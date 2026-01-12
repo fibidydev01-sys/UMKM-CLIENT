@@ -1,20 +1,33 @@
+// ══════════════════════════════════════════════════════════════
+// PRICING SECTION - V8.1 Copywriting
+// Starter (Free) + Business (Coming Soon)
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import {
   Check,
   X,
-  Sparkles,
   Rocket,
   Crown,
   Clock,
+  Lock,
+  CreditCard,
+  RefreshCw,
+  FileX,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
 
+// ══════════════════════════════════════════════════════════════
+// TYPES
+// ══════════════════════════════════════════════════════════════
+
 interface PricingFeature {
   text: string;
   included: boolean;
+  isHeader?: boolean;
 }
 
 interface PricingPlan {
@@ -31,76 +44,96 @@ interface PricingPlan {
   badge?: string;
 }
 
+// ══════════════════════════════════════════════════════════════
+// DATA - V8.1 Copywriting
+// ══════════════════════════════════════════════════════════════
+
 const plans: PricingPlan[] = [
   {
-    name: 'Gratis',
+    name: 'Starter',
     icon: Rocket,
     price: 'Rp 0',
-    priceNote: 'Selamanya gratis',
-    description: 'Cocok untuk memulai bisnis online',
+    priceNote: '/bulan',
+    description: 'Buat yang baru mulai',
     popular: false,
     comingSoon: false,
     features: [
-      { text: 'Toko online dengan subdomain', included: true },
-      { text: 'Hingga 50 produk', included: true },
-      { text: 'Order via WhatsApp', included: true },
-      { text: 'Dashboard dasar', included: true },
-      { text: 'Manajemen pelanggan', included: true },
-      { text: 'Support via email', included: true },
-      { text: 'Branding Fibidy', included: true },
-      { text: 'Custom domain', included: false },
-      { text: 'Landing page builder', included: false },
-      { text: 'Analytics lengkap', included: false },
-      { text: 'Hapus branding', included: false },
-      { text: 'Priority support', included: false },
+      { text: 'Alamat sendiri (namakamu.fibidy.com)', included: true },
+      { text: 'Pilih dari 15+ kategori bisnis', included: true },
+      { text: 'Sampe 50 produk/layanan', included: true },
+      { text: 'Order/booking ke WhatsApp', included: true },
+      { text: 'Data 200 pelanggan/klien', included: true },
+      { text: 'Struk dasar', included: true },
+      { text: 'Fibidy AI bantuin nulis', included: true },
+      { text: 'Tanpa iklan', included: true },
+      { text: 'Support email', included: true },
+      { text: 'Produk/layanan unlimited', included: false },
+      { text: 'Custom domain (tokoku.com)', included: false },
+      { text: 'Hapus tulisan Fibidy', included: false },
     ],
-    cta: 'Mulai Gratis',
+    cta: 'Buat Toko Sekarang',
     href: '/register',
   },
   {
-    name: 'Premium',
+    name: 'Business',
     icon: Crown,
-    price: 'Coming Soon',
-    priceNote: 'Segera hadir',
-    description: 'Untuk bisnis yang ingin berkembang lebih cepat',
+    price: 'Rp 149.000',
+    priceNote: '/bulan',
+    description: 'Buat yang mau lebih serius',
     popular: true,
     comingSoon: true,
     badge: 'Segera Hadir',
     features: [
-      { text: 'Semua fitur Gratis', included: true },
-      { text: 'Produk unlimited', included: true },
-      { text: 'Custom domain', included: true },
-      { text: 'Landing page builder', included: true },
-      { text: 'Analytics lengkap', included: true },
-      { text: 'Hapus branding Fibidy', included: true },
-      { text: 'Export data pelanggan', included: true },
-      { text: 'Priority support 24/7', included: true },
-      { text: 'Multiple admin', included: true },
-      { text: 'Integrasi marketplace', included: true },
-      { text: 'Laporan keuangan', included: true },
-      { text: 'Promo & diskon tools', included: true },
+      { text: 'Semua di Starter, plus:', included: true, isHeader: true },
+      { text: 'Produk/layanan unlimited', included: true },
+      { text: 'Pelanggan/klien unlimited', included: true },
+      { text: 'Alamat sendiri (tokoku.com)', included: true },
+      { text: 'Tanpa tulisan Fibidy', included: true },
+      { text: 'Laporan lengkap', included: true },
+      { text: 'Export data', included: true },
+      { text: 'Struk pake logo sendiri', included: true },
+      { text: 'Support prioritas', included: true },
     ],
     cta: 'Daftar Waiting List',
-    href: '/register?waitlist=premium',
+    href: '/register?waitlist=business',
   },
 ];
+
+// Trust badges data with icons
+const trustBadges = [
+  { icon: Lock, text: 'Pembayaran Aman' },
+  { icon: CreditCard, text: 'Berbagai Metode Bayar' },
+  { icon: RefreshCw, text: 'Bisa Upgrade Kapan Saja' },
+  { icon: FileX, text: 'Tanpa Kontrak' },
+];
+
+// ══════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ══════════════════════════════════════════════════════════════
 
 export function PricingSection() {
   return (
     <section id="pricing" className="py-20 md:py-32 bg-muted/30">
       <div className="container mx-auto px-4">
+        {/* ════════════════════════════════════════════════════ */}
+        {/* HEADER                                               */}
+        {/* ════════════════════════════════════════════════════ */}
         <div className="text-center mb-16">
-          <span className="text-primary font-semibold text-sm uppercase tracking-wider">
-            💰 Harga
+          <span className="text-primary font-semibold text-sm uppercase tracking-wider flex items-center justify-center gap-2">
+            <CreditCard className="h-4 w-4" />
+            Harga
           </span>
           <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
-            Mulai <span className="text-primary">Gratis</span>, Upgrade Kapan Saja
+            Pilih yang <span className="text-primary">Pas</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Tidak ada biaya tersembunyi. Pakai gratis selamanya atau upgrade untuk fitur lebih lengkap.
+            Untuk produk maupun jasa. Harga sama. Gak ada biaya tersembunyi.
           </p>
         </div>
 
+        {/* ════════════════════════════════════════════════════ */}
+        {/* PRICING CARDS                                        */}
+        {/* ════════════════════════════════════════════════════ */}
         <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {plans.map((plan) => (
             <Card
@@ -112,20 +145,20 @@ export function PricingSection() {
                   : 'border-border hover:border-primary/50 hover:shadow-lg'
               )}
             >
+              {/* Badge */}
               {plan.badge && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <Badge className="px-4 py-1 shadow-lg gap-1">
                     {plan.comingSoon ? (
                       <Clock className="h-3 w-3" />
-                    ) : (
-                      <Sparkles className="h-3 w-3" />
-                    )}
+                    ) : null}
                     {plan.badge}
                   </Badge>
                 </div>
               )}
 
               <CardHeader className="text-center pb-4 pt-8">
+                {/* Icon */}
                 <div className={cn(
                   'w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4',
                   plan.popular ? 'bg-primary/10' : 'bg-muted'
@@ -136,8 +169,10 @@ export function PricingSection() {
                   )} />
                 </div>
 
+                {/* Name */}
                 <h3 className="text-2xl font-bold">{plan.name}</h3>
 
+                {/* Price */}
                 <div className="mt-4 mb-2">
                   <div className={cn(
                     'text-4xl font-bold',
@@ -150,22 +185,27 @@ export function PricingSection() {
                   </div>
                 </div>
 
+                {/* Description */}
                 <p className="text-sm text-muted-foreground">
                   {plan.description}
                 </p>
               </CardHeader>
 
               <CardContent className="flex-1 flex flex-col">
+                {/* Features */}
                 <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature, index) => (
                     <li
                       key={index}
                       className={cn(
                         'flex items-start gap-3 text-sm',
-                        !feature.included && 'text-muted-foreground/50'
+                        !feature.included && 'text-muted-foreground/50',
+                        feature.isHeader && 'font-medium text-foreground'
                       )}
                     >
-                      {feature.included ? (
+                      {feature.isHeader ? (
+                        <span className="text-primary">→</span>
+                      ) : feature.included ? (
                         <Check className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
                       ) : (
                         <X className="h-4 w-4 text-muted-foreground/30 flex-shrink-0 mt-0.5" />
@@ -175,11 +215,12 @@ export function PricingSection() {
                   ))}
                 </ul>
 
+                {/* CTA Button */}
                 <Button
                   className="w-full"
                   variant={plan.popular ? 'default' : 'outline'}
                   size="lg"
-                  asChild
+                  asChild={!plan.comingSoon}
                   disabled={plan.comingSoon}
                 >
                   {plan.comingSoon ? (
@@ -196,12 +237,17 @@ export function PricingSection() {
           ))}
         </div>
 
+        {/* ════════════════════════════════════════════════════ */}
+        {/* TRUST BADGES (Icons instead of emojis)               */}
+        {/* ════════════════════════════════════════════════════ */}
         <div className="text-center mt-12 space-y-4">
           <div className="flex flex-wrap justify-center items-center gap-6">
-            <TrustBadge icon="🔒" text="Pembayaran Aman" />
-            <TrustBadge icon="💳" text="Berbagai Metode Bayar" />
-            <TrustBadge icon="🔄" text="Bisa Upgrade Kapan Saja" />
-            <TrustBadge icon="❌" text="Tanpa Kontrak" />
+            {trustBadges.map((badge) => (
+              <div key={badge.text} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <badge.icon className="h-4 w-4 text-primary" />
+                <span>{badge.text}</span>
+              </div>
+            ))}
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -217,14 +263,5 @@ export function PricingSection() {
         </div>
       </div>
     </section>
-  );
-}
-
-function TrustBadge({ icon, text }: { icon: string; text: string }) {
-  return (
-    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-      <span className="text-lg">{icon}</span>
-      <span>{text}</span>
-    </div>
   );
 }
