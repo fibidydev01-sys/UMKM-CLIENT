@@ -1,9 +1,3 @@
-// ══════════════════════════════════════════════════════════════
-// FIBIDY AI SECTION - V8.1 (NEW COMPONENT)
-// "Bingung Mau Nulis Apa? Ada Fibidy AI"
-// With interactive dialog examples
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
 import { useState } from 'react';
@@ -22,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
-// DATA - V8.1 Copywriting (4 Dialog Examples)
+// DATA - V8.1 Copywriting (4 Dialog Examples) - NO EMOJIS
 // ══════════════════════════════════════════════════════════════
 
 const dialogExamples = [
@@ -30,7 +24,6 @@ const dialogExamples = [
     id: 'bengkel',
     category: 'Bengkel Motor',
     icon: Wrench,
-    emoji: '🔧',
     color: 'text-orange-500',
     bgColor: 'bg-orange-500/10',
     conversation: [
@@ -40,7 +33,7 @@ const dialogExamples = [
       },
       {
         role: 'ai',
-        message: 'Bengkel motor! 🔧 Oke, sebelum gue bantuin:\n— Service apa aja? Ganti oli, tune up, body repair?\n— Terima motor apa? Semua atau spesialis?\n— Mau kesannya gimana? Profesional? Terjangkau?',
+        message: 'Bengkel motor! Oke, sebelum gue bantuin:\n— Service apa aja? Ganti oli, tune up, body repair?\n— Terima motor apa? Semua atau spesialis?\n— Mau kesannya gimana? Profesional? Terjangkau?',
       },
       {
         role: 'user',
@@ -60,7 +53,6 @@ const dialogExamples = [
     id: 'kue',
     category: 'Toko Kue',
     icon: Cake,
-    emoji: '🍪',
     color: 'text-pink-500',
     bgColor: 'bg-pink-500/10',
     conversation: [
@@ -70,7 +62,7 @@ const dialogExamples = [
       },
       {
         role: 'ai',
-        message: 'Kue kering lebaran! 🍪 Boleh tau:\n— Kue apa aja? Nastar, kastengel, putri salju?\n— Homemade atau produksi?\n— Target siapa? Keluarga? Corporate?',
+        message: 'Kue kering lebaran! Boleh tau:\n— Kue apa aja? Nastar, kastengel, putri salju?\n— Homemade atau produksi?\n— Target siapa? Keluarga? Corporate?',
       },
       {
         role: 'user',
@@ -90,7 +82,6 @@ const dialogExamples = [
     id: 'salon',
     category: 'Salon',
     icon: Scissors,
-    emoji: '💇',
     color: 'text-purple-500',
     bgColor: 'bg-purple-500/10',
     conversation: [
@@ -100,7 +91,7 @@ const dialogExamples = [
       },
       {
         role: 'ai',
-        message: 'Salon! 💇 Oke, promonya gimana?\n— Diskon berapa persen? Atau harga khusus?\n— Berlaku kapan? Ada syaratnya?\n— Mau kesannya eksklusif atau ramah semua?',
+        message: 'Salon! Oke, promonya gimana?\n— Diskon berapa persen? Atau harga khusus?\n— Berlaku kapan? Ada syaratnya?\n— Mau kesannya eksklusif atau ramah semua?',
       },
       {
         role: 'user',
@@ -120,7 +111,6 @@ const dialogExamples = [
     id: 'petshop',
     category: 'Pet Shop',
     icon: Dog,
-    emoji: '🐕',
     color: 'text-amber-500',
     bgColor: 'bg-amber-500/10',
     conversation: [
@@ -130,7 +120,7 @@ const dialogExamples = [
       },
       {
         role: 'ai',
-        message: 'Pet shop! 🐕 Lengkap ya, produk + jasa.\n— Fokusnya hewan apa? Anjing, kucing, atau semua?\n— Grooming-nya include apa aja?\n— Mau kesannya gimana?',
+        message: 'Pet shop! Lengkap ya, produk + jasa.\n— Fokusnya hewan apa? Anjing, kucing, atau semua?\n— Grooming-nya include apa aja?\n— Mau kesannya gimana?',
       },
       {
         role: 'user',
@@ -155,7 +145,7 @@ const dialogExamples = [
 function ChatBubble({
   role,
   message,
-  options
+  options,
 }: {
   role: 'user' | 'ai';
   message: string;
@@ -255,13 +245,9 @@ export function FibidyAISection() {
                 "Ini enaknya ditulis gimana ya?"
               </p>
 
-              <p>
-                Fibidy AI ada buat itu.
-              </p>
+              <p>Fibidy AI ada buat itu.</p>
 
-              <p>
-                Tinggal ceritain aja:
-              </p>
+              <p>Tinggal ceritain aja:</p>
 
               <ul className="space-y-2 pl-4">
                 <li className="flex items-start gap-2">
@@ -291,7 +277,7 @@ export function FibidyAISection() {
               </p>
             </div>
 
-            {/* Category Tabs */}
+            {/* Category Tabs - ICONS instead of emojis */}
             <div className="flex flex-wrap gap-2">
               {dialogExamples.map((example) => (
                 <button
@@ -304,7 +290,7 @@ export function FibidyAISection() {
                       : 'bg-muted hover:bg-muted/80'
                   )}
                 >
-                  <span>{example.emoji}</span>
+                  <example.icon className="h-4 w-4" />
                   <span>{example.category}</span>
                 </button>
               ))}
@@ -317,11 +303,13 @@ export function FibidyAISection() {
               <CardContent className="p-0">
                 {/* Chat Header */}
                 <div className="p-4 border-b bg-muted/30 flex items-center gap-3">
-                  <div className={cn(
-                    'w-10 h-10 rounded-full flex items-center justify-center',
-                    activeExample.bgColor
-                  )}>
-                    <span className="text-xl">{activeExample.emoji}</span>
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center',
+                      activeExample.bgColor
+                    )}
+                  >
+                    <activeExample.icon className={cn('h-5 w-5', activeExample.color)} />
                   </div>
                   <div>
                     <p className="font-semibold">{activeExample.category}</p>
@@ -343,9 +331,10 @@ export function FibidyAISection() {
               </CardContent>
             </Card>
 
-            {/* Disclaimer */}
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              💡 Fibidy AI ahlinya nulis, bukan bikin desain.
+            {/* Disclaimer - ICON instead of emoji */}
+            <p className="text-xs text-muted-foreground text-center mt-4 flex items-center justify-center gap-1">
+              <Sparkles className="h-3 w-3 text-yellow-500" />
+              Fibidy AI ahlinya nulis, bukan bikin desain.
             </p>
           </div>
         </div>

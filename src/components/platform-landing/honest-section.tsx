@@ -1,10 +1,4 @@
-// ══════════════════════════════════════════════════════════════
-// HONEST SECTION - V8.1 (NEW COMPONENT)
-// "Jujur Aja Ya" - Transparency about what Fibidy is/isn't
-// ══════════════════════════════════════════════════════════════
-
 import { Check, User, Handshake } from 'lucide-react';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // DATA - V8.1 Copywriting
@@ -24,7 +18,7 @@ const youProvide = [
 ];
 
 // ══════════════════════════════════════════════════════════════
-// COMPONENT
+// COMPONENT - NO EMOJIS
 // ══════════════════════════════════════════════════════════════
 
 export function HonestSection() {
@@ -36,9 +30,7 @@ export function HonestSection() {
           {/* HEADER                                               */}
           {/* ════════════════════════════════════════════════════ */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Jujur Aja Ya
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Jujur Aja Ya</h2>
             <p className="text-lg text-muted-foreground">
               Fibidy bukan sulap yang bikin usaha kamu langsung rame.
             </p>
@@ -86,7 +78,7 @@ export function HonestSection() {
           </div>
 
           {/* ════════════════════════════════════════════════════ */}
-          {/* CLOSING                                              */}
+          {/* CLOSING - ICON instead of emoji                      */}
           {/* ════════════════════════════════════════════════════ */}
           <div className="text-center">
             <div className="inline-block p-8 rounded-2xl bg-gradient-to-br from-primary/5 to-pink-500/5 border">
@@ -99,8 +91,9 @@ export function HonestSection() {
                   Makin bagus penampilannya, makin gampang dicari.
                 </span>
               </p>
-              <p className="text-xl font-bold text-primary mt-6">
-                Bareng-bareng, ya. 🤝
+              <p className="text-xl font-bold text-primary mt-6 flex items-center justify-center gap-2">
+                Bareng-bareng, ya.
+                <Handshake className="h-5 w-5" />
               </p>
             </div>
           </div>

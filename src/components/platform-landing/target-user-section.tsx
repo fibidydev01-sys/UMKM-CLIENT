@@ -1,27 +1,17 @@
-// ══════════════════════════════════════════════════════════════
-// TARGET USER SECTION - V8.1 (NEW COMPONENT)
-// "Buat Siapa Fibidy?"
-// ══════════════════════════════════════════════════════════════
-
-import {
-  ShoppingCart,
-  Wrench,
-  Coffee,
-  Lightbulb,
-} from 'lucide-react';
+import { ShoppingCart, Wrench, Coffee, Lightbulb } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
-// DATA - V8.1 Copywriting
+// DATA - V8.1 Copywriting - ICONS instead of emojis
 // ══════════════════════════════════════════════════════════════
 
 const targetUsers = [
   {
     icon: ShoppingCart,
-    emoji: '🛒',
     title: 'Jualan Produk',
-    categories: 'Warung • Toko Bangunan • Apotek • Toko Kue • Pet Shop • Frozen Food • Reseller • Oleh-oleh • dll',
+    categories:
+      'Warung • Toko Bangunan • Apotek • Toko Kue • Pet Shop • Frozen Food • Reseller • Oleh-oleh • dll',
     description: 'Tambahin produk, atur harga, pelanggan bisa langsung pesen.',
     color: 'text-blue-500',
     bgColor: 'bg-blue-500/10',
@@ -29,9 +19,9 @@ const targetUsers = [
   },
   {
     icon: Wrench,
-    emoji: '🔧',
     title: 'Nawarin Jasa',
-    categories: 'Bengkel • Laundry • Service AC • Salon • Barbershop • Percetakan • Fotografi • dll',
+    categories:
+      'Bengkel • Laundry • Service AC • Salon • Barbershop • Percetakan • Fotografi • dll',
     description: 'Tambahin layanan, tarif, pelanggan bisa langsung booking.',
     color: 'text-orange-500',
     bgColor: 'bg-orange-500/10',
@@ -39,7 +29,6 @@ const targetUsers = [
   },
   {
     icon: Coffee,
-    emoji: '☕',
     title: 'Produk + Jasa',
     categories: 'Kedai Kopi • Catering • Pet Shop • Gym • Kost • dll',
     description: 'Bisa tambahin menu/produk sekaligus layanan.',
@@ -50,7 +39,7 @@ const targetUsers = [
 ];
 
 // ══════════════════════════════════════════════════════════════
-// COMPONENT
+// COMPONENT - NO EMOJIS
 // ══════════════════════════════════════════════════════════════
 
 export function TargetUserSection() {
@@ -67,9 +56,7 @@ export function TargetUserSection() {
           <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">
             Buat Siapa Fibidy?
           </h2>
-          <p className="text-lg text-muted-foreground">
-            Buat kamu yang:
-          </p>
+          <p className="text-lg text-muted-foreground">Buat kamu yang:</p>
         </div>
 
         {/* ════════════════════════════════════════════════════ */}
@@ -94,7 +81,7 @@ export function TargetUserSection() {
                       user.bgColor
                     )}
                   >
-                    <span className="text-2xl">{user.emoji}</span>
+                    <user.icon className={cn('h-6 w-6', user.color)} />
                   </div>
                   <h3 className="font-bold text-xl">{user.title}</h3>
                 </div>
@@ -105,9 +92,7 @@ export function TargetUserSection() {
                 </p>
 
                 {/* Description */}
-                <p className="text-sm text-foreground">
-                  {user.description}
-                </p>
+                <p className="text-sm text-foreground">{user.description}</p>
               </CardContent>
             </Card>
           ))}
