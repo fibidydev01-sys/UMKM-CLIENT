@@ -95,11 +95,9 @@ export function LandingHeader() {
             <NavigationMenuList>
               {/* About Link (NEW) */}
               <NavigationMenuItem>
-                <Link href="/about" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Tentang
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href="/about">Tentang</Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Fitur Dropdown */}
@@ -130,20 +128,16 @@ export function LandingHeader() {
 
               {/* Cara Kerja */}
               <NavigationMenuItem>
-                <Link href="/cara-kerja" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Cara Kerja
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href="/cara-kerja">Cara Kerja</Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
 
               {/* Harga */}
               <NavigationMenuItem>
-                <Link href="/harga" legacyBehavior passHref>
-                  <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                    Harga
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                  <Link href="/harga">Harga</Link>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
