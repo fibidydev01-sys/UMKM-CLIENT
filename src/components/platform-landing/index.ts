@@ -1,6 +1,5 @@
 // ══════════════════════════════════════════════════════════════
 // PLATFORM LANDING COMPONENTS - BARREL EXPORTS
-// V8.2 — Discover Style
 // ══════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════════════
@@ -27,12 +26,6 @@ export { TargetUserSection } from './target-user-section';
 export { FibidyAISection } from './fibidy-ai-section';
 export { CategoriesSection } from './categories-section';
 export { HonestSection } from './honest-section';
-
-// ══════════════════════════════════════════════════════════════════
-// UMKM DISCOVER (V8.2)
-// ══════════════════════════════════════════════════════════════════
-export { UMKMShowcaseSection } from './umkm-showcase-section';
-export { UMKMDiscoverSection } from './umkm-discover-section';
 
 // ══════════════════════════════════════════════════════════════════
 // LAZY WRAPPERS

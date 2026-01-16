@@ -1,0 +1,481 @@
+'use client';
+
+import { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import {
+  Store,
+  Package,
+  ArrowRight,
+  AlertCircle,
+  Loader2,
+  ArrowLeft,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import {
+  DiscoverHeader,
+  CategoryFilterBar,
+  MinimalFooter,
+} from '@/components/discover';
+import { CATEGORY_CONFIG } from '@/config/categories';
+import { getTenantFullUrl } from '@/lib/store-url';
+import { cn } from '@/lib/cn';
+
+// ══════════════════════════════════════════════════════════════
+// TYPES
+// ══════════════════════════════════════════════════════════════
+
+interface TenantSitemapItem {
+  slug: string;
+  updatedAt: string;
+}
+
+interface TenantDetail {
+  id: string;
+  slug: string;
+  name: string;
+  category: string;
+  description: string | null;
+  logo: string | null;
+  banner: string | null;
+  _count?: {
+    products: number;
+  };
+}
+
+interface ShowcaseTenant extends TenantDetail {
+  url: string;
+}
+
+type SortOption = 'popular' | 'newest' | 'oldest' | 'name_asc' | 'name_desc';
+
+interface CategoryPageClientProps {
+  categoryKey: string;
+  categorySlug: string;
+}
+
+// ══════════════════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════════════════
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+const MAX_TENANTS = 50;
+
+// ══════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ══════════════════════════════════════════════════════════════
+
+function getCategoryLabel(category: string): string {
+  return CATEGORY_CONFIG[category]?.labelShort || category;
+}
+
+function getInitials(name?: string | null): string {
+  if (!name) return '??';
+  return name
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function categoryKeyToSlug(key: string): string {
+  return key.toLowerCase().replace(/_/g, '-');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SKELETON LOADER
+// ══════════════════════════════════════════════════════════════
+
+function TenantCardSkeleton() {
+  return (
+    <div className="group">
+      <Skeleton className="aspect-[4/3] w-full rounded-xl" />
+      <div className="flex items-center gap-3 mt-3 px-1">
+        <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+        <div className="flex-1 min-w-0">
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <Skeleton className="h-4 w-12" />
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// TENANT CARD - Dribbble Style
+// ══════════════════════════════════════════════════════════════
+
+interface TenantCardProps {
+  tenant: ShowcaseTenant;
+}
+
+function TenantCard({ tenant }: TenantCardProps) {
+  const productCount = tenant._count?.products || 0;
+
+  return (
+    <Link
+      href={tenant.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group block"
+    >
+      {/* Image Container */}
+      <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-muted">
+        {tenant.banner ? (
+          <Image
+            src={tenant.banner}
+            alt={tenant.name || 'Store'}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-primary/10 to-pink-500/20 flex items-center justify-center">
+            <Store className="h-12 w-12 text-primary/40" />
+          </div>
+        )}
+
+        {/* Hover Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+            {tenant.description && (
+              <p className="text-white/90 text-sm line-clamp-2 mb-3">
+                {tenant.description}
+              </p>
+            )}
+            <div className="flex items-center justify-between">
+              <Badge variant="secondary" className="bg-white/20 text-white border-0 text-xs">
+                {getCategoryLabel(tenant.category)}
+              </Badge>
+              <div className="flex items-center gap-1.5 text-white/80 text-sm">
+                <Package className="h-3.5 w-3.5" />
+                <span>{productCount} produk</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Corner Badge */}
+        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <div className="bg-white rounded-full p-2 shadow-lg">
+            <ArrowRight className="h-4 w-4 text-primary" />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center gap-3 mt-3 px-1">
+        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0 ring-2 ring-background">
+          {tenant.logo ? (
+            <Image
+              src={tenant.logo}
+              alt={tenant.name || 'Logo'}
+              width={32}
+              height={32}
+              className="object-cover"
+            />
+          ) : (
+            <span className="text-xs font-bold text-muted-foreground">
+              {getInitials(tenant.name)}
+            </span>
+          )}
+        </div>
+        <h3 className="font-medium text-sm text-foreground truncate flex-1 group-hover:text-primary transition-colors">
+          {tenant.name || 'Unnamed Store'}
+        </h3>
+        <span className="text-xs text-muted-foreground shrink-0">
+          {productCount} items
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// CATEGORY HERO
+// ══════════════════════════════════════════════════════════════
+
+interface CategoryHeroProps {
+  category: typeof CATEGORY_CONFIG[string];
+  tenantCount: number;
+}
+
+function CategoryHero({ category, tenantCount }: CategoryHeroProps) {
+  const Icon = category.icon;
+
+  return (
+    <section className="pt-20 pb-8 bg-gradient-to-b from-muted/50 to-background">
+      <div className="container mx-auto px-4">
+        {/* Back Link */}
+        <Link
+          href="/discover"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Kembali ke Discover
+        </Link>
+
+        {/* Category Info */}
+        <div className="flex items-start gap-4">
+          <div
+            className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: `${category.color}20` }}
+          >
+            <Icon className="h-8 w-8" style={{ color: category.color }} />
+          </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">{category.label}</h1>
+            <p className="text-muted-foreground mb-3">{category.description}</p>
+            <div className="flex items-center gap-4 text-sm">
+              <span className="text-muted-foreground">
+                <strong className="text-foreground">{tenantCount}</strong> UMKM terdaftar
+              </span>
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">
+                {category.labels.product}: {category.labels.price}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+// MAIN CLIENT COMPONENT
+// ══════════════════════════════════════════════════════════════
+
+export function CategoryPageClient({ categoryKey, categorySlug }: CategoryPageClientProps) {
+  const router = useRouter();
+  const category = CATEGORY_CONFIG[categoryKey];
+
+  // State
+  const [tenants, setTenants] = useState<ShowcaseTenant[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
+
+  // ════════════════════════════════════════════════════════════
+  // FETCH TENANTS
+  // ════════════════════════════════════════════════════════════
+
+  useEffect(() => {
+    async function fetchTenants() {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const sitemapRes = await fetch(
+          `${API_URL}/sitemap/tenants/paginated?page=1&limit=${MAX_TENANTS}`
+        );
+
+        if (!sitemapRes.ok) {
+          throw new Error('Failed to fetch tenant list');
+        }
+
+        const sitemapData = await sitemapRes.json();
+        const tenantSlugs: TenantSitemapItem[] = sitemapData.tenants || [];
+
+        if (tenantSlugs.length === 0) {
+          setTenants([]);
+          return;
+        }
+
+        const tenantDetails = await Promise.all(
+          tenantSlugs.map(async (item) => {
+            try {
+              const detailRes = await fetch(`${API_URL}/tenants/by-slug/${item.slug}`);
+              if (!detailRes.ok) return null;
+              return await detailRes.json();
+            } catch {
+              return null;
+            }
+          })
+        );
+
+        // Filter by category
+        const validTenants: ShowcaseTenant[] = tenantDetails
+          .filter((t): t is TenantDetail => t !== null && t.id && t.category === categoryKey)
+          .map((t) => ({
+            ...t,
+            url: getTenantFullUrl(t.slug),
+          }));
+
+        setTenants(validTenants);
+      } catch (err) {
+        console.error('Error fetching tenants:', err);
+        setError('Gagal memuat data toko');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchTenants();
+  }, [categoryKey]);
+
+  // ════════════════════════════════════════════════════════════
+  // FILTER & SORT
+  // ════════════════════════════════════════════════════════════
+
+  const filteredTenants = tenants
+    .filter((tenant) => {
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        return (
+          tenant.name?.toLowerCase().includes(query) ||
+          tenant.description?.toLowerCase().includes(query)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'name_asc':
+          return (a.name || '').localeCompare(b.name || '');
+        case 'name_desc':
+          return (b.name || '').localeCompare(a.name || '');
+        case 'popular':
+        default:
+          return (b._count?.products || 0) - (a._count?.products || 0);
+      }
+    });
+
+  // ════════════════════════════════════════════════════════════
+  // HANDLERS
+  // ════════════════════════════════════════════════════════════
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  const handleCategorySelect = useCallback(
+    (newCategory: string | null) => {
+      if (newCategory === null) {
+        router.push('/discover');
+      } else if (newCategory !== categoryKey) {
+        router.push(`/discover/${categoryKeyToSlug(newCategory)}`);
+      }
+    },
+    [categoryKey, router]
+  );
+
+  const handleSortChange = useCallback((sort: SortOption) => {
+    setSortBy(sort);
+  }, []);
+
+  // ════════════════════════════════════════════════════════════
+  // RENDER
+  // ════════════════════════════════════════════════════════════
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      {/* Header */}
+      <DiscoverHeader
+        onSearch={handleSearch}
+        onCategorySelect={handleCategorySelect}
+        searchQuery={searchQuery}
+        selectedCategory={categoryKey}
+      />
+
+      <main className="flex-1">
+        {/* Category Hero */}
+        <CategoryHero category={category} tenantCount={tenants.length} />
+
+        {/* Filter Bar (Sticky) */}
+        <CategoryFilterBar
+          selectedCategory={categoryKey}
+          onCategorySelect={handleCategorySelect}
+          sortBy={sortBy}
+          onSortChange={handleSortChange}
+          isSticky={true}
+        />
+
+        {/* Content */}
+        <section className="py-8">
+          <div className="container mx-auto px-4">
+            {/* Loading */}
+            {loading && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <TenantCardSkeleton key={i} />
+                ))}
+              </div>
+            )}
+
+            {/* Error */}
+            {error && !loading && (
+              <div className="text-center py-20">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4">
+                  <AlertCircle className="h-8 w-8 text-destructive" />
+                </div>
+                <p className="text-muted-foreground mb-4">{error}</p>
+                <Button variant="outline" onClick={() => window.location.reload()}>
+                  Coba Lagi
+                </Button>
+              </div>
+            )}
+
+            {/* Empty */}
+            {!loading && !error && filteredTenants.length === 0 && (
+              <div className="text-center py-20">
+                <div
+                  className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
+                  style={{ backgroundColor: `${category.color}20` }}
+                >
+                  <category.icon className="h-8 w-8" style={{ color: category.color }} />
+                </div>
+                <h3 className="font-semibold mb-2">
+                  {searchQuery ? 'Tidak ada hasil' : `Belum ada ${category.label}`}
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  {searchQuery
+                    ? `Tidak ditemukan UMKM dengan kata kunci "${searchQuery}"`
+                    : `Jadilah ${category.label} pertama di Fibidy!`}
+                </p>
+                {searchQuery ? (
+                  <Button variant="outline" onClick={() => setSearchQuery('')}>
+                    Reset Pencarian
+                  </Button>
+                ) : (
+                  <Button asChild>
+                    <Link href="/register">
+                      Daftar Sekarang
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Grid */}
+            {!loading && !error && filteredTenants.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
+                {filteredTenants.map((tenant) => (
+                  <TenantCard key={tenant.id} tenant={tenant} />
+                ))}
+              </div>
+            )}
+
+            {/* Load More */}
+            {!loading && !error && filteredTenants.length >= 20 && (
+              <div className="text-center mt-12">
+                <Button variant="outline" size="lg">
+                  <Loader2 className="mr-2 h-4 w-4" />
+                  Muat Lebih Banyak
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <MinimalFooter />
+    </div>
+  );
+}

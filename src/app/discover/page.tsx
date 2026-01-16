@@ -1,30 +1,29 @@
 // ══════════════════════════════════════════════════════════════
-// HOME PAGE - V8.2
-// UMKM Discover - Dribbble/Behance Style
+// DISCOVER PAGE - V9.0
+// Dribbble-style UMKM Discovery
 // ══════════════════════════════════════════════════════════════
 
 import type { Metadata } from 'next';
-import { LandingHeader, LandingFooter } from '@/components/platform-landing';
-import { UMKMDiscoverSection } from '@/components/platform-landing/umkm-discover-section';
-import { redirect } from 'next/navigation';
+import { DiscoverPageClient } from './client';
 
 // ══════════════════════════════════════════════════════════════
 // METADATA
 // ══════════════════════════════════════════════════════════════
+
 export const metadata: Metadata = {
-  title: 'Fibidy - Discover UMKM Indonesia | Toko Online Lokal',
+  title: 'Discover UMKM Lokal Indonesia | Fibidy',
   description:
     'Temukan berbagai UMKM lokal Indonesia. Warung makan, salon, laundry, bengkel, dan ribuan usaha lainnya. Semua punya toko online sendiri di Fibidy.',
   keywords: [
     'umkm indonesia',
-    'toko online lokal',
     'discover umkm',
+    'toko online lokal',
     'warung online',
     'jasa lokal',
     'fibidy',
   ],
   openGraph: {
-    title: 'Fibidy - Discover UMKM Indonesia',
+    title: 'Discover UMKM Lokal Indonesia | Fibidy',
     description: 'Temukan berbagai UMKM lokal Indonesia dengan toko online sendiri.',
     type: 'website',
     locale: 'id_ID',
@@ -35,6 +34,7 @@ export const metadata: Metadata = {
 // ══════════════════════════════════════════════════════════════
 // PAGE COMPONENT
 // ══════════════════════════════════════════════════════════════
-export default function HomePage() {
-  redirect('/discover');
+
+export default function DiscoverPage() {
+  return <DiscoverPageClient />;
 }

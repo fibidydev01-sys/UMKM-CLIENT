@@ -1,0 +1,44 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /private/
+Disallow: /checkout/
+Disallow: /cart/
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+
+# AhrefsBot
+User-agent: AhrefsBot
+Disallow: /
+
+# SemrushBot
+User-agent: SemrushBot
+Disallow: /
+
+# MJ12bot
+User-agent: MJ12bot
+Disallow: /
+
+# DotBot
+User-agent: DotBot
+Disallow: /
+
+# BLEXBot
+User-agent: BLEXBot
+Disallow: /
+
+# Host
+Host: http://localhost:3000
+
+# Sitemaps
+Sitemap: http://localhost:3000/sitemap.xml
+Sitemap: http://localhost:3000/server-sitemap-index.xml

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Store, Menu, X } from 'lucide-react';
+import { Store, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet';
 import {
@@ -89,9 +89,9 @@ export function LandingHeader() {
           </Link>
 
           {/* ════════════════════════════════════════════════════ */}
-          {/* DESKTOP NAVIGATION                                   */}
+          {/* DESKTOP NAVIGATION - HOVER ENABLED                   */}
           {/* ════════════════════════════════════════════════════ */}
-          <NavigationMenu className="hidden md:flex">
+          <NavigationMenu className="hidden md:flex" delayDuration={0}>
             <NavigationMenuList>
               {/* About Link (NEW) */}
               <NavigationMenuItem>
@@ -100,9 +100,11 @@ export function LandingHeader() {
                 </NavigationMenuLink>
               </NavigationMenuItem>
 
-              {/* Fitur Dropdown */}
+              {/* Fitur Dropdown - Opens on Hover */}
               <NavigationMenuItem>
-                <NavigationMenuTrigger>Fitur</NavigationMenuTrigger>
+                <NavigationMenuTrigger className="data-[state=open]:bg-accent/50">
+                  Fitur
+                </NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                     {features.map((feature) => (
