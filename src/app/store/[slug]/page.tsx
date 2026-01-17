@@ -20,6 +20,9 @@ import type { PublicTenant, Product } from '@/types';
 // STORE HOMEPAGE - CUSTOM LANDING ONLY
 // ==========================================
 
+// ✅ FIX: Force dynamic rendering to prevent stale landing config cache
+export const dynamic = 'force-dynamic';
+
 interface StorePageProps {
   params: Promise<{ slug: string }>;
 }

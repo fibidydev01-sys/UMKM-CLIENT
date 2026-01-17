@@ -12,6 +12,9 @@ import type { PublicTenant } from '@/types';
 // 🚀 NOW WITH TEMPLATE PROVIDER!
 // ==========================================
 
+// ✅ FIX: Force dynamic rendering to prevent stale tenant data cache
+export const dynamic = 'force-dynamic';
+
 interface StoreLayoutProps {
   children: React.ReactNode;
   params: Promise<{ slug: string }>;
