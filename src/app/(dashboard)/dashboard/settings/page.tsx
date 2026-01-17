@@ -11,21 +11,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { PageHeader } from '@/components/dashboard';
-import { LandingBuilder, LandingErrorBoundary } from '@/components/landing';
 import {
   SettingsNav,
   StoreInfoForm,
@@ -38,7 +24,6 @@ import {
 } from '@/components/settings';
 import { toast } from 'sonner';
 import { useTenant } from '@/hooks';
-import { useLandingConfig } from '@/hooks/use-landing-config';
 import { tenantsApi } from '@/lib/api';
 import type {
   BankAccount,
@@ -103,29 +88,10 @@ export default function SettingsPage() {
   // ---------------------------------------------------------------------------
   const { tenant, refresh } = useTenant();
 
-  // Inside the component, update useLandingConfig hook usage:
-
-  const {
-    config: landingConfig,
-    hasUnsavedChanges: hasUnsavedLandingChanges,
-    isSaving: isSavingLanding,
-    validationErrors: landingValidationErrors, // ✅ ADD THIS
-    updateConfig: setLandingConfig,
-    publishChanges: handlePublishLanding,
-    discardChanges: handleDiscardLanding,
-    resetToDefaults: handleResetLanding,
-    clearValidationErrors: clearLandingErrors, // ✅ ADD THIS
-  } = useLandingConfig({
-    initialConfig: tenant?.landingConfig,
-    onSaveSuccess: () => refresh(),
-  });
-
   // ---------------------------------------------------------------------------
   // State
   // ---------------------------------------------------------------------------
   const [activeTab, setActiveTab] = useState('store');
-  const [pendingTab, setPendingTab] = useState<string | null>(null);
-  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Saving states
@@ -227,30 +193,11 @@ export default function SettingsPage() {
   // ---------------------------------------------------------------------------
   const handleTabChange = useCallback(
     (newTab: string) => {
-      if (activeTab === 'landing' && newTab !== 'landing' && hasUnsavedLandingChanges) {
-        setPendingTab(newTab);
-        setShowUnsavedDialog(true);
-        return;
-      }
       setActiveTab(newTab);
       setSheetOpen(false);
     },
-    [activeTab, hasUnsavedLandingChanges]
+    []
   );
-
-  const handleDiscardChanges = useCallback(() => {
-    handleDiscardLanding();
-    setShowUnsavedDialog(false);
-    if (pendingTab) {
-      setActiveTab(pendingTab);
-      setPendingTab(null);
-    }
-  }, [pendingTab, handleDiscardLanding]);
-
-  const handleCancelTabChange = useCallback(() => {
-    setShowUnsavedDialog(false);
-    setPendingTab(null);
-  }, []);
 
   // ---------------------------------------------------------------------------
   // Save Handlers
@@ -503,25 +450,6 @@ export default function SettingsPage() {
         description="Kelola pengaturan toko dan preferensi Anda"
       />
 
-      {/* Unsaved Changes Dialog */}
-      <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Perubahan Belum Disimpan</AlertDialogTitle>
-            <AlertDialogDescription>
-              Anda memiliki perubahan pada Landing Page yang belum disimpan. Apakah Anda
-              ingin membuang perubahan tersebut?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelTabChange}>Kembali</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDiscardChanges}>
-              Buang Perubahan
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       {/* Dialogs */}
       <BankAccountDialog
         open={bankDialogOpen}
@@ -541,7 +469,6 @@ export default function SettingsPage() {
         <SettingsNav
           activeTab={activeTab}
           onTabChange={handleTabChange}
-          hasUnsavedLandingChanges={hasUnsavedLandingChanges}
           sheetOpen={sheetOpen}
           onSheetOpenChange={setSheetOpen}
         />
@@ -557,55 +484,6 @@ export default function SettingsPage() {
             onFormChange={updateFormData}
             onSave={handleSaveStore}
           />
-        </TabsContent>
-
-        {/* Tab: Landing Page */}
-        <TabsContent value="landing" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                Landing Page
-                {hasUnsavedLandingChanges && (
-                  <Badge
-                    variant="outline"
-                    className="text-yellow-600 border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
-                  >
-                    Belum dipublish
-                  </Badge>
-                )}
-              </CardTitle>
-              <CardDescription>
-                Kustomisasi halaman landing toko Anda. Perubahan tidak akan terlihat sampai
-                Anda klik &quot;Publish&quot;.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tenantLoading ? (
-                <div className="space-y-4">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-32 w-full" />
-                  <Skeleton className="h-32 w-full" />
-                </div>
-              ) : tenant ? (
-                <LandingErrorBoundary>
-                  <LandingBuilder
-                    config={landingConfig}
-                    onConfigChange={setLandingConfig}
-                    tenantSlug={tenant.slug}
-                    hasUnsavedChanges={hasUnsavedLandingChanges}
-                    isSaving={isSavingLanding}
-                    validationErrors={landingValidationErrors}
-                    onPublish={handlePublishLanding}
-                    onDiscard={handleDiscardLanding}
-                    onReset={handleResetLanding}
-                    onClearErrors={clearLandingErrors}
-                  />
-                </LandingErrorBoundary>
-              ) : (
-                <p className="text-muted-foreground">Gagal memuat data tenant</p>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Tab: Payment */}

@@ -5,7 +5,6 @@ import {
   CreditCard,
   Truck,
   Palette,
-  Layout,
   Search,
   Menu,
   type LucideIcon,
@@ -34,7 +33,6 @@ export interface SettingsMenuItem {
 interface SettingsNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  hasUnsavedLandingChanges?: boolean;
   sheetOpen: boolean;
   onSheetOpenChange: (open: boolean) => void;
 }
@@ -45,7 +43,6 @@ interface SettingsNavProps {
 
 export const SETTINGS_MENU: SettingsMenuItem[] = [
   { key: 'store', label: 'Toko', icon: Store },
-  { key: 'landing', label: 'Landing', icon: Layout },
   { key: 'payment', label: 'Pembayaran', icon: CreditCard },
   { key: 'shipping', label: 'Pengiriman', icon: Truck },
   { key: 'appearance', label: 'Tampilan', icon: Palette },
@@ -59,7 +56,6 @@ export const SETTINGS_MENU: SettingsMenuItem[] = [
 export function SettingsNav({
   activeTab,
   onTabChange,
-  hasUnsavedLandingChanges = false,
   sheetOpen,
   onSheetOpenChange,
 }: SettingsNavProps) {
@@ -94,7 +90,6 @@ export function SettingsNav({
               {SETTINGS_MENU.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.key;
-                const hasIndicator = item.key === 'landing' && hasUnsavedLandingChanges;
 
                 return (
                   <button
@@ -109,9 +104,6 @@ export function SettingsNav({
                   >
                     <Icon className="h-4 w-4" />
                     {item.label}
-                    {hasIndicator && (
-                      <span className="absolute right-3 h-2 w-2 rounded-full bg-yellow-500" />
-                    )}
                   </button>
                 );
               })}
@@ -121,17 +113,13 @@ export function SettingsNav({
       </div>
 
       {/* Desktop: Tabs */}
-      <TabsList className="hidden md:grid w-full grid-cols-6 lg:w-auto">
+      <TabsList className="hidden md:grid w-full grid-cols-5 lg:w-auto">
         {SETTINGS_MENU.map((item) => {
           const Icon = item.icon;
-          const hasIndicator = item.key === 'landing' && hasUnsavedLandingChanges;
           return (
             <TabsTrigger key={item.key} value={item.key} className="gap-2 relative">
               <Icon className="h-4 w-4" />
               <span className="hidden sm:inline">{item.label}</span>
-              {hasIndicator && (
-                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-yellow-500" />
-              )}
             </TabsTrigger>
           );
         })}

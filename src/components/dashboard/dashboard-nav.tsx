@@ -9,6 +9,7 @@ import {
   ShoppingCart,
   Settings,
   Store,
+  Layout,
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
@@ -53,6 +54,11 @@ const navigation: NavGroup[] = [
         title: 'Dashboard',
         href: '/dashboard',
         icon: LayoutDashboard,
+      },
+      {
+        title: 'Landing Builder',
+        href: '/dashboard/landing-builder',
+        icon: Layout,
       },
       {
         title: 'Produk',
