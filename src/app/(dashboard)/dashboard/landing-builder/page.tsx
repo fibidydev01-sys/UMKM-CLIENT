@@ -378,7 +378,7 @@ export default function LandingBuilderPage() {
                 </div>
               ) : tenant ? (
                 <LandingErrorBoundary>
-                  <TemplateProvider initialTemplateId="modern">
+                  <TemplateProvider initialTemplateId="suspended-minimalist">
                     <div className="space-y-6">
                       {/* Template Selector */}
                       <TemplateSelector />

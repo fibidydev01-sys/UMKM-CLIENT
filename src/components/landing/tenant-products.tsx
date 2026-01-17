@@ -26,6 +26,11 @@ interface TenantProductsProps {
  *
  * Wrapper that selects and renders the appropriate products variant
  * based on the current template context
+ *
+ * 🚀 NOTE: Currently only 2 products variants are implemented:
+ * - default, grid-hover, masonry, catalog, minimal-list -> ProductsGrid
+ * - carousel, featured-hero -> ProductsCarousel
+ * Other variants will fallback to default (ProductsGrid)
  */
 export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: TenantProductsProps) {
   const variant = useProductsVariant();
@@ -54,10 +59,11 @@ export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: 
   };
 
   // Render appropriate variant based on template
-  if (variant === 'carousel') {
+  // Carousel-based variants
+  if (variant === 'carousel' || variant === 'featured-hero') {
     return <ProductsCarousel {...commonProps} />;
   }
 
-  // Default: grid variant
+  // Default: grid variant (covers: default, grid-hover, masonry, catalog, minimal-list)
   return <ProductsGrid {...commonProps} />;
 }

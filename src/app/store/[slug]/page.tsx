@@ -94,7 +94,7 @@ export default async function StorePage({ params }: StorePageProps) {
         />
       )}
 
-      <TemplateProvider initialTemplateId="modern">
+      <TemplateProvider initialTemplateId="suspended-minimalist">
         <div className="container px-4 py-8 space-y-8">
           {landingConfig?.hero?.enabled && (
             <TenantHero

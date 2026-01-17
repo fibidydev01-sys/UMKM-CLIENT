@@ -20,6 +20,11 @@ interface TenantAboutProps {
  *
  * Wrapper that selects and renders the appropriate about variant
  * based on the current template context
+ *
+ * 🚀 NOTE: Currently only 2 about variants are implemented:
+ * - default, side-by-side, centered -> AboutGrid
+ * - cards, magazine, storytelling, timeline -> AboutCards
+ * Other variants will fallback to default (AboutGrid)
  */
 export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
   const variant = useAboutVariant();
@@ -43,10 +48,11 @@ export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
   };
 
   // Render appropriate variant based on template
-  if (variant === 'cards') {
+  // Card-based variants
+  if (variant === 'cards' || variant === 'magazine' || variant === 'storytelling' || variant === 'timeline') {
     return <AboutCards {...commonProps} />;
   }
 
-  // Default: grid variant
+  // Default: grid variant (covers: default, side-by-side, centered)
   return <AboutGrid {...commonProps} />;
 }

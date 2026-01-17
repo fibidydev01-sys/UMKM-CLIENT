@@ -21,6 +21,11 @@ interface TenantHeroProps {
  *
  * Wrapper that selects and renders the appropriate hero variant
  * based on the current template context
+ *
+ * 🚀 NOTE: Currently only 2 hero variants are implemented:
+ * - centered-minimal, gradient-overlay, default -> HeroCentered
+ * - split-screen -> HeroSplit
+ * Other variants will fallback to default (HeroCentered)
  */
 export function TenantHero({ config, fallbacks = {} }: TenantHeroProps) {
   const variant = useHeroVariant();
@@ -49,10 +54,11 @@ export function TenantHero({ config, fallbacks = {} }: TenantHeroProps) {
   };
 
   // Render appropriate variant based on template
-  if (variant === 'split') {
+  // 🚀 Split-screen variant
+  if (variant === 'split-screen') {
     return <HeroSplit {...commonProps} />;
   }
 
-  // Default: centered variant
+  // Default: centered variant (covers: default, centered-minimal, gradient-overlay, etc.)
   return <HeroCentered {...commonProps} overlayOpacity={overlayOpacity} />;
 }

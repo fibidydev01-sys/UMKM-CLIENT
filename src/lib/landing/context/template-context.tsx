@@ -2,6 +2,7 @@
 
 // ==========================================
 // TEMPLATE CONTEXT PROVIDER
+// 🚀 SYNCED WITH BACKEND - ALL VARIANTS
 // ==========================================
 // Manages the current template selection and provides
 // variant getters for each section
@@ -15,6 +16,9 @@ import {
   type HeroVariant,
   type AboutVariant,
   type ProductsVariant,
+  type TestimonialsVariant,
+  type ContactVariant,
+  type CtaVariant,
 } from '../templates';
 
 const TemplateContext = createContext<TemplateContextValue | null>(null);
@@ -41,6 +45,9 @@ export function TemplateProvider({ children, initialTemplateId }: TemplateProvid
     getHeroVariant: () => currentTemplate.variants.hero,
     getAboutVariant: () => currentTemplate.variants.about,
     getProductsVariant: () => currentTemplate.variants.products,
+    getTestimonialsVariant: () => currentTemplate.variants.testimonials || 'default',
+    getContactVariant: () => currentTemplate.variants.contact || 'default',
+    getCtaVariant: () => currentTemplate.variants.cta || 'default',
   };
 
   return <TemplateContext.Provider value={value}>{children}</TemplateContext.Provider>;
@@ -62,7 +69,7 @@ export function useTemplate(): TemplateContextValue {
 }
 
 /**
- * Hook to get the current variant for a specific section
+ * Hooks to get the current variant for each section
  */
 export function useHeroVariant(): HeroVariant {
   const { getHeroVariant } = useTemplate();
@@ -77,4 +84,19 @@ export function useAboutVariant(): AboutVariant {
 export function useProductsVariant(): ProductsVariant {
   const { getProductsVariant } = useTemplate();
   return getProductsVariant();
+}
+
+export function useTestimonialsVariant(): TestimonialsVariant {
+  const { getTestimonialsVariant } = useTemplate();
+  return getTestimonialsVariant();
+}
+
+export function useContactVariant(): ContactVariant {
+  const { getContactVariant } = useTemplate();
+  return getContactVariant();
+}
+
+export function useCtaVariant(): CtaVariant {
+  const { getCtaVariant } = useTemplate();
+  return getCtaVariant();
 }

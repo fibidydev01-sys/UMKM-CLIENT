@@ -1,13 +1,80 @@
 // ==========================================
 // LANDING PAGE TYPE DEFINITIONS
+// 🚀 SYNCED WITH BACKEND VALIDATOR
 // ==========================================
 
-export interface LandingSection {
+// ==========================================
+// VARIANT TYPES (from backend)
+// ==========================================
+
+export type HeroVariant =
+  | 'default'
+  | 'gradient-overlay'
+  | 'centered-minimal'
+  | 'split-screen'
+  | 'video-background'
+  | 'parallax'
+  | 'animated-gradient'
+  | 'glass-morphism';
+
+export type AboutVariant =
+  | 'default'
+  | 'side-by-side'
+  | 'centered'
+  | 'timeline'
+  | 'cards'
+  | 'magazine'
+  | 'storytelling';
+
+export type ProductsVariant =
+  | 'default'
+  | 'grid-hover'
+  | 'masonry'
+  | 'carousel'
+  | 'featured-hero'
+  | 'catalog'
+  | 'minimal-list';
+
+export type TestimonialsVariant =
+  | 'default'
+  | 'card-slider'
+  | 'quote-highlight'
+  | 'grid-cards'
+  | 'single-focus'
+  | 'video-testimonials'
+  | 'social-proof';
+
+export type ContactVariant =
+  | 'default'
+  | 'split-form'
+  | 'centered'
+  | 'map-focus'
+  | 'minimal'
+  | 'social-focused';
+
+export type CtaVariant =
+  | 'default'
+  | 'bold-center'
+  | 'gradient-banner'
+  | 'split-action'
+  | 'floating'
+  | 'minimal-line';
+
+// ==========================================
+// SECTION BASE INTERFACE
+// ==========================================
+
+export interface LandingSection<V = string> {
   enabled?: boolean;
   title?: string;
   subtitle?: string;
+  variant?: V;
   config?: Record<string, unknown>;
 }
+
+// ==========================================
+// SECTION CONFIG INTERFACES
+// ==========================================
 
 export interface HeroSectionConfig {
   layout?: 'centered' | 'left' | 'right';
@@ -63,14 +130,19 @@ export interface CtaSectionConfig {
   style?: 'primary' | 'secondary' | 'outline';
 }
 
+// ==========================================
+// MAIN CONFIG INTERFACE
+// ==========================================
+
 export interface TenantLandingConfig {
   enabled: boolean;
-  hero?: LandingSection & { config?: HeroSectionConfig };
-  about?: LandingSection & { config?: AboutSectionConfig };
-  products?: LandingSection & { config?: ProductsSectionConfig };
-  testimonials?: LandingSection & { config?: TestimonialsSectionConfig };
-  contact?: LandingSection & { config?: ContactSectionConfig };
-  cta?: LandingSection & { config?: CtaSectionConfig };
+  template?: string; // Template ID
+  hero?: LandingSection<HeroVariant> & { config?: HeroSectionConfig };
+  about?: LandingSection<AboutVariant> & { config?: AboutSectionConfig };
+  products?: LandingSection<ProductsVariant> & { config?: ProductsSectionConfig };
+  testimonials?: LandingSection<TestimonialsVariant> & { config?: TestimonialsSectionConfig };
+  contact?: LandingSection<ContactVariant> & { config?: ContactSectionConfig };
+  cta?: LandingSection<CtaVariant> & { config?: CtaSectionConfig };
 }
 
 // ==========================================
