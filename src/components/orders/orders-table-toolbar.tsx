@@ -4,41 +4,17 @@ import { Table } from '@tanstack/react-table';
 import { X, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import type { OrderListItem, OrderStatus, PaymentStatus } from '@/types';
+import type { OrderListItem } from '@/types';
 
 // ==========================================
-// ORDERS TABLE TOOLBAR
-// ✅ FIXED: Filter options sesuai Backend DTO
+// ORDERS TABLE TOOLBAR - MINIMAL VIEW
+// Simplified toolbar for minimal table view
+// Status filters removed - use drawer for filtering by status
 // ==========================================
 
 interface OrdersTableToolbarProps {
   table: Table<OrderListItem>;
 }
-
-// ✅ FIXED: Sesuai Backend - UPPERCASE
-const orderStatusOptions: { value: 'all' | OrderStatus; label: string }[] = [
-  { value: 'all', label: 'Semua Status' },
-  { value: 'PENDING', label: 'Menunggu' },
-  { value: 'PROCESSING', label: 'Diproses' },
-  { value: 'COMPLETED', label: 'Selesai' },
-  { value: 'CANCELLED', label: 'Dibatalkan' },
-];
-
-// ✅ FIXED: Sesuai Backend - UPPERCASE
-const paymentStatusOptions: { value: 'all' | PaymentStatus; label: string }[] = [
-  { value: 'all', label: 'Semua Pembayaran' },
-  { value: 'PENDING', label: 'Belum Bayar' },
-  { value: 'PARTIAL', label: 'Sebagian' },
-  { value: 'PAID', label: 'Lunas' },
-  { value: 'FAILED', label: 'Gagal' },
-];
 
 export function OrdersTableToolbar({ table }: OrdersTableToolbarProps) {
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -58,43 +34,7 @@ export function OrdersTableToolbar({ table }: OrdersTableToolbarProps) {
         />
       </div>
 
-      {/* Order Status Filter */}
-      <Select
-        value={(table.getColumn('status')?.getFilterValue() as string) ?? 'all'}
-        onValueChange={(value) =>
-          table.getColumn('status')?.setFilterValue(value === 'all' ? '' : value)
-        }
-      >
-        <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Status" />
-        </SelectTrigger>
-        <SelectContent>
-          {orderStatusOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {/* Payment Status Filter */}
-      <Select
-        value={(table.getColumn('paymentStatus')?.getFilterValue() as string) ?? 'all'}
-        onValueChange={(value) =>
-          table.getColumn('paymentStatus')?.setFilterValue(value === 'all' ? '' : value)
-        }
-      >
-        <SelectTrigger className="w-[160px]">
-          <SelectValue placeholder="Pembayaran" />
-        </SelectTrigger>
-        <SelectContent>
-          {paymentStatusOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/* Status filters removed - use drawer for details */}
 
       {/* Reset Filters */}
       {isFiltered && (

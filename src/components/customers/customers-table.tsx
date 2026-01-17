@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ColumnFiltersState,
@@ -26,15 +26,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { getCustomerColumns } from './customers-table-columns';
 import { CustomerDeleteDialog } from './customer-delete-dialog';
+import { CustomerPreviewDrawer } from './customer-preview-drawer';
 import { customersApi, getErrorMessage } from '@/lib/api';
 import { generateWhatsAppLink } from '@/lib/format';
 import { toast } from '@/providers';
 import type { Customer } from '@/types';
 
 // ==========================================
-// CUSTOMERS TABLE COMPONENT
-// ✅ FIXED: Single toast for bulk delete
-// ✅ FIXED: Removed totalOrders column
+// CUSTOMERS TABLE COMPONENT - MINIMAL VIEW
+// Optimized with drawer preview pattern
+// ✅ Minimal columns for performance
+// ✅ Drawer for full customer details
 // ==========================================
 
 interface CustomersTableProps {
@@ -49,6 +51,10 @@ export function CustomersTable({ customers }: CustomersTableProps) {
   const [rowSelection, setRowSelection] = useState({});
   const [globalFilter, setGlobalFilter] = useState('');
 
+  // Drawer state
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   // Delete dialog state
   const [deleteCustomer, setDeleteCustomer] = useState<Customer | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -56,21 +62,34 @@ export function CustomersTable({ customers }: CustomersTableProps) {
   // Bulk delete state
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
 
-  // Column actions
-  const columnActions = {
-    onView: (customer: Customer) => {
-      router.push(`/dashboard/customers/${customer.id}`);
-    },
-    onEdit: (customer: Customer) => {
+  // Row click handler - opens drawer
+  const onRowClick = useCallback((customer: Customer) => {
+    setSelectedCustomer(customer);
+    setDrawerOpen(true);
+  }, []);
+
+  // Drawer action handlers
+  const onEdit = useCallback(
+    (customer: Customer) => {
+      setDrawerOpen(false);
       router.push(`/dashboard/customers/${customer.id}/edit`);
     },
-    onDelete: (customer: Customer) => {
-      setDeleteCustomer(customer);
-    },
-    onWhatsApp: (customer: Customer) => {
-      const link = generateWhatsAppLink(customer.phone, `Halo ${customer.name},`);
-      window.open(link, '_blank');
-    },
+    [router]
+  );
+
+  const onDelete = useCallback((customer: Customer) => {
+    setDrawerOpen(false);
+    setDeleteCustomer(customer);
+  }, []);
+
+  const onWhatsApp = useCallback((customer: Customer) => {
+    const link = generateWhatsAppLink(customer.phone, `Halo ${customer.name},`);
+    window.open(link, '_blank');
+  }, []);
+
+  // Column actions
+  const columnActions = {
+    onRowClick,
   };
 
   const columns = getCustomerColumns(columnActions);
@@ -294,6 +313,16 @@ export function CustomersTable({ customers }: CustomersTableProps) {
         isLoading={isDeleting}
         onClose={() => setDeleteCustomer(null)}
         onConfirm={handleDelete}
+      />
+
+      {/* Preview Drawer */}
+      <CustomerPreviewDrawer
+        customer={selectedCustomer}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onWhatsApp={onWhatsApp}
       />
     </div>
   );
