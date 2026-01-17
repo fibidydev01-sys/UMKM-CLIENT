@@ -3,19 +3,30 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Phone, MapPin, MessageCircle } from 'lucide-react';
-import type { PublicTenant, TenantLandingConfig } from '@/types';
+import { extractSectionText, getContactConfig } from '@/lib/landing';
+import { LANDING_CONSTANTS } from '@/lib/landing';
+import type { TenantLandingConfig } from '@/types';
 
 interface TenantContactProps {
-  tenant: PublicTenant;
   config?: TenantLandingConfig['contact'];
+  fallbacks?: {
+    title?: string;
+    subtitle?: string;
+    whatsapp?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    storeName?: string;
+  };
 }
 
-export function TenantContact({ tenant, config }: TenantContactProps) {
-  const title = config?.title || 'Hubungi Kami';
-  const subtitle = config?.subtitle || '';
+export function TenantContact({ config, fallbacks = {} }: TenantContactProps) {
+  const { title, subtitle } = extractSectionText(config, {
+    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.CONTACT,
+    subtitle: fallbacks.subtitle,
+  });
 
-  const whatsappLink = tenant.whatsapp
-    ? `https://wa.me/${tenant.whatsapp}?text=${encodeURIComponent(`Halo ${tenant.name}, saya tertarik dengan produk Anda.`)}`
+  const whatsappLink = fallbacks.whatsapp
+    ? `https://wa.me/${fallbacks.whatsapp}?text=${encodeURIComponent(`Halo ${fallbacks.storeName || ''}, saya tertarik dengan produk Anda.`)}`
     : null;
 
   return (
@@ -32,7 +43,7 @@ export function TenantContact({ tenant, config }: TenantContactProps) {
           <CardContent className="pt-6">
             <div className="grid gap-4">
               {/* WhatsApp */}
-              {tenant.whatsapp && (
+              {fallbacks.whatsapp && (
                 <a
                   href={whatsappLink!}
                   target="_blank"
@@ -44,15 +55,15 @@ export function TenantContact({ tenant, config }: TenantContactProps) {
                   </div>
                   <div>
                     <p className="font-medium">WhatsApp</p>
-                    <p className="text-sm text-muted-foreground">+{tenant.whatsapp}</p>
+                    <p className="text-sm text-muted-foreground">+{fallbacks.whatsapp}</p>
                   </div>
                 </a>
               )}
 
               {/* Phone */}
-              {tenant.phone && (
+              {fallbacks.phone && (
                 <a
-                  href={`tel:${tenant.phone}`}
+                  href={`tel:${fallbacks.phone}`}
                   className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                 >
                   <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
@@ -60,20 +71,20 @@ export function TenantContact({ tenant, config }: TenantContactProps) {
                   </div>
                   <div>
                     <p className="font-medium">Telepon</p>
-                    <p className="text-sm text-muted-foreground">{tenant.phone}</p>
+                    <p className="text-sm text-muted-foreground">{fallbacks.phone}</p>
                   </div>
                 </a>
               )}
 
               {/* Address */}
-              {tenant.address && (
+              {fallbacks.address && (
                 <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
                   <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
                     <MapPin className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <p className="font-medium">Alamat</p>
-                    <p className="text-sm text-muted-foreground">{tenant.address}</p>
+                    <p className="text-sm text-muted-foreground">{fallbacks.address}</p>
                   </div>
                 </div>
               )}

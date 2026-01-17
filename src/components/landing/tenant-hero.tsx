@@ -3,22 +3,34 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
-import type { PublicTenant, TenantLandingConfig } from '@/types';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+import { extractSectionText, getHeroConfig, extractBackgroundImage } from '@/lib/landing';
+import { LANDING_CONSTANTS } from '@/lib/landing';
+import type { TenantLandingConfig } from '@/types';
 
 interface TenantHeroProps {
-  tenant: PublicTenant;
   config?: TenantLandingConfig['hero'];
+  fallbacks?: {
+    title?: string;
+    subtitle?: string;
+    backgroundImage?: string;
+    logo?: string;
+    storeName?: string;
+  };
 }
 
-export function TenantHero({ tenant, config }: TenantHeroProps) {
-  const title = config?.title || tenant.name;
-  const subtitle = config?.subtitle || tenant.description || '';
-  const layout = config?.config?.layout || 'centered';
-  const showCta = config?.config?.showCta ?? true;
-  const ctaText = config?.config?.ctaText || 'Lihat Produk';
-  const backgroundImage = config?.config?.backgroundImage || tenant.banner;
-  const overlayOpacity = config?.config?.overlayOpacity ?? 0.5;
+export function TenantHero({ config, fallbacks = {} }: TenantHeroProps) {
+  const { title, subtitle } = extractSectionText(config, {
+    title: fallbacks.title || fallbacks.storeName,
+    subtitle: fallbacks.subtitle,
+  });
+
+  const heroConfig = getHeroConfig(config);
+  const layout = heroConfig?.layout || 'centered';
+  const showCta = heroConfig?.showCta ?? true;
+  const ctaText = heroConfig?.ctaText || LANDING_CONSTANTS.CTA_TEXT_DEFAULT;
+  const backgroundImage = extractBackgroundImage(heroConfig, fallbacks.backgroundImage);
+  const overlayOpacity = heroConfig?.overlayOpacity ?? LANDING_CONSTANTS.OVERLAY_OPACITY_DEFAULT;
 
   const layoutClasses = {
     centered: 'text-center items-center',
@@ -34,7 +46,7 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
           <div className="absolute inset-0">
             <OptimizedImage
               src={backgroundImage}
-              alt={tenant.name}
+              alt={fallbacks.storeName || title}
               fill
               crop="fill"
               gravity="auto"
@@ -55,11 +67,11 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
       {/* Content */}
       <div className={`relative z-10 max-w-3xl px-6 py-12 flex flex-col gap-4 ${layoutClasses[layout]}`}>
         {/* ✅ OPTIMIZED: Logo */}
-        {tenant.logo && (
+        {fallbacks.logo && (
           <div className="relative h-20 w-20 rounded-full overflow-hidden border-4 border-white shadow-lg">
             <OptimizedImage
-              src={tenant.logo}
-              alt={tenant.name}
+              src={fallbacks.logo}
+              alt={fallbacks.storeName || title}
               fill
               crop="fill"
               gravity="auto"
@@ -79,7 +91,7 @@ export function TenantHero({ tenant, config }: TenantHeroProps) {
         )}
 
         {showCta && (
-          <Link href={config?.config?.ctaLink || '#products'}>
+          <Link href={heroConfig?.ctaLink || '/products'}>
             <Button size="lg" className="mt-4 gap-2">
               {ctaText}
               <ArrowRight className="h-4 w-4" />

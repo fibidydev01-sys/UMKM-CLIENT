@@ -77,7 +77,15 @@ export default async function ContactPage({ params }: ContactPageProps) {
         </div>
 
         {/* Contact Content */}
-        <TenantContact tenant={tenant} config={contactConfig} />
+        <TenantContact
+          config={contactConfig}
+          fallbacks={{
+            whatsapp: tenant.whatsapp || null,
+            phone: tenant.phone || null,
+            address: tenant.address || null,
+            storeName: tenant.name,
+          }}
+        />
       </div>
     </>
   );

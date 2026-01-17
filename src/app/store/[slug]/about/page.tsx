@@ -83,7 +83,13 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
         {/* About Content */}
         {aboutConfig?.config ? (
-          <TenantAbout tenant={tenant} config={aboutConfig} />
+          <TenantAbout
+            config={aboutConfig}
+            fallbacks={{
+              content: tenant.description || undefined,
+              image: tenant.banner || undefined,
+            }}
+          />
         ) : (
           <div className="max-w-3xl mx-auto">
             <div className="prose prose-lg dark:prose-invert">

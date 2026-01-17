@@ -3,30 +3,39 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
+import { useStoreUrls } from '@/lib/store-url';
+import { extractSectionText, getCtaConfig, extractCtaLink, extractCtaButtonText } from '@/lib/landing';
+import { LANDING_CONSTANTS } from '@/lib/landing';
 import type { TenantLandingConfig } from '@/types';
 
 // ==========================================
-// TENANT CTA COMPONENT
-// ✅ FIXED: Uses store-url helper for subdomain routing
+// TENANT CTA COMPONENT - Decoupled
 // ==========================================
 
 interface TenantCtaProps {
-  storeSlug: string;
   config?: TenantLandingConfig['cta'];
+  storeSlug?: string;
+  fallbacks?: {
+    title?: string;
+    subtitle?: string;
+    buttonLink?: string;
+  };
 }
 
-export function TenantCta({ storeSlug, config }: TenantCtaProps) {
-  // ✅ Smart URLs
-  const urls = useStoreUrls(storeSlug);
+export function TenantCta({ config, storeSlug, fallbacks = {} }: TenantCtaProps) {
+  const { title, subtitle } = extractSectionText(config, {
+    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.CTA,
+    subtitle: fallbacks.subtitle,
+  });
 
-  const title = config?.title || 'Siap Berbelanja?';
-  const subtitle = config?.subtitle || '';
-  const buttonText = config?.config?.buttonText || 'Mulai Belanja';
-  const style = config?.config?.style || 'primary';
+  const ctaConfig = getCtaConfig(config);
+  const buttonText = extractCtaButtonText(ctaConfig, LANDING_CONSTANTS.CTA_BUTTON_DEFAULT);
+  const style = ctaConfig?.style || 'primary';
 
-  // ✅ FIXED: Use smart URL as default, or custom link if provided
-  const buttonLink = config?.config?.buttonLink || urls.products();
+  // Smart URL routing
+  const urls = storeSlug ? useStoreUrls(storeSlug) : null;
+  const defaultLink = urls?.products() || fallbacks.buttonLink || '/products';
+  const buttonLink = extractCtaLink(ctaConfig, defaultLink);
 
   const buttonVariant =
     style === 'outline' ? 'outline' : style === 'secondary' ? 'secondary' : 'default';

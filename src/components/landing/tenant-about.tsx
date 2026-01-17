@@ -2,20 +2,30 @@
 
 import Image from 'next/image';
 import { CheckCircle } from 'lucide-react';
-import type { PublicTenant, TenantLandingConfig } from '@/types';
+import { extractSectionText, getAboutConfig, extractAboutImage } from '@/lib/landing';
+import { LANDING_CONSTANTS } from '@/lib/landing';
+import type { TenantLandingConfig } from '@/types';
 
 interface TenantAboutProps {
-  tenant: PublicTenant;
   config?: TenantLandingConfig['about'];
+  fallbacks?: {
+    title?: string;
+    subtitle?: string;
+    content?: string;
+    image?: string;
+  };
 }
 
-export function TenantAbout({ tenant, config }: TenantAboutProps) {
-  const title = config?.title || 'Tentang Kami';
-  const subtitle = config?.subtitle || '';
-  const content = config?.config?.content || tenant.description || '';
-  const showImage = config?.config?.showImage ?? true;
-  const image = config?.config?.image || tenant.banner;
-  const features = config?.config?.features || [];
+export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
+  const { title, subtitle } = extractSectionText(config, {
+    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.ABOUT,
+    subtitle: fallbacks.subtitle,
+  });
+
+  const aboutConfig = getAboutConfig(config);
+  const content = aboutConfig?.content || fallbacks.content || '';
+  const image = extractAboutImage(aboutConfig, fallbacks.image);
+  const features = aboutConfig?.features || [];
 
   return (
     <section id="about" className="py-12">
@@ -27,7 +37,7 @@ export function TenantAbout({ tenant, config }: TenantAboutProps) {
 
       <div className="grid md:grid-cols-2 gap-8 items-center">
         {/* Image */}
-        {showImage && image && (
+        {image && (
           <div className="relative aspect-video rounded-xl overflow-hidden">
             <Image
               src={image}

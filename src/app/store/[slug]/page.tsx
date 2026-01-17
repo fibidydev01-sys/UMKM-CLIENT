@@ -96,18 +96,33 @@ export default async function StorePage({ params }: StorePageProps) {
 
       <div className="container px-4 py-8 space-y-8">
         {landingConfig?.hero?.enabled && (
-          <TenantHero tenant={tenant} config={landingConfig.hero} />
+          <TenantHero
+            config={landingConfig.hero}
+            fallbacks={{
+              title: tenant.name,
+              subtitle: tenant.description,
+              backgroundImage: tenant.banner || undefined,
+              logo: tenant.logo || undefined,
+              storeName: tenant.name,
+            }}
+          />
         )}
 
         {landingConfig?.about?.enabled && (
-          <TenantAbout tenant={tenant} config={landingConfig.about} />
+          <TenantAbout
+            config={landingConfig.about}
+            fallbacks={{
+              content: tenant.description || undefined,
+              image: tenant.banner || undefined,
+            }}
+          />
         )}
 
         {landingConfig?.products?.enabled && products.length > 0 && (
           <TenantProducts
             products={products}
-            storeSlug={slug}
             config={landingConfig.products}
+            storeSlug={slug}
           />
         )}
 
@@ -123,11 +138,19 @@ export default async function StorePage({ params }: StorePageProps) {
         )}
 
         {landingConfig?.cta?.enabled && (
-          <TenantCta storeSlug={slug} config={landingConfig.cta} />
+          <TenantCta config={landingConfig.cta} storeSlug={slug} />
         )}
 
         {landingConfig?.contact?.enabled && (
-          <TenantContact tenant={tenant} config={landingConfig.contact} />
+          <TenantContact
+            config={landingConfig.contact}
+            fallbacks={{
+              whatsapp: tenant.whatsapp || null,
+              phone: tenant.phone || null,
+              address: tenant.address || null,
+              storeName: tenant.name,
+            }}
+          />
         )}
 
         {!hasAnySectionEnabled && (
