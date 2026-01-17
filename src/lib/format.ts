@@ -264,7 +264,8 @@ export function slugify(text: string): string {
  * @returns Initials (max 2 chars)
  * @example getInitials('John Doe') => "JD"
  */
-export function getInitials(name: string): string {
+export function getInitials(name?: string | null): string {
+  if (!name) return '??';
   return name
     .split(' ')
     .map((n) => n[0])

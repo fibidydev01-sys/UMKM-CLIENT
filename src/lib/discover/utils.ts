@@ -5,27 +5,10 @@
 
 import { CATEGORY_CONFIG } from '@/config/categories';
 import { Store } from 'lucide-react';
+import { getInitials } from '@/lib/format'; // Use from format.ts
 
-// ══════════════════════════════════════════════════════════════
-// TEXT HELPERS
-// ══════════════════════════════════════════════════════════════
-
-/**
- * Get initials from name (max 2 characters)
- * @param name - Full name
- * @returns Initials in uppercase (e.g., "JD" for "John Doe")
- * @example getInitials('Toko Saya') => "TS"
- * @example getInitials(null) => "??"
- */
-export function getInitials(name?: string | null): string {
-  if (!name) return '??';
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
+// Re-export for convenience
+export { getInitials };
 
 // ══════════════════════════════════════════════════════════════
 // CATEGORY HELPERS

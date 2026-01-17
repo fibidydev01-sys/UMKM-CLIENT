@@ -1,3 +1,8 @@
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS TABLE - V2.0 WITH DRAWER
+// Minimal list view + drawer for details
+// ══════════════════════════════════════════════════════════════
+
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
@@ -36,6 +41,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { getProductColumns } from './products-table-columns';
 import { ProductsTableToolbar } from './products-table-toolbar';
 import { ProductDeleteDialog } from './product-delete-dialog';
+import { ProductPreviewDrawer } from './product-preview-drawer';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import type { Product } from '@/types';
@@ -59,6 +65,10 @@ export function ProductsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
+  // Drawer state
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -74,7 +84,17 @@ export function ProductsTable({
     }
   }, [onRefresh, router]);
 
-  // ✅ FIX: Stabilize callbacks with useCallback
+  // ════════════════════════════════════════════════════════════
+  // ROW CLICK HANDLER - Open drawer
+  // ════════════════════════════════════════════════════════════
+  const onRowClick = useCallback((product: Product) => {
+    setSelectedProduct(product);
+    setDrawerOpen(true);
+  }, []);
+
+  // ════════════════════════════════════════════════════════════
+  // DRAWER ACTIONS
+  // ════════════════════════════════════════════════════════════
   const onEdit = useCallback((product: Product) => {
     router.push(`/dashboard/products/${product.id}/edit`);
   }, [router]);
@@ -93,14 +113,13 @@ export function ProductsTable({
     }
   }, [refreshData]);
 
-  // ✅ FIX: Memoize columnActions to prevent recreation
+  // ════════════════════════════════════════════════════════════
+  // COLUMN ACTIONS - Only onRowClick needed
+  // ════════════════════════════════════════════════════════════
   const columnActions = useMemo(() => ({
-    onEdit,
-    onDelete,
-    onToggleActive,
-  }), [onEdit, onDelete, onToggleActive]);
+    onRowClick,
+  }), [onRowClick]);
 
-  // ✅ FIX: Memoize columns
   const columns = useMemo(
     () => getProductColumns(columnActions),
     [columnActions]
@@ -257,6 +276,16 @@ export function ProductsTable({
           </Button>
         </div>
       </div>
+
+      {/* Product Preview Drawer */}
+      <ProductPreviewDrawer
+        product={selectedProduct}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onToggleActive={onToggleActive}
+      />
 
       <ProductDeleteDialog
         product={deleteProduct}
