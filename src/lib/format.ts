@@ -101,12 +101,15 @@ export function formatPercentage(value: number, decimals: number = 0): string {
  * @returns Formatted date string
  * @example formatDate('2024-01-15') => "15 Januari 2024"
  */
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date | null | undefined): string {
+  if (!date) return '-';
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return '-';
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(date));
+  }).format(parsed);
 }
 
 /**
@@ -115,12 +118,15 @@ export function formatDate(date: string | Date): string {
  * @returns Short formatted date string
  * @example formatDateShort('2024-01-15') => "15 Jan 2024"
  */
-export function formatDateShort(date: string | Date): string {
+export function formatDateShort(date: string | Date | null | undefined): string {
+  if (!date) return '-';
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return '-';
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(date));
+  }).format(parsed);
 }
 
 /**
@@ -129,14 +135,17 @@ export function formatDateShort(date: string | Date): string {
  * @returns Formatted datetime string
  * @example formatDateTime('2024-01-15T10:30') => "15 Jan 2024, 10:30"
  */
-export function formatDateTime(date: string | Date): string {
+export function formatDateTime(date: string | Date | null | undefined): string {
+  if (!date) return '-';
+  const parsed = new Date(date);
+  if (isNaN(parsed.getTime())) return '-';
   return new Intl.DateTimeFormat('id-ID', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-  }).format(new Date(date));
+  }).format(parsed);
 }
 
 /**

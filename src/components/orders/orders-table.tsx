@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ColumnFiltersState,
@@ -35,15 +35,17 @@ import { AlertTriangle, Loader2, Trash2 } from 'lucide-react';
 import { getOrderColumns } from './orders-table-columns';
 import { OrdersTableToolbar } from './orders-table-toolbar';
 import { OrderCancelDialog } from './order-cancel-dialog';
+import { OrderPreviewDrawer } from './order-preview-drawer';
 import { useCancelOrder } from '@/hooks';
 import { ordersApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import type { OrderListItem } from '@/types';
 
 // ==========================================
-// ORDERS TABLE COMPONENT
-// ✅ FIXED: Single toast for bulk delete
-// ✅ FIXED: Only PENDING can be deleted
+// ORDERS TABLE COMPONENT - MINIMAL VIEW
+// Optimized with drawer preview pattern
+// ✅ Minimal columns for performance
+// ✅ Drawer for full order details
 // ==========================================
 
 interface OrdersTableProps {
@@ -59,6 +61,10 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+
+  // Drawer state
+  const [selectedOrder, setSelectedOrder] = useState<OrderListItem | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Cancel dialog state
   const [cancelOrder, setCancelOrder] = useState<OrderListItem | null>(null);
@@ -80,25 +86,21 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
     }
   };
 
+  // Row click handler - opens drawer
+  const onRowClick = useCallback((order: OrderListItem) => {
+    setSelectedOrder(order);
+    setDrawerOpen(true);
+  }, []);
+
+  // Drawer action handlers
+  const onCancelFromDrawer = useCallback((order: OrderListItem) => {
+    setDrawerOpen(false);
+    setCancelOrder(order);
+  }, []);
+
   // Column actions
   const columnActions = {
-    onView: (order: OrderListItem) => {
-      router.push(`/dashboard/orders/${order.id}`);
-    },
-    onCancel: (order: OrderListItem) => {
-      setCancelOrder(order);
-    },
-    onDelete: (order: OrderListItem) => {
-      // ✅ Validate: Only PENDING can be deleted
-      if (order.status !== 'PENDING') {
-        toast.error(
-          'Tidak dapat menghapus',
-          `Pesanan #${order.orderNumber} berstatus ${order.status}. Hanya pesanan PENDING yang dapat dihapus.`
-        );
-        return;
-      }
-      setDeleteOrder(order);
-    },
+    onRowClick,
   };
 
   const columns = getOrderColumns(columnActions);
@@ -362,6 +364,14 @@ export function OrdersTable({ orders, onRefresh }: OrdersTableProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Preview Drawer */}
+      <OrderPreviewDrawer
+        orderListItem={selectedOrder}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onCancel={onCancelFromDrawer}
+      />
     </div>
   );
 }

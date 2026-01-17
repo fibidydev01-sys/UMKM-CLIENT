@@ -37,6 +37,7 @@ import {
 
 interface CategoryPageClientProps {
   categoryKey: string;
+  categorySlug: string;
 }
 
 // ══════════════════════════════════════════════════════════════

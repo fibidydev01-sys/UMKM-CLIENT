@@ -64,7 +64,7 @@ export const seoConfig = {
     'store', 'shop', 'toko', 'fibidy', 'test', 'demo',
     'null', 'undefined', 'root', 'system', 'mail', 'email',
     'ftp', 'ssh', 'cpanel', 'webmail', 'ns1', 'ns2',
-  ],
+  ] as string[],
 
   // ==========================================
   // DEFAULT META

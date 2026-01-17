@@ -21,24 +21,22 @@ import { useAuth } from '@/hooks';
 export default function StoreIndexPage() {
   const router = useRouter();
   const { tenant, isLoading } = useAuth();
-  const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
     // If user is logged in and has a store, redirect to their store
     if (!isLoading && tenant?.slug) {
-      setIsRedirecting(true);
       router.push(`/store/${tenant.slug}`);
     }
   }, [isLoading, tenant, router]);
 
-  // Show loading while checking auth or redirecting
-  if (isLoading || isRedirecting) {
+  // Show loading while checking auth or if has tenant (will redirect)
+  if (isLoading || tenant?.slug) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-muted-foreground">
-            {isRedirecting ? 'Mengalihkan ke toko Anda...' : 'Memuat...'}
+            {tenant?.slug ? 'Mengalihkan ke toko Anda...' : 'Memuat...'}
           </p>
         </div>
       </div>

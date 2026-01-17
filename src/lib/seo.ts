@@ -130,7 +130,7 @@ export function createMetadata({
       url: canonicalUrl,
       siteName: seoConfig.siteName,
       locale: seoConfig.locale,
-      type: ogType,
+      type: ogType === 'product' ? 'website' : ogType,
       images: [
         {
           url: imageUrl,

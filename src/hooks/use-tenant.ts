@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
-import { useAuthStore } from '@/stores';
+import { useAuthStore, useIsAuthenticated } from '@/stores';
 import { tenantsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import type { PublicTenant, UpdateTenantInput, DashboardStats } from '@/types';
@@ -12,7 +12,8 @@ import type { PublicTenant, UpdateTenantInput, DashboardStats } from '@/types';
 // ==========================================
 
 export function useTenant() {
-  const { tenant, setTenant, isAuthenticated } = useAuthStore();
+  const { tenant, setTenant } = useAuthStore();
+  const isAuthenticated = useIsAuthenticated();
 
   const refresh = useCallback(async () => {
     if (!isAuthenticated) return;
@@ -84,7 +85,8 @@ export function useUpdateTenant() {
     setIsLoading(true);
 
     try {
-      const updated = await tenantsApi.update(data);
+      const response = await tenantsApi.update(data);
+      const updated = 'tenant' in response ? response.tenant : response;
       setTenant(updated);
       toast.success('Pengaturan toko berhasil disimpan');
       return updated;

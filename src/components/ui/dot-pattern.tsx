@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useEffect, useId, useRef, useState } from "react"
+import React, { useEffect, useId, useMemo, useRef, useState } from "react"
 import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
@@ -90,7 +90,7 @@ export function DotPattern({
     return () => window.removeEventListener("resize", updateDimensions)
   }, [])
 
-  const dots = Array.from(
+  const dots = useMemo(() => Array.from(
     {
       length:
         Math.ceil(dimensions.width / width) *
@@ -106,7 +106,7 @@ export function DotPattern({
         duration: Math.random() * 3 + 2,
       }
     }
-  )
+  ), [dimensions.width, dimensions.height, width, height, cx, cy])
 
   return (
     <svg

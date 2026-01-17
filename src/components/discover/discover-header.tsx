@@ -93,8 +93,7 @@ export function DiscoverHeader({
     const heroSearchElement = document.getElementById(heroSearchId);
 
     if (!heroSearchElement) {
-      // If no hero search element found, always show header search when scrolled
-      setHeroSearchVisible(false);
+      // If no hero search element found, observer callback will handle state
       return;
     }
 
