@@ -36,9 +36,14 @@ interface TenantHeroProps {
  * - video-background → HeroVideoBackground
  * - animated-gradient → HeroAnimatedGradient
  * - parallax → HeroParallax
+ *
+ * 🎯 VARIANT PRIORITY:
+ * 1. config.variant (user override)
+ * 2. template variant (from TemplateProvider)
  */
 export function TenantHero({ config, fallbacks = {} }: TenantHeroProps) {
-  const variant = useHeroVariant();
+  const templateVariant = useHeroVariant();
+  const variant = config?.variant || templateVariant;
 
   const { title, subtitle } = extractSectionText(config, {
     title: fallbacks.title || fallbacks.storeName,

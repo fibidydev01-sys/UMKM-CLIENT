@@ -57,6 +57,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 
 import { TestimonialEditor } from './testimonial-editor';
+import { VariantSelector } from './variant-selector';
 import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/utils';
 import type { TenantLandingConfig, Testimonial } from '@/types';
@@ -196,6 +197,23 @@ export function LandingBuilder({
       testimonials: {
         ...config.testimonials,
         config: { items: normalizeTestimonials(items) },
+      },
+    });
+  }, [config, onConfigChange]);
+
+  // ==========================================================================
+  // VARIANT CHANGE HANDLER
+  // ==========================================================================
+  const handleVariantChange = useCallback((
+    key: SectionKey,
+    variant: string
+  ) => {
+    const currentSection = config[key] || {};
+    onConfigChange({
+      ...config,
+      [key]: {
+        ...currentSection,
+        variant,
       },
     });
   }, [config, onConfigChange]);
@@ -402,6 +420,7 @@ export function LandingBuilder({
                     onTitleChange={(value) => handleUpdateSection('testimonials', 'title', value)}
                     onSubtitleChange={(value) => handleUpdateSection('testimonials', 'subtitle', value)}
                     onItemsChange={handleTestimonialsChange}
+                    onVariantChange={(variant) => handleVariantChange('testimonials', variant)}
                   />
                 ) : (
                   <GenericSection
@@ -410,6 +429,7 @@ export function LandingBuilder({
                     onTitleChange={(value) => handleUpdateSection(section.key, 'title', value)}
                     onSubtitleChange={(value) => handleUpdateSection(section.key, 'subtitle', value)}
                     onConfigChange={(updates) => handleUpdateSectionConfig(section.key, updates)}
+                    onVariantChange={(variant) => handleVariantChange(section.key, variant)}
                   />
                 )}
               </AccordionContent>
@@ -467,6 +487,7 @@ interface TestimonialsSectionProps {
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onItemsChange: (items: Testimonial[]) => void;
+  onVariantChange: (variant: string) => void;
 }
 
 function TestimonialsSection({
@@ -474,11 +495,21 @@ function TestimonialsSection({
   onTitleChange,
   onSubtitleChange,
   onItemsChange,
+  onVariantChange,
 }: TestimonialsSectionProps) {
   const items = normalizeTestimonials(config?.config?.items);
 
   return (
     <div className="space-y-4">
+      {/* Variant Selector */}
+      <VariantSelector
+        section="testimonials"
+        selectedVariant={config?.variant}
+        onSelect={onVariantChange}
+      />
+
+      <Separator />
+
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="testimonials-title">Judul Section</Label>
@@ -521,6 +552,7 @@ interface GenericSectionProps {
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onConfigChange: (updates: Record<string, unknown>) => void;
+  onVariantChange: (variant: string) => void;
 }
 
 function GenericSection({
@@ -529,11 +561,21 @@ function GenericSection({
   onTitleChange,
   onSubtitleChange,
   onConfigChange,
+  onVariantChange,
 }: GenericSectionProps) {
   const sectionConfig = (config?.config || {}) as Record<string, unknown>;
 
   return (
     <div className="space-y-4">
+      {/* Variant Selector */}
+      <VariantSelector
+        section={sectionKey as any}
+        selectedVariant={config?.variant}
+        onSelect={onVariantChange}
+      />
+
+      <Separator />
+
       {/* Common Fields */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

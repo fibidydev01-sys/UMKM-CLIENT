@@ -37,9 +37,14 @@ interface TenantAboutProps {
  * - cards → AboutCards
  * - magazine → AboutMagazine
  * - storytelling → AboutStorytelling
+ *
+ * 🎯 VARIANT PRIORITY:
+ * 1. config.variant (user override)
+ * 2. template variant (from TemplateProvider)
  */
 export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
-  const variant = useAboutVariant();
+  const templateVariant = useAboutVariant();
+  const variant = config?.variant || templateVariant;
 
   const { title, subtitle } = extractSectionText(config, {
     title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.ABOUT,

@@ -31,9 +31,14 @@ interface TenantProductsProps {
  * - default, grid-hover, masonry, catalog, minimal-list -> ProductsGrid
  * - carousel, featured-hero -> ProductsCarousel
  * Other variants will fallback to default (ProductsGrid)
+ *
+ * 🎯 VARIANT PRIORITY:
+ * 1. config.variant (user override)
+ * 2. template variant (from TemplateProvider)
  */
 export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: TenantProductsProps) {
-  const variant = useProductsVariant();
+  const templateVariant = useProductsVariant();
+  const variant = config?.variant || templateVariant;
 
   const { title, subtitle } = extractSectionText(config, {
     title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.PRODUCTS,
