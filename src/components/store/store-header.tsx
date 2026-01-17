@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from './cart-sheet';
 import { useStoreUrls } from '@/lib/store-url';
-import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/cn';
 import type { PublicTenant } from '@/types';
 
@@ -32,9 +31,22 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
   // Check what data exists
   const hasAbout = !!landingConfig?.about?.config?.content || !!tenant.description;
   const hasContact = !!tenant.address || !!tenant.whatsapp || !!tenant.phone;
-  const hasTestimonials = normalizeTestimonials(
-    landingConfig?.testimonials?.config?.items
-  ).length > 0;
+
+  // ✅ FIX: Stable check without calling normalizeTestimonials (avoids Date.now/Math.random hydration issue)
+  const hasTestimonials = useMemo(() => {
+    const items = landingConfig?.testimonials?.config?.items;
+    if (!items || !Array.isArray(items)) return false;
+    // Check if any valid testimonials exist (without normalizing IDs)
+    return items.some(
+      (item: any) =>
+        item &&
+        typeof item === 'object' &&
+        typeof item.name === 'string' &&
+        item.name.trim() !== '' &&
+        typeof item.content === 'string' &&
+        item.content.trim() !== ''
+    );
+  }, [landingConfig?.testimonials?.config?.items]);
 
   // Build nav items
   const navItems = [

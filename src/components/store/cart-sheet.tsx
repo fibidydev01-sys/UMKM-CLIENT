@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,11 +33,26 @@ interface CartSheetProps {
 export function CartSheet({ tenant }: CartSheetProps) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const items = useCartItems();
   const totalPrice = useCartTotalPrice();
   const isEmpty = useCartIsEmpty();
   const isHydrated = useCartHydrated();
+
+  // Prevent hydration mismatch by only rendering after mount
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    // Return simplified version for SSR to match initial client render
+    return (
+      <Button variant="outline" size="icon" className="relative">
+        <ShoppingCart className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   // Get actions directly
   const incrementQty = useCartStore((state) => state.incrementQty);
