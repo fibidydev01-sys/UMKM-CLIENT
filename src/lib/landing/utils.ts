@@ -1,74 +1,13 @@
-// ============================================================================
-// FILE: src/lib/landing-utils.ts
-// PURPOSE: Shared utilities for Landing Page configuration
-// ============================================================================
+/**
+ * ============================================================================
+ * FILE: src/lib/landing/utils.ts
+ * PURPOSE: Utility functions for landing page configuration
+ * ============================================================================
+ */
 
 import type { TenantLandingConfig, Testimonial } from '@/types';
-
-// ============================================================================
-// DEFAULT LANDING CONFIG - ALL SECTIONS & TOGGLES DISABLED BY DEFAULT!
-// ============================================================================
-
-export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
-  enabled: false, // ❌ Disabled by default
-  hero: {
-    enabled: false, // ❌ Disabled
-    title: '',
-    subtitle: '',
-    config: {
-      layout: 'centered',
-      showCta: false, // ❌ Disabled by default
-      ctaText: 'Lihat Produk',
-      overlayOpacity: 0.5,
-    },
-  },
-  about: {
-    enabled: false, // ❌ Disabled
-    title: 'Tentang Kami',
-    subtitle: '',
-    config: {
-      showImage: false, // ❌ Disabled by default
-      features: [],
-    },
-  },
-  products: {
-    enabled: false, // ❌ Disabled
-    title: 'Produk Kami',
-    subtitle: 'Pilihan produk terbaik untuk Anda',
-    config: {
-      displayMode: 'featured',
-      limit: 8,
-      showViewAll: false, // ❌ Disabled by default
-    },
-  },
-  testimonials: {
-    enabled: false, // ❌ Disabled
-    title: 'Testimoni',
-    subtitle: 'Apa kata pelanggan kami',
-    config: {
-      items: [],
-    },
-  },
-  contact: {
-    enabled: false, // ❌ Disabled
-    title: 'Hubungi Kami',
-    subtitle: '',
-    config: {
-      showMap: false, // ❌ Disabled by default
-      showForm: false, // ❌ Disabled by default
-      showSocialMedia: false, // ❌ Disabled by default
-    },
-  },
-  cta: {
-    enabled: false, // ❌ Disabled
-    title: 'Siap Berbelanja?',
-    subtitle: '',
-    config: {
-      buttonText: 'Mulai Belanja',
-      style: 'primary',
-    },
-  },
-};
+import { DEFAULT_LANDING_CONFIG } from './defaults';
+import { LANDING_CONSTANTS } from './constants';
 
 // ============================================================================
 // NORMALIZE TESTIMONIALS - Handle nested array bug AND de-duplicate
@@ -88,7 +27,7 @@ export function normalizeTestimonials(items: unknown): Testimonial[] {
   ) {
     normalizedItems = normalizedItems[0];
     depth++;
-    if (depth > 10) {
+    if (depth > LANDING_CONSTANTS.NESTED_ARRAY_MAX_DEPTH) {
       console.error('[normalizeTestimonials] Too many nested arrays!');
       return [];
     }
@@ -222,7 +161,7 @@ export function prepareConfigForSave(config: TenantLandingConfig): TenantLanding
     testimonials: {
       ...config.testimonials,
       enabled: config.testimonials?.enabled ?? false,
-      title: config.testimonials?.title || 'Testimoni',
+      title: config.testimonials?.title || LANDING_CONSTANTS.SECTION_TITLES.TESTIMONIALS,
       subtitle: config.testimonials?.subtitle || '',
       config: {
         items: normalizeTestimonials(config.testimonials?.config?.items),

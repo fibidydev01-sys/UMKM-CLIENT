@@ -74,67 +74,11 @@ export interface TenantLandingConfig {
 }
 
 // ==========================================
-// DEFAULT LANDING CONFIG - ALL DISABLED!
-// Including all toggles inside config!
+// DEFAULT CONFIG - Imported from @/lib/landing
 // ==========================================
-
-export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
-  enabled: false, // ❌ Disabled
-  hero: {
-    enabled: false, // ❌ Disabled
-    title: '',
-    subtitle: '',
-    config: {
-      layout: 'centered',
-      showCta: false, // ❌ Disabled
-      ctaText: 'Lihat Produk',
-      overlayOpacity: 0.5,
-    },
-  },
-  about: {
-    enabled: false, // ❌ Disabled
-    title: 'Tentang Kami',
-    subtitle: '',
-    config: {
-      showImage: false, // ❌ Disabled
-      features: [],
-    },
-  },
-  products: {
-    enabled: false, // ❌ Disabled
-    title: 'Produk Kami',
-    subtitle: 'Pilihan produk terbaik untuk Anda',
-    config: {
-      displayMode: 'featured',
-      limit: 8,
-      showViewAll: false, // ❌ Disabled
-    },
-  },
-  testimonials: {
-    enabled: false, // ❌ Disabled
-    title: 'Testimoni',
-    subtitle: 'Apa kata pelanggan kami',
-    config: {
-      items: [],
-    },
-  },
-  contact: {
-    enabled: false, // ❌ Disabled
-    title: 'Hubungi Kami',
-    subtitle: '',
-    config: {
-      showMap: false, // ❌ Disabled
-      showForm: false, // ❌ Disabled
-      showSocialMedia: false, // ❌ Disabled
-    },
-  },
-  cta: {
-    enabled: false, // ❌ Disabled
-    title: 'Siap Berbelanja?',
-    subtitle: '',
-    config: {
-      buttonText: 'Mulai Belanja',
-      style: 'primary',
-    },
-  },
-};
+// DEFAULT_LANDING_CONFIG is now defined in @/lib/landing/defaults.ts
+// Import it from there to avoid duplication!
+//
+// Example:
+// import { DEFAULT_LANDING_CONFIG } from '@/lib/landing';
+// ==========================================

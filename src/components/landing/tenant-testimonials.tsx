@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Star, Quote } from 'lucide-react';
-import { normalizeTestimonials } from '@/lib/landing-utils';
+import { normalizeTestimonials } from '@/lib/landing';
 import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
 import { getImageSource } from '@/lib/cloudinary'; // ✅ ADD
 import type { TenantLandingConfig } from '@/types';

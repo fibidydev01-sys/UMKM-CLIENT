@@ -13,7 +13,7 @@ import {
   DEFAULT_LANDING_CONFIG,
   mergeLandingConfig,
   prepareConfigForSave,
-} from '@/lib/landing-utils';
+} from '@/lib/landing';
 import type { TenantLandingConfig } from '@/types';
 
 // ============================================================================

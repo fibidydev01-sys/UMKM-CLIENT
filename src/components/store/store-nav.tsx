@@ -8,7 +8,7 @@ import { SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { formatPhone } from '@/lib/format';
 import { useStoreUrls } from '@/lib/store-url';
-import { normalizeTestimonials } from '@/lib/landing-utils';
+import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/cn';
 import type { PublicTenant } from '@/types';
 

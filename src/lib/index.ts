@@ -20,7 +20,8 @@ export * from './cloudinary';
 // Invoice utilities (NEW)
 export * from './invoice';
 
-export * from './landing-utils';
+// Landing page utilities
+export * from './landing';
 
 // Discover utilities
 export * from './discover';

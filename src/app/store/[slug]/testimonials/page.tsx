@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { tenantsApi } from '@/lib/api';
-import { normalizeTestimonials } from '@/lib/landing-utils';
+import { normalizeTestimonials } from '@/lib/landing';
 import { TenantTestimonials } from '@/components/landing';
 import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
 import { Star } from 'lucide-react';

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { CartSheet } from './cart-sheet';
 import { useStoreUrls } from '@/lib/store-url';
-import { normalizeTestimonials } from '@/lib/landing-utils';
+import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/cn';
 import type { PublicTenant } from '@/types';
 

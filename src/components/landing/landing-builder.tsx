@@ -57,7 +57,7 @@ import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 
 import { TestimonialEditor } from './testimonial-editor';
-import { normalizeTestimonials } from '@/lib/landing-utils';
+import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/utils';
 import type { TenantLandingConfig, Testimonial } from '@/types';
 
