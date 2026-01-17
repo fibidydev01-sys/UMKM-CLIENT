@@ -22,7 +22,6 @@ import {
   Home,
   Lightbulb,
 } from 'lucide-react';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // DATA - 15 Categories from config
@@ -104,7 +103,7 @@ export function CategoriesSection() {
           <div className="inline-flex items-start gap-2 text-sm text-muted-foreground bg-background rounded-lg px-4 py-3 border">
             <Lightbulb className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
             <span>
-              Gak nemu kategori kamu? Tenang, ada opsi "Lainnya".
+              Gak nemu kategori kamu? Tenang, ada opsi &quot;Lainnya&quot;.
               <br className="hidden sm:block" />
               Fibidy tetap bisa dipakai untuk berbagai jenis usaha.
             </span>

@@ -17,13 +17,12 @@ interface InstallPromptProps {
 
 export function InstallPrompt({ onInstall, onDismiss }: InstallPromptProps) {
   const [isVisible, setIsVisible] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [isIOS] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  });
 
   useEffect(() => {
-    // Detect iOS
-    const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    setIsIOS(iOS);
-
     // Animate in
     setTimeout(() => setIsVisible(true), 100);
   }, []);

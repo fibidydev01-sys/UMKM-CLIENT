@@ -13,7 +13,6 @@ import {
   Handshake,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // DATA - V8.1 Copywriting (Icons instead of emojis)

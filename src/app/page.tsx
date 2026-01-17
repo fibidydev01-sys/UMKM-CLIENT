@@ -4,8 +4,6 @@
 // ══════════════════════════════════════════════════════════════
 
 import type { Metadata } from 'next';
-import { LandingHeader, LandingFooter } from '@/components/platform-landing';
-import { UMKMDiscoverSection } from '@/components/platform-landing/umkm-discover-section';
 import { redirect } from 'next/navigation';
 
 // ══════════════════════════════════════════════════════════════

@@ -8,7 +8,6 @@
 import Link from 'next/link';
 import { ArrowRight, X, Check, Frown, Smile, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // DATA - V8.1 Copywriting

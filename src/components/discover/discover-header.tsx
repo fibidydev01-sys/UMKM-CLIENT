@@ -6,7 +6,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Store, Menu } from 'lucide-react';
@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/navigation-menu';
 import { DiscoverSearch } from './discover-search';
 import { cn } from '@/lib/cn';
-import { CATEGORY_CONFIG, getCategoryList } from '@/config/categories';
+import { getCategoryList } from '@/config/categories';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES

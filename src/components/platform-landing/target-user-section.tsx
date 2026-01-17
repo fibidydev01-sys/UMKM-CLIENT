@@ -107,7 +107,7 @@ export function TargetUserSection() {
             <span>
               Fibidy menyesuaikan sama jenis bisnis kamu.
               <br className="hidden sm:block" />
-              Label "Produk" bisa jadi "Menu", "Layanan", "Paket", dll.
+              Label &quot;Produk&quot; bisa jadi &quot;Menu&quot;, &quot;Layanan&quot;, &quot;Paket&quot;, dll.
             </span>
           </div>
         </div>

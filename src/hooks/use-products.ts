@@ -34,7 +34,8 @@ export function useProducts(initialParams?: ProductQueryParams) {
     if (initialParams && !hasFetched.current) {
       setFilters(initialParams);
     }
-  }, []); // Run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once - intentionally empty
 
   // Fetch products
   const fetchProducts = useCallback(async () => {
@@ -67,14 +68,16 @@ export function useProducts(initialParams?: ProductQueryParams) {
     return () => {
       isMounted.current = false;
     };
-  }, []); // Mount only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Mount only - intentionally empty
 
   // ✅ FIX: Separate effect for filter changes (after initial fetch)
   useEffect(() => {
     if (hasFetched.current) {
       fetchProducts();
     }
-  }, [filters]); // Only when filters change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]); // Only when filters change - fetchProducts is stable
 
   // Fetch categories - only once
   const fetchCategories = useCallback(async () => {
@@ -109,7 +112,8 @@ export function useProducts(initialParams?: ProductQueryParams) {
       categoriesFetched.current = true;
       fetchCategories();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run once - intentionally empty
 
   return {
     products,
@@ -346,7 +350,8 @@ export function useStoreProducts(slug: string, params?: ProductQueryParams) {
     return () => {
       isMounted.current = false;
     };
-  }, [slug]); // Only slug change triggers refetch
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]); // Only slug change triggers refetch - params intentionally excluded
 
   const refetch = useCallback(async () => {
     if (!slug) return;

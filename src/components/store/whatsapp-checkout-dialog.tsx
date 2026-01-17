@@ -42,17 +42,21 @@ export function WhatsAppCheckoutDialog({
   const subtotal = useCartTotalPrice();
   const clearCart = useCartStore((state) => state.clearCart);
 
-  // ✅ FIXED: Add null safety checks
+  // ✅ FIXED: Add null safety checks and memoization
   // Get payment methods with safe access
-  const paymentMethods = (tenant?.paymentMethods as PaymentMethods | undefined) ?? {
-    bankAccounts: [],
-    eWallets: [],
-    cod: { enabled: false, note: '' },
-  };
+  const paymentMethods = useMemo(() =>
+    (tenant?.paymentMethods as PaymentMethods | undefined) ?? {
+      bankAccounts: [],
+      eWallets: [],
+      cod: { enabled: false, note: '' },
+    }, [tenant?.paymentMethods]
+  );
 
-  const shippingMethods = (tenant?.shippingMethods as ShippingMethods | undefined) ?? {
-    couriers: [],
-  };
+  const shippingMethods = useMemo(() =>
+    (tenant?.shippingMethods as ShippingMethods | undefined) ?? {
+      couriers: [],
+    }, [tenant?.shippingMethods]
+  );
 
   // Get enabled payment options
   const enabledBanks = useMemo(() =>

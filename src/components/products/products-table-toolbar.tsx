@@ -4,13 +4,6 @@ import { Table } from '@tanstack/react-table';
 import { X, Search, Trash2, Loader2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { Product } from '@/types';
 
 // ==========================================
@@ -19,7 +12,7 @@ import type { Product } from '@/types';
 
 interface ProductsTableToolbarProps {
   table: Table<Product>;
-  categories: string[];
+  categories?: string[];
   onBulkDelete?: () => void;
   onRefresh?: () => void; // 🔥 NEW: Manual refresh button
   isBulkDeleting?: boolean;
@@ -28,7 +21,6 @@ interface ProductsTableToolbarProps {
 
 export function ProductsTableToolbar({
   table,
-  categories,
   onBulkDelete,
   onRefresh,
   isBulkDeleting = false,

@@ -63,10 +63,16 @@ export function ProductPreviewDrawer({
   // ════════════════════════════════════════════════════════════
   // SCROLL TO TOP when product changes
   // ════════════════════════════════════════════════════════════
+  const prevProductIdRef = useRef(product?.id);
   useEffect(() => {
     if (open && scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-      setSelectedImageIndex(0);
+      // Only scroll to top if product changed
+      if (prevProductIdRef.current !== product?.id) {
+        scrollContainerRef.current.scrollTop = 0;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setSelectedImageIndex(0);
+        prevProductIdRef.current = product?.id;
+      }
     }
   }, [product?.id, open]);
 
@@ -95,11 +101,13 @@ export function ProductPreviewDrawer({
   }, [open]);
 
   // Reset states when drawer closes
+  const prevOpenRef = useRef(open);
   useEffect(() => {
-    if (!open) {
-      setIsHeaderSticky(false);
+    if (prevOpenRef.current && !open) {
+      setIsHeaderSticky(false); // eslint-disable-line react-hooks/set-state-in-effect
       setSelectedImageIndex(0);
     }
+    prevOpenRef.current = open;
   }, [open]);
 
   // ════════════════════════════════════════════════════════════

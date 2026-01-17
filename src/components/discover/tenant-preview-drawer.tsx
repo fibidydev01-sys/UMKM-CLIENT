@@ -189,11 +189,15 @@ export function TenantPreviewDrawer({
   }, [open]);
 
   // Reset states when drawer closes
+  // Note: This is intentionally setting state based on prop change
+  // The state is only updated when drawer closes (open becomes false)
+  const prevOpenRef = useRef(open);
   useEffect(() => {
-    if (!open) {
-      setIsHeaderSticky(false);
+    if (prevOpenRef.current && !open) {
+      setIsHeaderSticky(false); // eslint-disable-line react-hooks/set-state-in-effect
       setCopied(false);
     }
+    prevOpenRef.current = open;
   }, [open]);
 
   // ════════════════════════════════════════════════════════════
@@ -217,7 +221,7 @@ export function TenantPreviewDrawer({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
       }
-    } catch (err) {
+    } catch {
       console.log('Share cancelled or failed');
     }
   }, [tenant, tenantUrl]);
@@ -227,8 +231,8 @@ export function TenantPreviewDrawer({
       await navigator.clipboard.writeText(tenantUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch {
+      console.error('Failed to copy');
     }
   }, [tenantUrl]);
 

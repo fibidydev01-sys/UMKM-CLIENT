@@ -84,7 +84,7 @@ function TestimonialCard({
         <Quote className="h-8 w-8 text-primary/20 mb-4 group-hover:text-primary/40 transition-colors flex-shrink-0" />
 
         <p className="text-muted-foreground mb-6 leading-relaxed flex-grow">
-          "{testimonial.content}"
+          &quot;{testimonial.content}&quot;
         </p>
 
         <div className="mt-auto">

@@ -64,8 +64,6 @@ interface DotPatternProps extends React.SVGProps<SVGSVGElement> {
 export function DotPattern({
   width = 16,
   height = 16,
-  x = 0,
-  y = 0,
   cx = 1,
   cy = 1,
   cr = 1,
@@ -90,23 +88,26 @@ export function DotPattern({
     return () => window.removeEventListener("resize", updateDimensions)
   }, [])
 
-  const dots = useMemo(() => Array.from(
-    {
-      length:
-        Math.ceil(dimensions.width / width) *
-        Math.ceil(dimensions.height / height),
-    },
-    (_, i) => {
-      const col = i % Math.ceil(dimensions.width / width)
-      const row = Math.floor(i / Math.ceil(dimensions.width / width))
+  const dots = useMemo(() => {
+    const cols = Math.ceil(dimensions.width / width);
+    const rows = Math.ceil(dimensions.height / height);
+    const length = cols * rows;
+
+    return Array.from({ length }, (_, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      // Use stable values based on position instead of Math.random()
+      const delay = ((col + row * cols) % 10) * 0.5;
+      const duration = 2 + ((col * row) % 3);
+
       return {
         x: col * width + cx,
         y: row * height + cy,
-        delay: Math.random() * 5,
-        duration: Math.random() * 3 + 2,
-      }
-    }
-  ), [dimensions.width, dimensions.height, width, height, cx, cy])
+        delay,
+        duration,
+      };
+    });
+  }, [dimensions.width, dimensions.height, width, height, cx, cy]);
 
   return (
     <svg
@@ -124,7 +125,7 @@ export function DotPattern({
           <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
       </defs>
-      {dots.map((dot, index) => (
+      {dots.map((dot) => (
         <motion.circle
           key={`${dot.x}-${dot.y}`}
           cx={dot.x}

@@ -32,23 +32,25 @@ const RESERVED_SUBDOMAINS = [
 
 /**
  * Protected routes that require authentication
+ * Currently unused but reserved for future auth implementation
  */
-const PROTECTED_ROUTES = [
-  '/dashboard',
-  '/dashboard/products',
-  '/dashboard/customers',
-  '/dashboard/orders',
-  '/dashboard/settings',
-];
+// const PROTECTED_ROUTES = [
+//   '/dashboard',
+//   '/dashboard/products',
+//   '/dashboard/customers',
+//   '/dashboard/orders',
+//   '/dashboard/settings',
+// ];
 
 /**
  * Auth routes (redirect to dashboard if already logged in)
+ * Currently unused but reserved for future auth implementation
  */
-const AUTH_ROUTES = [
-  '/login',
-  '/register',
-  '/forgot-password',
-];
+// const AUTH_ROUTES = [
+//   '/login',
+//   '/register',
+//   '/forgot-password',
+// ];
 
 // ==========================================
 // HELPER FUNCTIONS
@@ -92,31 +94,33 @@ function extractSubdomain(hostname: string): string | null {
 
 /**
  * Check if path matches any pattern
+ * Currently unused but reserved for future auth implementation
  */
-function matchesPath(pathname: string, patterns: string[]): boolean {
-  return patterns.some((pattern) => {
-    if (pattern.endsWith('*')) {
-      return pathname.startsWith(pattern.slice(0, -1));
-    }
-    return pathname === pattern || pathname.startsWith(pattern + '/');
-  });
-}
+// function matchesPath(pathname: string, patterns: string[]): boolean {
+//   return patterns.some((pattern) => {
+//     if (pattern.endsWith('*')) {
+//       return pathname.startsWith(pattern.slice(0, -1));
+//     }
+//     return pathname === pattern || pathname.startsWith(pattern + '/');
+//   });
+// }
 
 /**
  * Get token from cookies (for future auth use)
+ * Currently unused but reserved for future auth implementation
  */
-function getTokenFromCookies(request: NextRequest): string | null {
-  const tokenCookie = request.cookies.get('fibidy_token');
-  if (tokenCookie?.value) {
-    try {
-      const parsed = JSON.parse(tokenCookie.value);
-      return parsed?.state?.token || null;
-    } catch {
-      return tokenCookie.value;
-    }
-  }
-  return null;
-}
+// function getTokenFromCookies(request: NextRequest): string | null {
+//   const tokenCookie = request.cookies.get('fibidy_token');
+//   if (tokenCookie?.value) {
+//     try {
+//       const parsed = JSON.parse(tokenCookie.value);
+//       return parsed?.state?.token || null;
+//     } catch {
+//       return tokenCookie.value;
+//     }
+//   }
+//   return null;
+// }
 
 // ==========================================
 // PROXY FUNCTION (Next.js 16)

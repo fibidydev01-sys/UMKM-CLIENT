@@ -60,7 +60,7 @@ export function TestimonialHighlightSection() {
                   <Quote className="h-12 w-12 text-primary/20 mb-6" />
 
                   <blockquote className="text-lg md:text-xl leading-relaxed text-foreground mb-6">
-                    "{featuredTestimonial.quote}"
+                    &quot;{featuredTestimonial.quote}&quot;
                   </blockquote>
 
                   {/* Rating */}

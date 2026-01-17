@@ -3,7 +3,6 @@
 // Basic caching strategy for offline support
 // ==========================================
 
-const CACHE_NAME = 'fibidy-v1';
 const STATIC_CACHE = 'fibidy-static-v1';
 const DYNAMIC_CACHE = 'fibidy-dynamic-v1';
 

@@ -189,7 +189,7 @@ function ChatBubble({
                 className="p-3 rounded-lg bg-background/50 border text-sm"
               >
                 <span className="font-medium text-primary">{idx + 1}.</span>{' '}
-                <span className="text-foreground">"{option}"</span>
+                <span className="text-foreground">&quot;{option}&quot;</span>
               </div>
             ))}
             <p className="text-xs text-muted-foreground mt-2">Mau yang mana?</p>
@@ -242,7 +242,7 @@ export function FibidyAISection() {
               </p>
 
               <p className="text-foreground font-medium text-lg">
-                "Ini enaknya ditulis gimana ya?"
+                &quot;Ini enaknya ditulis gimana ya?&quot;
               </p>
 
               <p>Fibidy AI ada buat itu.</p>

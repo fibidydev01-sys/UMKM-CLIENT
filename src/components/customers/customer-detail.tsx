@@ -14,7 +14,6 @@ import {
   Trash2,
   ArrowLeft,
   ExternalLink,
-  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

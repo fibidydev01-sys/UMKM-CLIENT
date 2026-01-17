@@ -21,7 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
-import { CATEGORY_CONFIG, getCategoryList } from '@/config/categories';
+import { getCategoryList } from '@/config/categories';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
@@ -120,14 +120,10 @@ export function DiscoverSearch({
   const [query, setQuery] = useState(defaultValue);
   const [isFocused, setIsFocused] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => getRecentSearches());
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const categories = useMemo(() => getCategoryList(), []);
-
-  useEffect(() => {
-    setRecentSearches(getRecentSearches());
-  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

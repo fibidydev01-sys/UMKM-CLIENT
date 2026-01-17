@@ -5,7 +5,6 @@ import { ArrowRight, CheckCircle2, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { WordRotate } from '@/components/ui/word-rotate';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // DATA - V8.1 Copywriting

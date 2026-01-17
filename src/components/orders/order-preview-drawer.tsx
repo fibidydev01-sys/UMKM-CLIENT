@@ -11,7 +11,6 @@ import {
   XCircle,
   StickyNote,
   X,
-  Loader2,
   Package,
 } from 'lucide-react';
 import { Drawer } from 'vaul';

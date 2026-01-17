@@ -45,21 +45,18 @@ interface PWAProviderProps {
 export function PWAProvider({ children }: PWAProviderProps) {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  const [showPrompt, setShowPrompt] = useState(false);
-
-  // ==========================================
-  // CHECK IF APP IS INSTALLED
-  // ==========================================
-  useEffect(() => {
-    // Check if running as standalone (installed)
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === 'undefined') return false;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isIOSStandalone = (window.navigator as any).standalone === true;
-
-    setIsInstalled(isStandalone || isIOSStandalone);
-  }, []);
+    return isStandalone || isIOSStandalone;
+  });
+  const [isOnline, setIsOnline] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return navigator.onLine;
+  });
+  const [showPrompt, setShowPrompt] = useState(false);
 
   // ==========================================
   // HANDLE INSTALL PROMPT EVENT
@@ -104,9 +101,6 @@ export function PWAProvider({ children }: PWAProviderProps) {
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
-    // Set initial state
-    setIsOnline(navigator.onLine);
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);

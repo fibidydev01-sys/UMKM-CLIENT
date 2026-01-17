@@ -21,7 +21,6 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getTenantFullUrl } from '@/lib/store-url';
-import { cn } from '@/lib/cn';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES

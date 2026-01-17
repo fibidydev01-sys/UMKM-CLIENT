@@ -86,7 +86,6 @@ function categoryKeyToSlug(key: string): string {
 
 export function DiscoverHero({
   onSearch,
-  onCategorySelect,
   onTabChange,
   searchQuery = '',
   activeTab = 'umkm',

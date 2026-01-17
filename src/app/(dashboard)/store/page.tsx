@@ -4,7 +4,7 @@
 // Route: /store
 // Purpose: Redirect to user's own store or show store directory
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Store, ArrowRight, Loader2 } from 'lucide-react';
