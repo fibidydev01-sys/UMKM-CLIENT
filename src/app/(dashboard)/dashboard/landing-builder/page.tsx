@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/dashboard';
-import { LandingBuilder, LandingErrorBoundary } from '@/components/landing';
+import { LandingBuilder, LandingErrorBoundary } from '@/components/landing-builder';
 import { useTenant } from '@/hooks';
 import { useLandingConfig } from '@/hooks/use-landing-config';
 import { Palette, Layout, Wand2 } from 'lucide-react';

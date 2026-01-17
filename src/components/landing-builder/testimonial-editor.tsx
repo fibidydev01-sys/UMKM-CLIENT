@@ -29,6 +29,7 @@ import {
 import { ImageUpload } from '@/components/upload';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { LANDING_CONSTANTS } from '@/lib/landing';
 import type { Testimonial } from '@/types';
 
 // ==========================================
@@ -284,7 +285,7 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
                     value={formData.avatar}
                     onChange={(url) => setFormData({ ...formData, avatar: url || '' })}
                     onRemove={() => setFormData({ ...formData, avatar: '' })}
-                    folder="fibidy/testimonials"
+                    folder={LANDING_CONSTANTS.IMAGE_FOLDERS.TESTIMONIALS}
                     aspectRatio={1}
                     placeholder="Foto"
                   />
