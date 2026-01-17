@@ -97,32 +97,45 @@ export default function OrdersPage() {
 }
 
 // ==========================================
-// SKELETON COMPONENT
-// ✅ FINAL: Sama persis dengan Customers Page
+// SKELETON COMPONENT - MINIMAL VIEW
+// Matches minimal table: Checkbox | No. Pesanan | Pelanggan | Tanggal (4 columns)
 // ==========================================
 
 function TableSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Toolbar */}
+      {/* Toolbar Skeleton - hanya search (status filters dihapus) */}
       <div className="flex gap-2">
         <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-10 w-[150px]" />
-        <Skeleton className="h-10 w-[160px]" />
       </div>
 
-      {/* Table */}
+      {/* Table Skeleton - 4 columns minimal */}
       <div className="rounded-md border">
         <div className="p-4 space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4">
-              <Skeleton className="h-4 w-4" />
+              {/* Checkbox */}
+              <Skeleton className="h-4 w-4 flex-shrink-0" />
+
+              {/* Order Number */}
+              <Skeleton className="h-4 w-28 flex-shrink-0" />
+
+              {/* Customer Name */}
               <Skeleton className="h-4 flex-1" />
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-16" />
-              <Skeleton className="h-8 w-8" />
+
+              {/* Date */}
+              <Skeleton className="h-4 w-32 flex-shrink-0" />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between">
+        <Skeleton className="h-4 w-24" />
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24" />
+          <Skeleton className="h-9 w-24" />
         </div>
       </div>
     </div>
