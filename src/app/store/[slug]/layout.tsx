@@ -1,6 +1,7 @@
 import { tenantsApi } from '@/lib/api';
 import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/store';
 import { LocalBusinessSchema } from '@/components/seo';
+import { TemplateProvider } from '@/lib/landing';
 import { createTenantMetadata } from '@/lib/seo';
 import type { Metadata } from 'next';
 import type { PublicTenant } from '@/types';
@@ -8,6 +9,7 @@ import type { PublicTenant } from '@/types';
 // ==========================================
 // STORE LAYOUT
 // Wraps all store pages for a specific tenant
+// 🚀 NOW WITH TEMPLATE PROVIDER!
 // ==========================================
 
 interface StoreLayoutProps {
@@ -124,6 +126,10 @@ export default async function StoreLayout({
   // Get OKLCH values from map, or use default pink
   const themeColors = THEME_OKLCH_MAP[primaryHex] || DEFAULT_THEME;
 
+  // Get template ID from tenant config (if available)
+  const landingConfig = tenant.landingConfig as { template?: string } | null;
+  const templateId = landingConfig?.template || 'suspended-minimalist';
+
   return (
     <>
       {/* ==========================================
@@ -141,7 +147,7 @@ export default async function StoreLayout({
               --sidebar-ring: ${themeColors.light};
               --chart-1: ${themeColors.light};
             }
-            
+
             /* Dark Mode */
             .dark .tenant-theme,
             .tenant-theme.dark {
@@ -176,7 +182,14 @@ export default async function StoreLayout({
         />
 
         <StoreHeader tenant={tenant} />
-        <main className="flex-1">{children}</main>
+
+        {/* 🚀 WRAP CHILDREN WITH TEMPLATE PROVIDER */}
+        <main className="flex-1">
+          <TemplateProvider initialTemplateId={templateId}>
+            {children}
+          </TemplateProvider>
+        </main>
+
         <StoreFooter tenant={tenant} />
       </div>
     </>

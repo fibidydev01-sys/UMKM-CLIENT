@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { tenantsApi, productsApi } from '@/lib/api';
-import { normalizeTestimonials, TemplateProvider } from '@/lib/landing';
+import { normalizeTestimonials } from '@/lib/landing';
 import {
   TenantHero,
   TenantAbout,
@@ -94,78 +94,77 @@ export default async function StorePage({ params }: StorePageProps) {
         />
       )}
 
-      <TemplateProvider initialTemplateId="suspended-minimalist">
-        <div className="container px-4 py-8 space-y-8">
-          {landingConfig?.hero?.enabled && (
-            <TenantHero
-              config={landingConfig.hero}
-              fallbacks={{
-                title: tenant.name,
-                subtitle: tenant.description,
-                backgroundImage: tenant.banner || undefined,
-                logo: tenant.logo || undefined,
-                storeName: tenant.name,
-              }}
-            />
-          )}
+      {/* TemplateProvider now in layout.tsx - no need to wrap here */}
+      <div className="container px-4 py-8 space-y-8">
+        {landingConfig?.hero?.enabled && (
+          <TenantHero
+            config={landingConfig.hero}
+            fallbacks={{
+              title: tenant.name,
+              subtitle: tenant.description,
+              backgroundImage: tenant.banner || undefined,
+              logo: tenant.logo || undefined,
+              storeName: tenant.name,
+            }}
+          />
+        )}
 
-          {landingConfig?.about?.enabled && (
-            <TenantAbout
-              config={landingConfig.about}
-              fallbacks={{
-                content: tenant.description || undefined,
-                image: tenant.banner || undefined,
-              }}
-            />
-          )}
+        {landingConfig?.about?.enabled && (
+          <TenantAbout
+            config={landingConfig.about}
+            fallbacks={{
+              content: tenant.description || undefined,
+              image: tenant.banner || undefined,
+            }}
+          />
+        )}
 
-          {landingConfig?.products?.enabled && products.length > 0 && (
-            <TenantProducts
-              products={products}
-              config={landingConfig.products}
-              storeSlug={slug}
-            />
-          )}
+        {landingConfig?.products?.enabled && products.length > 0 && (
+          <TenantProducts
+            products={products}
+            config={landingConfig.products}
+            storeSlug={slug}
+          />
+        )}
 
-          {hasTestimonials && (
-            <TenantTestimonials
-              config={{
-                ...landingConfig?.testimonials,
-                config: {
-                  items: testimonialItems,
-                },
-              }}
-            />
-          )}
+        {hasTestimonials && (
+          <TenantTestimonials
+            config={{
+              ...landingConfig?.testimonials,
+              config: {
+                items: testimonialItems,
+              },
+            }}
+          />
+        )}
 
-          {landingConfig?.cta?.enabled && (
-            <TenantCta config={landingConfig.cta} storeSlug={slug} />
-          )}
+        {landingConfig?.cta?.enabled && (
+          <TenantCta config={landingConfig.cta} storeSlug={slug} />
+        )}
 
-          {landingConfig?.contact?.enabled && (
-            <TenantContact
-              config={landingConfig.contact}
-              fallbacks={{
-                whatsapp: tenant.whatsapp || null,
-                phone: tenant.phone || null,
-                address: tenant.address || null,
-                storeName: tenant.name,
-              }}
-            />
-          )}
+        {landingConfig?.contact?.enabled && (
+          <TenantContact
+            config={landingConfig.contact}
+            fallbacks={{
+              whatsapp: tenant.whatsapp || null,
+              phone: tenant.phone || null,
+              address: tenant.address || null,
+              storeName: tenant.name,
+            }}
+          />
+        )}
 
-          {!hasAnySectionEnabled && (
-            <div className="text-center py-12 bg-muted/30 rounded-lg">
-              <p className="text-muted-foreground mb-2">
-                Landing page belum dikonfigurasi
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Aktifkan section di Dashboard &gt; Settings &gt; Landing
-              </p>
-            </div>
-          )}
-        </div>
-      </TemplateProvider>
+        {!hasAnySectionEnabled && (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <p className="text-muted-foreground mb-2">
+              Landing page belum dikonfigurasi
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Aktifkan section di Dashboard &gt; Settings &gt; Landing
+            </p>
+          </div>
+        )}
+      </div>
     </>
   );
 }
