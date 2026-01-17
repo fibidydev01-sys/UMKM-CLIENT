@@ -57,6 +57,20 @@ export default async function StorePage({ params }: StorePageProps) {
 
   // ✅ FIX: No type annotation, let TypeScript infer
   const landingConfig = tenant.landingConfig;
+
+  // 🔥 DEBUG: Log what we're reading from database
+  console.group(`🏪 [STORE PAGE] ${slug}`);
+  console.log('📥 Landing Config from DB:', landingConfig);
+  console.log('📊 Sections enabled:', {
+    hero: landingConfig?.hero?.enabled,
+    about: landingConfig?.about?.enabled,
+    products: landingConfig?.products?.enabled,
+    testimonials: landingConfig?.testimonials?.enabled,
+    cta: landingConfig?.cta?.enabled,
+    contact: landingConfig?.contact?.enabled,
+  });
+  console.groupEnd();
+
   const breadcrumbs = generateTenantBreadcrumbs({
     name: tenant.name,
     slug: tenant.slug,

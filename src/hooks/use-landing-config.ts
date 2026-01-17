@@ -140,8 +140,20 @@ export function useLandingConfig({
       // Prepare config (normalize testimonials, etc.)
       const preparedConfig = prepareConfigForSave(config);
 
+      // 🔥 DEBUG: Log what we're sending to backend
+      console.group('🚀 [PUBLISH] Landing Config');
+      console.log('📤 Prepared Config:', JSON.stringify(preparedConfig, null, 2));
+      console.log('📊 Config Size:', JSON.stringify(preparedConfig).length, 'bytes');
+      console.groupEnd();
+
       // Save to server
-      await tenantsApi.update({ landingConfig: preparedConfig });
+      const response = await tenantsApi.update({ landingConfig: preparedConfig });
+
+      // 🔥 DEBUG: Log backend response
+      console.group('✅ [PUBLISH] Backend Response');
+      console.log('📥 Response:', response);
+      console.log('📥 Saved landingConfig:', response?.tenant?.landingConfig);
+      console.groupEnd();
 
       // Update saved config reference
       setSavedConfig(JSON.parse(JSON.stringify(preparedConfig)));
