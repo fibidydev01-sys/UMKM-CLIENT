@@ -135,6 +135,7 @@ export default async function TenantOgImage({ params }: Props) {
             }}
           >
             {tenant.logo ? (
+               
               <img
                 src={tenant.logo}
                 alt={tenant.name}
