@@ -148,6 +148,13 @@ export function ImageUpload({
       (error, result) => {
         if (error) {
           console.error("Upload error:", error);
+          console.error("Upload error details:", {
+            message: error.message,
+            stack: error.stack,
+            folder,
+            cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+            hasPreset: !!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
+          });
           setIsLoading(false);
           // FIX: Reset body overflow on error
           document.body.style.overflow = "";

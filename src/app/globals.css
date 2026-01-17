@@ -235,3 +235,20 @@
     animation: none;
     mix-blend-mode: normal;
 }
+
+/* ==========================================
+   THIRD-PARTY OVERRIDES
+   ========================================== */
+
+/* Cloudinary Upload Widget - Ensure it appears above dialogs (z-50) */
+.cloudinary-widget-wrapper,
+.cloudinary-overlay,
+#cloudinary-overlay,
+.cloudinary-widget {
+  z-index: 9999 !important;
+}
+
+/* Cloudinary widget body lock fix */
+body.cloudinary-widget-opened {
+  overflow: hidden !important;
+}
