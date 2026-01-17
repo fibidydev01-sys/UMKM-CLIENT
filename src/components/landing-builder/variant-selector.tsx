@@ -29,7 +29,6 @@ interface VariantOption {
 }
 
 const HERO_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Simple centered layout' },
   { value: 'gradient-overlay', label: 'Gradient Overlay', description: 'Background with gradient overlay' },
   { value: 'centered-minimal', label: 'Centered Minimal', description: 'Minimalist centered design' },
   { value: 'split-screen', label: 'Split Screen', description: 'Content on left, image on right' },
@@ -40,7 +39,6 @@ const HERO_VARIANTS: VariantOption[] = [
 ];
 
 const ABOUT_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Grid layout with features' },
   { value: 'side-by-side', label: 'Side by Side', description: 'Image alongside content' },
   { value: 'centered', label: 'Centered', description: 'Centered content layout' },
   { value: 'timeline', label: 'Timeline', description: 'Timeline-style layout' },
@@ -50,7 +48,6 @@ const ABOUT_VARIANTS: VariantOption[] = [
 ];
 
 const PRODUCTS_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Standard grid layout' },
   { value: 'grid-hover', label: 'Grid Hover', description: 'Grid with hover effects' },
   { value: 'masonry', label: 'Masonry', description: 'Pinterest-style masonry grid' },
   { value: 'carousel', label: 'Carousel', description: 'Sliding carousel' },
@@ -60,7 +57,6 @@ const PRODUCTS_VARIANTS: VariantOption[] = [
 ];
 
 const TESTIMONIALS_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Standard card layout' },
   { value: 'card-slider', label: 'Card Slider', description: 'Sliding cards' },
   { value: 'quote-highlight', label: 'Quote Highlight', description: 'Highlighted quotes' },
   { value: 'grid-cards', label: 'Grid Cards', description: 'Grid of testimonial cards' },
@@ -70,7 +66,6 @@ const TESTIMONIALS_VARIANTS: VariantOption[] = [
 ];
 
 const CONTACT_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Standard contact layout' },
   { value: 'split-form', label: 'Split Form', description: 'Form with info split' },
   { value: 'centered', label: 'Centered', description: 'Centered contact form' },
   { value: 'map-focus', label: 'Map Focus', description: 'Map-focused layout' },
@@ -79,7 +74,6 @@ const CONTACT_VARIANTS: VariantOption[] = [
 ];
 
 const CTA_VARIANTS: VariantOption[] = [
-  { value: 'default', label: 'Default', description: 'Standard CTA banner' },
   { value: 'bold-center', label: 'Bold Center', description: 'Bold centered CTA' },
   { value: 'gradient-banner', label: 'Gradient Banner', description: 'Gradient background banner' },
   { value: 'split-action', label: 'Split Action', description: 'Split with multiple actions' },
