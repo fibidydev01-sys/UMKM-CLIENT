@@ -53,52 +53,7 @@ export function ProductsTableToolbar({
           />
         </div>
 
-        {/* Category Filter */}
-        <Select
-          value={(table.getColumn('category')?.getFilterValue() as string) ?? 'all'}
-          onValueChange={(value) =>
-            table.getColumn('category')?.setFilterValue(value === 'all' ? '' : value)
-          }
-        >
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Kategori" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Kategori</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat} value={cat}>
-                {cat}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Status Filter */}
-        <Select
-          value={
-            table.getColumn('isActive')?.getFilterValue() === true
-              ? 'active'
-              : table.getColumn('isActive')?.getFilterValue() === false
-                ? 'inactive'
-                : 'all'
-          }
-          onValueChange={(value) =>
-            table
-              .getColumn('isActive')
-              ?.setFilterValue(
-                value === 'all' ? undefined : value === 'active'
-              )
-          }
-        >
-          <SelectTrigger className="w-32">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua</SelectItem>
-            <SelectItem value="active">Aktif</SelectItem>
-            <SelectItem value="inactive">Nonaktif</SelectItem>
-          </SelectContent>
-        </Select>
+        {/* Category & Status filters removed - use drawer for details */}
 
         {/* Reset Filters */}
         {isFiltered && (
