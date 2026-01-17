@@ -135,6 +135,7 @@ export default async function TenantOgImage({ params }: Props) {
             }}
           >
             {tenant.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tenant.logo}
                 alt={tenant.name}
