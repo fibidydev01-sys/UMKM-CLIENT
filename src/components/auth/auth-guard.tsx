@@ -73,13 +73,15 @@ export function AuthGuard({
     }
   }, [isHydrated, isChecked, isAuthenticated, requireAuth, redirectTo, pathname, router]);
 
-  // Loading state
-  if (!isHydrated || !isChecked) {
-    return <LoadingScreen message="Memeriksa autentikasi..." />;
+  // ✅ OPTIMISTIC RENDERING - tidak show loading screen
+  // Render children dulu, auth check berjalan di background
+  // Jika unauthorized, akan redirect (lihat useEffect di atas)
+  if (!isHydrated) {
+    return null; // SSR safety, cepat
   }
 
-  // Not authenticated
-  if (requireAuth && !isAuthenticated) {
+  // Not authenticated and checked - show loading while redirecting
+  if (isChecked && requireAuth && !isAuthenticated) {
     return <LoadingScreen message="Mengalihkan..." />;
   }
 
