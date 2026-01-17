@@ -112,7 +112,6 @@ export default async function ProductOgImage({ params }: Props) {
           }}
         >
           {productImage ? (
-             
             <img
               src={productImage}
               alt={product.name}
