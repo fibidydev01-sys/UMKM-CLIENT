@@ -27,7 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
-import type { TenantDetail } from '@/types/discover';
+import type { ShowcaseTenant } from '@/types/discover';
 import { getCategoryInfo, getInitials, formatWhatsAppUrl } from '@/lib/discover';
 
 // ══════════════════════════════════════════════════════════════
@@ -35,14 +35,14 @@ import { getCategoryInfo, getInitials, formatWhatsAppUrl } from '@/lib/discover'
 // ══════════════════════════════════════════════════════════════
 
 interface TenantPreviewDrawerProps {
-  tenant: TenantDetail | null;
+  tenant: ShowcaseTenant | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   tenantUrl: string;
   // Data from page (same pattern as DiscoverHero)
-  allTenants: TenantDetail[];
+  allTenants: ShowcaseTenant[];
   // Callback to switch tenant (drawer stays open)
-  onTenantSelect: (tenant: TenantDetail) => void;
+  onTenantSelect: (tenant: ShowcaseTenant) => void;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -67,7 +67,7 @@ function TikTokIcon({ className }: { className?: string }) {
 // ══════════════════════════════════════════════════════════════
 
 interface ExploreTenantCardProps {
-  tenant: TenantDetail;
+  tenant: ShowcaseTenant;
   onClick: () => void;
 }
 
@@ -233,7 +233,7 @@ export function TenantPreviewDrawer({
   }, [tenantUrl]);
 
   // Handle tenant card click - switch tenant, drawer stays open
-  const handleTenantClick = useCallback((clickedTenant: TenantDetail) => {
+  const handleTenantClick = useCallback((clickedTenant: ShowcaseTenant) => {
     onTenantSelect(clickedTenant);
     // Scroll to top is handled by useEffect above
   }, [onTenantSelect]);
