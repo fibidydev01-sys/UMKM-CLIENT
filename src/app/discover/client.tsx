@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// DISCOVER PAGE CLIENT - V11.0 REFACTORED
-// Components extracted to separate files
+// DISCOVER PAGE CLIENT - V12.0 REFACTORED
+// Uses centralized lib/discover utilities
 // ══════════════════════════════════════════════════════════════
 
 'use client';
@@ -21,65 +21,33 @@ import {
   SearchResultsHeader,
   NoResults,
 } from '@/components/discover';
-import type { ShowcaseTenant } from '@/components/discover';
-import { CATEGORY_CONFIG } from '@/config/categories';
-import { getTenantFullUrl } from '@/lib/store-url';
+import type { ShowcaseTenant, SortOption } from '@/types/discover';
+import {
+  fetchAllTenants,
+  getCategoryLabel,
+  getCategoryColor,
+  sortTenants,
+  CACHE_DURATION,
+} from '@/lib/discover';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
 // ══════════════════════════════════════════════════════════════
 
-interface TenantSitemapItem {
-  slug: string;
-  updatedAt: string;
-}
-
-interface TenantDetail {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string | null;
-  whatsapp: string | null;
-  phone: string | null;
-  address: string | null;
-  logo: string | null;
-  banner: string | null;
-  theme?: {
-    primaryColor?: string;
-  };
-  socialLinks?: {
-    instagram?: string;
-    facebook?: string;
-    tiktok?: string;
-  };
-  _count?: {
-    products: number;
-  };
-}
-
-type SortOption = 'popular' | 'newest' | 'oldest' | 'name_asc' | 'name_desc';
 type TabType = 'umkm' | 'produk' | 'jasa';
 
 // ══════════════════════════════════════════════════════════════
-// CONSTANTS
+// BROWSER CACHE (sessionStorage)
 // ══════════════════════════════════════════════════════════════
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const MAX_TENANTS = 24;
 const CACHE_KEY = 'fibidy_discover_tenants';
-const CACHE_DURATION = 5 * 60 * 1000;
-
-// ══════════════════════════════════════════════════════════════
-// CACHE HELPERS
-// ══════════════════════════════════════════════════════════════
 
 interface CacheData {
   tenants: ShowcaseTenant[];
   timestamp: number;
 }
 
-function getCachedTenants(): ShowcaseTenant[] | null {
+function getBrowserCachedTenants(): ShowcaseTenant[] | null {
   if (typeof window === 'undefined') return null;
   try {
     const cached = sessionStorage.getItem(CACHE_KEY);
@@ -95,7 +63,7 @@ function getCachedTenants(): ShowcaseTenant[] | null {
   }
 }
 
-function setCachedTenants(tenants: ShowcaseTenant[]): void {
+function setBrowserCachedTenants(tenants: ShowcaseTenant[]): void {
   if (typeof window === 'undefined') return;
   try {
     const data: CacheData = { tenants, timestamp: Date.now() };
@@ -103,18 +71,6 @@ function setCachedTenants(tenants: ShowcaseTenant[]): void {
   } catch {
     // Storage full or unavailable
   }
-}
-
-// ══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ══════════════════════════════════════════════════════════════
-
-function getCategoryLabel(category: string): string {
-  return CATEGORY_CONFIG[category]?.labelShort || category;
-}
-
-function getCategoryColor(category: string): string {
-  return CATEGORY_CONFIG[category]?.color || '#6b7280';
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -150,8 +106,9 @@ export function DiscoverPageClient() {
   // ════════════════════════════════════════════════════════════
 
   useEffect(() => {
-    async function fetchTenants() {
-      const cachedTenants = getCachedTenants();
+    async function loadTenants() {
+      // Check browser cache first
+      const cachedTenants = getBrowserCachedTenants();
       if (cachedTenants) {
         setTenants(cachedTenants);
         setLoading(false);
@@ -162,40 +119,10 @@ export function DiscoverPageClient() {
         setLoading(true);
         setError(null);
 
-        const sitemapRes = await fetch(
-          `${API_URL}/sitemap/tenants/paginated?page=1&limit=${MAX_TENANTS}`
-        );
+        // Use centralized fetch from lib/discover
+        const validTenants = await fetchAllTenants();
 
-        if (!sitemapRes.ok) throw new Error('Failed to fetch tenant list');
-
-        const sitemapData = await sitemapRes.json();
-        const tenantSlugs: TenantSitemapItem[] = sitemapData.tenants || [];
-
-        if (tenantSlugs.length === 0) {
-          setTenants([]);
-          return;
-        }
-
-        const tenantDetails = await Promise.all(
-          tenantSlugs.map(async (item) => {
-            try {
-              const detailRes = await fetch(`${API_URL}/tenants/by-slug/${item.slug}`);
-              if (!detailRes.ok) return null;
-              return await detailRes.json();
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        const validTenants: ShowcaseTenant[] = tenantDetails
-          .filter((t): t is TenantDetail => t !== null && t.id)
-          .map((t) => ({
-            ...t,
-            url: getTenantFullUrl(t.slug),
-          }));
-
-        setCachedTenants(validTenants);
+        setBrowserCachedTenants(validTenants);
         setTenants(validTenants);
       } catch (err) {
         console.error('Error fetching tenants:', err);
@@ -205,46 +132,47 @@ export function DiscoverPageClient() {
       }
     }
 
-    fetchTenants();
+    loadTenants();
   }, []);
 
   // ════════════════════════════════════════════════════════════
   // FILTER & SORT TENANTS
   // ════════════════════════════════════════════════════════════
 
-  const filteredTenants = tenants
-    .filter((tenant) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
+  const filteredTenants = (() => {
+    let result = tenants;
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((tenant) => {
         const matchesSearch =
           tenant.name?.toLowerCase().includes(query) ||
           tenant.description?.toLowerCase().includes(query) ||
           tenant.category?.toLowerCase().includes(query) ||
           getCategoryLabel(tenant.category).toLowerCase().includes(query);
-        if (!matchesSearch) return false;
-      }
-      if (selectedCategory && tenant.category !== selectedCategory) return false;
-      if (selectedColor) {
+        return matchesSearch;
+      });
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      result = result.filter((tenant) => tenant.category === selectedCategory);
+    }
+
+    // Apply color filter
+    if (selectedColor) {
+      result = result.filter((tenant) => {
         const categoryColor = getCategoryColor(tenant.category);
-        if (categoryColor !== selectedColor) return false;
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'newest':
-          return -1;
-        case 'oldest':
-          return 1;
-        case 'name_asc':
-          return (a.name || '').localeCompare(b.name || '');
-        case 'name_desc':
-          return (b.name || '').localeCompare(a.name || '');
-        case 'popular':
-        default:
-          return (b._count?.products || 0) - (a._count?.products || 0);
-      }
-    });
+        return categoryColor === selectedColor;
+      });
+    }
+
+    // Apply sort using centralized utility
+    result = sortTenants(result, sortBy);
+
+    return result;
+  })();
 
   // ════════════════════════════════════════════════════════════
   // HANDLERS

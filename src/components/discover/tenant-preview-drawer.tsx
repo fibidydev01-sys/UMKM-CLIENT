@@ -1,7 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// TENANT PREVIEW DRAWER - V10.9 FINAL
-// Pattern: Same as DiscoverHero - data managed at page level
-// Click tenant in Explore → Switch drawer content (no close)
+// TENANT PREVIEW DRAWER - V11.0 REFACTORED
+// Uses centralized lib/discover utilities
 // ══════════════════════════════════════════════════════════════
 
 'use client';
@@ -28,35 +27,12 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
-import { CATEGORY_CONFIG } from '@/config/categories';
+import type { TenantDetail } from '@/types/discover';
+import { getCategoryInfo, getInitials, formatWhatsAppUrl } from '@/lib/discover';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
 // ══════════════════════════════════════════════════════════════
-
-interface TenantDetail {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string | null;
-  whatsapp: string | null;
-  phone: string | null;
-  address: string | null;
-  logo: string | null;
-  banner: string | null;
-  theme?: {
-    primaryColor?: string;
-  };
-  socialLinks?: {
-    instagram?: string;
-    facebook?: string;
-    tiktok?: string;
-  };
-  _count?: {
-    products: number;
-  };
-}
 
 interface TenantPreviewDrawerProps {
   tenant: TenantDetail | null;
@@ -84,34 +60,6 @@ function TikTokIcon({ className }: { className?: string }) {
       <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z" />
     </svg>
   );
-}
-
-// ══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ══════════════════════════════════════════════════════════════
-
-function getCategoryInfo(category: string) {
-  return CATEGORY_CONFIG[category] || {
-    label: category,
-    labelShort: category,
-    color: '#6b7280',
-    icon: Store,
-  };
-}
-
-function getInitials(name?: string | null): string {
-  if (!name) return '??';
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function formatWhatsAppUrl(whatsapp: string): string {
-  const cleaned = whatsapp.replace(/\D/g, '');
-  return `https://wa.me/${cleaned}`;
 }
 
 // ══════════════════════════════════════════════════════════════

@@ -1,7 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// UMKM SHOWCASE SECTION
-// Display registered tenants as clickable cards
-// Links to subdomain: {slug}.fibidy.com
+// UMKM SHOWCASE SECTION - V2.0 REFACTORED
+// Uses centralized lib/discover utilities
 // ══════════════════════════════════════════════════════════════
 
 'use client';
@@ -20,81 +19,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getTenantFullUrl } from '@/lib/store-url';
-
-// ══════════════════════════════════════════════════════════════
-// TYPES
-// ══════════════════════════════════════════════════════════════
-
-interface TenantSitemapItem {
-  slug: string;
-  updatedAt: string;
-}
-
-interface TenantDetail {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string | null;
-  logo: string | null;
-  banner: string | null;
-  _count?: {
-    products: number;
-  };
-}
-
-interface ShowcaseTenant extends TenantDetail {
-  url: string;
-}
-
-// ══════════════════════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════════════════════
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const MAX_TENANTS = 12;
-
-// Category display mapping
-const CATEGORY_LABELS: Record<string, string> = {
-  'WARUNG_KELONTONG': 'Warung Kelontong',
-  'TOKO_BANGUNAN': 'Toko Bangunan',
-  'TOKO_ELEKTRONIK': 'Toko Elektronik',
-  'BENGKEL': 'Bengkel',
-  'SALON_KECANTIKAN': 'Salon Kecantikan',
-  'LAUNDRY': 'Laundry',
-  'WARUNG_MAKAN': 'Warung Makan',
-  'CATERING': 'Catering',
-  'KEDAI_KOPI': 'Kedai Kopi',
-  'TOKO_KUE': 'Toko Kue & Bakery',
-  'APOTEK': 'Apotek',
-  'KONTER_HP': 'Konter HP',
-  'RENTAL_KENDARAAN': 'Rental',
-  'STUDIO_FOTO': 'Studio Foto',
-  'PRINTING': 'Printing',
-  'PET_SHOP': 'Pet Shop',
-  'AC_SERVICE': 'Service AC',
-  'RESTORAN': 'Restoran',
-  'OTHER': 'Lainnya',
-};
-
-// ══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ══════════════════════════════════════════════════════════════
-
-function getCategoryLabel(category: string): string {
-  return CATEGORY_LABELS[category] || category;
-}
-
-function getInitials(name?: string | null): string {
-  if (!name) return '??';
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
+import type { ShowcaseTenant } from '@/types/discover';
+import { fetchAllTenants, getCategoryLabel, getInitials } from '@/lib/discover';
 
 // ══════════════════════════════════════════════════════════════
 // SKELETON LOADER
@@ -221,50 +147,13 @@ export function UMKMShowcaseSection() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function fetchTenants() {
+    async function loadTenants() {
       try {
         setLoading(true);
         setError(null);
 
-        // Step 1: Get tenant slugs from sitemap
-        const sitemapRes = await fetch(
-          `${API_URL}/sitemap/tenants/paginated?page=1&limit=${MAX_TENANTS}`
-        );
-
-        if (!sitemapRes.ok) {
-          throw new Error('Failed to fetch tenant list');
-        }
-
-        const sitemapData = await sitemapRes.json();
-        const tenantSlugs: TenantSitemapItem[] = sitemapData.tenants || [];
-
-        if (tenantSlugs.length === 0) {
-          setTenants([]);
-          return;
-        }
-
-        // Step 2: Fetch detail for each tenant
-        const tenantDetails = await Promise.all(
-          tenantSlugs.map(async (item) => {
-            try {
-              const detailRes = await fetch(
-                `${API_URL}/tenants/by-slug/${item.slug}`
-              );
-              if (!detailRes.ok) return null;
-              return await detailRes.json();
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        // Step 3: Filter out failed fetches and add URLs
-        const validTenants: ShowcaseTenant[] = tenantDetails
-          .filter((t): t is TenantDetail => t !== null && t.id)
-          .map((t) => ({
-            ...t,
-            url: getTenantFullUrl(t.slug),
-          }));
+        // Use centralized fetch from lib/discover
+        const validTenants = await fetchAllTenants(12);
 
         setTenants(validTenants);
       } catch (err) {
@@ -275,7 +164,7 @@ export function UMKMShowcaseSection() {
       }
     }
 
-    fetchTenants();
+    loadTenants();
   }, []);
 
   // Don't render if no tenants and not loading

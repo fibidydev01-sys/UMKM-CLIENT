@@ -22,6 +22,10 @@ export * from './order';
 
 // Landing Types
 export * from './landing';
+
+// Discover Types
+export * from './discover';
+
 // ==========================================
 // COMMON UTILITY TYPES
 // ==========================================

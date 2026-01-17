@@ -20,70 +20,23 @@ import {
   CategoryFilterBar,
   MinimalFooter,
 } from '@/components/discover';
+import type { ShowcaseTenant, SortOption } from '@/types/discover';
 import { CATEGORY_CONFIG } from '@/config/categories';
-import { getTenantFullUrl } from '@/lib/store-url';
-import { cn } from '@/lib/cn';
+import {
+  fetchTenantsByCategory,
+  getCategoryLabel,
+  getInitials,
+  categoryKeyToSlug,
+  sortTenants,
+  MAX_TENANTS_CATEGORY,
+} from '@/lib/discover';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
 // ══════════════════════════════════════════════════════════════
 
-interface TenantSitemapItem {
-  slug: string;
-  updatedAt: string;
-}
-
-interface TenantDetail {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string | null;
-  logo: string | null;
-  banner: string | null;
-  _count?: {
-    products: number;
-  };
-}
-
-interface ShowcaseTenant extends TenantDetail {
-  url: string;
-}
-
-type SortOption = 'popular' | 'newest' | 'oldest' | 'name_asc' | 'name_desc';
-
 interface CategoryPageClientProps {
   categoryKey: string;
-  categorySlug: string;
-}
-
-// ══════════════════════════════════════════════════════════════
-// CONSTANTS
-// ══════════════════════════════════════════════════════════════
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
-const MAX_TENANTS = 50;
-
-// ══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ══════════════════════════════════════════════════════════════
-
-function getCategoryLabel(category: string): string {
-  return CATEGORY_CONFIG[category]?.labelShort || category;
-}
-
-function getInitials(name?: string | null): string {
-  if (!name) return '??';
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function categoryKeyToSlug(key: string): string {
-  return key.toLowerCase().replace(/_/g, '-');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -265,46 +218,16 @@ export function CategoryPageClient({ categoryKey, categorySlug }: CategoryPageCl
   // ════════════════════════════════════════════════════════════
 
   useEffect(() => {
-    async function fetchTenants() {
+    async function loadTenants() {
       try {
         setLoading(true);
         setError(null);
 
-        const sitemapRes = await fetch(
-          `${API_URL}/sitemap/tenants/paginated?page=1&limit=${MAX_TENANTS}`
+        // Use centralized fetch from lib/discover
+        const validTenants = await fetchTenantsByCategory(
+          categoryKey,
+          MAX_TENANTS_CATEGORY
         );
-
-        if (!sitemapRes.ok) {
-          throw new Error('Failed to fetch tenant list');
-        }
-
-        const sitemapData = await sitemapRes.json();
-        const tenantSlugs: TenantSitemapItem[] = sitemapData.tenants || [];
-
-        if (tenantSlugs.length === 0) {
-          setTenants([]);
-          return;
-        }
-
-        const tenantDetails = await Promise.all(
-          tenantSlugs.map(async (item) => {
-            try {
-              const detailRes = await fetch(`${API_URL}/tenants/by-slug/${item.slug}`);
-              if (!detailRes.ok) return null;
-              return await detailRes.json();
-            } catch {
-              return null;
-            }
-          })
-        );
-
-        // Filter by category
-        const validTenants: ShowcaseTenant[] = tenantDetails
-          .filter((t): t is TenantDetail => t !== null && t.id && t.category === categoryKey)
-          .map((t) => ({
-            ...t,
-            url: getTenantFullUrl(t.slug),
-          }));
 
         setTenants(validTenants);
       } catch (err) {
@@ -315,35 +238,31 @@ export function CategoryPageClient({ categoryKey, categorySlug }: CategoryPageCl
       }
     }
 
-    fetchTenants();
+    loadTenants();
   }, [categoryKey]);
 
   // ════════════════════════════════════════════════════════════
   // FILTER & SORT
   // ════════════════════════════════════════════════════════════
 
-  const filteredTenants = tenants
-    .filter((tenant) => {
-      if (searchQuery) {
-        const query = searchQuery.toLowerCase();
-        return (
+  const filteredTenants = (() => {
+    let result = tenants;
+
+    // Apply search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(
+        (tenant) =>
           tenant.name?.toLowerCase().includes(query) ||
           tenant.description?.toLowerCase().includes(query)
-        );
-      }
-      return true;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'name_asc':
-          return (a.name || '').localeCompare(b.name || '');
-        case 'name_desc':
-          return (b.name || '').localeCompare(a.name || '');
-        case 'popular':
-        default:
-          return (b._count?.products || 0) - (a._count?.products || 0);
-      }
-    });
+      );
+    }
+
+    // Apply sort using centralized utility
+    result = sortTenants(result, sortBy);
+
+    return result;
+  })();
 
   // ════════════════════════════════════════════════════════════
   // HANDLERS

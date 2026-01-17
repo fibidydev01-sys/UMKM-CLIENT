@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// TENANT CARD COMPONENTS
-// Extracted from discover/client.tsx
+// TENANT CARD COMPONENTS - V2.0 REFACTORED
+// Uses centralized lib/discover utilities
 // ══════════════════════════════════════════════════════════════
 
 'use client';
@@ -9,61 +9,11 @@ import Image from 'next/image';
 import { Store, Package, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CATEGORY_CONFIG } from '@/config/categories';
+import type { ShowcaseTenant } from '@/types/discover';
+import { getCategoryLabel, getCategoryColor, getInitials } from '@/lib/discover';
 
-// ══════════════════════════════════════════════════════════════
-// TYPES
-// ══════════════════════════════════════════════════════════════
-
-interface TenantDetail {
-  id: string;
-  slug: string;
-  name: string;
-  category: string;
-  description: string | null;
-  whatsapp: string | null;
-  phone: string | null;
-  address: string | null;
-  logo: string | null;
-  banner: string | null;
-  theme?: {
-    primaryColor?: string;
-  };
-  socialLinks?: {
-    instagram?: string;
-    facebook?: string;
-    tiktok?: string;
-  };
-  _count?: {
-    products: number;
-  };
-}
-
-export interface ShowcaseTenant extends TenantDetail {
-  url: string;
-}
-
-// ══════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════
-
-function getCategoryLabel(category: string): string {
-  return CATEGORY_CONFIG[category]?.labelShort || category;
-}
-
-function getCategoryColor(category: string): string {
-  return CATEGORY_CONFIG[category]?.color || '#6b7280';
-}
-
-function getInitials(name?: string | null): string {
-  if (!name) return '??';
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
-}
+// Re-export for backward compatibility
+export type { ShowcaseTenant } from '@/types/discover';
 
 // ══════════════════════════════════════════════════════════════
 // SKELETON LOADER

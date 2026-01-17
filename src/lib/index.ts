@@ -21,3 +21,6 @@ export * from './cloudinary';
 export * from './invoice';
 
 export * from './landing-utils';
+
+// Discover utilities
+export * from './discover';
