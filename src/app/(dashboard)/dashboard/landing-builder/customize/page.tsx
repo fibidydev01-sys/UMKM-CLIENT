@@ -131,8 +131,26 @@ export default function CustomizeLandingPage() {
     if (landingConfig?.template === initialTemplateParam) return;
 
     // Apply initial template from URL param
-    handleTemplateChange(initialTemplateParam);
-  }, [initialTemplateParam, tenant, landingConfig?.template, handleTemplateChange]);
+    // Get template defaults
+    const templateDefaults = getTemplateDefaults(initialTemplateParam as any, {
+      name: tenant.name,
+      category: tenant.category,
+    });
+
+    // Merge with existing config (preserve user edits where possible)
+    const mergedConfig = mergeWithTemplateDefaults(
+      landingConfig,
+      initialTemplateParam as any,
+      {
+        name: tenant.name,
+        category: tenant.category,
+      }
+    );
+
+    // Update config
+    setLandingConfig(mergedConfig as TenantLandingConfig);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialTemplateParam, tenant?.name, tenant?.category]);
 
   // ============================================================================
   // LOADING STATE
