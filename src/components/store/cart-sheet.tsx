@@ -35,24 +35,11 @@ export function CartSheet({ tenant }: CartSheetProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
+  // ✅ ALL HOOKS MUST BE CALLED BEFORE CONDITIONAL RETURN!
   const items = useCartItems();
   const totalPrice = useCartTotalPrice();
   const isEmpty = useCartIsEmpty();
   const isHydrated = useCartHydrated();
-
-  // Prevent hydration mismatch by only rendering after mount
-  React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    // Return simplified version for SSR to match initial client render
-    return (
-      <Button variant="outline" size="icon" className="relative">
-        <ShoppingCart className="h-5 w-5" />
-      </Button>
-    );
-  }
 
   // Get actions directly
   const incrementQty = useCartStore((state) => state.incrementQty);
@@ -70,6 +57,20 @@ export function CartSheet({ tenant }: CartSheetProps) {
     setSheetOpen(false); // Close cart sheet
     setCheckoutOpen(true); // Open checkout dialog
   };
+
+  // Prevent hydration mismatch by only rendering after mount
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    // Return simplified version for SSR to match initial client render
+    return (
+      <Button variant="outline" size="icon" className="relative">
+        <ShoppingCart className="h-5 w-5" />
+      </Button>
+    );
+  }
 
   return (
     <>
