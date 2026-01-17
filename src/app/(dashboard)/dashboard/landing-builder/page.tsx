@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PageHeader } from '@/components/dashboard';
-import { LandingBuilder, LandingErrorBoundary } from '@/components/landing-builder';
+import { LandingBuilder, LandingErrorBoundary, TemplateSelector } from '@/components/landing-builder';
+import { TemplateProvider } from '@/lib/landing';
 import { useTenant } from '@/hooks';
 import { useLandingConfig } from '@/hooks/use-landing-config';
 import { Palette, Layout, Wand2 } from 'lucide-react';
@@ -377,18 +378,26 @@ export default function LandingBuilderPage() {
                 </div>
               ) : tenant ? (
                 <LandingErrorBoundary>
-                  <LandingBuilder
-                    config={landingConfig}
-                    onConfigChange={setLandingConfig}
-                    tenantSlug={tenant.slug}
-                    hasUnsavedChanges={hasUnsavedChanges}
-                    isSaving={isSaving}
-                    validationErrors={validationErrors}
-                    onPublish={handlePublish}
-                    onDiscard={handleDiscard}
-                    onReset={handleReset}
-                    onClearErrors={clearErrors}
-                  />
+                  <TemplateProvider initialTemplateId="modern">
+                    <div className="space-y-6">
+                      {/* Template Selector */}
+                      <TemplateSelector />
+
+                      {/* Landing Builder */}
+                      <LandingBuilder
+                        config={landingConfig}
+                        onConfigChange={setLandingConfig}
+                        tenantSlug={tenant.slug}
+                        hasUnsavedChanges={hasUnsavedChanges}
+                        isSaving={isSaving}
+                        validationErrors={validationErrors}
+                        onPublish={handlePublish}
+                        onDiscard={handleDiscard}
+                        onReset={handleReset}
+                        onClearErrors={clearErrors}
+                      />
+                    </div>
+                  </TemplateProvider>
                 </LandingErrorBoundary>
               ) : (
                 <p className="text-muted-foreground">Gagal memuat data tenant</p>

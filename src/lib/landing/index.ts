@@ -18,3 +18,9 @@ export * from './utils';
 
 // Helpers
 export * from './helpers';
+
+// Templates
+export * from './templates';
+
+// Context
+export * from './context';

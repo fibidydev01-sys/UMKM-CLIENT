@@ -8,3 +8,4 @@
 export { LandingBuilder } from './landing-builder';
 export { TestimonialEditor } from './testimonial-editor';
 export { LandingErrorBoundary } from './landing-error-boundary';
+export { TemplateSelector } from './template-selector';
