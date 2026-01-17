@@ -20,7 +20,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Selamat Datang di {StoreName}',
       subtitle: 'Temukan produk berkualitas dengan harga terbaik',
-      variant: 'centered-minimal',
       config: {
         layout: 'centered',
         showCta: true,
@@ -32,7 +31,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Tentang Kami',
       subtitle: 'Kenali lebih dekat dengan {StoreName}',
-      variant: 'centered',
       config: {
         content: 'Kami berkomitmen untuk memberikan produk terbaik dengan harga yang terjangkau. Kepuasan pelanggan adalah prioritas utama kami.',
         showImage: false,
@@ -42,7 +40,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Produk Kami',
       subtitle: 'Koleksi produk pilihan terbaik',
-      variant: 'minimal-list',
       config: {
         displayMode: 'all',
         limit: 8,
@@ -53,7 +50,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Testimoni',
       subtitle: 'Apa kata pelanggan kami',
-      variant: 'default',
       config: {
         items: [],
       },
@@ -62,7 +58,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Hubungi Kami',
       subtitle: 'Kami siap membantu Anda',
-      variant: 'minimal',
       config: {
         showMap: false,
         showForm: false,
@@ -73,7 +68,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Siap Berbelanja?',
       subtitle: '',
-      variant: 'minimal-line',
       config: {
         buttonText: 'Mulai Belanja',
         style: 'primary',
@@ -88,7 +82,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Semua Cita Rasa Lezat Bersama {StoreName}',
       subtitle: 'Makanan adalah seni, dan makanan adalah cinta. Kami mengantarkan kehangatan dari cita rasa terbaik langsung ke pintu rumah Anda dengan penuh kasih sayang.',
-      variant: 'gradient-overlay',
       config: {
         layout: 'centered',
         showCta: true,
@@ -101,7 +94,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Tentang Kami',
       subtitle: 'Cerita perjalanan kami dalam melayani Anda',
-      variant: 'side-by-side',
       config: {
         content: 'Sejak 2020, kami telah melayani ribuan pelanggan dengan produk berkualitas tinggi. Kepercayaan Anda adalah aset terbesar kami.',
         showImage: true,
@@ -111,7 +103,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Menu Spesial Kami',
       subtitle: 'Pilihan menu terbaik dengan cita rasa autentik',
-      variant: 'grid-hover',
       config: {
         displayMode: 'featured',
         limit: 8,
@@ -122,7 +113,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Testimoni Pelanggan',
       subtitle: 'Apa kata mereka yang sudah mencoba',
-      variant: 'card-slider',
       config: {
         items: [],
       },
@@ -131,7 +121,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Hubungi Kami',
       subtitle: 'Ada pertanyaan? Jangan ragu untuk menghubungi',
-      variant: 'split-form',
       config: {
         showMap: false,
         showForm: true,
@@ -142,7 +131,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Mulai Belanja Sekarang',
       subtitle: 'Jangan lewatkan penawaran spesial kami',
-      variant: 'bold-center',
       config: {
         buttonText: 'Belanja Sekarang',
         style: 'primary',
@@ -157,7 +145,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Belanja Online Lebih Mudah dengan {StoreName}',
       subtitle: 'Gratis ongkir untuk pembelian pertama, harga termurah, kualitas terjamin 100%',
-      variant: 'animated-gradient',
       config: {
         layout: 'centered',
         showCta: true,
@@ -169,7 +156,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Kenapa Pilih Kami?',
       subtitle: 'Keunggulan yang kami tawarkan',
-      variant: 'magazine',
       config: {
         content: 'Produk original, harga bersaing, pengiriman cepat, dan customer service terbaik. Ribuan pelanggan telah mempercayai kami!',
         showImage: true,
@@ -193,7 +179,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Produk Terlaris',
       subtitle: 'Paling banyak dibeli bulan ini',
-      variant: 'featured-hero',
       config: {
         displayMode: 'featured',
         limit: 6,
@@ -204,7 +189,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Dipercaya Ribuan Pelanggan',
       subtitle: 'Rating 5.0 dari 1000+ review',
-      variant: 'quote-highlight',
       config: {
         items: [],
       },
@@ -213,7 +197,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Hubungi Kami',
       subtitle: 'Customer service siap membantu Anda',
-      variant: 'social-focused',
       config: {
         showMap: false,
         showForm: true,
@@ -224,7 +207,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Dapatkan Diskon 20% Hari Ini',
       subtitle: 'Promo terbatas! Buruan checkout sekarang',
-      variant: 'gradient-banner',
       config: {
         buttonText: 'Belanja Sekarang',
         style: 'primary',
@@ -239,7 +221,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: '{StoreName} - Pilihan Tepat untuk Kebutuhan Anda',
       subtitle: 'Melayani dengan sepenuh hati sejak tahun 2015',
-      variant: 'split-screen',
       config: {
         layout: 'left',
         showCta: true,
@@ -251,7 +232,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Sejarah Kami',
       subtitle: 'Perjalanan panjang melayani pelanggan',
-      variant: 'timeline',
       config: {
         content: 'Berawal dari usaha kecil, kini kami telah berkembang menjadi salah satu toko terpercaya dengan ribuan pelanggan setia.',
         showImage: true,
@@ -261,7 +241,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Katalog Produk',
       subtitle: 'Beragam pilihan untuk Anda',
-      variant: 'carousel',
       config: {
         displayMode: 'all',
         limit: 10,
@@ -272,7 +251,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Testimoni',
       subtitle: 'Pengalaman pelanggan kami',
-      variant: 'grid-cards',
       config: {
         items: [],
       },
@@ -281,7 +259,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Lokasi & Kontak',
       subtitle: 'Kunjungi toko kami atau hubungi via online',
-      variant: 'map-focus',
       config: {
         showMap: true,
         showForm: true,
@@ -292,7 +269,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Kunjungi Toko Kami',
       subtitle: 'Atau pesan online sekarang juga',
-      variant: 'split-action',
       config: {
         buttonText: 'Belanja Online',
         style: 'primary',
@@ -307,7 +283,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: '{StoreName}',
       subtitle: 'Lebih dari sekedar produk, kami hadirkan pengalaman',
-      variant: 'glass-morphism',
       config: {
         layout: 'centered',
         showCta: true,
@@ -319,7 +294,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Cerita Kami',
       subtitle: 'Brand yang dibangun dengan passion',
-      variant: 'storytelling',
       config: {
         content: 'Setiap produk yang kami tawarkan memiliki cerita. Dari pemilihan bahan baku terbaik hingga proses yang penuh dedikasi, semua kami lakukan untuk Anda.',
         showImage: true,
@@ -329,7 +303,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Koleksi Terbaru',
       subtitle: 'Karya terbaik kami untuk Anda',
-      variant: 'masonry',
       config: {
         displayMode: 'latest',
         limit: 9,
@@ -340,7 +313,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Suara Pelanggan',
       subtitle: 'Mereka yang telah merasakan pengalaman bersama kami',
-      variant: 'single-focus',
       config: {
         items: [],
       },
@@ -349,7 +321,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Mari Terhubung',
       subtitle: 'Kami ingin mendengar dari Anda',
-      variant: 'centered',
       config: {
         showMap: false,
         showForm: true,
@@ -360,7 +331,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Bergabunglah dengan Komunitas Kami',
       subtitle: 'Dapatkan update produk terbaru dan promo eksklusif',
-      variant: 'floating',
       config: {
         buttonText: 'Ikuti Kami',
         style: 'outline',
@@ -375,7 +345,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Katalog Produk {StoreName}',
       subtitle: 'Temukan apa yang Anda cari',
-      variant: 'default',
       config: {
         layout: 'centered',
         showCta: true,
@@ -387,13 +356,11 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Tentang Kami',
       subtitle: '',
-      variant: 'default',
     },
     products: {
       enabled: true,
       title: 'Semua Produk',
       subtitle: 'Lengkap dan terpercaya',
-      variant: 'catalog',
       config: {
         displayMode: 'all',
         limit: 20,
@@ -404,7 +371,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Testimoni',
       subtitle: '',
-      variant: 'social-proof',
       config: {
         items: [],
       },
@@ -413,7 +379,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Kontak',
       subtitle: 'Hubungi kami untuk informasi lebih lanjut',
-      variant: 'default',
       config: {
         showMap: false,
         showForm: false,
@@ -424,7 +389,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Pesan Sekarang',
       subtitle: '',
-      variant: 'default',
     },
   },
 
@@ -435,7 +399,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Fresh, Clean, {StoreName}',
       subtitle: 'Kesederhanaan adalah kunci keindahan',
-      variant: 'centered-minimal',
       config: {
         layout: 'centered',
         showCta: true,
@@ -447,7 +410,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'About',
       subtitle: 'What we believe in',
-      variant: 'centered',
       config: {
         content: 'Less is more. We focus on quality over quantity, bringing you only the best.',
         showImage: false,
@@ -457,7 +419,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Products',
       subtitle: 'Our curated collection',
-      variant: 'grid-hover',
       config: {
         displayMode: 'featured',
         limit: 6,
@@ -468,7 +429,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Testimonials',
       subtitle: '',
-      variant: 'card-slider',
       config: {
         items: [],
       },
@@ -477,7 +437,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Get in Touch',
       subtitle: '',
-      variant: 'split-form',
       config: {
         showMap: false,
         showForm: true,
@@ -488,7 +447,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Start Shopping',
       subtitle: '',
-      variant: 'minimal-line',
     },
   },
 
@@ -499,7 +457,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Elegance Redefined',
       subtitle: 'Experience luxury with {StoreName}',
-      variant: 'parallax',
       config: {
         layout: 'centered',
         showCta: true,
@@ -511,7 +468,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Our Philosophy',
       subtitle: 'Crafted with precision, delivered with care',
-      variant: 'magazine',
       config: {
         content: 'Every detail matters. From the finest materials to impeccable craftsmanship, we deliver excellence.',
         showImage: true,
@@ -521,7 +477,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Signature Collection',
       subtitle: 'Timeless pieces for the discerning',
-      variant: 'masonry',
       config: {
         displayMode: 'featured',
         limit: 8,
@@ -532,7 +487,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Client Testimonials',
       subtitle: 'Trusted by connoisseurs',
-      variant: 'quote-highlight',
       config: {
         items: [],
       },
@@ -541,7 +495,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Connect with Us',
       subtitle: 'We would love to hear from you',
-      variant: 'centered',
       config: {
         showMap: false,
         showForm: true,
@@ -552,7 +505,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Experience Excellence',
       subtitle: 'Discover our exclusive collection',
-      variant: 'bold-center',
       config: {
         buttonText: 'View Collection',
         style: 'primary',
@@ -567,7 +519,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Bold. Dynamic. {StoreName}.',
       subtitle: 'Energy that moves you forward',
-      variant: 'video-background',
       config: {
         layout: 'centered',
         showCta: true,
@@ -579,7 +530,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Why We Stand Out',
       subtitle: 'Innovation meets excellence',
-      variant: 'cards',
       config: {
         content: 'We are not just another store. We are your partner in success, bringing you cutting-edge products and exceptional service.',
         showImage: true,
@@ -603,7 +553,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Trending Now',
       subtitle: "What's hot this season",
-      variant: 'featured-hero',
       config: {
         displayMode: 'featured',
         limit: 8,
@@ -614,7 +563,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Success Stories',
       subtitle: 'Real people, real results',
-      variant: 'video-testimonials',
       config: {
         items: [],
       },
@@ -623,7 +571,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: "Let's Connect",
       subtitle: 'Reach out to us anytime',
-      variant: 'social-focused',
       config: {
         showMap: false,
         showForm: true,
@@ -634,7 +581,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Join the Movement',
       subtitle: 'Be part of something bigger',
-      variant: 'gradient-banner',
       config: {
         buttonText: 'Join Now',
         style: 'primary',
@@ -649,7 +595,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Professional Solutions by {StoreName}',
       subtitle: 'Trusted partner for your business needs',
-      variant: 'split-screen',
       config: {
         layout: 'left',
         showCta: true,
@@ -661,7 +606,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'About Our Company',
       subtitle: 'Expertise you can trust',
-      variant: 'side-by-side',
       config: {
         content: 'With over a decade of experience, we provide professional-grade solutions that businesses rely on. Our commitment to excellence is unmatched.',
         showImage: true,
@@ -671,7 +615,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Our Solutions',
       subtitle: 'Products designed for professionals',
-      variant: 'grid-hover',
       config: {
         displayMode: 'all',
         limit: 12,
@@ -682,7 +625,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Client Feedback',
       subtitle: 'What our partners say',
-      variant: 'grid-cards',
       config: {
         items: [],
       },
@@ -691,7 +633,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Get in Touch',
       subtitle: 'Contact our team for inquiries',
-      variant: 'map-focus',
       config: {
         showMap: true,
         showForm: true,
@@ -702,7 +643,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Ready to Partner with Us?',
       subtitle: 'Request a consultation today',
-      variant: 'split-action',
       config: {
         buttonText: 'Contact Sales',
         style: 'primary',
@@ -717,7 +657,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: true,
       title: 'Selamat Datang',
       subtitle: '',
-      variant: 'default',
       config: {
         layout: 'centered',
         showCta: false,
@@ -727,13 +666,11 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Tentang Kami',
       subtitle: '',
-      variant: 'default',
     },
     products: {
       enabled: true,
       title: 'Produk',
       subtitle: '',
-      variant: 'default',
       config: {
         displayMode: 'all',
         limit: 8,
@@ -744,7 +681,6 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Testimoni',
       subtitle: '',
-      variant: 'default',
       config: {
         items: [],
       },
@@ -753,13 +689,11 @@ export const TEMPLATE_DEFAULTS: Record<TemplateId, Partial<TenantLandingConfig>>
       enabled: false,
       title: 'Kontak',
       subtitle: '',
-      variant: 'default',
     },
     cta: {
       enabled: false,
       title: 'Call to Action',
       subtitle: '',
-      variant: 'default',
     },
   },
 };
