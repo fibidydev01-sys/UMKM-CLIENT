@@ -22,6 +22,7 @@ import type { PublicTenant, Product } from '@/types';
 
 interface StorePageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 async function getTenant(slug: string): Promise<PublicTenant | null> {
@@ -44,16 +45,30 @@ async function getProducts(slug: string, limit = 8): Promise<Product[]> {
   }
 }
 
-export default async function StorePage({ params }: StorePageProps) {
+export default async function StorePage({ params, searchParams }: StorePageProps) {
   const { slug } = await params;
+  const searchParamsResolved = await searchParams;
   const tenant = await getTenant(slug);
 
   if (!tenant) {
     notFound();
   }
 
-  // ✅ FIX: No type annotation, let TypeScript infer
-  const landingConfig = tenant.landingConfig;
+  // Check for preview mode
+  const isPreview = searchParamsResolved.preview === 'true';
+  const configFromUrl = searchParamsResolved.config as string | undefined;
+
+  // Use preview config if available, otherwise use tenant config
+  let landingConfig = tenant.landingConfig;
+
+  if (isPreview && configFromUrl) {
+    try {
+      landingConfig = JSON.parse(decodeURIComponent(configFromUrl));
+    } catch (error) {
+      console.error('Failed to parse preview config:', error);
+      // Fall back to tenant config
+    }
+  }
   const breadcrumbs = generateTenantBreadcrumbs({
     name: tenant.name,
     slug: tenant.slug,

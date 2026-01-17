@@ -57,7 +57,7 @@ const navigation: NavGroup[] = [
       },
       {
         title: 'Landing Builder',
-        href: '/dashboard/landing-builder',
+        href: '/dashboard/landing',
         icon: Layout,
       },
       {
