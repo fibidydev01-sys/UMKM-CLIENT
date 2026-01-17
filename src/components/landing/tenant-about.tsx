@@ -2,7 +2,15 @@
 
 import { extractSectionText, getAboutConfig, extractAboutImage } from '@/lib/landing';
 import { LANDING_CONSTANTS, useAboutVariant } from '@/lib/landing';
-import { AboutGrid, AboutCards } from './variants';
+import {
+  AboutGrid,
+  AboutCards,
+  AboutTimeline,
+  AboutMagazine,
+  AboutStorytelling,
+  AboutSideBySide,
+  AboutCentered,
+} from './variants';
 import type { TenantLandingConfig } from '@/types';
 
 interface TenantAboutProps {
@@ -21,10 +29,14 @@ interface TenantAboutProps {
  * Wrapper that selects and renders the appropriate about variant
  * based on the current template context
  *
- * 🚀 NOTE: Currently only 2 about variants are implemented:
- * - default, side-by-side, centered -> AboutGrid
- * - cards, magazine, storytelling, timeline -> AboutCards
- * Other variants will fallback to default (AboutGrid)
+ * 🚀 ALL 7 VARIANTS IMPLEMENTED:
+ * - default → AboutGrid
+ * - side-by-side → AboutSideBySide
+ * - centered → AboutCentered
+ * - timeline → AboutTimeline
+ * - cards → AboutCards
+ * - magazine → AboutMagazine
+ * - storytelling → AboutStorytelling
  */
 export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
   const variant = useAboutVariant();
@@ -47,12 +59,28 @@ export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
     features,
   };
 
-  // Render appropriate variant based on template
-  // Card-based variants
-  if (variant === 'cards' || variant === 'magazine' || variant === 'storytelling' || variant === 'timeline') {
-    return <AboutCards {...commonProps} />;
-  }
+  // 🚀 Render appropriate variant based on template
+  switch (variant) {
+    case 'side-by-side':
+      return <AboutSideBySide {...commonProps} />;
 
-  // Default: grid variant (covers: default, side-by-side, centered)
-  return <AboutGrid {...commonProps} />;
+    case 'centered':
+      return <AboutCentered {...commonProps} />;
+
+    case 'timeline':
+      return <AboutTimeline {...commonProps} />;
+
+    case 'cards':
+      return <AboutCards {...commonProps} />;
+
+    case 'magazine':
+      return <AboutMagazine {...commonProps} />;
+
+    case 'storytelling':
+      return <AboutStorytelling {...commonProps} />;
+
+    // Default variant
+    default:
+      return <AboutGrid {...commonProps} />;
+  }
 }
