@@ -17,10 +17,12 @@ import { LANDING_CONSTANTS, HERO_LAYOUTS, PRODUCT_DISPLAY_MODES, CTA_STYLES } fr
 
 export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
   enabled: false, // ❌ Disabled by default
+  template: 'suspended-minimalist', // 🚀 Default template
   hero: {
     enabled: false, // ❌ Disabled
     title: '',
     subtitle: '',
+    variant: 'default', // 🚀 Default variant
     config: {
       layout: HERO_LAYOUTS[0], // 'centered'
       showCta: false, // ❌ Disabled by default
@@ -32,6 +34,7 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     enabled: false, // ❌ Disabled
     title: LANDING_CONSTANTS.SECTION_TITLES.ABOUT, // 'Tentang Kami'
     subtitle: '',
+    variant: 'default', // 🚀 Default variant
     config: {
       showImage: false, // ❌ Disabled by default
       features: [],
@@ -41,6 +44,7 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     enabled: false, // ❌ Disabled
     title: LANDING_CONSTANTS.SECTION_TITLES.PRODUCTS, // 'Produk Kami'
     subtitle: LANDING_CONSTANTS.SECTION_SUBTITLES.PRODUCTS, // 'Pilihan produk terbaik untuk Anda'
+    variant: 'default', // 🚀 Default variant
     config: {
       displayMode: PRODUCT_DISPLAY_MODES[0], // 'featured'
       limit: LANDING_CONSTANTS.PRODUCT_LIMIT_DEFAULT, // 8
@@ -51,6 +55,7 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     enabled: false, // ❌ Disabled
     title: LANDING_CONSTANTS.SECTION_TITLES.TESTIMONIALS, // 'Testimoni'
     subtitle: LANDING_CONSTANTS.SECTION_SUBTITLES.TESTIMONIALS, // 'Apa kata pelanggan kami'
+    variant: 'default', // 🚀 Default variant
     config: {
       items: [],
     },
@@ -59,6 +64,7 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     enabled: false, // ❌ Disabled
     title: LANDING_CONSTANTS.SECTION_TITLES.CONTACT, // 'Hubungi Kami'
     subtitle: '',
+    variant: 'default', // 🚀 Default variant
     config: {
       showMap: false, // ❌ Disabled by default
       showForm: false, // ❌ Disabled by default
@@ -69,6 +75,7 @@ export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
     enabled: false, // ❌ Disabled
     title: LANDING_CONSTANTS.SECTION_TITLES.CTA, // 'Siap Berbelanja?'
     subtitle: '',
+    variant: 'default', // 🚀 Default variant
     config: {
       buttonText: LANDING_CONSTANTS.CTA_BUTTON_DEFAULT, // 'Mulai Belanja'
       style: CTA_STYLES[0], // 'primary'

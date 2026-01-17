@@ -165,15 +165,44 @@ export function mergeLandingConfig(
 export function prepareConfigForSave(config: TenantLandingConfig): TenantLandingConfig {
   return {
     ...config,
+    // 🚀 Explicitly preserve template field
+    template: config.template || 'suspended-minimalist',
+    // 🚀 Normalize testimonials while preserving variant
     testimonials: {
       ...config.testimonials,
       enabled: config.testimonials?.enabled ?? false,
       title: config.testimonials?.title || LANDING_CONSTANTS.SECTION_TITLES.TESTIMONIALS,
       subtitle: config.testimonials?.subtitle || '',
-      variant: config.testimonials?.variant,
+      variant: config.testimonials?.variant || 'default', // 🚀 Preserve variant
       config: {
         items: normalizeTestimonials(config.testimonials?.config?.items),
       },
+    },
+    // 🚀 Explicitly preserve variants for all sections
+    hero: {
+      ...config.hero,
+      variant: config.hero?.variant || 'default',
+      config: config.hero?.config, // Preserve config
+    },
+    about: {
+      ...config.about,
+      variant: config.about?.variant || 'default',
+      config: config.about?.config, // Preserve config
+    },
+    products: {
+      ...config.products,
+      variant: config.products?.variant || 'default',
+      config: config.products?.config, // Preserve config
+    },
+    contact: {
+      ...config.contact,
+      variant: config.contact?.variant || 'default',
+      config: config.contact?.config, // Preserve config
+    },
+    cta: {
+      ...config.cta,
+      variant: config.cta?.variant || 'default',
+      config: config.cta?.config, // Preserve config
     },
   };
 }
