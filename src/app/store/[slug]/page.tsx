@@ -60,7 +60,8 @@ export default async function StorePage({ params }: StorePageProps) {
 
   // 🔥 DEBUG: Log what we're reading from database
   console.group(`🏪 [STORE PAGE] ${slug}`);
-  console.log('📥 Landing Config from DB:', landingConfig);
+  console.log('📥 Landing Config from DB (JSON):', JSON.stringify(landingConfig, null, 2));
+  console.log('🎯 HERO SECTION:', JSON.stringify(landingConfig?.hero, null, 2));
   console.log('📊 Sections enabled:', {
     hero: landingConfig?.hero?.enabled,
     about: landingConfig?.about?.enabled,
