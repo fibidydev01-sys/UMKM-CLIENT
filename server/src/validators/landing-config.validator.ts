@@ -190,7 +190,7 @@ const testimonialItemSchema = {
     content: { type: 'string' as const, minLength: 1, maxLength: 1000 },
     rating: { type: 'integer' as const, minimum: 1, maximum: 5 },
   },
-  additionalProperties: false,
+  additionalProperties: true,
 };
 
 const featureItemSchema = {
@@ -201,7 +201,7 @@ const featureItemSchema = {
     title: { type: 'string' as const, minLength: 1, maxLength: 100 },
     description: { type: 'string' as const, minLength: 1, maxLength: 500 },
   },
-  additionalProperties: false,
+  additionalProperties: true,
 };
 
 // ==========================================
@@ -268,10 +268,10 @@ const landingConfigSchema = {
             backgroundImage: { type: 'string' as const, maxLength: 500 },
             overlayOpacity: { type: 'number' as const, minimum: 0, maximum: 1 },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
 
     // 🚀 UPDATED: About with variant
@@ -307,10 +307,10 @@ const landingConfigSchema = {
               items: featureItemSchema,
             },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
 
     // 🚀 UPDATED: Products with variant
@@ -344,10 +344,10 @@ const landingConfigSchema = {
             limit: { type: 'integer' as const, minimum: 1, maximum: 50 },
             showViewAll: { type: 'boolean' as const },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
 
     // 🚀 UPDATED: Testimonials with variant
@@ -380,10 +380,10 @@ const landingConfigSchema = {
               items: testimonialItemSchema,
             },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
 
     // 🚀 UPDATED: Contact with variant
@@ -413,10 +413,10 @@ const landingConfigSchema = {
             showForm: { type: 'boolean' as const },
             showSocialMedia: { type: 'boolean' as const },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
 
     // 🚀 UPDATED: CTA with variant
@@ -449,13 +449,13 @@ const landingConfigSchema = {
               enum: ['primary', 'secondary', 'outline'],
             },
           },
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
-      additionalProperties: false,
+      additionalProperties: true,
     },
   },
-  additionalProperties: false,
+  additionalProperties: true,
 };
 
 // ==========================================
@@ -464,7 +464,7 @@ const landingConfigSchema = {
 
 const ajv = new Ajv({
   allErrors: true,
-  removeAdditional: 'all',
+  removeAdditional: false, // 🔥 FIX: Don't strip additional fields (like variant)!
   useDefaults: true,
   coerceTypes: false,
 });
