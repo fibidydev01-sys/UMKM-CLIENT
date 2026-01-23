@@ -139,15 +139,9 @@ const nextConfig: NextConfig = {
   // ==========================================
   // REDIRECTS
   // ==========================================
+  // Note: Root redirect (/ -> /discover) is handled by middleware.ts
   async redirects() {
-    return [
-      // Redirect root to /discover
-      {
-        source: '/',
-        destination: '/discover',
-        permanent: false, // 307 temporary redirect (better for SEO flexibility)
-      },
-    ];
+    return [];
   },
 
   // ==========================================
