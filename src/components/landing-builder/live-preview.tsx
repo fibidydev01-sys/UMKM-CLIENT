@@ -5,11 +5,10 @@
 // Real-time preview of landing page
 // ==========================================
 
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Smartphone, Monitor, Tablet, ExternalLink, Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { TemplateProvider } from '@/lib/landing';
 import {
   TenantHero,
@@ -19,7 +18,7 @@ import {
   TenantContact,
   TenantCta,
 } from '@/components/landing';
-import type { TenantLandingConfig, Product, Tenant } from '@/types';
+import type { TenantLandingConfig, Product, Tenant, SectionKey } from '@/types';
 
 // ==========================================
 // TYPES
@@ -32,6 +31,9 @@ interface LivePreviewProps {
   tenant: Tenant;
   products: Product[];
   isLoading?: boolean;
+  activeSection?: SectionKey | null; // 🚀 Active section for auto-scroll
+  drawerOpen?: boolean; // 🚀 Drawer state for Buka button
+  onToggleDrawer?: () => void; // 🚀 Toggle drawer handler
 }
 
 // ==========================================
@@ -54,8 +56,50 @@ const DEVICE_ICONS: Record<DeviceType, React.ReactNode> = {
 // MAIN COMPONENT
 // ==========================================
 
-export function LivePreview({ config, tenant, products, isLoading = false }: LivePreviewProps) {
+export function LivePreview({
+  config,
+  tenant,
+  products,
+  isLoading = false,
+  activeSection,
+  drawerOpen = false,
+  onToggleDrawer,
+}: LivePreviewProps) {
   const [device, setDevice] = useState<DeviceType>('desktop');
+
+  // 🚀 Section refs for auto-scroll
+  const sectionRefs = useRef<Record<SectionKey, HTMLDivElement | null>>({
+    hero: null,
+    about: null,
+    products: null,
+    testimonials: null,
+    cta: null,
+    contact: null,
+  });
+
+  // 🚀 Section order - use config.sectionOrder or default order
+  const defaultOrder: SectionKey[] = [
+    'hero',
+    'about',
+    'products',
+    'testimonials',
+    'cta',
+    'contact',
+  ];
+  const sectionOrder = config?.sectionOrder || defaultOrder;
+
+  // 🚀 Auto-scroll to active section
+  useEffect(() => {
+    if (!activeSection) return;
+
+    const sectionElement = sectionRefs.current[activeSection];
+    if (sectionElement) {
+      sectionElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, [activeSection]);
 
   // Section enabled checks
   const heroEnabled = config?.hero?.enabled === true;
@@ -68,12 +112,73 @@ export function LivePreview({ config, tenant, products, isLoading = false }: Liv
   const hasAnySectionEnabled =
     heroEnabled || aboutEnabled || productsEnabled || testimonialsEnabled || ctaEnabled || contactEnabled;
 
+  // 🚀 Section rendering map with refs for auto-scroll
+  const sectionComponents: Record<SectionKey, React.ReactNode> = {
+    hero: heroEnabled ? (
+      <div key="hero" ref={(el) => (sectionRefs.current.hero = el)}>
+        <TenantHero config={config.hero} tenant={tenant} />
+      </div>
+    ) : null,
+    about: aboutEnabled ? (
+      <div key="about" ref={(el) => (sectionRefs.current.about = el)}>
+        <TenantAbout config={config.about} tenant={tenant} />
+      </div>
+    ) : null,
+    products: productsEnabled ? (
+      <div key="products" ref={(el) => (sectionRefs.current.products = el)}>
+        <TenantProducts
+          products={products}
+          config={config.products}
+          storeSlug={tenant.slug}
+        />
+      </div>
+    ) : null,
+    testimonials: testimonialsEnabled ? (
+      <div key="testimonials" ref={(el) => (sectionRefs.current.testimonials = el)}>
+        <TenantTestimonials config={config.testimonials} tenant={tenant} />
+      </div>
+    ) : null,
+    cta: ctaEnabled ? (
+      <div key="cta" ref={(el) => (sectionRefs.current.cta = el)}>
+        <TenantCta config={config.cta} tenant={tenant} />
+      </div>
+    ) : null,
+    contact: contactEnabled ? (
+      <div key="contact" ref={(el) => (sectionRefs.current.contact = el)}>
+        <TenantContact config={config.contact} tenant={tenant} />
+      </div>
+    ) : null,
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Preview Header */}
       <div className="flex items-center justify-between p-4 border-b bg-muted/30">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold">Live Preview</h3>
+          {/* 🚀 Active Section Name */}
+          {activeSection && (
+            <>
+              <div className="h-5 w-px bg-border" />
+              <h3 className="font-semibold capitalize">
+                {activeSection === 'cta' ? 'CTA' : activeSection}
+              </h3>
+              {/* 🚀 Buka/Tutup Drawer Button */}
+              {onToggleDrawer && (
+                <>
+                  <div className="h-5 w-px bg-border" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onToggleDrawer}
+                    className="h-7 px-3"
+                  >
+                    {drawerOpen ? 'Tutup' : 'Buka'}
+                  </Button>
+                </>
+              )}
+            </>
+          )}
           {isLoading && (
             <Badge variant="outline" className="gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -129,62 +234,8 @@ export function LivePreview({ config, tenant, products, isLoading = false }: Liv
           {/* Render landing page sections */}
           <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
             <div className="container px-4 py-8 space-y-8">
-              {/* Hero Section */}
-              {heroEnabled && (
-                <TenantHero
-                  config={config.hero}
-                  fallbacks={{
-                    title: tenant.name,
-                    subtitle: tenant.description,
-                    backgroundImage: tenant.banner || undefined,
-                    logo: tenant.logo || undefined,
-                    storeName: tenant.name,
-                  }}
-                />
-              )}
-
-              {/* About Section */}
-              {aboutEnabled && (
-                <TenantAbout
-                  config={config.about}
-                  fallbacks={{
-                    content: tenant.description || undefined,
-                    image: tenant.banner || undefined,
-                  }}
-                />
-              )}
-
-              {/* Products Section */}
-              {productsEnabled && (
-                <TenantProducts
-                  products={products}
-                  config={config.products}
-                  storeSlug={tenant.slug}
-                />
-              )}
-
-              {/* Testimonials Section */}
-              {testimonialsEnabled && (
-                <TenantTestimonials config={config.testimonials} />
-              )}
-
-              {/* CTA Section */}
-              {ctaEnabled && (
-                <TenantCta config={config.cta} storeSlug={tenant.slug} />
-              )}
-
-              {/* Contact Section */}
-              {contactEnabled && (
-                <TenantContact
-                  config={config.contact}
-                  fallbacks={{
-                    whatsapp: tenant.whatsapp || null,
-                    phone: tenant.phone || null,
-                    address: tenant.address || null,
-                    storeName: tenant.name,
-                  }}
-                />
-              )}
+              {/* 🚀 Render sections in custom order */}
+              {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
 
               {/* Empty State */}
               {!hasAnySectionEnabled && (

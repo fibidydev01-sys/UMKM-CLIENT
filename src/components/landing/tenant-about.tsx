@@ -1,91 +1,63 @@
 'use client';
 
-import { extractSectionText, getAboutConfig, extractAboutImage } from '@/lib/landing';
-import { LANDING_CONSTANTS, useAboutVariant } from '@/lib/landing';
-import {
-  AboutGrid,
-  AboutCards,
-  AboutTimeline,
-  AboutMagazine,
-  AboutStorytelling,
-  AboutSideBySide,
-  AboutCentered,
-} from './variants';
-import type { TenantLandingConfig } from '@/types';
+import { lazy, Suspense } from 'react';
+import { extractAboutData, useAboutBlock } from '@/lib/landing';
+import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantAboutProps {
   config?: TenantLandingConfig['about'];
-  fallbacks?: {
-    title?: string;
-    subtitle?: string;
-    content?: string;
-    image?: string;
-  };
+  tenant: Tenant | PublicTenant;
 }
 
 /**
- * Tenant About Component
+ * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
  *
- * Wrapper that selects and renders the appropriate about variant
- * based on the current template context
+ * NO MANUAL IMPORTS! Just add about201.tsx and it works!
  *
- * 🚀 ALL 7 VARIANTS IMPLEMENTED:
- * - default → AboutGrid
- * - side-by-side → AboutSideBySide
- * - centered → AboutCentered
- * - timeline → AboutTimeline
- * - cards → AboutCards
- * - magazine → AboutMagazine
- * - storytelling → AboutStorytelling
+ * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
+ * - title → tenant.aboutTitle
+ * - subtitle → tenant.aboutSubtitle
+ * - content → tenant.aboutContent
+ * - image → tenant.aboutImage
+ * - features → tenant.aboutFeatures
  *
- * 🎯 VARIANT PRIORITY:
- * 1. config.variant (user override)
- * 2. template variant (from TemplateProvider)
+ * 🚀 SUPPORTS ALL BLOCKS: about1, about2, about3, ..., about200, about9999!
  */
-export function TenantAbout({ config, fallbacks = {} }: TenantAboutProps) {
-  const templateVariant = useAboutVariant();
-  const variant = config?.variant || templateVariant;
+export function TenantAbout({ config, tenant }: TenantAboutProps) {
+  const templateBlock = useAboutBlock();
+  const block = config?.block || templateBlock;
 
-  const { title, subtitle } = extractSectionText(config, {
-    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.ABOUT,
-    subtitle: fallbacks.subtitle,
-  });
-
-  const aboutConfig = getAboutConfig(config);
-  const content = aboutConfig?.content || fallbacks.content || '';
-  const image = extractAboutImage(aboutConfig, fallbacks.image);
-  const features = aboutConfig?.features || [];
+  // Extract about data directly from tenant (Data Contract fields)
+  const aboutData = extractAboutData(tenant, config ? { about: config } : undefined);
 
   const commonProps = {
-    title,
-    subtitle,
-    content,
-    image,
-    features,
+    title: aboutData.title,
+    subtitle: aboutData.subtitle,
+    content: aboutData.content,
+    image: aboutData.image,
+    features: aboutData.features,
   };
 
-  // 🚀 Render appropriate variant based on template
-  switch (variant) {
-    case 'side-by-side':
-      return <AboutSideBySide {...commonProps} />;
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('about', '');
+  const AboutComponent = lazy(() =>
+    import(`./blocks/about/about${blockNumber}`)
+      .then((mod) => ({ default: mod[`About${blockNumber}`] }))
+      .catch(() => import('./blocks/about/about1').then((mod) => ({ default: mod.About1 })))
+  );
 
-    case 'centered':
-      return <AboutCentered {...commonProps} />;
+  // Render with Suspense for lazy loading
+  return (
+    <Suspense fallback={<AboutSkeleton />}>
+      <AboutComponent {...commonProps} />
+    </Suspense>
+  );
+}
 
-    case 'timeline':
-      return <AboutTimeline {...commonProps} />;
-
-    case 'cards':
-      return <AboutCards {...commonProps} />;
-
-    case 'magazine':
-      return <AboutMagazine {...commonProps} />;
-
-    case 'storytelling':
-      return <AboutStorytelling {...commonProps} />;
-
-    // Default variant
-    default:
-      return <AboutGrid {...commonProps} />;
-  }
+function AboutSkeleton() {
+  return (
+    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
+  );
 }

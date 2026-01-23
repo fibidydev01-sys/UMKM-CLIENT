@@ -53,19 +53,19 @@ export function TemplateSelector() {
                       </div>
                       <p className="text-sm text-muted-foreground mb-4">{template.description}</p>
 
-                      {/* Variant Info */}
+                      {/* Block Info */}
                       <div className="space-y-1 text-xs text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Hero:</span>
-                          <span className="capitalize">{template.variants.hero}</span>
+                          <span className="capitalize">{template.blocks.hero}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">About:</span>
-                          <span className="capitalize">{template.variants.about}</span>
+                          <span className="capitalize">{template.blocks.about}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="font-medium">Products:</span>
-                          <span className="capitalize">{template.variants.products}</span>
+                          <span className="capitalize">{template.blocks.products}</span>
                         </div>
                       </div>
                     </div>

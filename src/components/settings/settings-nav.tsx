@@ -4,7 +4,6 @@ import {
   Store,
   CreditCard,
   Truck,
-  Palette,
   Search,
   Menu,
   type LucideIcon,
@@ -43,10 +42,9 @@ interface SettingsNavProps {
 
 export const SETTINGS_MENU: SettingsMenuItem[] = [
   { key: 'store', label: 'Toko', icon: Store },
+  { key: 'seo', label: 'SEO', icon: Search },
   { key: 'payment', label: 'Pembayaran', icon: CreditCard },
   { key: 'shipping', label: 'Pengiriman', icon: Truck },
-  { key: 'appearance', label: 'Tampilan', icon: Palette },
-  { key: 'seo', label: 'SEO', icon: Search },
 ];
 
 // ============================================================================
@@ -113,7 +111,7 @@ export function SettingsNav({
       </div>
 
       {/* Desktop: Tabs */}
-      <TabsList className="hidden md:grid w-full grid-cols-5 lg:w-auto">
+      <TabsList className="hidden md:grid w-full grid-cols-4 lg:w-auto">
         {SETTINGS_MENU.map((item) => {
           const Icon = item.icon;
           return (

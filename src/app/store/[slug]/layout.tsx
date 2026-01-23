@@ -2,6 +2,7 @@ import { tenantsApi } from '@/lib/api';
 import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/store';
 import { LocalBusinessSchema } from '@/components/seo';
 import { TemplateProvider } from '@/lib/landing';
+import { generateThemeCSS } from '@/lib/theme';
 import { createTenantMetadata } from '@/lib/seo';
 import type { Metadata } from 'next';
 import type { PublicTenant } from '@/types';
@@ -20,48 +21,7 @@ interface StoreLayoutProps {
   params: Promise<{ slug: string }>;
 }
 
-// ==========================================
-// THEME COLOR MAPPING
-// Predefined OKLCH values for each theme color
-// ==========================================
-const THEME_OKLCH_MAP: Record<string, { light: string; dark: string }> = {
-  // Sky/Default
-  '#0ea5e9': {
-    light: 'oklch(0.685 0.169 237.323)',
-    dark: 'oklch(0.746 0.16 232.661)',
-  },
-  // Emerald
-  '#10b981': {
-    light: 'oklch(0.696 0.17 162.48)',
-    dark: 'oklch(0.765 0.177 163.223)',
-  },
-  // Rose
-  '#f43f5e': {
-    light: 'oklch(0.645 0.246 16.439)',
-    dark: 'oklch(0.712 0.194 13.428)',
-  },
-  // Amber
-  '#f59e0b': {
-    light: 'oklch(0.769 0.188 70.08)',
-    dark: 'oklch(0.822 0.165 68.293)',
-  },
-  // Violet
-  '#8b5cf6': {
-    light: 'oklch(0.606 0.25 292.717)',
-    dark: 'oklch(0.702 0.183 293.541)',
-  },
-  // Orange
-  '#f97316': {
-    light: 'oklch(0.705 0.213 47.604)',
-    dark: 'oklch(0.762 0.182 50.939)',
-  },
-};
-
-// Default pink (from your globals.css)
-const DEFAULT_THEME = {
-  light: 'oklch(0.656 0.241 354.308)',
-  dark: 'oklch(0.718 0.202 349.761)',
-};
+// Theme color mapping moved to @/lib/theme
 
 // Fetch tenant data (server-side)
 async function getTenant(slug: string): Promise<PublicTenant | null> {
@@ -100,7 +60,7 @@ export async function generateMetadata({
       slug: tenant.slug,
       description: tenant.description,
       logo: tenant.logo,
-      banner: tenant.banner,
+      heroBackgroundImage: tenant.heroBackgroundImage,
       metaTitle: tenant.metaTitle,
       metaDescription: tenant.metaDescription,
     },
@@ -124,10 +84,7 @@ export default async function StoreLayout({
   }
 
   // Get theme color from tenant
-  const primaryHex = tenant.theme?.primaryColor?.toLowerCase() || '';
-
-  // Get OKLCH values from map, or use default pink
-  const themeColors = THEME_OKLCH_MAP[primaryHex] || DEFAULT_THEME;
+  const primaryHex = tenant.theme?.primaryColor || '';
 
   // Get template ID from tenant config (if available)
   const landingConfig = tenant.landingConfig as { template?: string } | null;
@@ -139,30 +96,7 @@ export default async function StoreLayout({
           INJECT TENANT THEME CSS VARIABLES
           Override --primary for this store
       ========================================== */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            /* Light Mode */
-            .tenant-theme {
-              --primary: ${themeColors.light};
-              --ring: ${themeColors.light};
-              --sidebar-primary: ${themeColors.light};
-              --sidebar-ring: ${themeColors.light};
-              --chart-1: ${themeColors.light};
-            }
-
-            /* Dark Mode */
-            .dark .tenant-theme,
-            .tenant-theme.dark {
-              --primary: ${themeColors.dark};
-              --ring: ${themeColors.dark};
-              --sidebar-primary: ${themeColors.dark};
-              --sidebar-ring: ${themeColors.dark};
-              --chart-1: ${themeColors.dark};
-            }
-          `,
-        }}
-      />
+      <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(primaryHex) }} />
 
       <div className="tenant-theme flex min-h-screen flex-col">
         {/* ==========================================
@@ -179,7 +113,7 @@ export default async function StoreLayout({
             phone: tenant.phone,
             address: tenant.address,
             logo: tenant.logo,
-            banner: tenant.banner,
+            heroBackgroundImage: tenant.heroBackgroundImage,
             socialLinks: tenant.socialLinks,
           }}
         />

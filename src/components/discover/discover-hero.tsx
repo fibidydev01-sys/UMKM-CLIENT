@@ -1,11 +1,13 @@
 // ══════════════════════════════════════════════════════════════
-// DISCOVER HERO - V10.8 FINAL
-// Feature: Tabs filter Popular tags (4 categories per type)
+// DISCOVER HERO - V17.0 (DropdownMenu + No Icons)
+// Changed: Using DropdownMenu with modal={false} to prevent scroll lock
+// Changed: z-index lower than header
+// Changed: Max 3 categories
 // ══════════════════════════════════════════════════════════════
 
 'use client';
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Store,
@@ -13,18 +15,28 @@ import {
   Wrench,
   Sparkles,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { DiscoverSearch } from './discover-search';
-import { cn } from '@/lib/cn';
-import { CATEGORY_CONFIG } from '@/config/categories';
+import { cn } from '@/lib/utils';
+import { CATEGORY_CONFIG, CATEGORY_GROUPS, getCategoriesByGroup } from '@/config/categories';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
 // ══════════════════════════════════════════════════════════════
 
-type TabType = 'umkm' | 'produk' | 'jasa';
+type TabType = 'KULINER' | 'RUMAH_TAMAN' | 'OTOMOTIF' | 'KESEHATAN_KECANTIKAN' | 'TRAVEL_HIBURAN' | 'BELANJA' | 'LAINNYA';
 
 interface DiscoverHeroProps {
   onSearch?: (query: string) => void;
@@ -35,45 +47,33 @@ interface DiscoverHeroProps {
 }
 
 // ══════════════════════════════════════════════════════════════
-// DATA - Category mapping by type (4 each)
+// DATA - 7 Category Groups
 // ══════════════════════════════════════════════════════════════
 
-const tabs = [
-  { id: 'umkm' as TabType, label: 'UMKM', icon: Store, description: 'Toko & Usaha' },
-  { id: 'produk' as TabType, label: 'Produk', icon: Package, description: 'Barang & Item' },
-  { id: 'jasa' as TabType, label: 'Jasa', icon: Wrench, description: 'Layanan & Service' },
-];
+// Convert CATEGORY_GROUPS to tabs format
+const tabs = Object.values(CATEGORY_GROUPS).map(group => ({
+  id: group.key as TabType,
+  label: group.label,
+  emoji: group.emoji,
+  icon: group.icon,
+  color: group.color,
+}));
 
-// Mapping kategori berdasarkan tipe (4 per tipe)
-const CATEGORIES_BY_TYPE: Record<TabType, string[]> = {
-  // UMKM - Toko & Usaha fisik
-  umkm: [
-    'WARUNG_KELONTONG',  // Warung
-    'TOKO_BANGUNAN',     // Bangunan
-    'KEDAI_KOPI',        // Kopi
-    'APOTEK',            // Apotek
-  ],
-  // Produk - Barang yang dijual
-  produk: [
-    'TOKO_KUE',          // Kue
-    'PETSHOP',           // Pet
-    'PERCETAKAN',        // Print
-    'TOKO_BANGUNAN',     // Bangunan (material)
-  ],
-  // Jasa - Layanan & Service
-  jasa: [
-    'BENGKEL_MOTOR',     // Bengkel
-    'SALON_BARBERSHOP',  // Salon
-    'LAUNDRY',           // Laundry
-    'CATERING',          // Catering
-  ],
-};
+// Get top 3 categories per group for popular section
+function getPopularCategoriesForGroup(groupKey: string): string[] {
+  const categories = getCategoriesByGroup(groupKey);
+  return categories.slice(0, 3).map(cat => cat.key);
+}
 
-// Placeholder text per tab
+// Placeholder text per group
 const SEARCH_PLACEHOLDERS: Record<TabType, string> = {
-  umkm: 'Cari warung, toko, kedai...',
-  produk: 'Cari makanan, kue, produk...',
-  jasa: 'Cari bengkel, salon, laundry...',
+  KULINER: 'Cari restoran, warung, cafe...',
+  RUMAH_TAMAN: 'Cari kontraktor, tukang, cleaning...',
+  OTOMOTIF: 'Cari bengkel, cuci mobil, dealer...',
+  KESEHATAN_KECANTIKAN: 'Cari salon, barbershop, spa...',
+  TRAVEL_HIBURAN: 'Cari wisata, hotel, venue...',
+  BELANJA: 'Cari fashion, gadget, kelontong...',
+  LAINNYA: 'Cari laundry, petshop, kursus...',
 };
 
 function categoryKeyToSlug(key: string): string {
@@ -88,17 +88,49 @@ export function DiscoverHero({
   onSearch,
   onTabChange,
   searchQuery = '',
-  activeTab = 'umkm',
+  activeTab = 'KULINER',
 }: DiscoverHeroProps) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
 
-  // Get categories based on active tab
+  // Get top 3 categories for the active group
   const popularCategories = useMemo(() => {
-    return CATEGORIES_BY_TYPE[activeTab] || CATEGORIES_BY_TYPE.umkm;
+    return getPopularCategoriesForGroup(activeTab);
   }, [activeTab]);
 
   const handleTabClick = useCallback((tabId: TabType) => {
     onTabChange?.(tabId);
   }, [onTabChange]);
+
+  // Check scroll arrows visibility
+  const checkScrollArrows = useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    setShowLeftArrow(scrollLeft > 0);
+    setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 10);
+  }, []);
+
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    checkScrollArrows();
+    container.addEventListener('scroll', checkScrollArrows, { passive: true });
+    window.addEventListener('resize', checkScrollArrows);
+    return () => {
+      container.removeEventListener('scroll', checkScrollArrows);
+      window.removeEventListener('resize', checkScrollArrows);
+    };
+  }, [checkScrollArrows, activeTab]);
+
+  const scrollLeft = useCallback(() => {
+    scrollContainerRef.current?.scrollBy({ left: -150, behavior: 'smooth' });
+  }, []);
+
+  const scrollRight = useCallback(() => {
+    scrollContainerRef.current?.scrollBy({ left: 150, behavior: 'smooth' });
+  }, []);
 
   return (
     <section className="relative pt-20 pb-8">
@@ -131,28 +163,30 @@ export function DiscoverHero({
             </p>
 
             {/* ══════════════════════════════════════════════════ */}
-            {/* TABS - Click to filter categories                  */}
+            {/* DROPDOWN - DropdownMenu with modal={false}         */}
+            {/* z-30: Lower than header (z-50)                     */}
             {/* ══════════════════════════════════════════════════ */}
-            <div className="flex items-center gap-2 mb-6">
-              {tabs.map((tab) => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => handleTabClick(tab.id)}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200',
-                      isActive
-                        ? 'bg-foreground text-background shadow-lg'
-                        : 'bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground'
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    <span>{tab.label}</span>
+            <div className="mb-6 relative z-30">
+              <DropdownMenu modal={false}>
+                <DropdownMenuTrigger asChild>
+                  <button className="flex items-center gap-2 bg-background border-2 rounded-full px-4 py-2 font-medium shadow-sm hover:shadow-md transition-shadow">
+                    {tabs.find(t => t.id === activeTab)?.label}
+                    <ChevronDown className="h-4 w-4 opacity-50" />
                   </button>
-                );
-              })}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="rounded-xl border-2 shadow-xl min-w-[180px]">
+                  {tabs.map((tab) => (
+                    <DropdownMenuItem
+                      key={tab.id}
+                      onClick={() => handleTabClick(tab.id)}
+                      className="cursor-pointer rounded-lg flex items-center justify-between"
+                    >
+                      {tab.label}
+                      {activeTab === tab.id && <Check className="h-4 w-4 text-primary" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
             {/* Search Bar */}
@@ -167,32 +201,49 @@ export function DiscoverHero({
             </div>
 
             {/* ══════════════════════════════════════════════════ */}
-            {/* POPULAR TAGS - Dynamic based on active tab (4)     */}
+            {/* POPULAR TAGS - No Icons, Gradient Arrows           */}
+            {/* Max 3 categories per group                          */}
             {/* ══════════════════════════════════════════════════ */}
-            <div className="flex flex-wrap items-center gap-2 relative z-10">
-              <span className="text-sm text-muted-foreground">Popular:</span>
-              {popularCategories.map((catKey) => {
-                const category = CATEGORY_CONFIG[catKey];
-                if (!category) return null;
-                return (
-                  <Link
-                    key={catKey}
-                    href={`/discover/${categoryKeyToSlug(catKey)}`}
-                    className={cn(
-                      'px-3 py-1.5 text-sm rounded-full border',
-                      'bg-background hover:bg-muted hover:border-primary/50',
-                      'transition-colors duration-200',
-                      'flex items-center gap-1.5'
-                    )}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: category.color }}
-                    />
-                    {category.labelShort}
-                  </Link>
-                );
-              })}
+            <div className="relative flex items-center min-w-0">
+              {showLeftArrow && (
+                <button
+                  onClick={scrollLeft}
+                  className="absolute left-0 z-10 h-8 w-8 flex items-center justify-center bg-gradient-to-r from-background via-background to-transparent"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+              )}
+
+              <div
+                ref={scrollContainerRef}
+                className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-1"
+              >
+                {popularCategories.map((catKey) => {
+                  const category = CATEGORY_CONFIG[catKey];
+                  if (!category) return null;
+                  return (
+                    <Link
+                      key={catKey}
+                      href={`/discover/${categoryKeyToSlug(catKey)}`}
+                      className={cn(
+                        'px-4 py-2 text-sm font-medium rounded-full whitespace-nowrap transition-colors duration-200',
+                        'text-muted-foreground hover:text-foreground hover:bg-muted'
+                      )}
+                    >
+                      {category.labelShort}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {showRightArrow && (
+                <button
+                  onClick={scrollRight}
+                  className="absolute right-0 z-10 h-8 w-8 flex items-center justify-center bg-gradient-to-l from-background via-background to-transparent"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
 

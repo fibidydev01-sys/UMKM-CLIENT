@@ -17,6 +17,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 import { useAuth, useLogout } from '@/hooks';
 import { getInitials } from '@/lib/format';
+import { OnboardingDropdown } from '@/components/onboarding';
 
 export function DashboardHeader() {
   const { tenant } = useAuth();
@@ -37,6 +38,8 @@ export function DashboardHeader() {
             <span className="sr-only">Lihat Toko</span>
           </Link>
         </Button>
+
+        <OnboardingDropdown />
 
         <AnimatedThemeToggler
           className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors [&_svg]:h-5 [&_svg]:w-5"

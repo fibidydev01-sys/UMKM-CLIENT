@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: ContactPageProps): Promise<Me
     openGraph: {
       title: `Hubungi ${tenant.name}`,
       description,
-      images: tenant.banner ? [tenant.banner] : tenant.logo ? [tenant.logo] : [],
+      images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
     },
   };
 }
@@ -79,12 +79,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
         {/* Contact Content */}
         <TenantContact
           config={contactConfig}
-          fallbacks={{
-            whatsapp: tenant.whatsapp || null,
-            phone: tenant.phone || null,
-            address: tenant.address || null,
-            storeName: tenant.name,
-          }}
+          tenant={tenant}
         />
       </div>
     </>

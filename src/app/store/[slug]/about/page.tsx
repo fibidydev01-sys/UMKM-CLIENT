@@ -42,7 +42,7 @@ export async function generateMetadata({ params }: AboutPageProps): Promise<Meta
     openGraph: {
       title: `Tentang ${tenant.name}`,
       description,
-      images: tenant.banner ? [tenant.banner] : tenant.logo ? [tenant.logo] : [],
+      images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
     },
   };
 }
@@ -82,29 +82,10 @@ export default async function AboutPage({ params }: AboutPageProps) {
         </div>
 
         {/* About Content */}
-        {aboutConfig?.config ? (
-          <TenantAbout
-            config={aboutConfig}
-            fallbacks={{
-              content: tenant.description || undefined,
-              image: tenant.banner || undefined,
-            }}
-          />
-        ) : (
-          <div className="max-w-3xl mx-auto">
-            <div className="prose prose-lg dark:prose-invert">
-              {tenant.description ? (
-                <p>{tenant.description}</p>
-              ) : (
-                <div className="text-center py-12 bg-muted/30 rounded-lg">
-                  <p className="text-muted-foreground">
-                    Informasi tentang bisnis belum ditambahkan
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        <TenantAbout
+          config={aboutConfig}
+          tenant={tenant}
+        />
       </div>
     </>
   );

@@ -112,7 +112,6 @@ export default async function ProductOgImage({ params }: Props) {
           }}
         >
           {productImage ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={productImage}
               alt={product.name}

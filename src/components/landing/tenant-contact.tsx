@@ -1,109 +1,78 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Phone, MapPin, MessageCircle } from 'lucide-react';
-import { extractSectionText, getContactConfig } from '@/lib/landing';
-import { LANDING_CONSTANTS } from '@/lib/landing';
-import type { TenantLandingConfig } from '@/types';
+import { lazy, Suspense } from 'react';
+import { extractContactData, useContactBlock } from '@/lib/landing';
+import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantContactProps {
   config?: TenantLandingConfig['contact'];
-  fallbacks?: {
-    title?: string;
-    subtitle?: string;
-    whatsapp?: string | null;
-    phone?: string | null;
-    address?: string | null;
-    storeName?: string;
-  };
+  tenant: Tenant | PublicTenant;
 }
 
-export function TenantContact({ config, fallbacks = {} }: TenantContactProps) {
-  const { title, subtitle } = extractSectionText(config, {
-    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.CONTACT,
-    subtitle: fallbacks.subtitle,
-  });
+/**
+ * Tenant Contact Component
+ *
+ * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
+ * - title → tenant.contactTitle
+ * - subtitle → tenant.contactSubtitle
+ * - whatsapp → tenant.whatsapp
+ * - phone → tenant.phone
+ * - email → tenant.email
+ * - address → tenant.address
+ * - storeName → tenant.name
+ * - mapUrl → tenant.contactMapUrl
+ * - showMap → tenant.contactShowMap
+ * - showForm → tenant.contactShowForm
+ *
+ * 🚀 BLOCK VARIANTS:
+ * - contact1 → Default
+ * - contact2 → Split Layout
+ * - contact3 → Centered
+ * - contact4 → Map Focus
+ * - contact5 → Minimal
+ * - contact6 → Social Focused
+ * - contact7 → Card Grid
+ */
+export function TenantContact({ config, tenant }: TenantContactProps) {
+  const templateBlock = useContactBlock();
+  const block = config?.block || templateBlock;
 
-  const whatsappLink = fallbacks.whatsapp
-    ? `https://wa.me/${fallbacks.whatsapp}?text=${encodeURIComponent(`Halo ${fallbacks.storeName || ''}, saya tertarik dengan produk Anda.`)}`
-    : null;
+  // Extract contact data directly from tenant (Data Contract fields)
+  const contactData = extractContactData(tenant, config ? { contact: config } : undefined);
 
+  const commonProps = {
+    title: contactData.title,
+    subtitle: contactData.subtitle,
+    whatsapp: contactData.whatsapp,
+    phone: contactData.phone,
+    email: contactData.email,
+    address: contactData.address,
+    storeName: tenant.name,
+    mapUrl: contactData.mapUrl,
+    showMap: contactData.showMap,
+    showForm: contactData.showForm,
+  };
+
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('contact', '');
+  const ContactComponent = lazy(() =>
+    import(`./blocks/contact/contact${blockNumber}`)
+      .then((mod) => ({ default: mod[`Contact${blockNumber}`] }))
+      .catch(() => import('./blocks/contact/contact1').then((mod) => ({ default: mod.Contact1 })))
+  );
+
+  // Render with Suspense for lazy loading
   return (
-    <section id="contact" className="py-12">
-      {/* Section Header */}
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
-      </div>
+    <Suspense fallback={<ContactSkeleton />}>
+      <ContactComponent {...commonProps} />
+    </Suspense>
+  );
+}
 
-      {/* Contact Card */}
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid gap-4">
-              {/* WhatsApp */}
-              {fallbacks.whatsapp && (
-                <a
-                  href={whatsappLink!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors dark:bg-green-950/30 dark:hover:bg-green-950/50"
-                >
-                  <div className="flex-shrink-0 p-3 bg-green-500 rounded-full">
-                    <MessageCircle className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">WhatsApp</p>
-                    <p className="text-sm text-muted-foreground">+{fallbacks.whatsapp}</p>
-                  </div>
-                </a>
-              )}
-
-              {/* Phone */}
-              {fallbacks.phone && (
-                <a
-                  href={`tel:${fallbacks.phone}`}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                    <Phone className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Telepon</p>
-                    <p className="text-sm text-muted-foreground">{fallbacks.phone}</p>
-                  </div>
-                </a>
-              )}
-
-              {/* Address */}
-              {fallbacks.address && (
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-                  <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                    <MapPin className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Alamat</p>
-                    <p className="text-sm text-muted-foreground">{fallbacks.address}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* WhatsApp CTA */}
-            {whatsappLink && (
-              <div className="mt-6 text-center">
-                <Button asChild size="lg" className="gap-2">
-                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="h-5 w-5" />
-                    Chat via WhatsApp
-                  </a>
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </section>
+function ContactSkeleton() {
+  return (
+    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
   );
 }

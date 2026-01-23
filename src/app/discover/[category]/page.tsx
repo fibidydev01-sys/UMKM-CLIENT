@@ -1,13 +1,19 @@
 // ══════════════════════════════════════════════════════════════
 // DISCOVER BY CATEGORY PAGE
 // Route: /discover/[category]
-// Example: /discover/bengkel-motor
+// Example: /discover/bengkel-motor OR /discover/distro-streetwear
+// Supports BOTH predefined AND dynamic categories
 // ══════════════════════════════════════════════════════════════
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CategoryPageClient } from './client';
-import { CATEGORY_CONFIG } from '@/config/categories';
+import {
+  getCategoryConfig,
+  fetchAllCategoriesFromDB,
+  slugToCategoryKey,
+  categoryKeyToSlug,
+} from '@/lib/categories/unified-service';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES
@@ -20,63 +26,64 @@ interface CategoryPageProps {
 }
 
 // ══════════════════════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════════════════════
-
-// Convert slug to category key: "bengkel-motor" -> "BENGKEL_MOTOR"
-function slugToCategoryKey(slug: string): string {
-  return slug.toUpperCase().replace(/-/g, '_');
-}
-
-// Convert category key to slug: "BENGKEL_MOTOR" -> "bengkel-motor"
-function categoryKeyToSlug(key: string): string {
-  return key.toLowerCase().replace(/_/g, '-');
-}
-
-// Get category config from slug
-function getCategoryFromSlug(slug: string) {
-  const key = slugToCategoryKey(slug);
-  return CATEGORY_CONFIG[key] || null;
-}
-
-// ══════════════════════════════════════════════════════════════
-// GENERATE STATIC PARAMS (Optional - for SSG)
+// GENERATE STATIC PARAMS (For both predefined & top dynamic categories)
 // ══════════════════════════════════════════════════════════════
 
 export async function generateStaticParams() {
-  return Object.keys(CATEGORY_CONFIG).map((key) => ({
-    category: categoryKeyToSlug(key),
-  }));
+  try {
+    // Get all categories from DB (includes predefined + dynamic)
+    const allCategories = await fetchAllCategoriesFromDB();
+
+    return allCategories.map((category) => ({
+      category: categoryKeyToSlug(category),
+    }));
+  } catch {
+    // Fallback: return empty array if API fails
+    return [];
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
 // GENERATE METADATA
 // ══════════════════════════════════════════════════════════════
 
-export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: CategoryPageProps): Promise<Metadata> {
   const { category: categorySlug } = await params;
-  const category = getCategoryFromSlug(categorySlug);
+  const categoryKey = slugToCategoryKey(categorySlug);
+
+  // Get all categories from DB to check if it exists
+  const allCategories = await fetchAllCategoriesFromDB();
+  const category = getCategoryConfig(categoryKey, allCategories);
 
   if (!category) {
     return {
       title: 'Kategori Tidak Ditemukan | Fibidy',
+      description: 'Kategori UMKM yang Anda cari tidak ditemukan.',
     };
   }
 
+  // Generate metadata based on category type
+  const label = category.isPredefined ? category.label : category.key;
+  const description = category.isPredefined
+    ? `Temukan UMKM ${category.label} di Indonesia. ${category.description}. Lihat daftar ${category.labels.product.toLowerCase()}, harga, dan pesan langsung via WhatsApp.`
+    : `Temukan UMKM ${label} di Indonesia. Lihat daftar produk, harga, dan pesan langsung via WhatsApp.`;
+
   return {
-    title: `${category.label} - Discover UMKM | Fibidy`,
-    description: `Temukan UMKM ${category.label} di Indonesia. ${category.description}. Lihat daftar ${category.labels.product.toLowerCase()}, harga, dan pesan langsung via WhatsApp.`,
+    title: `${label} - Discover UMKM | Fibidy`,
+    description,
     keywords: [
-      category.label.toLowerCase(),
+      label.toLowerCase(),
       'umkm',
-      category.labels.product.toLowerCase(),
       'toko online',
       'fibidy',
       'indonesia',
+      ...(category.isPredefined ? [category.labels.product.toLowerCase()] : []),
     ],
     openGraph: {
-      title: `${category.label} - Discover UMKM | Fibidy`,
-      description: `Temukan UMKM ${category.label} di Indonesia. ${category.description}.`,
+      title: `${label} - Discover UMKM | Fibidy`,
+      description,
       type: 'website',
       locale: 'id_ID',
       siteName: 'Fibidy',
@@ -91,12 +98,23 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category: categorySlug } = await params;
   const categoryKey = slugToCategoryKey(categorySlug);
-  const category = CATEGORY_CONFIG[categoryKey];
 
-  // 404 if category not found
-  if (!category) {
+  // Get all categories from DB
+  const allCategories = await fetchAllCategoriesFromDB();
+
+  // Check if category exists (predefined OR dynamic)
+  const category = getCategoryConfig(categoryKey, allCategories);
+
+  // 404 only if category truly doesn't exist in DB
+  if (!category && !allCategories.includes(categoryKey)) {
     notFound();
   }
 
-  return <CategoryPageClient categoryKey={categoryKey} categorySlug={categorySlug} />;
+  return (
+    <CategoryPageClient
+      categoryKey={categoryKey}
+      categorySlug={categorySlug}
+      isDynamic={category ? !category.isPredefined : true}
+    />
+  );
 }

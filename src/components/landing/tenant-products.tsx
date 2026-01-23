@@ -1,9 +1,9 @@
 'use client';
 
+import { lazy, Suspense } from 'react';
 import { useStoreUrls } from '@/lib/store-url';
 import { extractSectionText, getProductsConfig } from '@/lib/landing';
-import { LANDING_CONSTANTS, useProductsVariant } from '@/lib/landing';
-import { ProductsGrid, ProductsCarousel } from './variants';
+import { LANDING_CONSTANTS, useProductsBlock } from '@/lib/landing';
 import type { Product, TenantLandingConfig } from '@/types';
 
 // ==========================================
@@ -22,23 +22,19 @@ interface TenantProductsProps {
 }
 
 /**
- * Tenant Products Component
+ * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
  *
- * Wrapper that selects and renders the appropriate products variant
- * based on the current template context
+ * NO MANUAL IMPORTS! Just add products201.tsx and it works!
  *
- * 🚀 NOTE: Currently only 2 products variants are implemented:
- * - default, grid-hover, masonry, catalog, minimal-list -> ProductsGrid
- * - carousel, featured-hero -> ProductsCarousel
- * Other variants will fallback to default (ProductsGrid)
- *
- * 🎯 VARIANT PRIORITY:
- * 1. config.variant (user override)
+ * 🎯 BLOCK PRIORITY:
+ * 1. config.block (user override)
  * 2. template variant (from TemplateProvider)
+ *
+ * 🚀 SUPPORTS ALL BLOCKS: products1, products2, ..., products200, products9999!
  */
 export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: TenantProductsProps) {
-  const templateVariant = useProductsVariant();
-  const variant = config?.variant || templateVariant;
+  const templateBlock = useProductsBlock();
+  const block = config?.block || templateBlock;
 
   const { title, subtitle } = extractSectionText(config, {
     title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.PRODUCTS,
@@ -50,8 +46,9 @@ export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: 
   const limit = productsConfig?.limit || LANDING_CONSTANTS.PRODUCT_LIMIT_DEFAULT;
 
   // Smart URL routing
-  const urls = storeSlug ? useStoreUrls(storeSlug) : null;
-  const productsLink = urls?.products() || fallbacks.productsLink || '/products';
+  // Hook must be called unconditionally (React Hooks rules)
+  const urls = useStoreUrls(storeSlug || '');
+  const productsLink = storeSlug ? (urls?.products() || '/products') : (fallbacks.productsLink || '/products');
 
   const commonProps = {
     products,
@@ -63,12 +60,26 @@ export function TenantProducts({ products, config, storeSlug, fallbacks = {} }: 
     limit,
   };
 
-  // Render appropriate variant based on template
-  // Carousel-based variants
-  if (variant === 'carousel' || variant === 'featured-hero') {
-    return <ProductsCarousel {...commonProps} />;
-  }
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('products', '');
+  const ProductsComponent = lazy(() =>
+    import(`./blocks/products/products${blockNumber}`)
+      .then((mod) => ({ default: mod[`Products${blockNumber}`] }))
+      .catch(() => import('./blocks/products/products1').then((mod) => ({ default: mod.Products1 })))
+  );
 
-  // Default: grid variant (covers: default, grid-hover, masonry, catalog, minimal-list)
-  return <ProductsGrid {...commonProps} />;
+  // Render with Suspense for lazy loading
+  return (
+    <Suspense fallback={<ProductsSkeleton />}>
+      <ProductsComponent {...commonProps} />
+    </Suspense>
+  );
+}
+
+function ProductsSkeleton() {
+  return (
+    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
+  );
 }

@@ -9,7 +9,7 @@ import {
   LayoutGrid,
   Store,
 } from 'lucide-react';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks';
 import { BentoGrid, BentoActionCard } from '@/components/ui/bento-grid';
 

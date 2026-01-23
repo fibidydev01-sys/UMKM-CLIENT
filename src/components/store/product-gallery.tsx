@@ -5,7 +5,7 @@ import { ChevronLeft, ChevronRight, ZoomIn, Package, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogTitle } from '@/components/ui/dialog';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 
 interface ProductGalleryProps {

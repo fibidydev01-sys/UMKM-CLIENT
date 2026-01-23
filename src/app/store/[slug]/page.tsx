@@ -14,7 +14,7 @@ import {
   ProductListSchema,
   generateTenantBreadcrumbs,
 } from '@/components/seo';
-import type { PublicTenant, Product } from '@/types';
+import type { PublicTenant, Product, Testimonial, SectionKey } from '@/types';
 
 // ==========================================
 // STORE HOMEPAGE - CUSTOM LANDING ONLY
@@ -81,19 +81,47 @@ export default async function StorePage({ params }: StorePageProps) {
   const productLimit = (landingConfig?.products?.config?.limit as number) || 8;
   const products = await getProducts(slug, productLimit);
 
-  // Testimonials
-  const testimonialItems = normalizeTestimonials(landingConfig?.testimonials?.config?.items);
+  // Check if testimonials has items (for conditional rendering)
+  const testimonialItems = normalizeTestimonials(tenant.testimonials as Testimonial[] | undefined);
   const testimonialsEnabled = landingConfig?.testimonials?.enabled === true;
   const hasTestimonials = testimonialsEnabled && testimonialItems.length > 0;
 
+  // 🚀 Section order - use config.sectionOrder or default order
+  const defaultOrder: SectionKey[] = ['hero', 'about', 'products', 'testimonials', 'cta', 'contact'];
+  const sectionOrder = landingConfig?.sectionOrder || defaultOrder;
+
+  // Section enabled checks
+  const heroEnabled = true; // Hero always enabled (critical: logo + heroBackgroundImage)
+  const aboutEnabled = landingConfig?.about?.enabled === true;
+  const productsEnabled = landingConfig?.products?.enabled === true && products.length > 0;
+  const ctaEnabled = landingConfig?.cta?.enabled === true;
+  const contactEnabled = landingConfig?.contact?.enabled === true;
+
   // Check if any section is enabled
   const hasAnySectionEnabled =
-    landingConfig?.hero?.enabled ||
-    landingConfig?.about?.enabled ||
-    landingConfig?.products?.enabled ||
-    hasTestimonials ||
-    landingConfig?.cta?.enabled ||
-    landingConfig?.contact?.enabled;
+    heroEnabled || aboutEnabled || productsEnabled || hasTestimonials || ctaEnabled || contactEnabled;
+
+  // 🚀 Section rendering map
+  const sectionComponents: Record<SectionKey, React.ReactNode> = {
+    hero: heroEnabled ? (
+      <TenantHero key="hero" config={landingConfig?.hero} tenant={tenant} />
+    ) : null,
+    about: aboutEnabled ? (
+      <TenantAbout key="about" config={landingConfig?.about} tenant={tenant} />
+    ) : null,
+    products: productsEnabled ? (
+      <TenantProducts key="products" products={products} config={landingConfig?.products} storeSlug={slug} />
+    ) : null,
+    testimonials: hasTestimonials ? (
+      <TenantTestimonials key="testimonials" config={landingConfig?.testimonials} tenant={tenant} />
+    ) : null,
+    cta: ctaEnabled ? (
+      <TenantCta key="cta" config={landingConfig?.cta} tenant={tenant} />
+    ) : null,
+    contact: contactEnabled ? (
+      <TenantContact key="contact" config={landingConfig?.contact} tenant={tenant} />
+    ) : null,
+  };
 
   return (
     <>
@@ -114,64 +142,10 @@ export default async function StorePage({ params }: StorePageProps) {
 
       {/* TemplateProvider now in layout.tsx - no need to wrap here */}
       <div className="container px-4 py-8 space-y-8">
-        {landingConfig?.hero?.enabled && (
-          <TenantHero
-            config={landingConfig.hero}
-            fallbacks={{
-              title: tenant.name,
-              subtitle: tenant.description,
-              backgroundImage: tenant.banner || undefined,
-              logo: tenant.logo || undefined,
-              storeName: tenant.name,
-            }}
-          />
-        )}
+        {/* 🚀 Render sections in custom order (from drag & drop) */}
+        {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
 
-        {landingConfig?.about?.enabled && (
-          <TenantAbout
-            config={landingConfig.about}
-            fallbacks={{
-              content: tenant.description || undefined,
-              image: tenant.banner || undefined,
-            }}
-          />
-        )}
-
-        {landingConfig?.products?.enabled && products.length > 0 && (
-          <TenantProducts
-            products={products}
-            config={landingConfig.products}
-            storeSlug={slug}
-          />
-        )}
-
-        {hasTestimonials && (
-          <TenantTestimonials
-            config={{
-              ...landingConfig?.testimonials,
-              config: {
-                items: testimonialItems,
-              },
-            }}
-          />
-        )}
-
-        {landingConfig?.cta?.enabled && (
-          <TenantCta config={landingConfig.cta} storeSlug={slug} />
-        )}
-
-        {landingConfig?.contact?.enabled && (
-          <TenantContact
-            config={landingConfig.contact}
-            fallbacks={{
-              whatsapp: tenant.whatsapp || null,
-              phone: tenant.phone || null,
-              address: tenant.address || null,
-              storeName: tenant.name,
-            }}
-          />
-        )}
-
+        {/* Empty State */}
         {!hasAnySectionEnabled && (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
             <p className="text-muted-foreground mb-2">

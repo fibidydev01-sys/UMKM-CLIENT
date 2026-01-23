@@ -58,4 +58,5 @@ export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, useIsLargeDeskto
 export { useMounted, useIsClient } from './use-mounted';
 
 export { useLandingConfig } from './use-landing-config';
+export { useRegisterWizard } from './use-register-wizard';
 

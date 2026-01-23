@@ -69,10 +69,10 @@ function TenantCard({ tenant }: TenantCardProps) {
     >
       {/* Image Container - Dribbble Style */}
       <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-muted">
-        {/* Banner Image */}
-        {tenant.banner ? (
+        {/* Hero Background Image */}
+        {tenant.heroBackgroundImage ? (
           <Image
-            src={tenant.banner}
+            src={tenant.heroBackgroundImage}
             alt={tenant.name || 'Store'}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

@@ -6,6 +6,7 @@ import {
   ProductGallery,
   ProductInfo,
   ProductActions,
+  ShippingInfo,
   RelatedProducts,
   ProductGridSkeleton,
 } from '@/components/store';
@@ -196,6 +197,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Right: Info & Actions */}
           <div className="space-y-6">
             <ProductInfo product={product} />
+
+            {/* Shipping Information */}
+            <ShippingInfo tenant={tenant} />
 
             {/* Social Share Buttons */}
             <div className="flex items-center justify-between">

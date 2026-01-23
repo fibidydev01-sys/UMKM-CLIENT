@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════
-// DISCOVER FOOTER - V10.0
+// DISCOVER FOOTER - V11.0 (Cleaned)
+// Removed category quick links, keeping only main navigation
 // Clean footer untuk Discover pages
-// Inspired by modern portfolio/showcase platforms
 // ══════════════════════════════════════════════════════════════
 
 import Link from 'next/link';
@@ -18,15 +18,6 @@ const mainNavLinks = [
   { label: 'Harga', href: '/harga' },
   { label: 'Tentang', href: '/about' },
   { label: 'Bantuan', href: '/faq' },
-];
-
-const secondaryLinks = [
-  { label: 'Warung', href: '/discover/warung-kelontong' },
-  { label: 'Bengkel', href: '/discover/bengkel-motor' },
-  { label: 'Salon', href: '/discover/salon-barbershop' },
-  { label: 'Laundry', href: '/discover/laundry' },
-  { label: 'Kopi', href: '/discover/kedai-kopi' },
-  { label: 'Catering', href: '/discover/catering' },
 ];
 
 const legalLinks = [
@@ -126,30 +117,15 @@ export function DiscoverFooter() {
         </div>
 
         {/* ══════════════════════════════════════════════════════ */}
-        {/* BOTTOM ROW - Copyright + Legal + Categories           */}
+        {/* BOTTOM ROW - Copyright + Legal                        */}
         {/* ══════════════════════════════════════════════════════ */}
-        <div className="py-6 border-t flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="py-6 border-t flex items-center justify-center gap-4 text-sm text-muted-foreground">
           {/* Copyright + Legal */}
           <div className="flex items-center gap-1 flex-wrap justify-center">
             <span>© {new Date().getFullYear()} Fibidy</span>
             {legalLinks.map((link) => (
               <span key={link.href} className="flex items-center">
                 <span className="mx-2">·</span>
-                <Link
-                  href={link.href}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {link.label}
-                </Link>
-              </span>
-            ))}
-          </div>
-
-          {/* Category Quick Links */}
-          <div className="flex items-center gap-1 flex-wrap justify-center">
-            {secondaryLinks.map((link, index) => (
-              <span key={link.href} className="flex items-center">
-                {index > 0 && <span className="mx-2">·</span>}
                 <Link
                   href={link.href}
                   className="hover:text-foreground transition-colors"

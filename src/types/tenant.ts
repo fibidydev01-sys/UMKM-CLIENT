@@ -2,7 +2,7 @@
 // TENANT TYPES
 // ==========================================
 
-import type { TenantLandingConfig } from './landing';
+import type { TenantLandingConfig, Testimonial } from './landing';
 
 // ==========================================
 // SOCIAL LINKS TYPE
@@ -13,6 +13,15 @@ export interface SocialLinks {
   tiktok?: string;
   youtube?: string;
   twitter?: string;
+}
+
+// ==========================================
+// FEATURE ITEM TYPE (for About section)
+// ==========================================
+export interface FeatureItem {
+  icon?: string;
+  title: string;
+  description: string;
 }
 
 // ==========================================
@@ -80,21 +89,58 @@ export interface Tenant {
   phone?: string;
   address?: string;
   logo?: string;
-  banner?: string;
   theme?: { primaryColor?: string };
   landingConfig?: TenantLandingConfig;
   // SEO Fields
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
-  // Payment Settings (NEW)
+  // Payment Settings
   currency: string;
   taxRate: number;
   paymentMethods?: PaymentMethods;
-  // Shipping Settings (NEW)
+  // Shipping Settings
   freeShippingThreshold?: number | null;
   defaultShippingCost: number;
   shippingMethods?: ShippingMethods;
+  // ==========================================
+  // STORE INFORMATION - HERO SECTION
+  // ==========================================
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroCtaText?: string;
+  heroCtaLink?: string;
+  heroBackgroundImage?: string;
+  // ==========================================
+  // STORE INFORMATION - ABOUT SECTION
+  // ==========================================
+  aboutTitle?: string;
+  aboutSubtitle?: string;
+  aboutContent?: string;
+  aboutImage?: string;
+  aboutFeatures?: FeatureItem[];
+  // ==========================================
+  // STORE INFORMATION - TESTIMONIALS SECTION
+  // ==========================================
+  testimonialsTitle?: string;
+  testimonialsSubtitle?: string;
+  testimonials?: Testimonial[];
+  // ==========================================
+  // STORE INFORMATION - CONTACT SECTION
+  // ==========================================
+  contactTitle?: string;
+  contactSubtitle?: string;
+  contactMapUrl?: string;
+  contactShowMap?: boolean;
+  contactShowForm?: boolean;
+  // ==========================================
+  // STORE INFORMATION - CTA SECTION
+  // ==========================================
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  ctaButtonText?: string;
+  ctaButtonLink?: string;
+  ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
@@ -111,21 +157,58 @@ export interface PublicTenant {
   phone?: string;
   address?: string;
   logo?: string;
-  banner?: string;
   theme?: { primaryColor?: string };
   landingConfig?: TenantLandingConfig;
   // SEO Fields
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
-  // Payment Settings (NEW)
+  // Payment Settings
   currency: string;
   taxRate: number;
   paymentMethods?: PaymentMethods;
-  // Shipping Settings (NEW)
+  // Shipping Settings
   freeShippingThreshold?: number | null;
   defaultShippingCost: number;
   shippingMethods?: ShippingMethods;
+  // ==========================================
+  // STORE INFORMATION - HERO SECTION
+  // ==========================================
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroCtaText?: string;
+  heroCtaLink?: string;
+  heroBackgroundImage?: string;
+  // ==========================================
+  // STORE INFORMATION - ABOUT SECTION
+  // ==========================================
+  aboutTitle?: string;
+  aboutSubtitle?: string;
+  aboutContent?: string;
+  aboutImage?: string;
+  aboutFeatures?: FeatureItem[];
+  // ==========================================
+  // STORE INFORMATION - TESTIMONIALS SECTION
+  // ==========================================
+  testimonialsTitle?: string;
+  testimonialsSubtitle?: string;
+  testimonials?: Testimonial[];
+  // ==========================================
+  // STORE INFORMATION - CONTACT SECTION
+  // ==========================================
+  contactTitle?: string;
+  contactSubtitle?: string;
+  contactMapUrl?: string;
+  contactShowMap?: boolean;
+  contactShowForm?: boolean;
+  // ==========================================
+  // STORE INFORMATION - CTA SECTION
+  // ==========================================
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  ctaButtonText?: string;
+  ctaButtonLink?: string;
+  ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
@@ -146,14 +229,52 @@ export interface UpdateTenantInput {
   metaTitle?: string;
   metaDescription?: string;
   socialLinks?: SocialLinks;
-  // Payment Settings (NEW)
+  // Payment Settings
   currency?: string;
   taxRate?: number;
   paymentMethods?: PaymentMethods;
-  // Shipping Settings (NEW)
+  // Shipping Settings
   freeShippingThreshold?: number | null;
   defaultShippingCost?: number;
   shippingMethods?: ShippingMethods;
+  // ==========================================
+  // STORE INFORMATION - HERO SECTION
+  // ==========================================
+  heroTitle?: string;
+  heroSubtitle?: string;
+  heroCtaText?: string;
+  heroCtaLink?: string;
+  heroBackgroundImage?: string;
+  // ==========================================
+  // STORE INFORMATION - ABOUT SECTION
+  // ==========================================
+  aboutTitle?: string;
+  aboutSubtitle?: string;
+  aboutContent?: string;
+  aboutImage?: string;
+  aboutFeatures?: FeatureItem[];
+  // ==========================================
+  // STORE INFORMATION - TESTIMONIALS SECTION
+  // ==========================================
+  testimonialsTitle?: string;
+  testimonialsSubtitle?: string;
+  testimonials?: Testimonial[];
+  // ==========================================
+  // STORE INFORMATION - CONTACT SECTION
+  // ==========================================
+  contactTitle?: string;
+  contactSubtitle?: string;
+  contactMapUrl?: string;
+  contactShowMap?: boolean;
+  contactShowForm?: boolean;
+  // ==========================================
+  // STORE INFORMATION - CTA SECTION
+  // ==========================================
+  ctaTitle?: string;
+  ctaSubtitle?: string;
+  ctaButtonText?: string;
+  ctaButtonLink?: string;
+  ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
 }
 
 // ==========================================

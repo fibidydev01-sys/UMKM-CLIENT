@@ -53,9 +53,9 @@ export function TenantCard({ tenant, onClick }: TenantCardProps) {
       className="group block w-full text-left"
     >
       <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-muted">
-        {tenant.banner ? (
+        {tenant.heroBackgroundImage ? (
           <Image
-            src={tenant.banner}
+            src={tenant.heroBackgroundImage}
             alt={tenant.name || 'Store'}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"

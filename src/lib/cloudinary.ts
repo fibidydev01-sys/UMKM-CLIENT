@@ -14,7 +14,6 @@ export const CLOUDINARY_CONFIG = {
   folders: {
     products: 'fibidy/products',
     logos: 'fibidy/logos',
-    banners: 'fibidy/banners',
     testimonials: 'fibidy/testimonials',
   },
 } as const;
@@ -40,7 +39,6 @@ export const IMAGE_PRESETS = {
   },
   branding: {
     logo: { width: 200, height: 200 },
-    banner: { width: 1200, height: 300 },
   },
 } as const;
 

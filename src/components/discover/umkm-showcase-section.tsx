@@ -64,12 +64,12 @@ function TenantCard({ tenant }: TenantCardProps) {
     >
       <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 border-2 border-transparent hover:border-primary/20">
         <CardContent className="p-0">
-          {/* Banner */}
+          {/* Hero Background */}
           <div className="relative h-24 bg-gradient-to-br from-primary/20 via-primary/10 to-pink-500/20 overflow-hidden">
-            {tenant.banner ? (
+            {tenant.heroBackgroundImage ? (
               <Image
-                src={tenant.banner}
-                alt={`${tenant.name} banner`}
+                src={tenant.heroBackgroundImage}
+                alt={`${tenant.name} hero`}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />

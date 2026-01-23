@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import type { OrderStatus, PaymentStatus } from '@/types';
 
 // ==========================================

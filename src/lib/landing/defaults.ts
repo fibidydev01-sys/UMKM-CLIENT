@@ -18,6 +18,7 @@ import { LANDING_CONSTANTS, HERO_LAYOUTS, PRODUCT_DISPLAY_MODES, CTA_STYLES } fr
 export const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
   enabled: false, // ❌ Disabled by default
   template: 'suspended-minimalist', // 🚀 Default template
+  sectionOrder: ['hero', 'about', 'products', 'testimonials', 'cta', 'contact'], // 🚀 Default section order
   hero: {
     enabled: false, // ❌ Disabled
     title: '',

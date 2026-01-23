@@ -1,90 +1,62 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Star, Quote } from 'lucide-react';
-import { normalizeTestimonials } from '@/lib/landing';
-import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
-import { getImageSource } from '@/lib/cloudinary'; // ✅ ADD
-import type { TenantLandingConfig } from '@/types';
+import { lazy, Suspense } from 'react';
+import { extractTestimonialsData, normalizeTestimonials, useTestimonialsBlock } from '@/lib/landing';
+import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantTestimonialsProps {
   config?: TenantLandingConfig['testimonials'];
+  tenant: Tenant | PublicTenant;
 }
 
-export function TenantTestimonials({ config }: TenantTestimonialsProps) {
-  const title = config?.title || 'Testimoni';
-  const subtitle = config?.subtitle || '';
-  const items = normalizeTestimonials(config?.config?.items);
+/**
+ * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
+ *
+ * NO MANUAL IMPORTS! Just add testimonials201.tsx and it works!
+ *
+ * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
+ * - title → tenant.testimonialsTitle
+ * - subtitle → tenant.testimonialsSubtitle
+ * - items → tenant.testimonials
+ *
+ * 🚀 SUPPORTS ALL BLOCKS: testimonials1, testimonials2, ..., testimonials200!
+ */
+export function TenantTestimonials({ config, tenant }: TenantTestimonialsProps) {
+  const templateBlock = useTestimonialsBlock();
+  const block = config?.block || templateBlock;
+
+  // Extract testimonials data directly from tenant (Data Contract fields)
+  const testimonialsData = extractTestimonialsData(tenant, config ? { testimonials: config } : undefined);
+  const items = normalizeTestimonials(testimonialsData.items);
 
   if (items.length === 0) return null;
 
+  const commonProps = {
+    items,
+    title: testimonialsData.title,
+    subtitle: testimonialsData.subtitle,
+  };
+
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('testimonials', '');
+  const TestimonialsComponent = lazy(() =>
+    import(`./blocks/testimonials/testimonials${blockNumber}`)
+      .then((mod) => ({ default: mod[`Testimonials${blockNumber}`] }))
+      .catch(() => import('./blocks/testimonials/testimonials1').then((mod) => ({ default: mod.Testimonials1 })))
+  );
+
+  // Render with Suspense for lazy loading
   return (
-    <section id="testimonials" className="py-12">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
-      </div>
+    <Suspense fallback={<TestimonialsSkeleton />}>
+      <TestimonialsComponent {...commonProps} />
+    </Suspense>
+  );
+}
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((item, index) => {
-          const key = item.id || `testimonial-${index}-${item.name.replace(/\s+/g, '-')}`;
-          const { type: avatarType } = getImageSource(item.avatar);
-
-          return (
-            <Card key={key} className="relative">
-              <CardContent className="pt-6">
-                <Quote className="h-8 w-8 text-primary/20 absolute top-4 right-4" />
-
-                {typeof item.rating === 'number' && item.rating > 0 && (
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={`${key}-star-${i}`}
-                        className={`h-4 w-4 ${i < item.rating!
-                          ? 'text-yellow-500 fill-yellow-500'
-                          : 'text-muted'
-                          }`}
-                      />
-                    ))}
-                  </div>
-                )}
-
-                <p className="text-muted-foreground mb-4 italic">
-                  &quot;{item.content}&quot;
-                </p>
-
-                <div className="flex items-center gap-3">
-                  {/* ✅ OPTIMIZED: Avatar with face detection */}
-                  <Avatar className="h-10 w-10 overflow-hidden">
-                    {avatarType !== 'none' ? (
-                      <OptimizedImage
-                        src={item.avatar}
-                        alt={item.name}
-                        width={40}
-                        height={40}
-                        crop="thumb"
-                        gravity="face"
-                        className="object-cover w-full h-full"
-                      />
-                    ) : (
-                      <AvatarFallback>
-                        {item.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    {item.role && (
-                      <p className="text-sm text-muted-foreground">{item.role}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </section>
+function TestimonialsSkeleton() {
+  return (
+    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
   );
 }

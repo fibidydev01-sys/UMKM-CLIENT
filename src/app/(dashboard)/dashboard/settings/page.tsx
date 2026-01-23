@@ -3,19 +3,21 @@
  * FILE: app/(dashboard)/dashboard/settings/page.tsx
  * ============================================================================
  * Route: /dashboard/settings
- * Description: Settings page orchestrator - manages state and delegates to components
- * Refactored: January 2026
+ * Description: Settings page with navigation to subsections
+ * Updated: January 2026
  * ============================================================================
  */
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Loader2, Save, ChevronRight, Megaphone, Info, MessageSquareQuote, Phone, Zap, Paintbrush } from 'lucide-react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/dashboard';
 import {
   SettingsNav,
-  StoreInfoForm,
-  AppearanceSettings,
   PaymentSettings,
   ShippingSettings,
   SeoSettings,
@@ -37,15 +39,6 @@ import type {
 // ============================================================================
 // CONSTANTS
 // ============================================================================
-
-const THEME_COLORS = [
-  { name: 'Sky', value: '#0ea5e9', class: 'bg-sky-500' },
-  { name: 'Emerald', value: '#10b981', class: 'bg-emerald-500' },
-  { name: 'Rose', value: '#f43f5e', class: 'bg-rose-500' },
-  { name: 'Amber', value: '#f59e0b', class: 'bg-amber-500' },
-  { name: 'Violet', value: '#8b5cf6', class: 'bg-violet-500' },
-  { name: 'Orange', value: '#f97316', class: 'bg-orange-500' },
-] as const;
 
 const COURIER_OPTIONS: CourierName[] = [
   'JNE',
@@ -78,11 +71,59 @@ const DEFAULT_SHIPPING_METHODS: ShippingMethods = {
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
+// Store Info Sections Navigation
+const STORE_SECTIONS = [
+  {
+    id: 'hero-section',
+    title: 'Hero Section',
+    description: 'Banner utama dan branding toko',
+    icon: Megaphone,
+    href: '/dashboard/settings/hero-section',
+  },
+  {
+    id: 'about',
+    title: 'About',
+    description: 'Tentang toko dan fitur unggulan',
+    icon: Info,
+    href: '/dashboard/settings/about',
+  },
+  {
+    id: 'testimonials',
+    title: 'Testimonials',
+    description: 'Testimoni pelanggan',
+    icon: MessageSquareQuote,
+    href: '/dashboard/settings/testimonials',
+  },
+  {
+    id: 'contact',
+    title: 'Contact',
+    description: 'Informasi kontak dan lokasi',
+    icon: Phone,
+    href: '/dashboard/settings/contact',
+  },
+  {
+    id: 'cta',
+    title: 'Call to Action',
+    description: 'Ajakan untuk mengambil tindakan',
+    icon: Zap,
+    href: '/dashboard/settings/cta',
+  },
+  {
+    id: 'landing-builder',
+    title: 'Landing Builder',
+    description: 'Desain dan customize landing page',
+    icon: Paintbrush,
+    href: '/landing-builder',
+  },
+];
+
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
 
 export default function SettingsPage() {
+  const router = useRouter();
+
   // ---------------------------------------------------------------------------
   // Hooks
   // ---------------------------------------------------------------------------
@@ -95,30 +136,15 @@ export default function SettingsPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Saving states
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSavingAppearance, setIsSavingAppearance] = useState(false);
   const [isSavingPayment, setIsSavingPayment] = useState(false);
   const [isSavingShipping, setIsSavingShipping] = useState(false);
   const [isSavingSeo, setIsSavingSeo] = useState(false);
-  const [isRemovingLogo, setIsRemovingLogo] = useState(false);
-  const [isRemovingBanner, setIsRemovingBanner] = useState(false);
 
   // Dialog states
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [ewalletDialogOpen, setEwalletDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<BankAccount | null>(null);
   const [editingEwallet, setEditingEwallet] = useState<EWallet | null>(null);
-
-  // Form states
-  const [formData, setFormData] = useState<{
-    name: string;
-    description: string;
-    phone: string;
-    address: string;
-    logo: string | undefined;
-    banner: string | undefined;
-    primaryColor: string;
-  } | null>(null);
 
   const [paymentSettings, setPaymentSettings] = useState<{
     currency: string;
@@ -141,21 +167,6 @@ export default function SettingsPage() {
   // ---------------------------------------------------------------------------
   // Initialize form data from tenant
   // ---------------------------------------------------------------------------
-  useEffect(() => {
-    if (tenant && formData === null) {
-      const themeData = tenant.theme as { primaryColor?: string } | null;
-      setFormData({
-        name: tenant.name || '',
-        description: tenant.description || '',
-        phone: tenant.phone || '',
-        address: tenant.address || '',
-        logo: tenant.logo || undefined,
-        banner: tenant.banner || undefined,
-        primaryColor: themeData?.primaryColor || THEME_COLORS[0].value,
-      });
-    }
-  }, [tenant, formData]);
-
   useEffect(() => {
     if (tenant && paymentSettings === null) {
       setPaymentSettings({
@@ -202,45 +213,6 @@ export default function SettingsPage() {
   // ---------------------------------------------------------------------------
   // Save Handlers
   // ---------------------------------------------------------------------------
-  const handleSaveStore = async () => {
-    if (!tenant || !formData) return;
-    setIsSaving(true);
-    try {
-      await tenantsApi.update({
-        name: formData.name || undefined,
-        description: formData.description || undefined,
-        phone: formData.phone || undefined,
-        address: formData.address || undefined,
-      });
-      await refresh();
-      toast.success('Informasi toko berhasil disimpan');
-    } catch (error) {
-      console.error('Failed to save store settings:', error);
-      toast.error('Gagal menyimpan informasi toko');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSaveAppearance = async () => {
-    if (!tenant || !formData) return;
-    setIsSavingAppearance(true);
-    try {
-      await tenantsApi.update({
-        logo: formData.logo || undefined,
-        banner: formData.banner || undefined,
-        theme: { primaryColor: formData.primaryColor },
-      });
-      await refresh();
-      toast.success('Tampilan toko berhasil disimpan');
-    } catch (error) {
-      console.error('Failed to save appearance:', error);
-      toast.error('Gagal menyimpan tampilan toko');
-    } finally {
-      setIsSavingAppearance(false);
-    }
-  };
-
   const handleSavePayment = async () => {
     if (!tenant || !paymentSettings) return;
     setIsSavingPayment(true);
@@ -295,40 +267,6 @@ export default function SettingsPage() {
       toast.error('Gagal menyimpan pengaturan SEO');
     } finally {
       setIsSavingSeo(false);
-    }
-  };
-
-  const handleRemoveLogo = async () => {
-    if (!tenant || !formData) return;
-    setIsRemovingLogo(true);
-    try {
-      setFormData({ ...formData, logo: undefined });
-      await tenantsApi.update({ logo: '' });
-      await refresh();
-      toast.success('Logo berhasil dihapus');
-    } catch (error) {
-      console.error('Failed to remove logo:', error);
-      toast.error('Gagal menghapus logo');
-      setFormData({ ...formData, logo: tenant.logo || undefined });
-    } finally {
-      setIsRemovingLogo(false);
-    }
-  };
-
-  const handleRemoveBanner = async () => {
-    if (!tenant || !formData) return;
-    setIsRemovingBanner(true);
-    try {
-      setFormData({ ...formData, banner: undefined });
-      await tenantsApi.update({ banner: '' });
-      await refresh();
-      toast.success('Banner berhasil dihapus');
-    } catch (error) {
-      console.error('Failed to remove banner:', error);
-      toast.error('Gagal menghapus banner');
-      setFormData({ ...formData, banner: tenant.banner || undefined });
-    } finally {
-      setIsRemovingBanner(false);
     }
   };
 
@@ -429,18 +367,6 @@ export default function SettingsPage() {
   };
 
   // ---------------------------------------------------------------------------
-  // Form Data Helpers
-  // ---------------------------------------------------------------------------
-  const updateFormData = (
-    key: 'name' | 'description' | 'phone' | 'address',
-    value: string
-  ) => {
-    if (formData) {
-      setFormData({ ...formData, [key]: value });
-    }
-  };
-
-  // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
   return (
@@ -473,17 +399,45 @@ export default function SettingsPage() {
           onSheetOpenChange={setSheetOpen}
         />
 
-        {/* Tab: Store Info */}
+        {/* Tab: Store Info - Navigation Cards */}
         <TabsContent value="store" className="mt-6">
-          <StoreInfoForm
-            formData={formData ? { name: formData.name, description: formData.description, phone: formData.phone, address: formData.address } : null}
-            tenantEmail={tenant?.email}
-            tenantSlug={tenant?.slug}
-            isLoading={tenantLoading}
-            isSaving={isSaving}
-            onFormChange={updateFormData}
-            onSave={handleSaveStore}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Informasi Toko</CardTitle>
+              <CardDescription>
+                Kelola informasi toko dan konten landing page. Semua data disimpan ke database yang sama.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                {STORE_SECTIONS.map((section) => {
+                  const Icon = section.icon;
+                  return (
+                    <Card
+                      key={section.id}
+                      className="group cursor-pointer hover:border-primary hover:shadow-md transition-all"
+                      onClick={() => router.push(section.href)}
+                    >
+                      <CardContent className="flex items-start gap-4 p-6">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <Icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-base mb-1 group-hover:text-primary transition-colors">
+                            {section.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {section.description}
+                          </p>
+                        </div>
+                        <ChevronRight className="flex-shrink-0 h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Tab: Payment */}
@@ -525,23 +479,6 @@ export default function SettingsPage() {
             isSaving={isSavingShipping}
             onSettingsChange={setShippingSettings}
             onSave={handleSaveShipping}
-          />
-        </TabsContent>
-
-        {/* Tab: Appearance */}
-        <TabsContent value="appearance" className="mt-6">
-          <AppearanceSettings
-            formData={formData ? { logo: formData.logo, banner: formData.banner, primaryColor: formData.primaryColor } : null}
-            isLoading={tenantLoading}
-            isSaving={isSavingAppearance}
-            isRemovingLogo={isRemovingLogo}
-            isRemovingBanner={isRemovingBanner}
-            onLogoChange={(url) => formData && setFormData({ ...formData, logo: url })}
-            onBannerChange={(url) => formData && setFormData({ ...formData, banner: url })}
-            onColorChange={(color) => formData && setFormData({ ...formData, primaryColor: color })}
-            onRemoveLogo={handleRemoveLogo}
-            onRemoveBanner={handleRemoveBanner}
-            onSave={handleSaveAppearance}
           />
         </TabsContent>
 

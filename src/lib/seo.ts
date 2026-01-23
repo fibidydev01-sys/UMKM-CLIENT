@@ -167,7 +167,7 @@ export function createTenantMetadata({
     slug: string;
     description?: string | null;
     logo?: string | null;
-    banner?: string | null;
+    heroBackgroundImage?: string | null;
     metaTitle?: string | null;
     metaDescription?: string | null;
   };
@@ -189,7 +189,7 @@ export function createTenantMetadata({
 
   // URLs
   const canonicalUrl = getTenantUrl(tenant.slug, path);
-  const imageUrl = ogImage || tenant.banner || tenant.logo;
+  const imageUrl = ogImage || tenant.heroBackgroundImage || tenant.logo;
 
   // Build metadata base for subdomain (production only)
   const metadataBase = seoConfig.isProduction

@@ -2,23 +2,22 @@
 
 // ==========================================
 // TEMPLATE CONTEXT PROVIDER
-// 🚀 SYNCED WITH BACKEND - ALL VARIANTS
+// 🚀 SYNCED WITH BACKEND - ALL BLOCKS
 // ==========================================
 // Manages the current template selection and provides
-// variant getters for each section
+// block getters for each section
 
 import React, { createContext, useContext, useState, useMemo } from 'react';
 import {
   getTemplate,
   DEFAULT_TEMPLATE_ID,
-  type LandingTemplate,
   type TemplateContextValue,
-  type HeroVariant,
-  type AboutVariant,
-  type ProductsVariant,
-  type TestimonialsVariant,
-  type ContactVariant,
-  type CtaVariant,
+  type HeroBlock,
+  type AboutBlock,
+  type ProductsBlock,
+  type TestimonialsBlock,
+  type ContactBlock,
+  type CtaBlock,
 } from '../templates';
 
 const TemplateContext = createContext<TemplateContextValue | null>(null);
@@ -39,15 +38,16 @@ export function TemplateProvider({ children, initialTemplateId }: TemplateProvid
 
   const currentTemplate = useMemo(() => getTemplate(templateId), [templateId]);
 
+  // v3.0 NUMBERING SYSTEM - fallback to default numbered blocks
   const value: TemplateContextValue = {
     currentTemplate,
     setTemplate: setTemplateId,
-    getHeroVariant: () => currentTemplate.variants.hero,
-    getAboutVariant: () => currentTemplate.variants.about,
-    getProductsVariant: () => currentTemplate.variants.products,
-    getTestimonialsVariant: () => currentTemplate.variants.testimonials || 'default',
-    getContactVariant: () => currentTemplate.variants.contact || 'default',
-    getCtaVariant: () => currentTemplate.variants.cta || 'default',
+    getHeroBlock: () => currentTemplate.blocks.hero,
+    getAboutBlock: () => currentTemplate.blocks.about,
+    getProductsBlock: () => currentTemplate.blocks.products,
+    getTestimonialsBlock: () => currentTemplate.blocks.testimonials || 'testimonials1',
+    getContactBlock: () => currentTemplate.blocks.contact || 'contact1',
+    getCtaBlock: () => currentTemplate.blocks.cta || 'cta1',
   };
 
   return <TemplateContext.Provider value={value}>{children}</TemplateContext.Provider>;
@@ -69,34 +69,34 @@ export function useTemplate(): TemplateContextValue {
 }
 
 /**
- * Hooks to get the current variant for each section
+ * Hooks to get the current block for each section
  */
-export function useHeroVariant(): HeroVariant {
-  const { getHeroVariant } = useTemplate();
-  return getHeroVariant();
+export function useHeroBlock(): HeroBlock {
+  const { getHeroBlock } = useTemplate();
+  return getHeroBlock();
 }
 
-export function useAboutVariant(): AboutVariant {
-  const { getAboutVariant } = useTemplate();
-  return getAboutVariant();
+export function useAboutBlock(): AboutBlock {
+  const { getAboutBlock } = useTemplate();
+  return getAboutBlock();
 }
 
-export function useProductsVariant(): ProductsVariant {
-  const { getProductsVariant } = useTemplate();
-  return getProductsVariant();
+export function useProductsBlock(): ProductsBlock {
+  const { getProductsBlock } = useTemplate();
+  return getProductsBlock();
 }
 
-export function useTestimonialsVariant(): TestimonialsVariant {
-  const { getTestimonialsVariant } = useTemplate();
-  return getTestimonialsVariant();
+export function useTestimonialsBlock(): TestimonialsBlock {
+  const { getTestimonialsBlock } = useTemplate();
+  return getTestimonialsBlock();
 }
 
-export function useContactVariant(): ContactVariant {
-  const { getContactVariant } = useTemplate();
-  return getContactVariant();
+export function useContactBlock(): ContactBlock {
+  const { getContactBlock } = useTemplate();
+  return getContactBlock();
 }
 
-export function useCtaVariant(): CtaVariant {
-  const { getCtaVariant } = useTemplate();
-  return getCtaVariant();
+export function useCtaBlock(): CtaBlock {
+  const { getCtaBlock } = useTemplate();
+  return getCtaBlock();
 }

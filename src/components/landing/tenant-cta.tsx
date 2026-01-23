@@ -1,59 +1,67 @@
 'use client';
 
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useStoreUrls } from '@/lib/store-url';
-import { extractSectionText, getCtaConfig, extractCtaLink, extractCtaButtonText } from '@/lib/landing';
-import { LANDING_CONSTANTS } from '@/lib/landing';
-import type { TenantLandingConfig } from '@/types';
-
-// ==========================================
-// TENANT CTA COMPONENT - Decoupled
-// ==========================================
+import { lazy, Suspense } from 'react';
+import { extractCtaData, useCtaBlock } from '@/lib/landing';
+import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantCtaProps {
   config?: TenantLandingConfig['cta'];
-  storeSlug?: string;
-  fallbacks?: {
-    title?: string;
-    subtitle?: string;
-    buttonLink?: string;
-  };
+  tenant: Tenant | PublicTenant;
 }
 
-export function TenantCta({ config, storeSlug, fallbacks = {} }: TenantCtaProps) {
-  const { title, subtitle } = extractSectionText(config, {
-    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.CTA,
-    subtitle: fallbacks.subtitle,
-  });
+/**
+ * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
+ *
+ * NO MANUAL IMPORTS! Just add cta201.tsx and it works!
+ *
+ * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
+ * - title → tenant.ctaTitle
+ * - subtitle → tenant.ctaSubtitle
+ * - buttonText → tenant.ctaButtonText
+ * - buttonLink → tenant.ctaButtonLink
+ * - buttonStyle → tenant.ctaButtonStyle
+ *
+ * 🚀 SUPPORTS ALL BLOCKS: cta1, cta2, cta3, ..., cta200, cta9999!
+ */
+export function TenantCta({ config, tenant }: TenantCtaProps) {
+  const templateBlock = useCtaBlock();
+  const block = config?.block || templateBlock;
 
-  const ctaConfig = getCtaConfig(config);
-  const buttonText = extractCtaButtonText(ctaConfig, LANDING_CONSTANTS.CTA_BUTTON_DEFAULT);
-  const style = ctaConfig?.style || 'primary';
+  // Extract CTA data directly from tenant (Data Contract fields)
+  const ctaData = extractCtaData(tenant, config ? { cta: config } : undefined);
 
-  // Smart URL routing
-  const urls = storeSlug ? useStoreUrls(storeSlug) : null;
-  const defaultLink = urls?.products() || fallbacks.buttonLink || '/products';
-  const buttonLink = extractCtaLink(ctaConfig, defaultLink);
+  const buttonVariant: 'default' | 'secondary' | 'outline' =
+    ctaData.buttonStyle === 'outline' ? 'outline' :
+    ctaData.buttonStyle === 'secondary' ? 'secondary' : 'default';
 
-  const buttonVariant =
-    style === 'outline' ? 'outline' : style === 'secondary' ? 'secondary' : 'default';
+  const commonProps = {
+    title: ctaData.title,
+    subtitle: ctaData.subtitle,
+    buttonText: ctaData.buttonText,
+    buttonLink: ctaData.buttonLink,
+    buttonVariant,
+  };
 
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('cta', '');
+  const CtaComponent = lazy(() =>
+    import(`./blocks/cta/cta${blockNumber}`)
+      .then((mod) => ({ default: mod[`Cta${blockNumber}`] }))
+      .catch(() => import('./blocks/cta/cta1').then((mod) => ({ default: mod.Cta1 })))
+  );
+
+  // Render with Suspense for lazy loading
   return (
-    <section className="py-16 my-8 rounded-xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10">
-      <div className="text-center max-w-2xl mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && (
-          <p className="text-muted-foreground mt-2 mb-6">{subtitle}</p>
-        )}
-        <Link href={buttonLink}>
-          <Button size="lg" variant={buttonVariant} className="gap-2 mt-4">
-            {buttonText}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        </Link>
-      </div>
-    </section>
+    <Suspense fallback={<CtaSkeleton />}>
+      <CtaComponent {...commonProps} />
+    </Suspense>
+  );
+}
+
+function CtaSkeleton() {
+  return (
+    <div className="min-h-[200px] w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
   );
 }

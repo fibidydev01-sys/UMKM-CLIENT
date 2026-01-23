@@ -8,10 +8,6 @@
 
 import { useState, useCallback } from 'react';
 import {
-  Loader2,
-  Eye,
-  Upload,
-  RotateCcw,
   Target,
   BookOpen,
   ShoppingBag,
@@ -20,22 +16,14 @@ import {
   Rocket,
   AlertCircle,
   AlertTriangle,
-  ChevronDown,
   X,
 } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import {
   Select,
   SelectContent,
@@ -57,7 +45,6 @@ import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 
 import { TestimonialEditor } from './testimonial-editor';
-import { VariantSelector } from './variant-selector';
 import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/utils';
 import type { TenantLandingConfig, Testimonial } from '@/types';
@@ -77,6 +64,7 @@ interface LandingBuilderProps {
   onDiscard: () => void;
   onReset: () => Promise<boolean>;
   onClearErrors?: () => void;
+  activeSection?: string | null; // Filter to show only specific section
 }
 
 // ============================================================================
@@ -131,18 +119,20 @@ type SectionKey = (typeof SECTIONS)[number]['key'];
 export function LandingBuilder({
   config,
   onConfigChange,
-  tenantSlug,
   hasUnsavedChanges,
-  isSaving,
   validationErrors = [],
-  onPublish,
   onDiscard,
   onReset,
   onClearErrors,
+  activeSection,
 }: LandingBuilderProps) {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['hero']);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
+
+  // Filter sections based on activeSection prop
+  const visibleSections = activeSection
+    ? SECTIONS.filter((section) => section.key === activeSection)
+    : SECTIONS;
 
   // ==========================================================================
   // TOGGLE SECTION - LOCAL ONLY, NO AUTO-SAVE!
@@ -202,51 +192,16 @@ export function LandingBuilder({
   }, [config, onConfigChange]);
 
   // ==========================================================================
-  // VARIANT CHANGE HANDLER
-  // ==========================================================================
-  const handleVariantChange = useCallback((
-    key: SectionKey,
-    variant: string
-  ) => {
-    const currentSection = config[key] || {};
-    onConfigChange({
-      ...config,
-      [key]: {
-        ...currentSection,
-        variant,
-      },
-    });
-  }, [config, onConfigChange]);
-
-  // ==========================================================================
   // ACTION HANDLERS
   // ==========================================================================
-  const handlePublish = async () => {
-    await onPublish();
-  };
-
-  const handleDiscard = () => {
-    if (hasUnsavedChanges) {
-      setShowDiscardDialog(true);
-    }
-  };
-
   const handleConfirmDiscard = () => {
     onDiscard();
     setShowDiscardDialog(false);
   };
 
-  const handleReset = () => {
-    setShowResetDialog(true);
-  };
-
   const handleConfirmReset = async () => {
     await onReset();
     setShowResetDialog(false);
-  };
-
-  const handlePreview = () => {
-    window.open(`/store/${tenantSlug}`, '_blank');
   };
 
   // ==========================================================================
@@ -303,100 +258,34 @@ export function LandingBuilder({
         </Card>
       )}
 
-      {/* Header & Actions */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h3 className="text-lg font-semibold">Konfigurasi Section</h3>
-          <p className="text-sm text-muted-foreground">
-            Aktifkan dan atur setiap bagian landing page
-          </p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleReset}
-            disabled={isSaving}
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset
-          </Button>
-          {hasUnsavedChanges && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDiscard}
-              disabled={isSaving}
-            >
-              Batalkan
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePreview}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Preview
-          </Button>
-          <Button
-            size="sm"
-            onClick={handlePublish}
-            disabled={isSaving || !hasUnsavedChanges}
-            className={cn(
-              hasUnsavedChanges && !isSaving && 'bg-green-600 hover:bg-green-700'
-            )}
-          >
-            {isSaving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4 mr-2" />
-            )}
-            {isSaving ? 'Publishing...' : 'Publish'}
-          </Button>
-        </div>
-      </div>
-
-      {/* Sections Accordion */}
-      <Accordion
-        type="multiple"
-        value={expandedSections}
-        onValueChange={setExpandedSections}
-        className="space-y-3"
-      >
-        {SECTIONS.map((section) => {
+      {/* Section Editor */}
+      <div className="space-y-6">
+        {visibleSections.map((section) => {
           const IconComponent = section.icon;
           const sectionConfig = config[section.key];
           const isEnabled = sectionConfig?.enabled ?? false;
 
           return (
-            <AccordionItem
-              key={section.key}
-              value={section.key}
-              className={cn(
-                'border rounded-lg overflow-hidden transition-colors',
-                isEnabled && 'border-primary/50 bg-primary/5'
-              )}
-            >
+            <div key={section.key}>
               {/* Section Header */}
-              <div className="flex items-center gap-4 px-4 py-3">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
                   <div className={cn(
                     'p-2 rounded-lg',
                     isEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
                   )}>
-                    <IconComponent className="h-4 w-4" />
+                    <IconComponent className="h-5 w-5" />
                   </div>
-                  <div className="flex-1 min-w-0">
+                  <div>
                     <div className="flex items-center gap-2">
-                      <p className="font-medium truncate">{section.title}</p>
+                      <h3 className="font-semibold text-lg">{section.title}</h3>
                       {isEnabled && (
                         <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
                           Aktif
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground truncate">
+                    <p className="text-sm text-muted-foreground">
                       {section.description}
                     </p>
                   </div>
@@ -404,23 +293,17 @@ export function LandingBuilder({
                 <Switch
                   checked={isEnabled}
                   onCheckedChange={(enabled) => handleToggleSection(section.key, enabled)}
-                  onClick={(e) => e.stopPropagation()}
                 />
-                <AccordionTrigger className="hover:no-underline p-0 [&[data-state=open]>svg]:rotate-180">
-                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
-                </AccordionTrigger>
               </div>
 
               {/* Section Content */}
-              <AccordionContent className="px-4 pb-4">
-                <Separator className="mb-4" />
+              <div className="space-y-4">
                 {section.key === 'testimonials' ? (
                   <TestimonialsSection
                     config={config.testimonials}
                     onTitleChange={(value) => handleUpdateSection('testimonials', 'title', value)}
                     onSubtitleChange={(value) => handleUpdateSection('testimonials', 'subtitle', value)}
                     onItemsChange={handleTestimonialsChange}
-                    onVariantChange={(variant) => handleVariantChange('testimonials', variant)}
                   />
                 ) : (
                   <GenericSection
@@ -429,14 +312,13 @@ export function LandingBuilder({
                     onTitleChange={(value) => handleUpdateSection(section.key, 'title', value)}
                     onSubtitleChange={(value) => handleUpdateSection(section.key, 'subtitle', value)}
                     onConfigChange={(updates) => handleUpdateSectionConfig(section.key, updates)}
-                    onVariantChange={(variant) => handleVariantChange(section.key, variant)}
                   />
                 )}
-              </AccordionContent>
-            </AccordionItem>
+              </div>
+            </div>
           );
         })}
-      </Accordion>
+      </div>
 
       {/* Reset Confirmation Dialog */}
       <AlertDialog open={showResetDialog} onOpenChange={setShowResetDialog}>
@@ -487,7 +369,6 @@ interface TestimonialsSectionProps {
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onItemsChange: (items: Testimonial[]) => void;
-  onVariantChange: (variant: string) => void;
 }
 
 function TestimonialsSection({
@@ -495,20 +376,11 @@ function TestimonialsSection({
   onTitleChange,
   onSubtitleChange,
   onItemsChange,
-  onVariantChange,
 }: TestimonialsSectionProps) {
   const items = normalizeTestimonials(config?.config?.items);
 
   return (
     <div className="space-y-4">
-      {/* Variant Selector */}
-      <VariantSelector
-        section="testimonials"
-        selectedVariant={config?.variant}
-        onSelect={onVariantChange}
-      />
-
-      <Separator />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
@@ -552,7 +424,6 @@ interface GenericSectionProps {
   onTitleChange: (value: string) => void;
   onSubtitleChange: (value: string) => void;
   onConfigChange: (updates: Record<string, unknown>) => void;
-  onVariantChange: (variant: string) => void;
 }
 
 function GenericSection({
@@ -561,20 +432,11 @@ function GenericSection({
   onTitleChange,
   onSubtitleChange,
   onConfigChange,
-  onVariantChange,
 }: GenericSectionProps) {
   const sectionConfig = (config?.config || {}) as Record<string, unknown>;
 
   return (
     <div className="space-y-4">
-      {/* Variant Selector */}
-      <VariantSelector
-        section={sectionKey as any}
-        selectedVariant={config?.variant}
-        onSelect={onVariantChange}
-      />
-
-      <Separator />
 
       {/* Common Fields */}
       <div className="grid gap-4 sm:grid-cols-2">

@@ -2,7 +2,7 @@
 
 import { CldImage as CldImageBase, type CldImageProps } from 'next-cloudinary';
 import { useState } from 'react';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { extractPublicId, isCloudinaryUrl } from '@/lib/cloudinary';
 
 // ==========================================

@@ -19,8 +19,9 @@ import {
   DiscoverHeader,
   CategoryFilterBar,
   MinimalFooter,
+  TenantPreviewDrawer,
 } from '@/components/discover';
-import type { ShowcaseTenant, SortOption } from '@/types/discover';
+import type { ShowcaseTenant } from '@/types/discover';
 import { CATEGORY_CONFIG } from '@/config/categories';
 import {
   fetchTenantsByCategory,
@@ -38,6 +39,7 @@ import {
 interface CategoryPageClientProps {
   categoryKey: string;
   categorySlug: string;
+  isDynamic?: boolean; // true if category is dynamic (not predefined)
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -60,15 +62,23 @@ function TenantCardSkeleton() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// TENANT CARD - Dribbble Style
+// TENANT CARD - Dribbble Style (with onClick for Drawer)
 // ══════════════════════════════════════════════════════════════
 
 interface TenantCardProps {
   tenant: ShowcaseTenant;
+  onClick?: (tenant: ShowcaseTenant) => void;
 }
 
-function TenantCard({ tenant }: TenantCardProps) {
+function TenantCard({ tenant, onClick }: TenantCardProps) {
   const productCount = tenant._count?.products || 0;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      e.preventDefault();
+      onClick(tenant);
+    }
+  };
 
   return (
     <Link
@@ -76,12 +86,13 @@ function TenantCard({ tenant }: TenantCardProps) {
       target="_blank"
       rel="noopener noreferrer"
       className="group block"
+      onClick={handleClick}
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] w-full rounded-xl overflow-hidden bg-muted">
-        {tenant.banner ? (
+        {tenant.heroBackgroundImage ? (
           <Image
-            src={tenant.banner}
+            src={tenant.heroBackgroundImage}
             alt={tenant.name || 'Store'}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -149,16 +160,23 @@ function TenantCard({ tenant }: TenantCardProps) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// CATEGORY HERO
+// CATEGORY HERO - ✅ FIXED: Handle undefined category
 // ══════════════════════════════════════════════════════════════
 
 interface CategoryHeroProps {
-  category: typeof CATEGORY_CONFIG[string];
+  category: typeof CATEGORY_CONFIG[string] | null;
+  categoryKey: string;
   tenantCount: number;
 }
 
-function CategoryHero({ category, tenantCount }: CategoryHeroProps) {
-  const Icon = category.icon;
+function CategoryHero({ category, categoryKey, tenantCount }: CategoryHeroProps) {
+  // ✅ SAFE: Use default values for dynamic categories
+  const Icon = category?.icon || Store;
+  const label = category?.label || categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const description = category?.description || 'Kategori dinamis dari database';
+  const color = category?.color || '#6b7280';
+  const productLabel = category?.labels.product || 'Produk';
+  const priceLabel = category?.labels.price || 'Harga';
 
   return (
     <section className="pt-20 pb-8 bg-gradient-to-b from-muted/50 to-background">
@@ -176,20 +194,20 @@ function CategoryHero({ category, tenantCount }: CategoryHeroProps) {
         <div className="flex items-start gap-4">
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ backgroundColor: `${category.color}20` }}
+            style={{ backgroundColor: `${color}20` }}
           >
-            <Icon className="h-8 w-8" style={{ color: category.color }} />
+            <Icon className="h-8 w-8" style={{ color: color }} />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold mb-2">{category.label}</h1>
-            <p className="text-muted-foreground mb-3">{category.description}</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-2">{label}</h1>
+            <p className="text-muted-foreground mb-3">{description}</p>
             <div className="flex items-center gap-4 text-sm">
               <span className="text-muted-foreground">
                 <strong className="text-foreground">{tenantCount}</strong> UMKM terdaftar
               </span>
               <span className="text-muted-foreground">•</span>
               <span className="text-muted-foreground">
-                {category.labels.product}: {category.labels.price}
+                {productLabel}: {priceLabel}
               </span>
             </div>
           </div>
@@ -200,19 +218,24 @@ function CategoryHero({ category, tenantCount }: CategoryHeroProps) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// MAIN CLIENT COMPONENT
+// MAIN CLIENT COMPONENT - ✅ FIXED: Safe category access
 // ══════════════════════════════════════════════════════════════
 
-export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
+export function CategoryPageClient({ categoryKey, categorySlug, isDynamic }: CategoryPageClientProps) {
   const router = useRouter();
-  const category = CATEGORY_CONFIG[categoryKey];
+
+  // ✅ SAFE: Get category config (might be null for dynamic categories)
+  const category = CATEGORY_CONFIG[categoryKey] || null;
 
   // State
   const [tenants, setTenants] = useState<ShowcaseTenant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<SortOption>('popular');
+
+  // Drawer State
+  const [selectedTenant, setSelectedTenant] = useState<ShowcaseTenant | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // ════════════════════════════════════════════════════════════
   // FETCH TENANTS
@@ -259,8 +282,8 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
       );
     }
 
-    // Apply sort using centralized utility
-    result = sortTenants(result, sortBy);
+    // Apply sort: default to popular (by product count)
+    result = sortTenants(result, 'popular');
 
     return result;
   })();
@@ -284,9 +307,19 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
     [categoryKey, router]
   );
 
-  const handleSortChange = useCallback((sort: SortOption) => {
-    setSortBy(sort);
+  const handleCardClick = useCallback((tenant: ShowcaseTenant) => {
+    setSelectedTenant(tenant);
+    setDrawerOpen(true);
   }, []);
+
+  const handleTenantSelect = useCallback((tenant: ShowcaseTenant) => {
+    setSelectedTenant(tenant);
+  }, []);
+
+  // ✅ SAFE: Get category display values
+  const categoryLabel = category?.label || categoryKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const categoryColor = category?.color || '#6b7280';
+  const CategoryIcon = category?.icon || Store;
 
   // ════════════════════════════════════════════════════════════
   // RENDER
@@ -297,21 +330,21 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
       {/* Header */}
       <DiscoverHeader
         onSearch={handleSearch}
-        onCategorySelect={handleCategorySelect}
         searchQuery={searchQuery}
-        selectedCategory={categoryKey}
       />
 
       <main className="flex-1">
-        {/* Category Hero */}
-        <CategoryHero category={category} tenantCount={tenants.length} />
+        {/* Category Hero - ✅ Pass category safely */}
+        <CategoryHero
+          category={category}
+          categoryKey={categoryKey}
+          tenantCount={tenants.length}
+        />
 
-        {/* Filter Bar (Sticky) */}
+        {/* Category Navigation (Sticky) */}
         <CategoryFilterBar
           selectedCategory={categoryKey}
           onCategorySelect={handleCategorySelect}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
           isSticky={true}
         />
 
@@ -345,17 +378,17 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
               <div className="text-center py-20">
                 <div
                   className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4"
-                  style={{ backgroundColor: `${category.color}20` }}
+                  style={{ backgroundColor: `${categoryColor}20` }}
                 >
-                  <category.icon className="h-8 w-8" style={{ color: category.color }} />
+                  <CategoryIcon className="h-8 w-8" style={{ color: categoryColor }} />
                 </div>
                 <h3 className="font-semibold mb-2">
-                  {searchQuery ? 'Tidak ada hasil' : `Belum ada ${category.label}`}
+                  {searchQuery ? 'Tidak ada hasil' : `Belum ada ${categoryLabel}`}
                 </h3>
                 <p className="text-muted-foreground mb-6">
                   {searchQuery
                     ? `Tidak ditemukan UMKM dengan kata kunci "${searchQuery}"`
-                    : `Jadilah ${category.label} pertama di Fibidy!`}
+                    : `Jadilah ${categoryLabel} pertama di Fibidy!`}
                 </p>
                 {searchQuery ? (
                   <Button variant="outline" onClick={() => setSearchQuery('')}>
@@ -376,7 +409,7 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
             {!loading && !error && filteredTenants.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-8">
                 {filteredTenants.map((tenant) => (
-                  <TenantCard key={tenant.id} tenant={tenant} />
+                  <TenantCard key={tenant.id} tenant={tenant} onClick={handleCardClick} />
                 ))}
               </div>
             )}
@@ -396,6 +429,16 @@ export function CategoryPageClient({ categoryKey }: CategoryPageClientProps) {
 
       {/* Footer */}
       <MinimalFooter />
+
+      {/* Tenant Preview Drawer */}
+      <TenantPreviewDrawer
+        tenant={selectedTenant}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        tenantUrl={selectedTenant?.url || ''}
+        allTenants={tenants}
+        onTenantSelect={handleTenantSelect}
+      />
     </div>
   );
 }

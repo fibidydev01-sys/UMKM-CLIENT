@@ -4,61 +4,33 @@
 // ==========================================
 
 // ==========================================
-// VARIANT TYPES (from backend)
+// BLOCK TYPES (from backend)
 // ==========================================
 
-export type HeroVariant =
-  | 'default'
-  | 'gradient-overlay'
-  | 'centered-minimal'
-  | 'split-screen'
-  | 'video-background'
-  | 'parallax'
-  | 'animated-gradient'
-  | 'glass-morphism';
+/**
+ * v3.0 NUMBERING SYSTEM - AUTO-DISCOVERY ENABLED! 🚀
+ * Blocks are auto-discovered from filesystem
+ * No manual type updates needed when adding new blocks!
+ */
 
-export type AboutVariant =
-  | 'default'
-  | 'side-by-side'
-  | 'centered'
-  | 'timeline'
-  | 'cards'
-  | 'magazine'
-  | 'storytelling';
+// Auto-accepts any number: hero1, hero2, hero201, hero9999, etc.
+export type HeroBlock = `hero${number}`;
 
-export type ProductsVariant =
-  | 'default'
-  | 'grid-hover'
-  | 'masonry'
-  | 'carousel'
-  | 'featured-hero'
-  | 'catalog'
-  | 'minimal-list';
+// Auto-accepts any number: about1, about2, about201, etc.
+export type AboutBlock = `about${number}`;
 
-export type TestimonialsVariant =
-  | 'default'
-  | 'card-slider'
-  | 'quote-highlight'
-  | 'grid-cards'
-  | 'single-focus'
-  | 'video-testimonials'
-  | 'social-proof';
+// Auto-accepts any number: products1, products2, products201, etc.
+export type ProductsBlock = `products${number}`;
 
-export type ContactVariant =
-  | 'default'
-  | 'split-form'
-  | 'centered'
-  | 'map-focus'
-  | 'minimal'
-  | 'social-focused';
+// Auto-accepts any number: testimonials1, testimonials2, testimonials201, etc.
+export type TestimonialsBlock = `testimonials${number}`;
 
-export type CtaVariant =
-  | 'default'
-  | 'bold-center'
-  | 'gradient-banner'
-  | 'split-action'
-  | 'floating'
-  | 'minimal-line';
+// Auto-accepts any number: contact1, contact2, contact201, etc.
+export type ContactBlock = `contact${number}`;
+
+// Auto-accepts any number: cta1, cta2, cta201, etc.
+export type CtaBlock = `cta${number}`;
+
 
 // ==========================================
 // SECTION BASE INTERFACE
@@ -68,7 +40,7 @@ export interface LandingSection<V = string> {
   enabled?: boolean;
   title?: string;
   subtitle?: string;
-  variant?: V;
+  block?: V;
   config?: Record<string, unknown>;
 }
 
@@ -131,18 +103,25 @@ export interface CtaSectionConfig {
 }
 
 // ==========================================
+// SECTION TYPE (for ordering)
+// ==========================================
+
+export type SectionKey = 'hero' | 'about' | 'products' | 'testimonials' | 'contact' | 'cta';
+
+// ==========================================
 // MAIN CONFIG INTERFACE
 // ==========================================
 
 export interface TenantLandingConfig {
   enabled: boolean;
   template?: string; // Template ID
-  hero?: LandingSection<HeroVariant> & { config?: HeroSectionConfig };
-  about?: LandingSection<AboutVariant> & { config?: AboutSectionConfig };
-  products?: LandingSection<ProductsVariant> & { config?: ProductsSectionConfig };
-  testimonials?: LandingSection<TestimonialsVariant> & { config?: TestimonialsSectionConfig };
-  contact?: LandingSection<ContactVariant> & { config?: ContactSectionConfig };
-  cta?: LandingSection<CtaVariant> & { config?: CtaSectionConfig };
+  sectionOrder?: SectionKey[]; // 🚀 NEW: Drag & drop section ordering
+  hero?: LandingSection<HeroBlock> & { config?: HeroSectionConfig };
+  about?: LandingSection<AboutBlock> & { config?: AboutSectionConfig };
+  products?: LandingSection<ProductsBlock> & { config?: ProductsSectionConfig };
+  testimonials?: LandingSection<TestimonialsBlock> & { config?: TestimonialsSectionConfig };
+  contact?: LandingSection<ContactBlock> & { config?: ContactSectionConfig };
+  cta?: LandingSection<CtaBlock> & { config?: CtaSectionConfig };
 }
 
 // ==========================================

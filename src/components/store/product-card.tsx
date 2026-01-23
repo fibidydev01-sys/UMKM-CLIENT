@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/format';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { productUrl } from '@/lib/store-url';
 // ❌ REMOVE: import { getThumbnailUrl } from '@/lib/cloudinary';
 import type { Product } from '@/types';

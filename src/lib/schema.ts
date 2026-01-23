@@ -80,7 +80,7 @@ export function generateLocalBusinessSchema(tenant: {
   email?: string | null;
   address?: string | null;
   logo?: string | null;
-  banner?: string | null;
+  heroBackgroundImage?: string | null;
   socialLinks?: {
     instagram?: string;
     facebook?: string;
@@ -102,7 +102,7 @@ export function generateLocalBusinessSchema(tenant: {
     name: tenant.name,
     url: tenantUrl,
     description: tenant.description || `${tenant.name} - Toko online terpercaya`,
-    image: tenant.banner || tenant.logo || getFullUrl(seoConfig.defaultOgImage),
+    image: tenant.heroBackgroundImage || tenant.logo || getFullUrl(seoConfig.defaultOgImage),
     logo: tenant.logo || seoConfig.organization.logo,
     telephone: tenant.phone || `+${tenant.whatsapp}`,
     email: tenant.email || undefined,

@@ -1,92 +1,71 @@
 'use client';
 
-import { extractSectionText, getHeroConfig, extractBackgroundImage } from '@/lib/landing';
-import { LANDING_CONSTANTS, useHeroVariant } from '@/lib/landing';
-import {
-  HeroCentered,
-  HeroSplit,
-  HeroGlassMorphism,
-  HeroVideoBackground,
-  HeroAnimatedGradient,
-  HeroParallax,
-} from './variants';
-import type { TenantLandingConfig } from '@/types';
+import { lazy, Suspense } from 'react';
+import { extractHeroData, useHeroBlock } from '@/lib/landing';
+import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantHeroProps {
   config?: TenantLandingConfig['hero'];
-  fallbacks?: {
-    title?: string;
-    subtitle?: string;
-    backgroundImage?: string;
-    logo?: string;
-    storeName?: string;
-  };
+  tenant: Tenant | PublicTenant;
 }
 
 /**
- * Tenant Hero Component
+ * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
  *
- * Wrapper that selects and renders the appropriate hero variant
- * based on the current template context
+ * NO MANUAL IMPORTS! Just add hero201.tsx and it works!
  *
- * 🚀 IMPLEMENTED VARIANTS:
- * - default, centered-minimal, gradient-overlay → HeroCentered
- * - split-screen → HeroSplit
- * - glass-morphism → HeroGlassMorphism
- * - video-background → HeroVideoBackground
- * - animated-gradient → HeroAnimatedGradient
- * - parallax → HeroParallax
+ * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
+ * - title → tenant.heroTitle (fallback: tenant.name)
+ * - subtitle → tenant.heroSubtitle (fallback: tenant.description)
+ * - ctaText → tenant.heroCtaText
+ * - ctaLink → tenant.heroCtaLink
+ * - backgroundImage → tenant.heroBackgroundImage
+ * - logo → tenant.logo
+ * - storeName → tenant.name
  *
- * 🎯 VARIANT PRIORITY:
- * 1. config.variant (user override)
- * 2. template variant (from TemplateProvider)
+ * 🚀 SUPPORTS ALL BLOCKS: hero1, hero2, hero3, ..., hero200, hero9999!
  */
-export function TenantHero({ config, fallbacks = {} }: TenantHeroProps) {
-  const templateVariant = useHeroVariant();
-  const variant = config?.variant || templateVariant;
+export function TenantHero({ config, tenant }: TenantHeroProps) {
+  const templateBlock = useHeroBlock();
+  const block = config?.block || templateBlock;
 
-  const { title, subtitle } = extractSectionText(config, {
-    title: fallbacks.title || fallbacks.storeName,
-    subtitle: fallbacks.subtitle,
-  });
-
-  const heroConfig = getHeroConfig(config);
-  const showCta = heroConfig?.showCta ?? true;
-  const ctaText = heroConfig?.ctaText || LANDING_CONSTANTS.CTA_TEXT_DEFAULT;
-  const ctaLink = heroConfig?.ctaLink || '/products';
-  const backgroundImage = extractBackgroundImage(heroConfig, fallbacks.backgroundImage);
-  const overlayOpacity = heroConfig?.overlayOpacity ?? LANDING_CONSTANTS.OVERLAY_OPACITY_DEFAULT;
+  // Extract hero data directly from tenant (Data Contract fields)
+  const heroData = extractHeroData(tenant, config ? { hero: config } : undefined);
 
   const commonProps = {
-    title,
-    subtitle,
-    ctaText,
-    ctaLink,
-    showCta,
-    backgroundImage,
-    logo: fallbacks.logo,
-    storeName: fallbacks.storeName,
+    title: heroData.title,
+    subtitle: heroData.subtitle,
+    ctaText: heroData.ctaText,
+    ctaLink: heroData.ctaLink,
+    showCta: true,
+    backgroundImage: heroData.backgroundImage,
+    logo: tenant.logo || undefined,
+    storeName: tenant.name,
   };
 
-  // 🚀 Render appropriate variant based on template
-  switch (variant) {
-    case 'split-screen':
-      return <HeroSplit {...commonProps} />;
+  // 🚀 SMART: Dynamic component loading
+  const blockNumber = block.replace('hero', '');
+  const HeroComponent = lazy(() =>
+    import(`./blocks/hero/hero${blockNumber}`)
+      .then((mod) => ({ default: mod[`Hero${blockNumber}`] }))
+      .catch(() => import('./blocks/hero/hero1').then((mod) => ({ default: mod.Hero1 })))
+  );
 
-    case 'glass-morphism':
-      return <HeroGlassMorphism {...commonProps} />;
+  // Render with Suspense for lazy loading
+  return (
+    <Suspense fallback={<HeroSkeleton />}>
+      <HeroComponent {...commonProps} />
+    </Suspense>
+  );
+}
 
-    case 'video-background':
-      return <HeroVideoBackground {...commonProps} />;
-
-    case 'animated-gradient':
-      return <HeroAnimatedGradient {...commonProps} />;
-
-    case 'parallax':
-      return <HeroParallax {...commonProps} />;
-
-    // Default variants: default, centered-minimal, gradient-overlay
-    default:
-      return <HeroCentered {...commonProps} overlayOpacity={overlayOpacity} />;
-  }
+/**
+ * Loading skeleton while hero component loads
+ */
+function HeroSkeleton() {
+  return (
+    <div className="h-screen w-full animate-pulse bg-muted flex items-center justify-center">
+      <div className="text-muted-foreground">Loading...</div>
+    </div>
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { ImagePlus, Trash2, Upload, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Script from "next/script";
@@ -79,6 +79,17 @@ function getInitialScriptState(): boolean {
   return !!window.cloudinary;
 }
 
+// Validate URL helper function
+function isValidUrl(url: string): boolean {
+  if (!url || url.trim() === '') return false;
+  try {
+    new URL(url);
+    return url.startsWith('http://') || url.startsWith('https://');
+  } catch {
+    return false;
+  }
+}
+
 export function ImageUpload({
   value,
   onChange,
@@ -91,15 +102,32 @@ export function ImageUpload({
   showPreview = true,
 }: ImageUploadProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // Use lazy initial state to check if script already loaded
   const [isScriptLoaded, setIsScriptLoaded] = useState(getInitialScriptState);
   const widgetRef = useRef<CloudinaryWidget | null>(null);
+
+  // Validate image URL
+  const isValidImageUrl = isValidUrl(value || '');
+
+  // 🔥 FIX: Check if script is already loaded after mount
+  // Using layout effect to avoid ESLint warning and ensure sync check
+  useEffect(() => {
+    const checkScript = () => {
+      if (typeof window !== 'undefined' && window.cloudinary) {
+        setIsScriptLoaded(true);
+      }
+    };
+
+    if (!isScriptLoaded) {
+      checkScript();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ EMPTY ARRAY - cuma run sekali pas mount// Empty deps - only run on mount
 
   // ==========================================
   // CLOUDINARY WIDGET SETUP
   // ==========================================
   const openWidget = useCallback(() => {
-    if (disabled) return;
+    if (disabled || isLoading) return;
 
     if (!window.cloudinary) {
       console.error("Cloudinary not loaded yet. Please wait...");
@@ -148,42 +176,45 @@ export function ImageUpload({
       (error, result) => {
         if (error) {
           console.error("Upload error:", error);
-          console.error("Upload error details:", {
-            message: error.message,
-            stack: error.stack,
-            folder,
-            cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-            hasPreset: !!process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET,
-          });
           setIsLoading(false);
-          // FIX: Reset body overflow on error
           document.body.style.overflow = "";
           return;
         }
 
+        // Handle success
         if (result.event === "success" && result.info?.secure_url) {
-          onChange(result.info.secure_url);
-          setIsLoading(false);
-          // FIX: Reset body overflow on success
-          document.body.style.overflow = "";
-        }
-
-        // FIX: Reset body overflow on close
-        if (result.event === "close") {
+          const imageUrl = result.info.secure_url.trim();
+          onChange(imageUrl);
           setIsLoading(false);
           document.body.style.overflow = "";
         }
 
+        // Handle close/abort
+        if (result.event === "close" || result.event === "abort") {
+          setIsLoading(false);
+          document.body.style.overflow = "";
+        }
+
+        // Handle upload start
         if (result.event === "queues-start") {
           setIsLoading(true);
+        }
+
+        // Handle upload end (completed or failed)
+        if (result.event === "queues-end") {
+          setIsLoading(false);
         }
       }
     );
 
     widgetRef.current.open();
-  }, [disabled, folder, aspectRatio, onChange]);
+  }, [disabled, isLoading, folder, aspectRatio, onChange]);
 
   const handleRemove = () => {
+    if (isLoading) return; // Prevent remove during upload
+
+    setIsLoading(false); // Reset loading state
+
     if (onRemove) {
       onRemove();
     } else {
@@ -191,14 +222,12 @@ export function ImageUpload({
     }
   };
 
-  // Handle script load
   const handleScriptLoad = () => {
     setIsScriptLoaded(true);
   };
 
   return (
     <>
-      {/* Load Cloudinary Script - only if not already loaded */}
       {!isScriptLoaded && (
         <Script
           src="https://upload-widget.cloudinary.com/global/all.js"
@@ -208,14 +237,14 @@ export function ImageUpload({
       )}
 
       <div className={cn("relative group", className)}>
-        {value && showPreview ? (
+        {isValidImageUrl && showPreview ? (
           // Preview Mode
           <div
             className="relative overflow-hidden rounded-lg border bg-muted"
             style={{ aspectRatio }}
           >
             <Image
-              src={value}
+              src={value!.trim()}
               alt="Uploaded image"
               fill
               className="object-cover"
@@ -230,7 +259,11 @@ export function ImageUpload({
                   onClick={openWidget}
                   disabled={isLoading || !isScriptLoaded}
                 >
-                  <Upload className="h-4 w-4 mr-1" />
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <Upload className="h-4 w-4 mr-1" />
+                  )}
                   Ganti
                 </Button>
                 <Button

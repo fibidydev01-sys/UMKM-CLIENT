@@ -202,7 +202,6 @@ export const storeSettingsSchema = z.object({
     .max(300, 'Alamat maksimal 300 karakter')
     .optional(),
   logo: z.string().optional(),
-  banner: z.string().optional(),
 });
 
 export type StoreSettingsFormData = z.infer<typeof storeSettingsSchema>;

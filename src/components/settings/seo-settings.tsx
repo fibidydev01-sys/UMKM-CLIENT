@@ -133,7 +133,7 @@ export function SeoSettings({
                     {settings.metaTitle || tenantName || 'Nama Toko'}
                   </p>
                   <p className="text-green-700 text-sm">
-                    fibidy.com/store/{tenantSlug}
+                    {tenantSlug}.fibidy.com
                   </p>
                   <p className="text-sm text-muted-foreground line-clamp-2">
                     {settings.metaDescription || tenantDescription || 'Deskripsi toko akan muncul di sini...'}

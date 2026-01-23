@@ -17,6 +17,7 @@ export * from './product-pagination';
 export * from './product-gallery';
 export * from './product-info';
 export * from './product-actions';
+export * from './shipping-info';
 export * from './store-skeleton';
 
 // Actions

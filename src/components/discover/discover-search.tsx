@@ -20,7 +20,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import { getCategoryList } from '@/config/categories';
 
 // ══════════════════════════════════════════════════════════════
@@ -49,14 +49,6 @@ interface DiscoverSearchProps {
 // ══════════════════════════════════════════════════════════════
 // CONSTANTS
 // ══════════════════════════════════════════════════════════════
-
-const TRENDING_SEARCHES: SearchSuggestion[] = [
-  { type: 'trending', label: 'Warung Makan', value: 'warung makan' },
-  { type: 'trending', label: 'Laundry Kiloan', value: 'laundry kiloan' },
-  { type: 'trending', label: 'Bengkel Motor', value: 'bengkel motor' },
-  { type: 'trending', label: 'Salon Kecantikan', value: 'salon kecantikan' },
-  { type: 'trending', label: 'Catering', value: 'catering' },
-];
 
 const RECENT_SEARCHES_KEY = 'fibidy_recent_searches';
 const MAX_RECENT_SEARCHES = 5;
@@ -166,18 +158,7 @@ export function DiscoverSearch({
         });
       }
     } else {
-      const recentSuggestions: SearchSuggestion[] = recentSearches.slice(0, 3).map((s) => ({
-        type: 'recent',
-        label: s,
-        value: s,
-      }));
-
-      if (recentSuggestions.length > 0) {
-        result.push(...recentSuggestions);
-      }
-
-      result.push(...TRENDING_SEARCHES.slice(0, 5 - recentSuggestions.length));
-
+      // Only show 4 popular categories
       const popularCategories = categories.slice(0, 4).map((cat): SearchSuggestion => ({
         type: 'category',
         label: cat.label,
@@ -198,14 +179,27 @@ export function DiscoverSearch({
       const trimmed = searchQuery.trim();
       if (!trimmed) return;
 
-      saveRecentSearch(trimmed);
-      setRecentSearches(getRecentSearches());
+      // Check if query matches a category
+      const matchingCategory = categories.find(
+        (cat) =>
+          cat.label.toLowerCase() === trimmed.toLowerCase() ||
+          cat.labelShort.toLowerCase() === trimmed.toLowerCase()
+      );
+
       setIsFocused(false);
 
-      onSearch?.(trimmed);
-      router.push(`/discover?q=${encodeURIComponent(trimmed)}`);
+      if (matchingCategory) {
+        // Redirect to category page
+        router.push(`/discover/${categoryKeyToSlug(matchingCategory.key)}`);
+      } else {
+        // Redirect to search results
+        saveRecentSearch(trimmed);
+        setRecentSearches(getRecentSearches());
+        onSearch?.(trimmed);
+        router.push(`/discover?q=${encodeURIComponent(trimmed)}`);
+      }
     },
-    [onSearch, router]
+    [categories, onSearch, router]
   );
 
   const handleCategoryClick = useCallback(
@@ -397,29 +391,7 @@ export function DiscoverSearch({
           )}
           style={{ zIndex: 99999 }}
         >
-          {!query && recentSearches.length > 0 && (
-            <div className="flex items-center justify-between px-4 py-2 border-b bg-muted/30">
-              <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <Clock className="h-3 w-3" />
-                Pencarian Terakhir
-              </span>
-              <button
-                onClick={handleClearRecent}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Hapus Semua
-              </button>
-            </div>
-          )}
 
-          {!query && recentSearches.length === 0 && (
-            <div className="px-4 py-2 border-b bg-muted/30">
-              <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                <TrendingUp className="h-3 w-3" />
-                Trending
-              </span>
-            </div>
-          )}
 
           <div className="py-2 max-h-80 overflow-y-auto">
             {suggestions.map((suggestion, index) => {
@@ -461,18 +433,6 @@ export function DiscoverSearch({
             })}
           </div>
 
-          <div className="px-4 py-3 border-t bg-muted/30 flex items-center justify-between">
-            <span className="text-xs text-muted-foreground">
-              Tekan Enter untuk mencari
-            </span>
-            <Link
-              href="/discover"
-              className="text-xs text-primary hover:underline flex items-center gap-1"
-            >
-              Lihat Semua UMKM
-              <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
         </div>
       )}
     </div>

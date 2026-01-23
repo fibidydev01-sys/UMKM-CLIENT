@@ -94,11 +94,12 @@ export function mergeLandingConfig(
   const result: TenantLandingConfig = {
     enabled: tenant.enabled ?? defaults.enabled,
     template: tenant.template ?? defaults.template,
+    sectionOrder: tenant.sectionOrder ?? defaults.sectionOrder, // 🚀 NEW: Preserve section order
     hero: {
       enabled: tenant.hero?.enabled ?? defaults.hero?.enabled ?? false,
       title: tenant.hero?.title ?? defaults.hero?.title,
       subtitle: tenant.hero?.subtitle ?? defaults.hero?.subtitle,
-      variant: tenant.hero?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.hero?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         ...(defaults.hero?.config || {}),
         ...(tenant.hero?.config || {}),
@@ -108,7 +109,7 @@ export function mergeLandingConfig(
       enabled: tenant.about?.enabled ?? defaults.about?.enabled ?? false,
       title: tenant.about?.title ?? defaults.about?.title,
       subtitle: tenant.about?.subtitle ?? defaults.about?.subtitle,
-      variant: tenant.about?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.about?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         ...(defaults.about?.config || {}),
         ...(tenant.about?.config || {}),
@@ -118,7 +119,7 @@ export function mergeLandingConfig(
       enabled: tenant.products?.enabled ?? defaults.products?.enabled ?? false,
       title: tenant.products?.title ?? defaults.products?.title,
       subtitle: tenant.products?.subtitle ?? defaults.products?.subtitle,
-      variant: tenant.products?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.products?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         ...(defaults.products?.config || {}),
         ...(tenant.products?.config || {}),
@@ -128,7 +129,7 @@ export function mergeLandingConfig(
       enabled: tenant.testimonials?.enabled ?? defaults.testimonials?.enabled ?? false,
       title: tenant.testimonials?.title ?? defaults.testimonials?.title,
       subtitle: tenant.testimonials?.subtitle ?? defaults.testimonials?.subtitle,
-      variant: tenant.testimonials?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.testimonials?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         items: finalTestimonialItems,
       },
@@ -137,7 +138,7 @@ export function mergeLandingConfig(
       enabled: tenant.contact?.enabled ?? defaults.contact?.enabled ?? false,
       title: tenant.contact?.title ?? defaults.contact?.title,
       subtitle: tenant.contact?.subtitle ?? defaults.contact?.subtitle,
-      variant: tenant.contact?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.contact?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         ...(defaults.contact?.config || {}),
         ...(tenant.contact?.config || {}),
@@ -147,7 +148,7 @@ export function mergeLandingConfig(
       enabled: tenant.cta?.enabled ?? defaults.cta?.enabled ?? false,
       title: tenant.cta?.title ?? defaults.cta?.title,
       subtitle: tenant.cta?.subtitle ?? defaults.cta?.subtitle,
-      variant: tenant.cta?.variant, // 🔥 NO FALLBACK - preserve user choice!
+      block: tenant.cta?.block, // 🔥 NO FALLBACK - preserve user choice!
       config: {
         ...(defaults.cta?.config || {}),
         ...(tenant.cta?.config || {}),

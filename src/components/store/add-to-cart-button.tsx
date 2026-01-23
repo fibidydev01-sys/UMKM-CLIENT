@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Plus, Minus, ShoppingCart, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCartStore, useItemQty } from '@/stores';
-import { cn } from '@/lib/cn';
+import { cn } from '@/lib/utils';
 import type { Product } from '@/types';
 
 interface AddToCartButtonProps {
