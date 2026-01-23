@@ -44,7 +44,7 @@ export default function LandingBuilderPage() {
   // UI State
   const [activeSection, setActiveSection] = useState<SectionType>('hero'); // 🚀 Default to hero so drawer shows
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [drawerState, setDrawerState] = useState<DrawerState>('expanded'); // 🚀 Start EXPANDED to show blocks immediately
+  const [drawerState, setDrawerState] = useState<DrawerState>('collapsed'); // Start collapsed, user can expand manually
   const [loadingComplete, setLoadingComplete] = useState(false); // 🚀 Track when loading screen dismissed
 
   // ============================================================================
