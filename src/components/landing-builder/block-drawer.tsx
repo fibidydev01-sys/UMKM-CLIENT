@@ -233,16 +233,18 @@ export function BlockDrawer({
                           height: `${virtualRow.size}px`,
                           transform: `translateY(${virtualRow.start}px)`,
                         }}
-                        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-w-4xl mx-auto"
+                        className="flex justify-center"
                       >
-                        {rowBlocks.map((block) => (
-                          <BlockCard
-                            key={block.value}
-                            block={block}
-                            isSelected={currentBlock === block.value}
-                            onSelect={handleBlockSelect}
-                          />
-                        ))}
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full max-w-4xl">
+                          {rowBlocks.map((block) => (
+                            <BlockCard
+                              key={block.value}
+                              block={block}
+                              isSelected={currentBlock === block.value}
+                              onSelect={handleBlockSelect}
+                            />
+                          ))}
+                        </div>
                       </div>
                     );
                   })}
