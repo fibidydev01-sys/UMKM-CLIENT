@@ -137,11 +137,16 @@ const nextConfig: NextConfig = {
   },
 
   // ==========================================
-  // REDIRECTS (Optional)
+  // REDIRECTS
   // ==========================================
   async redirects() {
     return [
-      // Add redirects here if needed
+      // Redirect root to /discover
+      {
+        source: '/',
+        destination: '/discover',
+        permanent: false, // 307 temporary redirect (better for SEO flexibility)
+      },
     ];
   },
 
