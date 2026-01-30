@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ChevronRight, Circle } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-import { OptimizedImage } from '@/components/ui/optimized-image';
-import { Card } from '@/components/ui/card';
-import Silk from '@/components/ui/silk/Silk';
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import LightPillar from '@/components/ui/light-pillar/LightPillar';
 
 interface Hero5Props {
   title: string;
@@ -19,44 +19,43 @@ interface Hero5Props {
   storeName?: string;
 }
 
+const testimonialAvatars = [
+  { initials: 'JD', color: 'bg-blue-500' },
+  { initials: 'SM', color: 'bg-green-500' },
+  { initials: 'AR', color: 'bg-purple-500' },
+  { initials: 'KL', color: 'bg-pink-500' },
+  { initials: 'MT', color: 'bg-orange-500' },
+];
+
 export function Hero5({
   title,
   subtitle,
   ctaText,
   ctaLink = '/products',
   showCta = true,
-  backgroundImage,
-  logo,
 }: Hero5Props) {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-background py-20">
-      {/* Background - Silk */}
-      <div className="absolute inset-0 opacity-15">
-        <Silk speed={3} scale={1.5} color="#7B7481" noiseIntensity={1.2} rotation={0} />
+    <section className="relative min-h-screen overflow-hidden bg-background flex items-center justify-center">
+      {/* Background - LightPillar */}
+      <div className="absolute inset-0 opacity-25">
+        <LightPillar
+          topColor="#5227FF"
+          bottomColor="#FF9FFC"
+          intensity={1.2}
+          rotationSpeed={0.3}
+          glowAmount={0.006}
+          pillarWidth={2.5}
+          quality="high"
+        />
       </div>
 
-      <div className="container relative z-10 px-4 sm:px-6 lg:px-8">
-        {/* Top Content */}
+      <div className="container relative z-10 px-4 sm:px-6 lg:px-8 py-20">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="max-w-4xl mx-auto text-center space-y-8 mb-16"
+          className="max-w-5xl mx-auto text-center space-y-10"
         >
-          {/* Logo Small */}
-          {logo && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.5 }}
-              className="flex justify-center"
-            >
-              <div className="relative w-16 h-16 rounded-xl overflow-hidden shadow-lg ring-2 ring-border">
-                <OptimizedImage src={logo} alt="Logo" fill className="object-cover" />
-              </div>
-            </motion.div>
-          )}
-
           {/* Title */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -73,7 +72,7 @@ export function Hero5({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto"
+              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
             >
               {subtitle}
             </motion.p>
@@ -87,49 +86,51 @@ export function Hero5({
               transition={{ delay: 0.4, duration: 0.6 }}
             >
               <Link href={ctaLink}>
-                <InteractiveHoverButton className="min-w-[180px] text-base px-8 py-5 font-semibold gap-2">
+                <InteractiveHoverButton className="min-w-[200px] text-base md:text-lg px-8 py-5 font-semibold">
                   {ctaText}
-                  <ChevronRight className="h-5 w-5" />
                 </InteractiveHoverButton>
               </Link>
             </motion.div>
           )}
-        </motion.div>
 
-        {/* Large Image with Dot Pattern */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          className="max-w-4xl mx-auto"
-        >
-          <Card className="relative h-[400px] md:h-[500px] overflow-hidden bg-muted">
-            {backgroundImage ? (
-              <OptimizedImage
-                src={backgroundImage}
-                alt={title}
-                fill
-                priority
-                className="object-cover"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                {/* Dot Pattern */}
-                <div className="grid grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-3 md:gap-4 p-8">
-                  {[...Array(128)].map((_, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0 }}
-                      animate={{ opacity: 0.3, scale: 1 }}
-                      transition={{ delay: 0.6 + (i * 0.005), duration: 0.3 }}
-                    >
-                      <Circle className="h-2 w-2 md:h-3 md:w-3 fill-foreground text-foreground" />
-                    </motion.div>
-                  ))}
-                </div>
+          {/* Social Proof */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+            className="flex flex-col items-center gap-6 pt-8"
+          >
+            {/* Avatars */}
+            <div className="flex items-center -space-x-3">
+              {testimonialAvatars.map((avatar, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6 + index * 0.1, duration: 0.3 }}
+                >
+                  <Avatar className={`h-12 w-12 border-2 border-background ${avatar.color}`}>
+                    <AvatarFallback className="text-white font-semibold">
+                      {avatar.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Rating */}
+            <div className="flex items-center gap-4">
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-5 w-5 fill-yellow-500 text-yellow-500" />
+                ))}
               </div>
-            )}
-          </Card>
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-bold text-foreground">5.0</span>
+                <span className="text-sm text-muted-foreground">from 200+ reviews</span>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
     </section>
