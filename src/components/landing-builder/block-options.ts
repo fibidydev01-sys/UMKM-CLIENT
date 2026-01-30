@@ -23,40 +23,9 @@
  * ============================================================================
  */
 
-import {
-  Grid3x3,
-  Film,
-  Move,
-  Sparkles,
-  GlassWater,
-  LayoutGrid,
-  Cloud,
-  SplitSquareHorizontal,
-  Circle,
-  Clock,
-  BookOpen,
-  ArrowDownUp,
-  Quote,
-  Hash,
-  MapPin,
-  Mail,
-  Megaphone,
-  ThumbsUp,
-  Video,
-  List,
-  Focus,
-  Timer,
-  Star,
-  MessageSquare,
-  Zap,
-  Layers,
-  type LucideIcon,
-} from 'lucide-react';
-
 export interface BlockOption {
   value: string; // e.g., 'hero1', 'hero201'
   label: string; // e.g., 'Hero 1', 'Hero 201'
-  icon: LucideIcon;
 }
 
 // ============================================================================
@@ -70,39 +39,6 @@ export interface BlockOption {
 const BLOCKS_PER_SECTION = 200; // hero1-hero200, about1-about200, etc.
 
 // ============================================================================
-// ICON POOL FOR ROTATION
-// ============================================================================
-
-const ICON_POOL: LucideIcon[] = [
-  Grid3x3,
-  Film,
-  Move,
-  Sparkles,
-  GlassWater,
-  LayoutGrid,
-  Cloud,
-  SplitSquareHorizontal,
-  Circle,
-  Clock,
-  BookOpen,
-  ArrowDownUp,
-  Quote,
-  Hash,
-  MapPin,
-  Mail,
-  Megaphone,
-  ThumbsUp,
-  Video,
-  List,
-  Focus,
-  Timer,
-  Star,
-  MessageSquare,
-  Zap,
-  Layers,
-];
-
-// ============================================================================
 // SMART GENERATION FUNCTION
 // ============================================================================
 
@@ -112,7 +48,7 @@ type SectionType = 'hero' | 'about' | 'products' | 'testimonials' | 'contact' | 
  * 🚀 Generate block options for a section
  *
  * Creates options for blocks 1 to BLOCKS_PER_SECTION
- * Icons rotate through ICON_POOL
+ * Text only (no icons, no emoji)
  *
  * @param section - Section name (hero, about, products, etc.)
  * @param count - Number of blocks (default: BLOCKS_PER_SECTION)
@@ -125,7 +61,6 @@ function generateBlocks(section: SectionType, count: number = BLOCKS_PER_SECTION
     blocks.push({
       value: `${section}${i}`,
       label: `${capitalize(section)} ${i}`,
-      icon: ICON_POOL[(i - 1) % ICON_POOL.length], // Rotate through icons
     });
   }
 

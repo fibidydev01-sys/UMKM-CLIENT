@@ -7,6 +7,7 @@
 
 'use client';
 
+import React from 'react';
 // Button removed - using div to avoid nested button issue with Switch
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
@@ -144,18 +145,28 @@ function SortableSectionItem({
       )}
     >
       <div
+        {...attributes}
+        {...listeners}
         className={cn(
           // Base button styles
           'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium',
           'transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-          'disabled:pointer-events-none disabled:opacity-50',
           // Variant styles
           isActive ? 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80' : 'hover:bg-accent hover:text-accent-foreground',
           // Custom styles
-          'w-full h-auto transition-all justify-center items-center gap-2 py-3 px-2 cursor-pointer',
-          isActive && 'bg-primary/10 text-primary hover:bg-primary/15'
+          'w-full h-auto transition-all justify-center items-center gap-2 py-3 px-2',
+          isActive && 'bg-primary/10 text-primary hover:bg-primary/15',
+          // ✅ ALWAYS draggable (even when disabled)
+          'cursor-grab active:cursor-grabbing',
+          // ✅ Disabled state = visual only (grayscale + opacity)
+          !enabled && 'opacity-50 grayscale'
         )}
-        onClick={() => onSectionClick(section.id)}
+        onClick={(e) => {
+          // ✅ Only trigger click if not dragging (dnd-kit handles delay)
+          if (!isDragging) {
+            onSectionClick(section.id);
+          }
+        }}
         title={section.label} // Always show tooltip
         role="button"
         tabIndex={0}
@@ -170,13 +181,10 @@ function SortableSectionItem({
         {!collapsed && (
           <>
             <div
-              {...attributes}
-              {...listeners}
               className={cn(
-                'cursor-grab active:cursor-grabbing transition-opacity',
+                'transition-opacity',
                 'opacity-0 group-hover:opacity-100'
               )}
-              onClick={(e) => e.stopPropagation()}
             >
               <GripVertical className="h-4 w-4 text-muted-foreground" />
             </div>
@@ -197,7 +205,13 @@ function SortableSectionItem({
             <Switch
               checked={enabled}
               onCheckedChange={(checked) => onToggleSection(section.id, checked)}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              onPointerDown={(e) => {
+                // ✅ Prevent drag when clicking toggle
+                e.stopPropagation();
+              }}
               className="scale-75"
             />
           </>
@@ -218,7 +232,12 @@ export function BuilderSidebar({
   onToggleSection,
 }: BuilderSidebarProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      // ✅ Distance-based activation for fast drag (no delay!)
+      activationConstraint: {
+        distance: 8, // 8px movement = drag, 0px = click (instant & responsive!)
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -245,8 +264,8 @@ export function BuilderSidebar({
     <div
       className={cn(
         'border-r bg-muted/30 p-3 space-y-2 transition-all duration-300',
-        // 🚀 Icon-only sidebar - horizontal layout with 2 separators
-        collapsed ? 'w-16' : 'w-36',
+        // 🚀 Full collapse (w-0) for maximum live preview space!
+        collapsed ? 'w-0 p-0 border-0 opacity-0 overflow-hidden' : 'w-36',
         className
       )}
     >

@@ -6,7 +6,7 @@ import { ChevronRight, Circle } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Card } from '@/components/ui/card';
-import Silk from '@/components/ui/silk/silk';
+import Silk from '@/components/ui/silk/Silk';
 
 interface Hero5Props {
   title: string;

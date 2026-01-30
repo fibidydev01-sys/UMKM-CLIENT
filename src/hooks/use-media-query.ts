@@ -25,7 +25,7 @@ export function useMediaQuery(query: string): boolean {
 }
 
 // ==========================================
-// BREAKPOINT HOOKS (unchanged)
+// BREAKPOINT HOOKS
 // ==========================================
 
 export function useIsMobile(): boolean {

@@ -106,4 +106,18 @@ export const ordersApi = {
   }> => {
     return api.get('/orders/stats', { params: { period } });
   },
+
+  /**
+   * Get sample order for preview (auto-reply forms)
+   * GET /orders/sample/preview
+   */
+  getSampleForPreview: async (): Promise<{
+    name: string;
+    phone: string;
+    orderNumber: string;
+    total: string;
+    trackingLink: string;
+  }> => {
+    return api.get('/orders/sample/preview');
+  },
 };

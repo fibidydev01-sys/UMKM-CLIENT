@@ -38,6 +38,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
     { label: 'Beranda', href: urls.home },
     { label: 'Tentang', href: urls.path('/about') },
     { label: 'Produk', href: urls.products() },
+    { label: 'Lacak Pesanan', href: urls.path('/track') },
     { label: 'Testimoni', href: urls.path('/testimonials') },
     { label: 'Kontak', href: urls.path('/contact') },
   ];
@@ -139,6 +140,19 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                 )}
               >
                 <Link href={urls.products()}>Produk</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+
+            {/* LACAK PESANAN */}
+            <NavigationMenuItem>
+              <NavigationMenuLink
+                asChild
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  pathname.startsWith(urls.path('/track')) && 'bg-primary/10 text-primary'
+                )}
+              >
+                <Link href={urls.path('/track')}>Lacak Pesanan</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
 

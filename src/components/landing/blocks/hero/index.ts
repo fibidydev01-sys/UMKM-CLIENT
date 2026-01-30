@@ -8,4 +8,3 @@ export * from './hero7';
 export * from './hero8';
 export * from './hero9';
 export * from './hero10';
-export * from './hero11';

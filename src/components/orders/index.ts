@@ -2,8 +2,9 @@
 // ORDERS COMPONENTS INDEX
 // ==========================================
 
-// Tables
+// Tables & Grid
 export { OrdersTable } from './orders-table';
+export { OrdersGrid, OrdersGridSkeleton } from './orders-grid';
 export { OrderItemsTable } from './order-items-table';
 
 // Detail & Forms

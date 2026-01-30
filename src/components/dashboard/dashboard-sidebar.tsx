@@ -1,35 +1,45 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Package,
-  Users,
-  ShoppingCart,
   Settings,
   Store,
   ChevronRight,
+  LogOut,
+  Send,
+  Menu,
+  Layout,
+  Moon,
+  Sun,
+  Compass,
+  Film,
   type LucideIcon,
 } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useAuth, useLogout } from '@/hooks';
+import { OnboardingDropdown } from '@/components/onboarding';
 
 // ==========================================
 // NAVIGATION ITEMS
@@ -58,39 +68,19 @@ const navigation: NavGroup[] = [
         icon: LayoutDashboard,
       },
       {
-        title: 'Produk',
-        href: '/dashboard/products',
-        icon: Package,
-        children: [
-          { title: 'Semua Produk', href: '/dashboard/products' },
-          { title: 'Tambah Produk', href: '/dashboard/products/new' },
-          { title: 'Kategori', href: '/dashboard/products/categories' },
-        ],
+        title: 'Inbox',
+        href: '/dashboard/inbox',
+        icon: Send,
       },
       {
-        title: 'Pelanggan',
-        href: '/dashboard/customers',
-        icon: Users,
+        title: 'Explore',
+        href: '/dashboard/explore',
+        icon: Compass,
       },
       {
-        title: 'Pesanan',
-        href: '/dashboard/orders',
-        icon: ShoppingCart,
-      },
-    ],
-  },
-  {
-    title: 'Lainnya',
-    items: [
-      {
-        title: 'Lihat Toko',
-        href: '/store',
-        icon: Store,
-      },
-      {
-        title: 'Pengaturan',
-        href: '/dashboard/settings',
-        icon: Settings,
+        title: 'Reels',
+        href: '/dashboard/reels',
+        icon: Film,
       },
     ],
   },
@@ -103,6 +93,32 @@ const navigation: NavGroup[] = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const { tenant } = useAuth();
+  const { logout } = useLogout();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', newTheme ? 'dark' : 'light');
+  };
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -113,11 +129,10 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Navigation */}
-      <SidebarContent className="pt-4">
+      {/* Navigation - Centered vertically */}
+      <SidebarContent className="flex flex-col justify-center">
         {navigation.map((group) => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
             <SidebarMenu>
               {group.items.map((item) => {
                 const active = isActive(item.href);
@@ -133,10 +148,7 @@ export function DashboardSidebar() {
                     >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton
-                            tooltip={item.title}
-                            isActive={active}
-                          >
+                          <SidebarMenuButton isActive={active}>
                             <item.icon className="h-4 w-4" />
                             <span>{item.title}</span>
                             <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
@@ -146,10 +158,7 @@ export function DashboardSidebar() {
                           <SidebarMenuSub>
                             {item.children.map((child) => (
                               <SidebarMenuSubItem key={child.href}>
-                                <SidebarMenuSubButton
-                                  asChild
-                                  isActive={pathname === child.href}
-                                >
+                                <SidebarMenuSubButton asChild isActive={pathname === child.href}>
                                   <Link href={child.href}>
                                     <span>{child.title}</span>
                                   </Link>
@@ -166,11 +175,7 @@ export function DashboardSidebar() {
                 // Simple item
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip={item.title}
-                      isActive={active}
-                    >
+                    <SidebarMenuButton asChild isActive={active}>
                       <Link href={item.href}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
@@ -184,13 +189,77 @@ export function DashboardSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+              {/* Onboarding Dropdown - below Inbox */}
+              <SidebarMenuItem>
+                <OnboardingDropdown />
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroup>
         ))}
       </SidebarContent>
 
-      {/* Rail for collapsed state */}
-      <SidebarRail />
+      {/* Footer with Hamburger Menu */}
+      <SidebarFooter>
+        <SidebarMenu>
+          {/* Hamburger Menu Button */}
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton
+                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                >
+                  <Menu className="h-4 w-4" />
+                  <span>Menu</span>
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-56 rounded-lg"
+                side="top"
+                align="start"
+                sideOffset={4}
+              >
+                <DropdownMenuItem asChild>
+                  <Link href="/landing-builder">
+                    <Layout className="mr-2 h-4 w-4" />
+                    Landing Builder
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Pengaturan
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href={`/store/${tenant?.slug}`}>
+                    <Store className="mr-2 h-4 w-4" />
+                    Lihat Toko
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={toggleTheme}>
+                  {isDark ? (
+                    <>
+                      <Sun className="mr-2 h-4 w-4" />
+                      Mode Terang
+                    </>
+                  ) : (
+                    <>
+                      <Moon className="mr-2 h-4 w-4" />
+                      Mode Gelap
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={logout} className="text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Keluar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

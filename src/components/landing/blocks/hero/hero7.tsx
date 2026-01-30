@@ -6,7 +6,7 @@ import { ChevronRight, Circle } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Card } from '@/components/ui/card';
-import ColorBlends from '@/components/ui/color-blends/ColorBends';
+import ColorBlends from '@/components/ui/color-bends/ColorBends';
 
 interface Hero7Props {
   title: string;

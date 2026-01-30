@@ -2,7 +2,8 @@
 // SETTINGS COMPONENTS - Barrel Export
 // ============================================================================
 
-export { SettingsNav } from './settings-nav';
+export { SettingsLayout } from './settings-layout';
+export { SettingsNav, SettingsMobileTrigger } from './settings-nav';
 export { StoreInfoForm } from './store-info-form';
 export { PaymentSettings } from './payment-settings';
 export { ShippingSettings } from './shipping-settings';

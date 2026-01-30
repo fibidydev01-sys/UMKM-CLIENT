@@ -5,6 +5,8 @@ import {
   ShoppingCart,
   Settings,
   Store,
+  MessageSquare,
+  Bot,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -51,6 +53,21 @@ export const dashboardNav: NavGroup[] = [
         title: 'Pesanan',
         href: '/dashboard/orders',
         icon: ShoppingCart,
+      },
+    ],
+  },
+  {
+    title: 'WhatsApp Chat',
+    items: [
+      {
+        title: 'Inbox',
+        href: '/dashboard/inbox',
+        icon: MessageSquare,
+      },
+      {
+        title: 'Auto-Reply',
+        href: '/dashboard/auto-reply',
+        icon: Bot,
       },
     ],
   },

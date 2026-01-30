@@ -14,6 +14,7 @@ import {
   Package,
 } from 'lucide-react';
 import { Drawer } from 'vaul';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -121,7 +122,22 @@ Ada yang bisa kami bantu?`;
       <Drawer.Root open={open} onOpenChange={onOpenChange}>
         <Drawer.Portal>
           <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-          <Drawer.Content className="bg-background flex flex-col rounded-t-[10px] h-[90vh] mt-24 fixed bottom-0 left-0 right-0 z-[100] outline-none">
+          <Drawer.Content
+            className="bg-background flex flex-col rounded-t-[10px] h-[90vh] mt-24 fixed bottom-0 left-0 right-0 z-[100] outline-none"
+            aria-describedby="order-drawer-description"
+          >
+            {/* Accessibility */}
+            <Drawer.Title asChild>
+              <VisuallyHidden.Root>
+                {orderListItem?.orderNumber ? `Preview Pesanan #${orderListItem.orderNumber}` : 'Preview Pesanan'}
+              </VisuallyHidden.Root>
+            </Drawer.Title>
+            <Drawer.Description asChild>
+              <VisuallyHidden.Root id="order-drawer-description">
+                Lihat detail pesanan {orderListItem?.orderNumber ? `#${orderListItem.orderNumber}` : ''}
+              </VisuallyHidden.Root>
+            </Drawer.Description>
+
             {/* Handle Bar */}
             <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/20 mt-4 mb-4" />
 

@@ -2,15 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PageHeader } from '@/components/dashboard';
-import { ProductsTable } from '@/components/products';
+import { ProductsTable, ProductsGrid, ProductsGridSkeleton } from '@/components/products';
 import { productsApi, getErrorMessage } from '@/lib/api';
 
 import type { Product } from '@/types';
+
+type ViewMode = 'list' | 'grid';
 
 // ============================================================================
 // TYPES
@@ -55,6 +58,7 @@ export default function ProductsPage() {
     isRefreshing: false,
     error: null,
   });
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   // ✅ FIX 1: Use ref to track if initial fetch has been done
   const hasFetched = useRef(false);
@@ -144,16 +148,31 @@ export default function ProductsPage() {
   // ---------------------------------------------------------------------------
   // Render
   // ---------------------------------------------------------------------------
+  // View mode toggle component
+  const ViewToggle = () => (
+    <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+      <ToggleGroupItem value="list" aria-label="List view" size="sm">
+        <List className="h-4 w-4" />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="grid" aria-label="Grid view" size="sm">
+        <LayoutGrid className="h-4 w-4" />
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
+
   if (isLoading) {
     return (
       <>
         <PageHeader title="Produk" description="Kelola produk toko Anda">
-          <Button disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Produk
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button disabled>
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Produk
+            </Button>
+          </div>
         </PageHeader>
-        <ProductsTableSkeleton />
+        {viewMode === 'list' ? <ProductsTableSkeleton /> : <ProductsGridSkeleton />}
       </>
     );
   }
@@ -162,12 +181,15 @@ export default function ProductsPage() {
     return (
       <>
         <PageHeader title="Produk" description="Kelola produk toko Anda">
-          <Button asChild>
-            <Link href="/dashboard/products/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Produk
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button asChild>
+              <Link href="/dashboard/products/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Produk
+              </Link>
+            </Button>
+          </div>
         </PageHeader>
 
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
@@ -191,20 +213,31 @@ export default function ProductsPage() {
   return (
     <>
       <PageHeader title="Produk" description="Kelola produk toko Anda">
-        <Button asChild>
-          <Link href="/dashboard/products/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Produk
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ViewToggle />
+          <Button asChild>
+            <Link href="/dashboard/products/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Produk
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
 
-      <ProductsTable
-        products={products}
-        categories={categories}
-        isRefreshing={isRefreshing}
-        onRefresh={handleRefresh}
-      />
+      {viewMode === 'list' ? (
+        <ProductsTable
+          products={products}
+          categories={categories}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      ) : (
+        <ProductsGrid
+          products={products}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
     </>
   );
 }

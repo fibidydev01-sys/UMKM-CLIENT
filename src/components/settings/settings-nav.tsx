@@ -1,22 +1,19 @@
 'use client';
 
-import {
-  Store,
-  CreditCard,
-  Truck,
-  Search,
-  Menu,
-  type LucideIcon,
-} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 // ============================================================================
@@ -26,14 +23,11 @@ import { cn } from '@/lib/utils';
 export interface SettingsMenuItem {
   key: string;
   label: string;
-  icon: LucideIcon;
 }
 
 interface SettingsNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  sheetOpen: boolean;
-  onSheetOpenChange: (open: boolean) => void;
 }
 
 // ============================================================================
@@ -41,87 +35,95 @@ interface SettingsNavProps {
 // ============================================================================
 
 export const SETTINGS_MENU: SettingsMenuItem[] = [
-  { key: 'store', label: 'Toko', icon: Store },
-  { key: 'seo', label: 'SEO', icon: Search },
-  { key: 'payment', label: 'Pembayaran', icon: CreditCard },
-  { key: 'shipping', label: 'Pengiriman', icon: Truck },
+  { key: 'store', label: 'Toko' },
+  { key: 'seo', label: 'SEO' },
+  { key: 'payment', label: 'Pembayaran' },
+  { key: 'shipping', label: 'Pengiriman' },
 ];
 
 // ============================================================================
-// COMPONENT
+// MOBILE TRIGGER COMPONENT (text-based, no icons)
 // ============================================================================
 
-export function SettingsNav({
-  activeTab,
-  onTabChange,
-  sheetOpen,
-  onSheetOpenChange,
-}: SettingsNavProps) {
-  const currentItem = SETTINGS_MENU.find((m) => m.key === activeTab);
-  const CurrentIcon = currentItem?.icon || Store;
-  const currentLabel = currentItem?.label || 'Pengaturan';
+export function SettingsMobileTrigger() {
+  const { setOpenMobile, openMobile } = useSidebar();
+
+  return (
+    <div className="md:hidden mb-4">
+      <Button
+        variant="outline"
+        className="w-full justify-between"
+        onClick={() => setOpenMobile(!openMobile)}
+      >
+        <span>Menu Pengaturan</span>
+        <span>&#9776;</span>
+      </Button>
+    </div>
+  );
+}
+
+// ============================================================================
+// SIDEBAR NAVIGATION COMPONENT
+// ============================================================================
+
+export function SettingsNav({ activeTab, onTabChange }: SettingsNavProps) {
+  const router = useRouter();
+  const { setOpenMobile } = useSidebar();
 
   const handleTabClick = (key: string) => {
+    // Special handling for 'store' tab - navigate to /settings/toko instead of state switching
+    if (key === 'store') {
+      router.push('/settings/toko');
+      setOpenMobile(false);
+      return;
+    }
+
     onTabChange(key);
-    onSheetOpenChange(false);
+    setOpenMobile(false);
   };
 
   return (
-    <>
-      {/* Mobile: Sheet Navigation */}
-      <div className="md:hidden mb-4">
-        <Sheet open={sheetOpen} onOpenChange={onSheetOpenChange}>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="w-full justify-between">
-              <span className="flex items-center gap-2">
-                <CurrentIcon className="h-4 w-4" />
-                {currentLabel}
-              </span>
-              <Menu className="h-4 w-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72">
-            <SheetHeader>
-              <SheetTitle>Pengaturan</SheetTitle>
-            </SheetHeader>
-            <nav className="mt-6 space-y-1">
-              {SETTINGS_MENU.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.key;
+    <Sidebar className="border-r min-h-screen">
+      <SidebarHeader className="border-b px-4 py-3">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => router.push('/dashboard')}
+            className="h-8 w-8 p-0"
+          >
+            &larr;
+          </Button>
+          <div>
+            <h2 className="font-semibold text-lg">Pengaturan</h2>
+            <p className="text-sm text-muted-foreground">Kelola preferensi toko</p>
+          </div>
+        </div>
+      </SidebarHeader>
 
-                return (
-                  <button
-                    key={item.key}
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {SETTINGS_MENU.map((item) => (
+                <SidebarMenuItem key={item.key}>
+                  <SidebarMenuButton
+                    isActive={activeTab === item.key}
                     onClick={() => handleTabClick(item.key)}
                     className={cn(
-                      'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors relative',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      'w-full justify-start',
+                      activeTab === item.key && 'bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground'
                     )}
                   >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Desktop: Tabs */}
-      <TabsList className="hidden md:grid w-full grid-cols-4 lg:w-auto">
-        {SETTINGS_MENU.map((item) => {
-          const Icon = item.icon;
-          return (
-            <TabsTrigger key={item.key} value={item.key} className="gap-2 relative">
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{item.label}</span>
-            </TabsTrigger>
-          );
-        })}
-      </TabsList>
-    </>
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
   );
 }

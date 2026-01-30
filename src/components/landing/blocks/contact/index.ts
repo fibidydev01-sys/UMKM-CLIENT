@@ -8,4 +8,3 @@ export * from './contact7';
 export * from './contact8';
 export * from './contact9';
 export * from './contact10';
-export * from './contact11';

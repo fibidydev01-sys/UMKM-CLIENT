@@ -1,14 +1,5 @@
 'use client';
 
-import {
-  Loader2,
-  Save,
-  Plus,
-  Trash2,
-  Building2,
-  Wallet,
-  Banknote,
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -129,9 +120,7 @@ export function PaymentSettings({
       <Card>
         <CardHeader>
           <CardTitle>Mata Uang & Pajak</CardTitle>
-          <CardDescription>
-            Konfigurasi mata uang dan tarif pajak untuk toko Anda.
-          </CardDescription>
+          <CardDescription>Konfigurasi mata uang dan tarif pajak untuk toko Anda.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading || !settings ? (
@@ -182,17 +171,11 @@ export function PaymentSettings({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Rekening Bank
-              </CardTitle>
-              <CardDescription>
-                Daftar rekening bank untuk transfer pembayaran.
-              </CardDescription>
+              <CardTitle>Rekening Bank</CardTitle>
+              <CardDescription>Daftar rekening bank untuk transfer pembayaran.</CardDescription>
             </div>
             <Button size="sm" onClick={onAddBank}>
-              <Plus className="h-4 w-4 mr-1" />
-              Tambah
+              + Tambah
             </Button>
           </div>
         </CardHeader>
@@ -204,7 +187,7 @@ export function PaymentSettings({
             </div>
           ) : settings.paymentMethods.bankAccounts.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Building2 className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-4xl mb-3 opacity-50">&#127974;</p>
               <p>Belum ada rekening bank</p>
               <p className="text-sm">Tambahkan rekening untuk menerima pembayaran transfer</p>
             </div>
@@ -219,10 +202,7 @@ export function PaymentSettings({
                   )}
                 >
                   <div className="flex items-center gap-4">
-                    <Switch
-                      checked={bank.enabled}
-                      onCheckedChange={() => onToggleBank(bank.id)}
-                    />
+                    <Switch checked={bank.enabled} onCheckedChange={() => onToggleBank(bank.id)} />
                     <div>
                       <p className="font-medium">{bank.bank}</p>
                       <p className="text-sm text-muted-foreground">
@@ -240,7 +220,7 @@ export function PaymentSettings({
                       className="text-destructive hover:text-destructive"
                       onClick={() => onDeleteBank(bank.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Hapus
                     </Button>
                   </div>
                 </div>
@@ -255,17 +235,11 @@ export function PaymentSettings({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
-                E-Wallet
-              </CardTitle>
-              <CardDescription>
-                Daftar e-wallet untuk menerima pembayaran.
-              </CardDescription>
+              <CardTitle>E-Wallet</CardTitle>
+              <CardDescription>Daftar e-wallet untuk menerima pembayaran.</CardDescription>
             </div>
             <Button size="sm" onClick={onAddEwallet}>
-              <Plus className="h-4 w-4 mr-1" />
-              Tambah
+              + Tambah
             </Button>
           </div>
         </CardHeader>
@@ -277,7 +251,7 @@ export function PaymentSettings({
             </div>
           ) : settings.paymentMethods.eWallets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <Wallet className="h-12 w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-4xl mb-3 opacity-50">&#128179;</p>
               <p>Belum ada e-wallet</p>
               <p className="text-sm">Tambahkan e-wallet untuk menerima pembayaran digital</p>
             </div>
@@ -314,7 +288,7 @@ export function PaymentSettings({
                       className="text-destructive hover:text-destructive"
                       onClick={() => onDeleteEwallet(ewallet.id)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      Hapus
                     </Button>
                   </div>
                 </div>
@@ -327,13 +301,8 @@ export function PaymentSettings({
       {/* COD Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Banknote className="h-5 w-5" />
-            COD (Bayar di Tempat)
-          </CardTitle>
-          <CardDescription>
-            Aktifkan pembayaran tunai saat barang diterima.
-          </CardDescription>
+          <CardTitle>COD (Bayar di Tempat)</CardTitle>
+          <CardDescription>Aktifkan pembayaran tunai saat barang diterima.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading || !settings ? (
@@ -371,9 +340,7 @@ export function PaymentSettings({
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving || isLoading}>
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          <Save className="mr-2 h-4 w-4" />
-          Simpan Pengaturan Pembayaran
+          {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Pembayaran'}
         </Button>
       </div>
     </div>

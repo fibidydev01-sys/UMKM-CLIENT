@@ -3,15 +3,18 @@
 // ✅ FIXED: Client component with proper authentication
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PageHeader } from '@/components/dashboard';
-import { CustomersTable } from '@/components/customers';
+import { CustomersTable, CustomersGrid, CustomersGridSkeleton } from '@/components/customers';
 import { Skeleton } from '@/components/ui/skeleton';
 import { customersApi, getErrorMessage } from '@/lib/api';
 import type { Customer } from '@/types';
+
+type ViewMode = 'list' | 'grid';
 
 // ==========================================
 // CUSTOMERS LIST PAGE (Client Component)
@@ -20,40 +23,85 @@ import type { Customer } from '@/types';
 export default function CustomersPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+  const hasFetched = useRef(false);
+  const isMounted = useRef(true);
 
   // Fetch customers
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = async (showFullLoading = true) => {
+    if (!isMounted.current) return;
+
+    if (showFullLoading) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
 
     try {
       const response = await customersApi.getAll({ limit: 100 });
+      if (!isMounted.current) return;
       setCustomers(response.data);
     } catch (err) {
+      if (!isMounted.current) return;
       console.error('Failed to fetch customers:', err);
       setError(getErrorMessage(err));
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
+  };
+
+  // Fetch on mount - runs ONLY ONCE
+  useEffect(() => {
+    isMounted.current = true;
+
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchData(true);
+    }
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
-  // Fetch on mount
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  // Refresh handler
+  const handleRefresh = async () => {
+    await fetchData(false);
+  };
+
+  // View mode toggle component
+  const ViewToggle = () => (
+    <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+      <ToggleGroupItem value="list" aria-label="List view" size="sm">
+        <List className="h-4 w-4" />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="grid" aria-label="Grid view" size="sm">
+        <LayoutGrid className="h-4 w-4" />
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
 
   // Loading state
   if (isLoading) {
     return (
       <>
         <PageHeader title="Pelanggan" description="Kelola data pelanggan Anda">
-          <Button disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Pelanggan
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button disabled>
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Pelanggan
+            </Button>
+          </div>
         </PageHeader>
-        <TableSkeleton />
+        {viewMode === 'list' ? <TableSkeleton /> : <CustomersGridSkeleton />}
       </>
     );
   }
@@ -63,17 +111,27 @@ export default function CustomersPage() {
     return (
       <>
         <PageHeader title="Pelanggan" description="Kelola data pelanggan Anda">
-          <Button asChild>
-            <Link href="/dashboard/customers/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Pelanggan
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button asChild>
+              <Link href="/dashboard/customers/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Tambah Pelanggan
+              </Link>
+            </Button>
+          </div>
         </PageHeader>
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
           <p className="text-destructive font-medium">Gagal memuat pelanggan</p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={fetchData}>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              hasFetched.current = false;
+              fetchData(true);
+            }}
+          >
             Coba Lagi
           </Button>
         </div>
@@ -84,15 +142,26 @@ export default function CustomersPage() {
   return (
     <>
       <PageHeader title="Pelanggan" description="Kelola data pelanggan Anda">
-        <Button asChild>
-          <Link href="/dashboard/customers/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Tambah Pelanggan
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ViewToggle />
+          <Button asChild>
+            <Link href="/dashboard/customers/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Pelanggan
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
 
-      <CustomersTable customers={customers} />
+      {viewMode === 'list' ? (
+        <CustomersTable customers={customers} onRefresh={handleRefresh} />
+      ) : (
+        <CustomersGrid
+          customers={customers}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
     </>
   );
 }

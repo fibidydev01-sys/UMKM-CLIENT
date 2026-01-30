@@ -41,10 +41,19 @@ import type { Customer } from '@/types';
 
 interface CustomersTableProps {
   customers: Customer[];
+  onRefresh?: () => Promise<void>;
 }
 
-export function CustomersTable({ customers }: CustomersTableProps) {
+export function CustomersTable({ customers, onRefresh }: CustomersTableProps) {
   const router = useRouter();
+
+  const refreshData = useCallback(async () => {
+    if (onRefresh) {
+      await onRefresh();
+    } else {
+      router.refresh();
+    }
+  }, [onRefresh, router]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -126,7 +135,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
       await customersApi.delete(deleteCustomer.id);
       toast.success('Pelanggan berhasil dihapus');
       setDeleteCustomer(null);
-      router.refresh();
+      await refreshData();
     } catch (err) {
       toast.error('Gagal menghapus pelanggan', getErrorMessage(err));
     } finally {
@@ -185,7 +194,7 @@ export function CustomersTable({ customers }: CustomersTableProps) {
     }
 
     // Refresh data
-    router.refresh();
+    await refreshData();
   };
 
   const selectedCount = table.getFilteredSelectedRowModel().rows.length;

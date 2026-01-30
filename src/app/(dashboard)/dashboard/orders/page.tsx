@@ -2,15 +2,18 @@
 // Route: /dashboard/orders
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PageHeader } from '@/components/dashboard';
-import { OrdersTable } from '@/components/orders';
+import { OrdersTable, OrdersGrid, OrdersGridSkeleton } from '@/components/orders';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ordersApi, getErrorMessage } from '@/lib/api';
 import type { OrderListItem } from '@/types';
+
+type ViewMode = 'list' | 'grid';
 
 // ==========================================
 // ORDERS LIST PAGE (Client Component)
@@ -19,40 +22,85 @@ import type { OrderListItem } from '@/types';
 export default function OrdersPage() {
   const [orders, setOrders] = useState<OrderListItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+
+  const hasFetched = useRef(false);
+  const isMounted = useRef(true);
 
   // Fetch orders
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = async (showFullLoading = true) => {
+    if (!isMounted.current) return;
+
+    if (showFullLoading) {
+      setIsLoading(true);
+    } else {
+      setIsRefreshing(true);
+    }
     setError(null);
 
     try {
       const response = await ordersApi.getAll({ limit: 100 });
+      if (!isMounted.current) return;
       setOrders(response.data);
     } catch (err) {
+      if (!isMounted.current) return;
       console.error('Failed to fetch orders:', err);
       setError(getErrorMessage(err));
     } finally {
-      setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+        setIsRefreshing(false);
+      }
     }
+  };
+
+  // Fetch on mount - runs ONLY ONCE
+  useEffect(() => {
+    isMounted.current = true;
+
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchData(true);
+    }
+
+    return () => {
+      isMounted.current = false;
+    };
   }, []);
 
-  // Fetch on mount
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  // Refresh handler
+  const handleRefresh = async () => {
+    await fetchData(false);
+  };
+
+  // View mode toggle component
+  const ViewToggle = () => (
+    <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
+      <ToggleGroupItem value="list" aria-label="List view" size="sm">
+        <List className="h-4 w-4" />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="grid" aria-label="Grid view" size="sm">
+        <LayoutGrid className="h-4 w-4" />
+      </ToggleGroupItem>
+    </ToggleGroup>
+  );
 
   // Loading state
   if (isLoading) {
     return (
       <>
         <PageHeader title="Pesanan" description="Kelola pesanan masuk">
-          <Button disabled>
-            <Plus className="h-4 w-4 mr-2" />
-            Buat Pesanan
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button disabled>
+              <Plus className="h-4 w-4 mr-2" />
+              Buat Pesanan
+            </Button>
+          </div>
         </PageHeader>
-        <TableSkeleton />
+        {viewMode === 'list' ? <TableSkeleton /> : <OrdersGridSkeleton />}
       </>
     );
   }
@@ -62,17 +110,27 @@ export default function OrdersPage() {
     return (
       <>
         <PageHeader title="Pesanan" description="Kelola pesanan masuk">
-          <Button asChild>
-            <Link href="/dashboard/orders/new">
-              <Plus className="h-4 w-4 mr-2" />
-              Buat Pesanan
-            </Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ViewToggle />
+            <Button asChild>
+              <Link href="/dashboard/orders/new">
+                <Plus className="h-4 w-4 mr-2" />
+                Buat Pesanan
+              </Link>
+            </Button>
+          </div>
         </PageHeader>
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
           <p className="text-destructive font-medium">Gagal memuat pesanan</p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
-          <Button variant="outline" className="mt-4" onClick={fetchData}>
+          <Button
+            variant="outline"
+            className="mt-4"
+            onClick={() => {
+              hasFetched.current = false;
+              fetchData(true);
+            }}
+          >
             Coba Lagi
           </Button>
         </div>
@@ -83,15 +141,26 @@ export default function OrdersPage() {
   return (
     <>
       <PageHeader title="Pesanan" description="Kelola pesanan masuk">
-        <Button asChild>
-          <Link href="/dashboard/orders/new">
-            <Plus className="h-4 w-4 mr-2" />
-            Buat Pesanan
-          </Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <ViewToggle />
+          <Button asChild>
+            <Link href="/dashboard/orders/new">
+              <Plus className="h-4 w-4 mr-2" />
+              Buat Pesanan
+            </Link>
+          </Button>
+        </div>
       </PageHeader>
 
-      <OrdersTable orders={orders} onRefresh={fetchData} />
+      {viewMode === 'list' ? (
+        <OrdersTable orders={orders} onRefresh={handleRefresh} />
+      ) : (
+        <OrdersGrid
+          orders={orders}
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+        />
+      )}
     </>
   );
 }

@@ -32,18 +32,19 @@ interface LivePreviewProps {
   products: Product[];
   isLoading?: boolean;
   activeSection?: SectionKey | null; // 🚀 Active section for auto-scroll
+  device?: DeviceType; // 🚀 Device preview mode (controlled from page header)
   drawerOpen?: boolean; // 🚀 Drawer state for Buka button
   onToggleDrawer?: () => void; // 🚀 Toggle drawer handler
 }
 
 // ==========================================
-// DEVICE WIDTHS
+// DEVICE DIMENSIONS (Locked Frame)
 // ==========================================
 
-const DEVICE_WIDTHS: Record<DeviceType, string> = {
-  mobile: '375px',
-  tablet: '768px',
-  desktop: '100%',
+const DEVICE_DIMENSIONS: Record<DeviceType, { width: string; height: string }> = {
+  mobile: { width: '375px', height: '667px' }, // iPhone SE
+  tablet: { width: '768px', height: '1024px' }, // iPad
+  desktop: { width: '100%', height: '100%' }, // Full available space
 };
 
 const DEVICE_ICONS: Record<DeviceType, React.ReactNode> = {
@@ -62,10 +63,10 @@ export function LivePreview({
   products,
   isLoading = false,
   activeSection,
+  device = 'desktop', // 🚀 Controlled from page header
   drawerOpen = false,
   onToggleDrawer,
 }: LivePreviewProps) {
-  const [device, setDevice] = useState<DeviceType>('desktop');
 
   // 🚀 Section refs for auto-scroll
   const sectionRefs = useRef<Record<SectionKey, HTMLDivElement | null>>({
@@ -76,6 +77,9 @@ export function LivePreview({
     cta: null,
     contact: null,
   });
+
+  // 🚀 Scrollable container ref (iframe-like div)
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 🚀 Section order - use config.sectionOrder or default order
   const defaultOrder: SectionKey[] = [
@@ -88,15 +92,23 @@ export function LivePreview({
   ];
   const sectionOrder = config?.sectionOrder || defaultOrder;
 
-  // 🚀 Auto-scroll to active section
+  // 🚀 Auto-scroll to active section (scroll inside iframe-like container)
   useEffect(() => {
     if (!activeSection) return;
 
     const sectionElement = sectionRefs.current[activeSection];
-    if (sectionElement) {
-      sectionElement.scrollIntoView({
+    const container = scrollContainerRef.current;
+
+    if (sectionElement && container) {
+      // Calculate position relative to scrollable container
+      const containerRect = container.getBoundingClientRect();
+      const sectionRect = sectionElement.getBoundingClientRect();
+      const scrollTop = container.scrollTop + (sectionRect.top - containerRect.top) - 100; // 100px offset from top
+
+      // Smooth scroll inside container
+      container.scrollTo({
+        top: scrollTop,
         behavior: 'smooth',
-        block: 'center',
       });
     }
   }, [activeSection]);
@@ -152,112 +164,51 @@ export function LivePreview({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Preview Header */}
-      <div className="flex items-center justify-between p-4 border-b bg-muted/30">
-        <div className="flex items-center gap-2">
-          <h3 className="font-semibold">Live Preview</h3>
-          {/* 🚀 Active Section Name */}
-          {activeSection && (
-            <>
-              <div className="h-5 w-px bg-border" />
-              <h3 className="font-semibold capitalize">
-                {activeSection === 'cta' ? 'CTA' : activeSection}
-              </h3>
-              {/* 🚀 Buka/Tutup Drawer Button */}
-              {onToggleDrawer && (
-                <>
-                  <div className="h-5 w-px bg-border" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onToggleDrawer}
-                    className="h-7 px-3"
-                  >
-                    {drawerOpen ? 'Tutup' : 'Buka'}
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-          {isLoading && (
-            <Badge variant="outline" className="gap-1">
-              <Loader2 className="h-3 w-3 animate-spin" />
-              Updating...
-            </Badge>
-          )}
-        </div>
+      {/* 🚀 No header - device controls moved to page header menubar */}
 
-        {/* Device Toggle */}
-        <div className="flex items-center gap-2">
-          {(['mobile', 'tablet', 'desktop'] as DeviceType[]).map((deviceType) => (
-            <Button
-              key={deviceType}
-              variant={device === deviceType ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setDevice(deviceType)}
-              className="gap-2"
-            >
-              {DEVICE_ICONS[deviceType]}
-              <span className="capitalize hidden sm:inline">{deviceType}</span>
-            </Button>
-          ))}
-
-          <div className="h-6 w-px bg-border mx-2" />
-
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-          >
-            <a
-              href={`/store/${tenant.slug}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="gap-2"
-            >
-              <ExternalLink className="h-4 w-4" />
-              <span className="hidden sm:inline">Open</span>
-            </a>
-          </Button>
-        </div>
-      </div>
-
-      {/* Preview Content */}
-      <div className="flex-1 overflow-auto bg-muted/10 p-4">
+      {/* 🔒 LOCKED Preview Container - NO SCROLL here! */}
+      <div className="flex-1 overflow-hidden bg-muted/10 p-4 flex items-center justify-center">
+        {/* 🖼️ Device Frame (Locked dimensions) */}
         <div
-          className="mx-auto bg-background border rounded-lg shadow-sm transition-all duration-300"
+          className="bg-background border rounded-lg shadow-lg transition-all duration-300 flex flex-col"
           style={{
-            width: DEVICE_WIDTHS[device],
-            minHeight: '600px',
+            width: DEVICE_DIMENSIONS[device].width,
+            height: DEVICE_DIMENSIONS[device].height,
+            maxHeight: 'calc(100vh - 8rem)', // Ensure it fits in viewport
           }}
         >
-          {/* Render landing page sections */}
-          <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
-            <div className="container px-4 py-8 space-y-8">
-              {/* 🚀 Render sections in custom order */}
-              {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
-
-              {/* Empty State */}
-              {!hasAnySectionEnabled && (
-                <div className="text-center py-12 bg-muted/30 rounded-lg">
-                  <p className="text-muted-foreground mb-2">
-                    Landing page belum dikonfigurasi
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Aktifkan section di panel konfigurasi
-                  </p>
-                </div>
-              )}
+          {/* Device Label */}
+          {device !== 'desktop' && (
+            <div className="px-3 py-2 border-b bg-muted/30 text-xs text-muted-foreground text-center shrink-0">
+              {device === 'mobile' && '📱 Mobile'}
+              {device === 'tablet' && '📱 Tablet'}
+              ({DEVICE_DIMENSIONS[device].width} × {DEVICE_DIMENSIONS[device].height})
             </div>
-          </TemplateProvider>
-        </div>
+          )}
 
-        {/* Device Width Indicator */}
-        {device !== 'desktop' && (
-          <div className="text-center mt-2 text-xs text-muted-foreground">
-            Preview width: {DEVICE_WIDTHS[device]}
+          {/* ✨ IFRAME-LIKE CONTENT (Scrollable) */}
+          <div ref={scrollContainerRef} className="flex-1 overflow-auto">
+            {/* Render landing page sections */}
+            <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
+              <div className="container px-4 py-8 space-y-8">
+                {/* 🚀 Render sections in custom order */}
+                {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
+
+                {/* Empty State */}
+                {!hasAnySectionEnabled && (
+                  <div className="text-center py-12 bg-muted/30 rounded-lg">
+                    <p className="text-muted-foreground mb-2">
+                      Landing page belum dikonfigurasi
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Aktifkan section di panel konfigurasi
+                    </p>
+                  </div>
+                )}
+              </div>
+            </TemplateProvider>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

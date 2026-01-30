@@ -26,6 +26,9 @@ export * from './landing';
 // Discover Types
 export * from './discover';
 
+// Chat Types (WhatsApp)
+export * from './chat';
+
 // ==========================================
 // COMMON UTILITY TYPES
 // ==========================================

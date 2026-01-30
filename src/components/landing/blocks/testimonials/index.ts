@@ -15,4 +15,3 @@ export * from './testimonials7';
 export * from './testimonials8';
 export * from './testimonials9';
 export * from './testimonials10';
-export * from './testimonials11';

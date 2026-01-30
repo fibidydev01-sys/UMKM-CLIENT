@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { MessageCircle, Truck, CreditCard, Banknote, Wallet } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { MessageCircle, Truck, CreditCard, Banknote, Wallet, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,6 +22,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { formatPrice, generateWhatsAppLink } from '@/lib/format';
 import { useCartStore, useCartItems, useCartTotalPrice } from '@/stores';
 import type { PublicTenant, PaymentMethods, ShippingMethods } from '@/types';
+import { API_URL } from '@/config/constants';
 
 interface WhatsAppCheckoutDialogProps {
   open: boolean;
@@ -32,11 +35,14 @@ export function WhatsAppCheckoutDialog({
   onOpenChange,
   tenant,
 }: WhatsAppCheckoutDialogProps) {
+  const router = useRouter();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
   const [selectedCourier, setSelectedCourier] = useState<string>('');
   const [selectedPayment, setSelectedPayment] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const items = useCartItems();
   const subtotal = useCartTotalPrice();
@@ -121,56 +127,126 @@ export function WhatsAppCheckoutDialog({
     return options;
   }, [enabledBanks, enabledEwallets, codEnabled, paymentMethods]);
 
-  const handleOrder = () => {
-    // Build items list
-    const itemsList = items
-      .map((item) => `• ${item.name} x${item.qty} = ${formatPrice(item.price * item.qty)}`)
-      .join('\n');
-
-    // Get selected payment info
-    let paymentInfo = '';
-    if (selectedPayment) {
-      const option = paymentOptions.find(o => o.id === selectedPayment);
-      if (option) {
-        if (option.type === 'bank') {
-          paymentInfo = `Transfer ${option.label}: ${option.sublabel}`;
-        } else if (option.type === 'ewallet') {
-          paymentInfo = `${option.label}: ${option.sublabel}`;
-        } else {
-          paymentInfo = 'COD (Bayar di Tempat)';
-        }
-      }
+  const handleOrder = async () => {
+    // Validate required fields
+    if (!name.trim()) {
+      toast.error('Nama tidak boleh kosong');
+      return;
+    }
+    if (!phone.trim()) {
+      toast.error('Nomor WhatsApp tidak boleh kosong');
+      return;
+    }
+    if (!address.trim()) {
+      toast.error('Alamat pengiriman tidak boleh kosong');
+      return;
+    }
+    if (items.length === 0) {
+      toast.error('Keranjang belanja kosong');
+      return;
     }
 
-    // Get selected courier
-    const courierInfo = selectedCourier
-      ? enabledCouriers.find(c => c.id === selectedCourier)?.name || ''
-      : '';
+    setIsLoading(true);
 
-    // Build the WhatsApp message
-    const storeName = tenant?.name || 'Toko';
-    const message = `Halo ${storeName},
+    try {
+      // 1. Create order via API (direct to backend)
+      const response = await fetch(`${API_URL}/store/${tenant.slug}/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+          items: items.map((item) => ({
+            productId: item.id,
+            name: item.name,
+            price: item.price,
+            qty: item.qty,
+          })),
+          paymentMethod: selectedPayment || undefined,
+          courier: selectedCourier
+            ? enabledCouriers.find((c) => c.id === selectedCourier)?.name
+            : undefined,
+          notes: notes.trim() || undefined,
+        }),
+      });
 
-Saya ingin memesan:
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Gagal membuat pesanan');
+      }
 
+      const data = await response.json();
+      const { order, trackingUrl } = data;
+
+      // 2. Show success message
+      toast.success('Pesanan berhasil dibuat!');
+
+      // 3. Optional: Open WhatsApp with order details
+      if (tenant?.whatsapp) {
+        const itemsList = items
+          .map((item) => `• ${item.name} x${item.qty} = ${formatPrice(item.price * item.qty)}`)
+          .join('\n');
+
+        const courierInfo = selectedCourier
+          ? enabledCouriers.find((c) => c.id === selectedCourier)?.name || ''
+          : '';
+
+        let paymentInfo = '';
+        if (selectedPayment) {
+          const option = paymentOptions.find((o) => o.id === selectedPayment);
+          if (option) {
+            if (option.type === 'bank') {
+              paymentInfo = `Transfer ${option.label}: ${option.sublabel}`;
+            } else if (option.type === 'ewallet') {
+              paymentInfo = `${option.label}: ${option.sublabel}`;
+            } else {
+              paymentInfo = 'COD (Bayar di Tempat)';
+            }
+          }
+        }
+
+        const message = `Halo ${tenant.name},
+
+Saya sudah membuat pesanan dengan nomor: *${order.orderNumber}*
+
+Detail Pesanan:
 ${itemsList}
 
 ---
 Subtotal: ${formatPrice(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${formatPrice(tax)}` : ''}
-Ongkir: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}${freeShippingThreshold && shipping === 0 ? ` (min. belanja ${formatPrice(freeShippingThreshold)})` : ''}
+Ongkir: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}
 *Total: ${formatPrice(total)}*
 ---
-${name ? `\nNama: ${name}` : ''}${address ? `\nAlamat: ${address}` : ''}${courierInfo ? `\nKurir: ${courierInfo}` : ''}${paymentInfo ? `\nPembayaran: ${paymentInfo}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
 
-Mohon konfirmasi ketersediaan.
+Nama: ${name}
+No. WhatsApp: ${phone}
+Alamat: ${address}${courierInfo ? `\nKurir: ${courierInfo}` : ''}${paymentInfo ? `\nPembayaran: ${paymentInfo}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
+
+Link tracking: ${window.location.origin}${trackingUrl}
+
 Terima kasih! 🙏`;
 
-    const link = generateWhatsAppLink(tenant?.whatsapp || '', message);
-    window.open(link, '_blank');
+        const link = generateWhatsAppLink(tenant.whatsapp, message);
+        window.open(link, '_blank');
+      }
 
-    // Clear cart after order
-    clearCart();
-    onOpenChange(false);
+      // 4. Clear cart
+      clearCart();
+
+      // 5. Close dialog
+      onOpenChange(false);
+
+      // 6. Redirect to tracking page
+      router.push(trackingUrl);
+    } catch (error) {
+      console.error('Checkout error:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Gagal membuat pesanan. Silakan coba lagi.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const hasPaymentOptions = paymentOptions.length > 0;
@@ -216,22 +292,47 @@ Terima kasih! 🙏`;
             {/* Customer Info */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="checkout-name">Nama</Label>
+                <Label htmlFor="checkout-name">
+                  Nama <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="checkout-name"
                   placeholder="Nama lengkap"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  required
+                  disabled={isLoading}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="checkout-address">Alamat Pengiriman</Label>
+                <Label htmlFor="checkout-phone">
+                  Nomor WhatsApp <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="checkout-phone"
+                  type="tel"
+                  placeholder="08xx atau +62xx"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  disabled={isLoading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Contoh: 081234567890 atau +6281234567890
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkout-address">
+                  Alamat Pengiriman <span className="text-destructive">*</span>
+                </Label>
                 <Textarea
                   id="checkout-address"
                   placeholder="Alamat lengkap untuk pengiriman"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   rows={2}
+                  required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -245,11 +346,19 @@ Terima kasih! 🙏`;
                     <Truck className="h-4 w-4" />
                     Pilih Kurir
                   </Label>
-                  <RadioGroup value={selectedCourier} onValueChange={setSelectedCourier}>
+                  <RadioGroup
+                    value={selectedCourier}
+                    onValueChange={setSelectedCourier}
+                    disabled={isLoading}
+                  >
                     <div className="grid grid-cols-2 gap-2">
                       {enabledCouriers.map((courier) => (
                         <div key={courier.id} className="flex items-center space-x-2">
-                          <RadioGroupItem value={courier.id} id={`courier-${courier.id}`} />
+                          <RadioGroupItem
+                            value={courier.id}
+                            id={`courier-${courier.id}`}
+                            disabled={isLoading}
+                          />
                           <Label htmlFor={`courier-${courier.id}`} className="text-sm cursor-pointer">
                             {courier.name}
                             {courier.note && (
@@ -275,14 +384,23 @@ Terima kasih! 🙏`;
                     <CreditCard className="h-4 w-4" />
                     Metode Pembayaran
                   </Label>
-                  <RadioGroup value={selectedPayment} onValueChange={setSelectedPayment}>
+                  <RadioGroup
+                    value={selectedPayment}
+                    onValueChange={setSelectedPayment}
+                    disabled={isLoading}
+                  >
                     <div className="space-y-2">
                       {paymentOptions.map((option) => (
                         <div
                           key={option.id}
                           className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-muted/50 transition-colors"
                         >
-                          <RadioGroupItem value={option.id} id={option.id} className="mt-0.5" />
+                          <RadioGroupItem
+                            value={option.id}
+                            id={option.id}
+                            className="mt-0.5"
+                            disabled={isLoading}
+                          />
                           <Label htmlFor={option.id} className="flex-1 cursor-pointer">
                             <div className="flex items-center gap-2">
                               {option.type === 'bank' && <Banknote className="h-4 w-4 text-muted-foreground" />}
@@ -310,6 +428,7 @@ Terima kasih! 🙏`;
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
+                disabled={isLoading}
               />
             </div>
 
@@ -346,12 +465,28 @@ Terima kasih! 🙏`;
         </ScrollArea>
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+          >
             Batal
           </Button>
-          <Button onClick={handleOrder} disabled={items.length === 0}>
-            <MessageCircle className="mr-2 h-4 w-4" />
-            Kirim Pesanan
+          <Button
+            onClick={handleOrder}
+            disabled={items.length === 0 || isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Memproses...
+              </>
+            ) : (
+              <>
+                <MessageCircle className="mr-2 h-4 w-4" />
+                Buat Pesanan
+              </>
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

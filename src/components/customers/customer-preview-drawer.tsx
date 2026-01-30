@@ -15,6 +15,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Drawer } from 'vaul';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
@@ -106,7 +107,22 @@ export function CustomerPreviewDrawer({
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/40 z-[100]" />
-        <Drawer.Content className="bg-background flex flex-col rounded-t-[10px] h-[90vh] mt-24 fixed bottom-0 left-0 right-0 z-[100] outline-none">
+        <Drawer.Content
+          className="bg-background flex flex-col rounded-t-[10px] h-[90vh] mt-24 fixed bottom-0 left-0 right-0 z-[100] outline-none"
+          aria-describedby="customer-drawer-description"
+        >
+          {/* Accessibility */}
+          <Drawer.Title asChild>
+            <VisuallyHidden.Root>
+              {customer.name ? `Preview ${customer.name}` : 'Preview Pelanggan'}
+            </VisuallyHidden.Root>
+          </Drawer.Title>
+          <Drawer.Description asChild>
+            <VisuallyHidden.Root id="customer-drawer-description">
+              Lihat detail pelanggan {customer.name || ''}
+            </VisuallyHidden.Root>
+          </Drawer.Description>
+
           {/* Handle Bar */}
           <div className="mx-auto w-12 h-1.5 flex-shrink-0 rounded-full bg-muted-foreground/20 mt-4 mb-4" />
 

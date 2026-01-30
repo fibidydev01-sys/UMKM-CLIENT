@@ -1,6 +1,5 @@
 'use client';
 
-import { Loader2, Save, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -92,9 +91,7 @@ export function ShippingSettings({
       <Card>
         <CardHeader>
           <CardTitle>Ongkos Kirim</CardTitle>
-          <CardDescription>
-            Konfigurasi biaya pengiriman dan batas gratis ongkir.
-          </CardDescription>
+          <CardDescription>Konfigurasi biaya pengiriman dan batas gratis ongkir.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {isLoading || !settings ? (
@@ -141,12 +138,10 @@ export function ShippingSettings({
       {/* Couriers Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Truck className="h-5 w-5" />
-            Kurir Pengiriman
-          </CardTitle>
+          <CardTitle>Kurir Pengiriman</CardTitle>
           <CardDescription>
-            Pilih kurir yang tersedia untuk pengiriman. Kurir yang aktif akan ditampilkan saat checkout.
+            Pilih kurir yang tersedia untuk pengiriman. Kurir yang aktif akan ditampilkan saat
+            checkout.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,10 +167,7 @@ export function ShippingSettings({
                         checked={courier.enabled}
                         onCheckedChange={() => handleToggleCourier(courier.id)}
                       />
-                      <div className="flex items-center gap-2">
-                        <Truck className="h-4 w-4 text-muted-foreground" />
-                        <span className="font-medium">{courier.name}</span>
-                      </div>
+                      <span className="font-medium">{courier.name}</span>
                     </div>
                     {courier.enabled && (
                       <Badge variant="secondary" className="text-xs">
@@ -203,9 +195,7 @@ export function ShippingSettings({
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving || isLoading}>
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          <Save className="mr-2 h-4 w-4" />
-          Simpan Pengaturan Pengiriman
+          {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan Pengiriman'}
         </Button>
       </div>
     </div>

@@ -250,3 +250,41 @@ export function useTodayOrders() {
     refetch: fetchOrders,
   };
 }
+
+// ==========================================
+// USE SAMPLE ORDER HOOK
+// Get sample order data for auto-reply preview
+// ==========================================
+
+export function useSampleOrder() {
+  const [sampleData, setSampleData] = useState({
+    name: 'Budi Santoso',
+    phone: '+628123456789',
+    orderNumber: 'ORD-20260130-001',
+    total: 'Rp 150.000',
+    trackingLink: 'https://tokosaya.com/store/toko-saya/track/550e8400-e29b-41d4-a716-446655440000',
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSampleData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await ordersApi.getSampleForPreview();
+        setSampleData(data);
+      } catch (err) {
+        // Use default dummy data on error (already set in useState)
+        console.error('Failed to fetch sample order:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSampleData();
+  }, []);
+
+  return {
+    sampleData,
+    isLoading,
+  };
+}

@@ -14,6 +14,14 @@ import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarSeparator,
+  MenubarTrigger,
+} from '@/components/ui/menubar';
+import {
   LivePreview,
   LandingErrorBoundary,
   BuilderSidebar,
@@ -25,9 +33,11 @@ import { useTenant } from '@/hooks';
 import { useLandingConfig } from '@/hooks/use-landing-config';
 import { productsApi } from '@/lib/api';
 import { mergeWithTemplateDefaults, type TemplateId } from '@/lib/landing';
-import { Save, Home, PanelLeftClose, PanelLeft, RotateCcw } from 'lucide-react';
+import { Save, Home, PanelLeftClose, PanelLeft, RotateCcw, Smartphone, Tablet, Monitor, Menu, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import type { TenantLandingConfig, Product } from '@/types';
+
+type DeviceType = 'mobile' | 'tablet' | 'desktop';
 
 // ============================================================================
 // MAIN COMPONENT
@@ -46,6 +56,7 @@ export default function LandingBuilderPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [drawerState, setDrawerState] = useState<DrawerState>('collapsed'); // Start collapsed, user can expand manually
   const [loadingComplete, setLoadingComplete] = useState(false); // 🚀 Track when loading screen dismissed
+  const [device, setDevice] = useState<DeviceType>('desktop'); // 🚀 Device preview mode
 
   // ============================================================================
   // LANDING CONFIG HOOK
@@ -121,11 +132,10 @@ export default function LandingBuilderPage() {
   // SIDEBAR & SHEET HANDLERS
   // ============================================================================
 
-  // Step 1: User clicks section → Switch section, AUTO EXPAND drawer
+  // Step 1: User clicks section → Switch section (drawer stays collapsed)
   const handleSectionClick = useCallback((section: SectionType) => {
     setActiveSection(section);
-    // 🚀 AUTO EXPAND drawer to show blocks immediately!
-    setDrawerState('expanded');
+    // ✅ Drawer stays collapsed - user controls expand/collapse with toggle button only
   }, []);
 
   // Step 2: User clicks block → Update config (NO form sheet - data edited in Settings)
@@ -226,15 +236,14 @@ export default function LandingBuilderPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {/* Custom Header (Minimal, not PageHeader) */}
+      {/* 🚀 Minimal Header: Sidebar Toggle + Menubar */}
       <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           {/* Sidebar Toggle */}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="gap-2"
           >
             {sidebarCollapsed ? (
               <PanelLeft className="h-4 w-4" />
@@ -243,18 +252,94 @@ export default function LandingBuilderPage() {
             )}
           </Button>
 
-          <div className="h-6 w-px bg-border" />
+          {/* 🚀 Menubar - All actions in one place */}
+          <Menubar className="border-0 bg-transparent">
+            {/* Dashboard */}
+            <MenubarMenu>
+              <MenubarTrigger className="gap-2 cursor-pointer">
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">Dashboard</span>
+              </MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem asChild>
+                  <Link href="/dashboard" className="cursor-pointer">
+                    <Home className="h-4 w-4 mr-2" />
+                    Kembali ke Dashboard
+                  </Link>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
 
-          <Link href="/dashboard">
-            <Button variant="ghost" size="sm" className="gap-2">
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
-            </Button>
-          </Link>
-          <div className="h-6 w-px bg-border" />
-          <h1 className="font-semibold text-lg">Landing Page Builder</h1>
+            {/* Device Preview */}
+            <MenubarMenu>
+              <MenubarTrigger className="gap-2 cursor-pointer">
+                {device === 'mobile' && <Smartphone className="h-4 w-4" />}
+                {device === 'tablet' && <Tablet className="h-4 w-4" />}
+                {device === 'desktop' && <Monitor className="h-4 w-4" />}
+                <span className="hidden sm:inline capitalize">{device}</span>
+              </MenubarTrigger>
+              <MenubarContent>
+                <MenubarItem onClick={() => setDevice('mobile')} className="gap-2 cursor-pointer">
+                  <Smartphone className="h-4 w-4" />
+                  Mobile
+                </MenubarItem>
+                <MenubarItem onClick={() => setDevice('tablet')} className="gap-2 cursor-pointer">
+                  <Tablet className="h-4 w-4" />
+                  Tablet
+                </MenubarItem>
+                <MenubarItem onClick={() => setDevice('desktop')} className="gap-2 cursor-pointer">
+                  <Monitor className="h-4 w-4" />
+                  Desktop
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+
+            {/* Actions */}
+            <MenubarMenu>
+              <MenubarTrigger className="gap-2 cursor-pointer">
+                <Menu className="h-4 w-4" />
+                <span className="hidden sm:inline">Actions</span>
+              </MenubarTrigger>
+              <MenubarContent>
+                {hasUnsavedChanges && (
+                  <>
+                    <MenubarItem onClick={handleDiscard} disabled={isSaving} className="gap-2 cursor-pointer">
+                      Discard Changes
+                    </MenubarItem>
+                    <MenubarSeparator />
+                  </>
+                )}
+                <MenubarItem onClick={handleReset} disabled={isSaving} className="gap-2 cursor-pointer">
+                  <RotateCcw className="h-4 w-4" />
+                  Reset to Defaults
+                </MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem
+                  onClick={handlePublish}
+                  disabled={isSaving || !hasUnsavedChanges}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Save className="h-4 w-4" />
+                  {isSaving ? 'Publishing...' : 'Publish'}
+                </MenubarItem>
+                <MenubarSeparator />
+                <MenubarItem asChild>
+                  <a
+                    href={`/store/${tenant?.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cursor-pointer"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Open Landing Page
+                  </a>
+                </MenubarItem>
+              </MenubarContent>
+            </MenubarMenu>
+          </Menubar>
         </div>
 
+        {/* Status Badges */}
         <div className="flex items-center gap-2">
           {hasUnsavedChanges && (
             <Badge variant="outline" className="text-yellow-600 border-yellow-500">
@@ -264,39 +349,6 @@ export default function LandingBuilderPage() {
           {validationErrors.length > 0 && (
             <Badge variant="destructive">{validationErrors.length} Error(s)</Badge>
           )}
-          {hasUnsavedChanges && (
-            <Button variant="outline" size="sm" onClick={handleDiscard} disabled={isSaving}>
-              Discard
-            </Button>
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleReset}
-            disabled={isSaving}
-            className="gap-2"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
-          <Button
-            size="sm"
-            onClick={handlePublish}
-            disabled={isSaving || !hasUnsavedChanges}
-            className="gap-2"
-          >
-            {isSaving ? (
-              <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-                Publishing...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Publish
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
@@ -322,6 +374,7 @@ export default function LandingBuilderPage() {
               products={products}
               isLoading={productsLoading}
               activeSection={activeSection} // 🚀 Pass active section for auto-scroll
+              device={device} // 🚀 Pass device mode from header
             />
           </LandingErrorBoundary>
         </div>

@@ -1,6 +1,5 @@
 'use client';
 
-import { Loader2, Save, Search, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -70,13 +69,8 @@ export function SeoSettings({
       {/* SEO Meta Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            SEO (Search Engine Optimization)
-          </CardTitle>
-          <CardDescription>
-            Optimalkan toko Anda agar mudah ditemukan di Google.
-          </CardDescription>
+          <CardTitle>SEO (Search Engine Optimization)</CardTitle>
+          <CardDescription>Optimalkan toko Anda agar mudah ditemukan di Google.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {isLoading || !settings ? (
@@ -132,11 +126,11 @@ export function SeoSettings({
                   <p className="text-blue-600 text-lg hover:underline cursor-pointer">
                     {settings.metaTitle || tenantName || 'Nama Toko'}
                   </p>
-                  <p className="text-green-700 text-sm">
-                    {tenantSlug}.fibidy.com
-                  </p>
+                  <p className="text-green-700 text-sm">{tenantSlug}.fibidy.com</p>
                   <p className="text-sm text-muted-foreground line-clamp-2">
-                    {settings.metaDescription || tenantDescription || 'Deskripsi toko akan muncul di sini...'}
+                    {settings.metaDescription ||
+                      tenantDescription ||
+                      'Deskripsi toko akan muncul di sini...'}
                   </p>
                 </div>
               </div>
@@ -148,10 +142,7 @@ export function SeoSettings({
       {/* Social Links Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Social Media
-          </CardTitle>
+          <CardTitle>Social Media</CardTitle>
           <CardDescription>
             Link ke akun social media toko Anda. Akan ditampilkan di footer toko.
           </CardDescription>
@@ -218,9 +209,7 @@ export function SeoSettings({
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={onSave} disabled={isSaving || isLoading}>
-          {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          <Save className="mr-2 h-4 w-4" />
-          Simpan Pengaturan SEO
+          {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan SEO'}
         </Button>
       </div>
     </div>
