@@ -5,10 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Store,
-  Search,
-  CreditCard,
-  Truck,
-  ChevronRight,
+  Layers,
   LogOut,
   Menu,
   Moon,
@@ -65,19 +62,9 @@ const navigation: NavGroup[] = [
         icon: Store,
       },
       {
-        title: 'SEO',
-        href: '/settings/seo',
-        icon: Search,
-      },
-      {
-        title: 'Pembayaran',
-        href: '/settings/pembayaran',
-        icon: CreditCard,
-      },
-      {
-        title: 'Pengiriman',
-        href: '/settings/pengiriman',
-        icon: Truck,
+        title: 'Channels',
+        href: '/settings/channels',
+        icon: Layers,
       },
     ],
   },

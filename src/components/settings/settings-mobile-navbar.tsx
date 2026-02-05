@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Store,
-  Search,
-  CreditCard,
-  Truck,
+  Layers,
   Menu,
   Home,
   Sun,
@@ -36,19 +34,9 @@ const navItems = [
     label: 'Toko',
   },
   {
-    href: '/settings/seo',
-    icon: Search,
-    label: 'SEO',
-  },
-  {
-    href: '/settings/pembayaran',
-    icon: CreditCard,
-    label: 'Pembayaran',
-  },
-  {
-    href: '/settings/pengiriman',
-    icon: Truck,
-    label: 'Pengiriman',
+    href: '/settings/channels',
+    icon: Layers,
+    label: 'Channels',
   },
 ];
 
