@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IconRocket, IconTrophy } from '@tabler/icons-react';
+import { IconRocket } from '@tabler/icons-react';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 import { useOnboarding } from '@/hooks/use-onboarding';
 
@@ -21,23 +21,16 @@ export function OnboardingDropdown() {
     return (
       <SidebarMenuButton asChild isActive={isActive}>
         <Link href="/dashboard/onboarding">
-          <IconRocket className="h-4 w-4 animate-pulse" />
+          <IconRocket className="h-5 w-5 animate-pulse" />
           <span>Setup Toko</span>
         </Link>
       </SidebarMenuButton>
     );
   }
 
-  // 100% complete - show trophy
+  // 100% complete - hide nav item
   if (progress.percentage >= 100) {
-    return (
-      <SidebarMenuButton asChild isActive={isActive}>
-        <Link href="/dashboard/onboarding">
-          <IconTrophy className="h-4 w-4 text-primary" />
-          <span>Selesai!</span>
-        </Link>
-      </SidebarMenuButton>
-    );
+    return null;
   }
 
   const remainingSteps = progress.totalSteps - progress.completedSteps;
@@ -46,7 +39,7 @@ export function OnboardingDropdown() {
   return (
     <SidebarMenuButton asChild isActive={isActive}>
       <Link href="/dashboard/onboarding">
-        <IconRocket className="h-4 w-4" />
+        <IconRocket className="h-5 w-5" />
         <span>Setup Toko</span>
         {remainingSteps > 0 && (
           <span className="ml-auto flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">

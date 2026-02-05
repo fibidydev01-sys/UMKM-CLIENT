@@ -4,8 +4,8 @@ import { SettingsLayout as SettingsLayoutComponent } from '@/components/settings
 
 // ==========================================
 // SETTINGS LAYOUT
-// Wraps all /settings routes with sidebar (like DashboardLayout)
-// Pattern: AuthGuard → SettingsLayout (with sidebar) → children
+// Wraps all /settings routes WITH sidebar
+// Pattern: AuthGuard → SettingsLayout → children
 // ==========================================
 
 export const metadata: Metadata = {

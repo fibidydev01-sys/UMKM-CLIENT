@@ -4,12 +4,12 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User,
-  Send,
-  Compass,
-  Film,
+  Store,
+  Search,
+  CreditCard,
+  Truck,
   Menu,
-  Settings,
+  Home,
   Sun,
   Moon,
   LogOut,
@@ -25,34 +25,34 @@ import {
 import { useLogout } from '@/hooks';
 
 // ==========================================
-// MOBILE NAVBAR (Bottom Navigation)
+// SETTINGS MOBILE NAVBAR (Bottom Navigation)
 // Only visible on mobile devices
 // ==========================================
 
 const navItems = [
   {
-    href: '/dashboard',
-    icon: User,
-    label: 'Profil',
+    href: '/settings/toko',
+    icon: Store,
+    label: 'Toko',
   },
   {
-    href: '/dashboard/inbox',
-    icon: Send,
-    label: 'Inbox',
+    href: '/settings/seo',
+    icon: Search,
+    label: 'SEO',
   },
   {
-    href: '/dashboard/explore',
-    icon: Compass,
-    label: 'Explore',
+    href: '/settings/pembayaran',
+    icon: CreditCard,
+    label: 'Pembayaran',
   },
   {
-    href: '/dashboard/reels',
-    icon: Film,
-    label: 'Reels',
+    href: '/settings/pengiriman',
+    icon: Truck,
+    label: 'Pengiriman',
   },
 ];
 
-export function MobileNavbar() {
+export function SettingsMobileNavbar() {
   const pathname = usePathname();
   const { logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
@@ -81,9 +81,6 @@ export function MobileNavbar() {
   };
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
-    }
     return pathname.startsWith(href);
   };
 
@@ -126,24 +123,21 @@ export function MobileNavbar() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className={cn(
-                'flex items-center justify-center px-3 py-2 rounded-lg transition-colors min-w-[60px]',
-                'text-muted-foreground hover:text-foreground'
-              )}
+              className="flex items-center justify-center px-3 py-2 rounded-lg transition-colors min-w-[60px] text-muted-foreground hover:text-foreground"
             >
               <Menu className="h-5 w-5" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-56 rounded-lg"
+            className="w-56 rounded-lg mb-2"
             side="top"
             align="end"
             sideOffset={8}
           >
             <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <Settings className="mr-3 h-5 w-5" />
-                Pengaturan
+              <Link href="/dashboard">
+                <Home className="mr-3 h-5 w-5" />
+                Dashboard
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -168,9 +162,6 @@ export function MobileNavbar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      {/* Safe area padding for iOS */}
-      <div className="h-safe-area-inset-bottom bg-background/80" />
     </nav>
   );
 }

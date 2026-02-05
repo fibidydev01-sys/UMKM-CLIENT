@@ -4,16 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User,
-  Settings,
+  Store,
+  Search,
+  CreditCard,
+  Truck,
   ChevronRight,
   LogOut,
-  Send,
   Menu,
   Moon,
   Sun,
-  Compass,
-  Film,
+  Home,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -57,38 +57,38 @@ interface NavGroup {
 
 const navigation: NavGroup[] = [
   {
-    title: 'Menu Utama',
+    title: 'Pengaturan',
     items: [
       {
-        title: 'Profil',
-        href: '/dashboard',
-        icon: User,
+        title: 'Toko',
+        href: '/settings/toko',
+        icon: Store,
       },
       {
-        title: 'Inbox',
-        href: '/dashboard/inbox',
-        icon: Send,
+        title: 'SEO',
+        href: '/settings/seo',
+        icon: Search,
       },
       {
-        title: 'Explore',
-        href: '/dashboard/explore',
-        icon: Compass,
+        title: 'Pembayaran',
+        href: '/settings/pembayaran',
+        icon: CreditCard,
       },
       {
-        title: 'Reels',
-        href: '/dashboard/reels',
-        icon: Film,
+        title: 'Pengiriman',
+        href: '/settings/pengiriman',
+        icon: Truck,
       },
     ],
   },
 ];
 
 // ==========================================
-// DASHBOARD SIDEBAR COMPONENT
-// Clean version - No logos
+// SETTINGS SIDEBAR COMPONENT
+// Clone of DashboardSidebar for Settings
 // ==========================================
 
-export function DashboardSidebar() {
+export function SettingsSidebar() {
   const pathname = usePathname();
   const { logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
@@ -117,9 +117,6 @@ export function DashboardSidebar() {
   };
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
-    }
     return pathname.startsWith(href);
   };
 
@@ -211,9 +208,9 @@ export function DashboardSidebar() {
                 sideOffset={4}
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-3 h-5 w-5" />
-                    Pengaturan
+                  <Link href="/dashboard">
+                    <Home className="mr-3 h-5 w-5" />
+                    Dashboard
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
