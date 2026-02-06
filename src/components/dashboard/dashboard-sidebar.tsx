@@ -14,6 +14,7 @@ import {
   Sun,
   Compass,
   Film,
+  Bookmark,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -78,6 +79,11 @@ const navigation: NavGroup[] = [
         title: 'Reels',
         href: '/dashboard/reels',
         icon: Film,
+      },
+      {
+        title: 'Tersimpan',
+        href: '/dashboard/bookmarks',
+        icon: Bookmark,
       },
     ],
   },

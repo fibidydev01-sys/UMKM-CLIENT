@@ -187,7 +187,7 @@ export function LivePreview({
           )}
 
           {/* ✨ IFRAME-LIKE CONTENT (Scrollable) */}
-          <div ref={scrollContainerRef} className="flex-1 overflow-auto">
+          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
             {/* Render landing page sections */}
             <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
               <div className="container px-4 py-8 space-y-8">

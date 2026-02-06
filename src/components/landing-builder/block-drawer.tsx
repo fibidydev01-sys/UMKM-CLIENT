@@ -22,7 +22,7 @@ import {
   SheetDescription,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { Check, Minimize2, Grid3x3, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Minimize2, Grid3x3, Search, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { SectionType } from './builder-sidebar';
 import type { BlockOption } from './block-options';
 import { BLOCK_OPTIONS_MAP } from './block-options'; // 🚀 Auto-generated blocks!
@@ -123,6 +123,7 @@ function DrawerMode({
 }: BlockDrawerProps) {
   const [search, setSearch] = useState('');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isSmallMobile = useMediaQuery('(max-width: 639px)');
 
   // 🚀 OPTIMIZATION: Debounce search input (300ms delay)
   const debouncedSearch = useDebounce(search, 300);
@@ -147,23 +148,21 @@ function DrawerMode({
     return filteredBlocks.slice(0, UI_DISPLAY_LIMIT);
   }, [filteredBlocks]);
 
-  // 🎨 CANVA-STYLE: Virtual scrolling config
-  // Grid: Responsive (2 mobile, 3 tablet, 4 desktop)
-  // We calculate rows based on max columns (4) for virtual scrolling
-  const MAX_COLUMNS = 4; // Desktop max
+  // 🎨 Responsive columns: 2 cols on small mobile (375px), 3 cols on wider (640px+)
+  const MAX_COLUMNS = isSmallMobile ? 2 : 3;
   const rows = useMemo(() => {
     const result: BlockOption[][] = [];
     for (let i = 0; i < displayedBlocks.length; i += MAX_COLUMNS) {
       result.push(displayedBlocks.slice(i, i + MAX_COLUMNS));
     }
     return result;
-  }, [displayedBlocks]);
+  }, [displayedBlocks, MAX_COLUMNS]);
 
   // 🚀 Virtual scrolling (only renders visible rows!)
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => 120, // Estimated row height (adjust for your card size)
+    estimateSize: () => 160, // aspect-square ~149px + gap-3 (12px)
     overscan: 3, // Render 3 extra rows above/below viewport (smooth scrolling)
   });
 
@@ -171,6 +170,17 @@ function DrawerMode({
   useEffect(() => {
     rowVirtualizer.scrollToIndex(0, { align: 'start' });
   }, [debouncedSearch, section, rowVirtualizer]);
+
+  // Force virtualizer to re-measure when drawer mounts with expanded state
+  // Handles Sheet→Drawer transition on resize (container has 0 height initially)
+  useEffect(() => {
+    if (state === 'expanded') {
+      const timer = setTimeout(() => {
+        rowVirtualizer.measure();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [state, rowVirtualizer]);
 
   // 🚀 OPTIMIZATION: Memoize handlers
   const handleBlockSelect = useCallback(
@@ -197,7 +207,7 @@ function DrawerMode({
 
         <Drawer.Content
           className={cn(
-            "fixed inset-x-0 bottom-0 z-[9999] flex flex-col rounded-t-[20px] bg-background border-t shadow-2xl",
+            "fixed bottom-0 left-4 right-4 z-[9999] flex flex-col rounded-t-[20px] bg-background border-t shadow-2xl",
             state === 'expanded' ? "h-[80vh]" : "h-auto min-h-[120px]"
           )}
           aria-describedby="block-drawer-description"
@@ -273,7 +283,6 @@ function DrawerMode({
             <div
               ref={scrollContainerRef}
               className="flex-1 overflow-auto p-4"
-              style={{ contain: 'strict' }} // Performance hint for browser
             >
               {displayedBlocks.length > 0 ? (
                 <div
@@ -298,7 +307,7 @@ function DrawerMode({
                         }}
                         className="flex justify-center"
                       >
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 w-full max-w-4xl">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full">
                           {rowBlocks.map((block) => (
                             <BlockCard
                               key={block.value}
@@ -384,7 +393,7 @@ function SheetMode({
   const rowVirtualizer = useVirtualizer({
     count: rows.length,
     getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => 120,
+    estimateSize: () => 130, // aspect-square ~117px + gap-3 (12px)
     overscan: 3,
   });
 
@@ -394,6 +403,17 @@ function SheetMode({
       rowVirtualizer.scrollToIndex(0, { align: 'start' });
     }
   }, [debouncedSearch, section, state, rowVirtualizer]);
+
+  // Force virtualizer to re-measure when sheet opens
+  // Sheet animation delays container layout, so virtualizer sees 0 height initially
+  useEffect(() => {
+    if (state === 'expanded') {
+      const timer = setTimeout(() => {
+        rowVirtualizer.measure();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [state, rowVirtualizer]);
 
   // 🚀 OPTIMIZATION: Memoize handlers
   const handleBlockSelect = useCallback(
@@ -478,7 +498,6 @@ function SheetMode({
           <div
             ref={scrollContainerRef}
             className="flex-1 overflow-auto p-4"
-            style={{ contain: 'strict' }}
           >
             {displayedBlocks.length > 0 ? (
               <div
@@ -549,16 +568,13 @@ const BlockCard = memo(function BlockCard({ block, isSelected, onSelect }: Block
     <button
       onClick={handleClick}
       className={cn(
-        'flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all aspect-square hover:shadow-md hover:scale-[1.02]',
+        'w-full aspect-square flex items-center justify-center p-2 rounded-md border transition-colors',
         isSelected
-          ? 'border-primary bg-primary/10 text-primary shadow-md scale-[1.02]'
-          : 'border-transparent bg-muted/50 hover:border-primary/50 hover:bg-muted'
+          ? 'border-primary bg-primary/10 text-primary'
+          : 'border-border bg-muted/50 hover:bg-muted hover:border-muted-foreground/30'
       )}
     >
-      <span className="text-sm font-semibold line-clamp-3 text-center">{block.label}</span>
-      {isSelected && (
-        <Check className="h-4 w-4 mt-2 text-primary animate-in fade-in zoom-in duration-200" />
-      )}
+      <span className="text-xs font-medium line-clamp-2 text-center leading-tight">{block.label}</span>
     </button>
   );
 });

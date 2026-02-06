@@ -15,3 +15,4 @@ export { tenantsApi } from './tenants';
 export { productsApi } from './products';
 export { customersApi } from './customers';
 export { ordersApi } from './orders';
+export { feedApi } from './feed';

@@ -23,6 +23,9 @@ export * from './order';
 // Landing Types
 export * from './landing';
 
+// Feed Types
+export * from './feed';
+
 // Discover Types
 export * from './discover';
 

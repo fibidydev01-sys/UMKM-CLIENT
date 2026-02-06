@@ -857,6 +857,15 @@ html body[data-vaul-no-body-styles] {
   padding-right: 0 !important;
 }
 
+/* Landing builder: full-screen app, no body scrollbar needed */
+html body.landing-builder-active,
+html body.landing-builder-active[data-scroll-locked],
+html body.landing-builder-active[data-vaul-drawer-visible],
+html body.landing-builder-active[data-vaul-no-body-styles] {
+  overflow: hidden !important;
+  overflow-y: hidden !important;
+}
+
 .hide-scrollbar {
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE 10+ */

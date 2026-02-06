@@ -32,12 +32,7 @@ export function Hero5({
     <section className="relative min-h-screen overflow-hidden bg-background py-20">
       {/* Background - Iridescence */}
       <div className="absolute inset-0 opacity-15">
-        <Iridescence
-          color={[0.5, 0.6, 0.8]}
-          mouseReact
-          amplitude={0.1}
-          speed={1}
-        />
+        <Iridescence color={[0.5, 0.6, 0.8]} mouseReact amplitude={0.1} speed={1} />
       </div>
 
       <div className="container relative z-10 px-4 sm:px-6 lg:px-8">
@@ -126,7 +121,7 @@ export function Hero5({
                       key={i}
                       initial={{ opacity: 0, scale: 0 }}
                       animate={{ opacity: 0.3, scale: 1 }}
-                      transition={{ delay: 0.6 + (i * 0.005), duration: 0.3 }}
+                      transition={{ delay: 0.6 + i * 0.005, duration: 0.3 }}
                     >
                       <Circle className="h-2 w-2 md:h-3 md:w-3 fill-foreground text-foreground" />
                     </motion.div>
