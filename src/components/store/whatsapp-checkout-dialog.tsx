@@ -216,7 +216,7 @@ ${itemsList}
 
 ---
 Subtotal: ${formatPrice(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${formatPrice(tax)}` : ''}
-Ongkir: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}
+Ongos kirim: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}
 *Total: ${formatPrice(total)}*
 ---
 
