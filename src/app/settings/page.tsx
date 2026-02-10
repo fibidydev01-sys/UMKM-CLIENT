@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/settings/pembayaran');
+    router.replace('/settings/channels');
   }, [router]);
 
   return null;

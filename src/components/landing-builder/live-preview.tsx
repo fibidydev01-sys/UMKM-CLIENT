@@ -2,14 +2,20 @@
 
 // ==========================================
 // LIVE PREVIEW COMPONENT
-// Real-time preview of landing page
+// ==========================================
+// mode="isolated" → Renders ONLY activeSection (editing mode)
+// mode="full"     → Renders ALL sections (full preview drawer)
+//
+// BOTH modes respect the `device` prop:
+// - desktop → full width
+// - mobile  → 375px centered frame
+// - tablet  → 768px centered frame
 // ==========================================
 
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Tablet, ExternalLink, Loader2 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { TemplateProvider } from '@/lib/landing';
+import { EyeOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import {
   TenantHero,
   TenantAbout,
@@ -25,32 +31,41 @@ import type { TenantLandingConfig, Product, Tenant, SectionKey } from '@/types';
 // ==========================================
 
 type DeviceType = 'mobile' | 'tablet' | 'desktop';
+type PreviewMode = 'isolated' | 'full';
 
 interface LivePreviewProps {
   config: TenantLandingConfig;
   tenant: Tenant;
   products: Product[];
   isLoading?: boolean;
-  activeSection?: SectionKey | null; // 🚀 Active section for auto-scroll
-  device?: DeviceType; // 🚀 Device preview mode (controlled from page header)
-  drawerOpen?: boolean; // 🚀 Drawer state for Buka button
-  onToggleDrawer?: () => void; // 🚀 Toggle drawer handler
+  activeSection?: SectionKey | null;
+  device?: DeviceType;
+  mode?: PreviewMode;
+  drawerOpen?: boolean;
+  onToggleDrawer?: () => void;
 }
 
 // ==========================================
-// DEVICE DIMENSIONS (Locked Frame)
+// DEVICE DIMENSIONS
 // ==========================================
 
 const DEVICE_DIMENSIONS: Record<DeviceType, { width: string; height: string }> = {
-  mobile: { width: '375px', height: '667px' }, // iPhone SE
-  tablet: { width: '768px', height: '1024px' }, // iPad
-  desktop: { width: '100%', height: '100%' }, // Full available space
+  mobile: { width: '375px', height: '667px' },
+  tablet: { width: '768px', height: '1024px' },
+  desktop: { width: '100%', height: '100%' },
 };
 
-const DEVICE_ICONS: Record<DeviceType, React.ReactNode> = {
-  mobile: <Smartphone className="h-4 w-4" />,
-  tablet: <Tablet className="h-4 w-4" />,
-  desktop: <Monitor className="h-4 w-4" />,
+// ==========================================
+// SECTION LABELS (for disabled state)
+// ==========================================
+
+const SECTION_LABELS: Record<SectionKey, string> = {
+  hero: 'Hero',
+  about: 'About',
+  products: 'Products',
+  testimonials: 'Testimonials',
+  cta: 'CTA',
+  contact: 'Contact',
 };
 
 // ==========================================
@@ -63,55 +78,19 @@ export function LivePreview({
   products,
   isLoading = false,
   activeSection,
-  device = 'desktop', // 🚀 Controlled from page header
+  device = 'desktop',
+  mode = 'isolated',
   drawerOpen = false,
   onToggleDrawer,
 }: LivePreviewProps) {
 
-  // 🚀 Section refs for auto-scroll
-  const sectionRefs = useRef<Record<SectionKey, HTMLDivElement | null>>({
-    hero: null,
-    about: null,
-    products: null,
-    testimonials: null,
-    cta: null,
-    contact: null,
-  });
-
-  // 🚀 Scrollable container ref (iframe-like div)
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 🚀 Section order - use config.sectionOrder or default order
+  // Section order
   const defaultOrder: SectionKey[] = [
-    'hero',
-    'about',
-    'products',
-    'testimonials',
-    'cta',
-    'contact',
+    'hero', 'about', 'products', 'testimonials', 'cta', 'contact',
   ];
   const sectionOrder = config?.sectionOrder || defaultOrder;
-
-  // 🚀 Auto-scroll to active section (scroll inside iframe-like container)
-  useEffect(() => {
-    if (!activeSection) return;
-
-    const sectionElement = sectionRefs.current[activeSection];
-    const container = scrollContainerRef.current;
-
-    if (sectionElement && container) {
-      // Calculate position relative to scrollable container
-      const containerRect = container.getBoundingClientRect();
-      const sectionRect = sectionElement.getBoundingClientRect();
-      const scrollTop = container.scrollTop + (sectionRect.top - containerRect.top) - 100; // 100px offset from top
-
-      // Smooth scroll inside container
-      container.scrollTo({
-        top: scrollTop,
-        behavior: 'smooth',
-      });
-    }
-  }, [activeSection]);
 
   // Section enabled checks
   const heroEnabled = config?.hero?.enabled === true;
@@ -121,23 +100,32 @@ export function LivePreview({
   const ctaEnabled = config?.cta?.enabled === true;
   const contactEnabled = config?.contact?.enabled === true;
 
+  const enabledMap: Record<SectionKey, boolean> = {
+    hero: heroEnabled,
+    about: aboutEnabled,
+    products: productsEnabled,
+    testimonials: testimonialsEnabled,
+    cta: ctaEnabled,
+    contact: contactEnabled,
+  };
+
   const hasAnySectionEnabled =
     heroEnabled || aboutEnabled || productsEnabled || testimonialsEnabled || ctaEnabled || contactEnabled;
 
-  // 🚀 Section rendering map with refs for auto-scroll
+  // Section component map
   const sectionComponents: Record<SectionKey, React.ReactNode> = {
     hero: heroEnabled ? (
-      <div key="hero" ref={(el) => (sectionRefs.current.hero = el)}>
+      <div key="hero">
         <TenantHero config={config.hero} tenant={tenant} />
       </div>
     ) : null,
     about: aboutEnabled ? (
-      <div key="about" ref={(el) => (sectionRefs.current.about = el)}>
+      <div key="about">
         <TenantAbout config={config.about} tenant={tenant} />
       </div>
     ) : null,
     products: productsEnabled ? (
-      <div key="products" ref={(el) => (sectionRefs.current.products = el)}>
+      <div key="products">
         <TenantProducts
           products={products}
           config={config.products}
@@ -146,68 +134,135 @@ export function LivePreview({
       </div>
     ) : null,
     testimonials: testimonialsEnabled ? (
-      <div key="testimonials" ref={(el) => (sectionRefs.current.testimonials = el)}>
+      <div key="testimonials">
         <TenantTestimonials config={config.testimonials} tenant={tenant} />
       </div>
     ) : null,
     cta: ctaEnabled ? (
-      <div key="cta" ref={(el) => (sectionRefs.current.cta = el)}>
+      <div key="cta">
         <TenantCta config={config.cta} tenant={tenant} />
       </div>
     ) : null,
     contact: contactEnabled ? (
-      <div key="contact" ref={(el) => (sectionRefs.current.contact = el)}>
+      <div key="contact">
         <TenantContact config={config.contact} tenant={tenant} />
       </div>
     ) : null,
   };
 
-  return (
-    <div className="h-full flex flex-col">
-      {/* 🚀 No header - device controls moved to page header menubar */}
+  // ==========================================
+  // ISOLATED MODE — single section only
+  // ==========================================
 
-      {/* 🔒 LOCKED Preview Container - NO SCROLL here! */}
-      <div className="flex-1 overflow-hidden bg-muted/10 p-4 flex items-center justify-center">
-        {/* 🖼️ Device Frame (Locked dimensions) */}
-        <div
-          className="bg-background border rounded-lg shadow-lg transition-all duration-300 flex flex-col"
-          style={{
-            width: DEVICE_DIMENSIONS[device].width,
-            height: DEVICE_DIMENSIONS[device].height,
-            maxHeight: 'calc(100vh - 8rem)', // Ensure it fits in viewport
-          }}
-        >
-          {/* Device Label */}
-          {device !== 'desktop' && (
-            <div className="px-3 py-2 border-b bg-muted/30 text-xs text-muted-foreground text-center shrink-0">
-              {device === 'mobile' && '📱 Mobile'}
-              {device === 'tablet' && '📱 Tablet'}
-              ({DEVICE_DIMENSIONS[device].width} × {DEVICE_DIMENSIONS[device].height})
-            </div>
-          )}
+  if (mode === 'isolated') {
+    const currentSection = activeSection || 'hero';
+    const isSectionEnabled = enabledMap[currentSection];
+    const sectionNode = sectionComponents[currentSection];
 
-          {/* ✨ IFRAME-LIKE CONTENT (Scrollable) */}
-          <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
-            {/* Render landing page sections */}
-            <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
-              <div className="container px-4 py-8 space-y-8">
-                {/* 🚀 Render sections in custom order */}
-                {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
-
-                {/* Empty State */}
-                {!hasAnySectionEnabled && (
-                  <div className="text-center py-12 bg-muted/30 rounded-lg">
-                    <p className="text-muted-foreground mb-2">
-                      Landing page belum dikonfigurasi
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Aktifkan section di panel konfigurasi
-                    </p>
-                  </div>
-                )}
+    return (
+      <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-hidden bg-muted/10 p-4 flex items-center justify-center">
+          {/* Device Frame */}
+          <div
+            className="bg-background border rounded-lg shadow-lg transition-all duration-300 flex flex-col"
+            style={{
+              width: DEVICE_DIMENSIONS[device].width,
+              height: DEVICE_DIMENSIONS[device].height,
+              maxHeight: 'calc(100vh - 8rem)',
+            }}
+          >
+            {/* Device Label (mobile/tablet only) */}
+            {device !== 'desktop' && (
+              <div className="px-3 py-2 border-b bg-muted/30 text-xs text-muted-foreground text-center shrink-0">
+                {device === 'mobile' && '📱 Mobile'}
+                {device === 'tablet' && '📱 Tablet'}
+                &nbsp;({DEVICE_DIMENSIONS[device].width} × {DEVICE_DIMENSIONS[device].height})
               </div>
-            </TemplateProvider>
+            )}
+
+            {/* Scrollable Content */}
+            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden">
+              <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
+                <div className="container px-4 py-8 space-y-8">
+                  {isSectionEnabled && sectionNode ? (
+                    <div className="min-h-[200px]">
+                      {sectionNode}
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                      <div className="p-4 rounded-full bg-muted/50 mb-4">
+                        <EyeOff className="h-8 w-8 text-muted-foreground/50" />
+                      </div>
+                      <p className="text-muted-foreground font-medium">
+                        Section &quot;{SECTION_LABELS[currentSection]}&quot; belum aktif
+                      </p>
+                      <p className="text-sm text-muted-foreground/70 mt-1">
+                        Aktifkan di sidebar untuk melihat preview
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </TemplateProvider>
+            </div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // FULL MODE — all sections, with device frame
+  // ==========================================
+
+  const isDeviceFrame = device !== 'desktop';
+
+  const sectionsContent = (
+    <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
+      <div className="container px-4 py-8 space-y-8">
+        {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
+
+        {!hasAnySectionEnabled && (
+          <div className="text-center py-12 bg-muted/30 rounded-lg">
+            <p className="text-muted-foreground mb-2">
+              Landing page belum dikonfigurasi
+            </p>
+            <p className="text-sm text-muted-foreground">
+              Aktifkan section di panel konfigurasi
+            </p>
+          </div>
+        )}
+      </div>
+    </TemplateProvider>
+  );
+
+  // Desktop → full width, no frame
+  if (!isDeviceFrame) {
+    return sectionsContent;
+  }
+
+  // Mobile / Tablet → centered device frame
+  return (
+    <div className="flex justify-center py-6 px-4 min-h-full bg-muted/10">
+      <div
+        className={cn(
+          'bg-background border rounded-lg shadow-lg overflow-hidden transition-all duration-300',
+          'flex flex-col',
+        )}
+        style={{
+          width: DEVICE_DIMENSIONS[device].width,
+          maxWidth: '100%',
+        }}
+      >
+        {/* Device Label */}
+        <div className="px-3 py-2 border-b bg-muted/30 text-xs text-muted-foreground text-center shrink-0">
+          {device === 'mobile' && '📱 Mobile'}
+          {device === 'tablet' && '📱 Tablet'}
+          &nbsp;({DEVICE_DIMENSIONS[device].width})
+        </div>
+
+        {/* Content (no fixed height — scrolls with parent drawer) */}
+        <div className="overflow-hidden">
+          {sectionsContent}
         </div>
       </div>
     </div>

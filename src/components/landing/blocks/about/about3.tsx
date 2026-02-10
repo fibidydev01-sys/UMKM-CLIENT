@@ -1,7 +1,9 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { CheckCircle } from 'lucide-react';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import BlurText from '@/components/ui/blur-text/BlurText';
 
 interface About3Props {
   title: string;
@@ -15,56 +17,83 @@ interface About3Props {
   }>;
 }
 
-/**
- * About Block: about3
- * Design: CENTERED - Content focused, image below
- */
-export function About3({ title, subtitle, content, image, features = [] }: About3Props) {
+export function About3({ title, subtitle, content, features = [] }: About3Props) {
   return (
     <section id="about" className="py-16 md:py-24">
-      <div className="max-w-4xl mx-auto">
-        {/* Centered Header */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
-          {subtitle && (
-            <p className="text-lg md:text-xl text-muted-foreground mt-4">{subtitle}</p>
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div className="mb-12 md:mb-16 max-w-4xl mx-auto">
+          <div className="text-center mb-6">
+            <div className="flex justify-center">
+              <BlurText
+                text={title}
+                delay={150}
+                animateBy="words"
+                direction="top"
+                className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-center"
+              />
+            </div>
+            {subtitle && (
+              <motion.p
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="text-lg md:text-xl text-muted-foreground mt-4 text-center"
+              >
+                {subtitle}
+              </motion.p>
+            )}
+          </div>
+          {content && (
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="text-base md:text-lg text-muted-foreground leading-relaxed text-justify"
+            >
+              {content}
+            </motion.p>
           )}
         </div>
 
-        {/* Content */}
-        {content && (
-          <p className="text-base md:text-lg text-muted-foreground leading-relaxed text-center mb-10">
-            {content}
-          </p>
-        )}
-
-        {/* Features - Horizontal Pills */}
-        {features.length > 0 && (
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {features.map((feature, index) => (
-              <div
+        <div className="space-y-16 md:space-y-24">
+          {features.map((feature, index) => {
+            const isEven = index % 2 === 0;
+            return (
+              <motion.div
                 key={index}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-foreground"
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7 }}
+                className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center"
               >
-                <CheckCircle className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium">{feature.title}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Image Below */}
-        {image && (
-          <div className="relative aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl ring-1 ring-border">
-            <OptimizedImage
-              src={image}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
-          </div>
-        )}
+                {feature.icon && (
+                  <div className={`relative ${isEven ? 'md:order-1' : 'md:order-2'}`}>
+                    <AspectRatio ratio={4 / 3} className="rounded-2xl overflow-hidden shadow-2xl">
+                      <OptimizedImage
+                        src={feature.icon}
+                        alt={feature.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                    </AspectRatio>
+                  </div>
+                )}
+                <div className={isEven ? 'md:order-2' : 'md:order-1'}>
+                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
+                    {feature.title}
+                  </h3>
+                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                    {feature.description}
+                  </p>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

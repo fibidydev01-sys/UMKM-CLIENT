@@ -7,9 +7,10 @@ import {
   User,
   Send,
   Compass,
-  Film,
+  Bookmark,
   Menu,
   Settings,
+  CreditCard,
   Sun,
   Moon,
   LogOut,
@@ -46,9 +47,9 @@ const navItems = [
     label: 'Explore',
   },
   {
-    href: '/dashboard/reels',
-    icon: Film,
-    label: 'Reels',
+    href: '/dashboard/bookmarks',
+    icon: Bookmark,
+    label: 'Tersimpan',
   },
 ];
 
@@ -144,6 +145,12 @@ export function MobileNavbar() {
               <Link href="/settings">
                 <Settings className="mr-3 h-5 w-5" />
                 Pengaturan
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/subscription">
+                <CreditCard className="mr-3 h-5 w-5" />
+                Langganan
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

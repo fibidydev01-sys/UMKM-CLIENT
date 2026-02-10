@@ -1,22 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { Drawer } from 'vaul';
+import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { MessageCircle, Minus, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { formatPrice, generateWhatsAppLink } from '@/lib/format';
-import type { PublicTenant, PaymentMethods } from '@/types';
+import type { PaymentMethods } from '@/types';
 
 interface Product {
   id: string;
@@ -27,12 +21,20 @@ interface Product {
   trackStock?: boolean;
 }
 
+interface OrderTenant {
+  name: string;
+  whatsapp?: string;
+  taxRate?: number;
+  paymentMethods?: PaymentMethods;
+}
+
 interface WhatsAppOrderButtonProps {
   product: Product;
-  tenant: PublicTenant;
+  tenant: OrderTenant;
   className?: string;
-  variant?: 'default' | 'secondary' | 'outline';
+  variant?: 'default' | 'secondary' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  children?: ReactNode;
 }
 
 export function WhatsAppOrderButton({
@@ -41,6 +43,7 @@ export function WhatsAppOrderButton({
   className,
   variant = 'default',
   size = 'default',
+  children,
 }: WhatsAppOrderButtonProps) {
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState(1);
@@ -128,136 +131,174 @@ Terima kasih! 🙏`;
   const isOutOfStock = product.trackStock && (product.stock ?? 0) <= 0;
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+    <Drawer.Root open={open} onOpenChange={setOpen}>
+      <Drawer.Trigger asChild>
         <Button
           variant={variant}
           size={size}
           className={className}
           disabled={isOutOfStock}
         >
-          <MessageCircle className="mr-2 h-4 w-4" />
-          {isOutOfStock ? 'Stok Habis' : 'Pesan via WhatsApp'}
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Pesan {product.name}</DialogTitle>
-          <DialogDescription>
-            Lengkapi detail pesanan untuk dikirim ke {tenant.name}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="space-y-4 py-4">
-          {/* Product Info */}
-          <div className="rounded-lg bg-muted p-3">
-            <p className="font-medium">{product.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {formatPrice(product.price)} / {product.unit || 'pcs'}
-            </p>
-            {product.trackStock && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Stok tersedia: {product.stock}
-              </p>
-            )}
-          </div>
-
-          {/* Quantity */}
-          <div className="space-y-2">
-            <Label>Jumlah</Label>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={decrementQty}
-                disabled={qty <= 1}
-              >
-                <Minus className="h-4 w-4" />
-              </Button>
-              <Input
-                type="number"
-                min={1}
-                max={maxStock}
-                value={qty}
-                onChange={(e) => {
-                  const val = parseInt(e.target.value) || 1;
-                  setQty(Math.min(Math.max(val, 1), maxStock));
-                }}
-                className="w-20 text-center"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={incrementQty}
-                disabled={qty >= maxStock}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
-              <span className="text-sm text-muted-foreground">
-                {product.unit || 'pcs'}
-              </span>
-            </div>
-          </div>
-
-          {/* Customer Name */}
-          <div className="space-y-2">
-            <Label htmlFor="order-name">Nama (Opsional)</Label>
-            <Input
-              id="order-name"
-              placeholder="Nama Anda"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="order-notes">Catatan (Opsional)</Label>
-            <Textarea
-              id="order-notes"
-              placeholder="Catatan tambahan..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-            />
-          </div>
-
-          {/* Total */}
-          <div className="rounded-lg border p-3 space-y-1">
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatPrice(subtotal)}</span>
-            </div>
-            {tax > 0 && (
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
-                <span>{formatPrice(tax)}</span>
-              </div>
-            )}
-            <div className="flex justify-between font-semibold pt-1 border-t">
-              <span>Total</span>
-              <span>{formatPrice(total)}</span>
-            </div>
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Batal
-          </Button>
-          <Button onClick={handleOrder} disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
+          {children || (
+            <>
               <MessageCircle className="mr-2 h-4 w-4" />
-            )}
-            Kirim via WhatsApp
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+              {isOutOfStock ? 'Stok Habis' : 'Pesan via WhatsApp'}
+            </>
+          )}
+        </Button>
+      </Drawer.Trigger>
+
+      <Drawer.Portal>
+        <Drawer.Overlay className="fixed inset-0 bg-black/60 z-[9999]" />
+        <Drawer.Content
+          className={cn(
+            'fixed bottom-0 left-0 right-0 z-[10000]',
+            'bg-background rounded-t-[20px]',
+            'h-[85vh] outline-none',
+            'flex flex-col',
+          )}
+          aria-describedby="wa-order-drawer-description"
+        >
+          <Drawer.Title asChild>
+            <VisuallyHidden.Root>Pesan {product.name}</VisuallyHidden.Root>
+          </Drawer.Title>
+          <Drawer.Description asChild>
+            <VisuallyHidden.Root id="wa-order-drawer-description">
+              Lengkapi detail pesanan untuk dikirim ke {tenant.name}
+            </VisuallyHidden.Root>
+          </Drawer.Description>
+
+          {/* Drag Handle */}
+          <div className="flex justify-center pt-3 pb-2 shrink-0">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+
+          {/* Header */}
+          <div className="px-6 pb-3 border-b shrink-0">
+            <div className="max-w-2xl mx-auto w-full">
+              <h3 className="font-semibold text-lg">Pesan {product.name}</h3>
+              <p className="text-sm text-muted-foreground">
+                Lengkapi detail pesanan untuk dikirim ke {tenant.name}
+              </p>
+            </div>
+          </div>
+
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="max-w-2xl mx-auto w-full px-6 py-4 space-y-4">
+              {/* Product Info */}
+              <div className="rounded-lg bg-muted p-3">
+                <p className="font-medium">{product.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {formatPrice(product.price)} / {product.unit || 'pcs'}
+                </p>
+                {product.trackStock && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Stok tersedia: {product.stock}
+                  </p>
+                )}
+              </div>
+
+              {/* Quantity */}
+              <div className="space-y-2">
+                <Label>Jumlah</Label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={decrementQty}
+                    disabled={qty <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={maxStock}
+                    value={qty}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value) || 1;
+                      setQty(Math.min(Math.max(val, 1), maxStock));
+                    }}
+                    className="w-20 text-center"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={incrementQty}
+                    disabled={qty >= maxStock}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    {product.unit || 'pcs'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Customer Name */}
+              <div className="space-y-2">
+                <Label htmlFor="order-name">Nama (Opsional)</Label>
+                <Input
+                  id="order-name"
+                  placeholder="Nama Anda"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="space-y-2">
+                <Label htmlFor="order-notes">Catatan (Opsional)</Label>
+                <Textarea
+                  id="order-notes"
+                  placeholder="Catatan tambahan..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                />
+              </div>
+
+              {/* Total */}
+              <div className="rounded-lg border p-3 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Subtotal</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                {tax > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
+                    <span>{formatPrice(tax)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-semibold pt-1 border-t">
+                  <span>Total</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sticky Footer */}
+          <div className="border-t px-6 py-4 shrink-0">
+            <div className="max-w-2xl mx-auto w-full flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setOpen(false)}>
+                Batal
+              </Button>
+              <Button className="flex-1" onClick={handleOrder} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <MessageCircle className="mr-2 h-4 w-4" />
+                )}
+                Kirim via WhatsApp
+              </Button>
+            </div>
+          </div>
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }

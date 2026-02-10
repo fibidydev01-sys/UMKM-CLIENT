@@ -1,16 +1,10 @@
 'use client';
 
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
+import RotatingText from '@/components/ui/rotating-text/RotatingText';
 
-/**
- * About2 Props - Mapped from Data Contract (LANDING-DATA-CONTRACT.md)
- *
- * @prop title - aboutTitle: Section heading
- * @prop subtitle - aboutSubtitle: Section subheading
- * @prop content - aboutContent: Main description text
- * @prop image - aboutImage: Cloudinary URL (800x600px)
- * @prop features - aboutFeatures: Array<{icon (Cloudinary URL), title, description}>
- */
 interface About8Props {
   title: string;
   subtitle?: string;
@@ -23,72 +17,89 @@ interface About8Props {
   }>;
 }
 
-/**
- * About Block: about8
- * Design: Side by Side with Feature Gallery
- */
-export function About8({ title, subtitle, content, image, features = [] }: About8Props) {
-  return (
-    <section id="about" className="py-12">
-      {/* Section Header */}
-      <div className="text-center mb-12">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2 text-lg">{subtitle}</p>}
-      </div>
+export function About8({ title, subtitle, content, features = [] }: About8Props) {
+  const [activeTab, setActiveTab] = useState(0);
 
-      <div className="grid md:grid-cols-2 gap-12 items-start">
-        {/* Left: Main Image */}
-        {image && (
-          <div>
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-              <OptimizedImage
-                src={image}
-                alt={title}
-                fill
-                className="object-cover"
+  return (
+    <section id="about" className="py-16 md:py-24">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12 md:mb-16"
+        >
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground inline-flex items-center gap-3 flex-wrap justify-center">
+            {title}{' '}
+            {features.length > 0 && (
+              <RotatingText
+                texts={features.map((f) => f.title)}
+                mainClassName="px-3 py-1 bg-primary text-primary-foreground rounded-lg"
+                staggerFrom="last"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '-120%' }}
+                staggerDuration={0.025}
+                transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                rotationInterval={3000}
               />
-            </div>
+            )}
+          </h2>
+          {subtitle && (
+            <p className="text-lg md:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
+          )}
+        </motion.div>
+
+        {content && (
+          <p className="text-base md:text-lg text-muted-foreground text-center max-w-2xl mx-auto mb-8">{content}</p>
+        )}
+
+        {features.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-8 justify-center">
+            {features.map((tab, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveTab(i)}
+                className={`px-5 py-3 rounded-xl text-sm font-medium transition-all ${activeTab === i
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                  }`}
+              >
+                {tab.title}
+              </button>
+            ))}
           </div>
         )}
 
-        {/* Right: Content */}
-        <div className="space-y-6">
-          {content && (
-            <p className="text-muted-foreground leading-relaxed text-lg">
-              {content}
-            </p>
-          )}
-
-          {/* Features Gallery - Display as image cards */}
-          {features.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="group rounded-xl border bg-card p-4 hover:shadow-lg transition-all"
-                >
-                  {/* Feature Image */}
-                  {feature.icon && (
-                    <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-3 bg-muted">
-                      <OptimizedImage
-                        src={feature.icon}
-                        alt={feature.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  )}
-                  <h3 className="font-semibold mb-1">{feature.title}</h3>
-                  {feature.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {feature.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {features.length > 0 && (
+          <div className="max-w-3xl mx-auto">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="text-center space-y-6 p-8 rounded-2xl bg-muted/50"
+              >
+                {features[activeTab]?.icon && (
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden shadow-xl">
+                    <OptimizedImage
+                      src={features[activeTab].icon}
+                      alt={features[activeTab].title}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
+                  {features[activeTab]?.description}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        )}
       </div>
     </section>
   );

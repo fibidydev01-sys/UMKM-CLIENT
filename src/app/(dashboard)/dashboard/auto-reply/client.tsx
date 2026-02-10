@@ -159,12 +159,14 @@ function TabHeader({
   onAdd,
   actionLabel,
   disabled,
+  hideAction,
 }: {
   viewMode: ViewMode;
   onViewModeChange: (mode: ViewMode) => void;
   onAdd: () => void;
   actionLabel: string;
   disabled?: boolean;
+  hideAction?: boolean;
 }) {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -181,10 +183,12 @@ function TabHeader({
         </ToggleGroupItem>
       </ToggleGroup>
 
-      <Button onClick={onAdd} disabled={disabled}>
-        <Plus className="h-4 w-4 mr-2" />
-        {actionLabel}
-      </Button>
+      {!hideAction && (
+        <Button onClick={onAdd} disabled={disabled}>
+          <Plus className="h-4 w-4 mr-2" />
+          {actionLabel}
+        </Button>
+      )}
     </div>
   );
 }
@@ -481,6 +485,7 @@ function WelcomeTabContent() {
   }, [fetchRules]);
 
   const welcomeRules = rules.filter((r) => r.triggerType === 'WELCOME');
+  const hasWelcomeRule = welcomeRules.length > 0;
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -511,6 +516,7 @@ function WelcomeTabContent() {
         onViewModeChange={setViewMode}
         onAdd={() => setIsCreating(true)}
         actionLabel="Tambah Welcome"
+        hideAction={hasWelcomeRule}
       />
 
       {welcomeRules.length === 0 ? (
@@ -658,11 +664,18 @@ function KeywordsTabContent() {
 // ORDER STATUS TAB CONTENT
 // ══════════════════════════════════════════════════════════════
 
+const ORDER_STATUSES = [
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'PROCESSING', label: 'Processing' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+] as const;
+
 function OrderStatusTabContent() {
   const { rules, isLoading, isDeleting, fetchRules, deleteRule, toggleRule } = useAutoReply();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [creatingStatus, setCreatingStatus] = useState<string | null>(null);
   const [editingRule, setEditingRule] = useState<AutoReplyRule | null>(null);
 
   const hasFetched = useRef(false);
@@ -675,6 +688,15 @@ function OrderStatusTabContent() {
   }, [fetchRules]);
 
   const orderStatusRules = rules.filter((r) => r.triggerType === 'ORDER_STATUS');
+
+  // Find statuses that already have rules
+  const existingStatuses = orderStatusRules
+    .filter((r) => r.keywords && r.keywords.length > 0)
+    .map((r) => r.keywords[0]);
+  const availableStatuses = ORDER_STATUSES.filter(
+    (s) => !existingStatuses.includes(s.value),
+  );
+  const allStatusesFilled = availableStatuses.length === 0;
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -689,7 +711,7 @@ function OrderStatusTabContent() {
         <TabHeader
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          onAdd={() => setIsCreating(true)}
+          onAdd={() => {}}
           actionLabel="Tambah Rule"
           disabled
         />
@@ -703,9 +725,27 @@ function OrderStatusTabContent() {
       <TabHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onAdd={() => setIsCreating(true)}
+        onAdd={() => availableStatuses.length > 0 && setCreatingStatus(availableStatuses[0].value)}
         actionLabel="Tambah Rule"
+        hideAction={allStatusesFilled}
       />
+
+      {/* Status picker buttons for available statuses */}
+      {availableStatuses.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {availableStatuses.map((s) => (
+            <Button
+              key={s.value}
+              variant="outline"
+              size="sm"
+              onClick={() => setCreatingStatus(s.value)}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              {s.label}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {orderStatusRules.length === 0 ? (
         <EmptyState
@@ -713,7 +753,7 @@ function OrderStatusTabContent() {
           title="Belum ada Order Status Rules"
           description="Buat notifikasi otomatis saat status order berubah (diproses, dikirim, selesai)"
           actionLabel="Create Order Status Rule"
-          onAction={() => setIsCreating(true)}
+          onAction={() => setCreatingStatus(ORDER_STATUSES[0].value)}
         />
       ) : viewMode === 'list' ? (
         <RulesTable
@@ -739,10 +779,11 @@ function OrderStatusTabContent() {
       />
 
       <OrderStatusRuleForm
+        status={creatingStatus}
         rule={editingRule}
-        open={!!(isCreating || editingRule)}
+        open={!!(creatingStatus || editingRule)}
         onClose={() => {
-          setIsCreating(false);
+          setCreatingStatus(null);
           setEditingRule(null);
         }}
         onSuccess={() => fetchRules()}
@@ -755,11 +796,17 @@ function OrderStatusTabContent() {
 // PAYMENT TAB CONTENT
 // ══════════════════════════════════════════════════════════════
 
+const PAYMENT_STATUSES = [
+  { value: 'PAID', label: 'Paid' },
+  { value: 'PARTIAL', label: 'Partial' },
+  { value: 'FAILED', label: 'Failed' },
+] as const;
+
 function PaymentTabContent() {
   const { rules, isLoading, isDeleting, fetchRules, deleteRule, toggleRule } = useAutoReply();
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
+  const [creatingStatus, setCreatingStatus] = useState<string | null>(null);
   const [editingRule, setEditingRule] = useState<AutoReplyRule | null>(null);
 
   const hasFetched = useRef(false);
@@ -772,6 +819,15 @@ function PaymentTabContent() {
   }, [fetchRules]);
 
   const paymentRules = rules.filter((r) => r.triggerType === 'PAYMENT_STATUS');
+
+  // Find statuses that already have rules
+  const existingStatuses = paymentRules
+    .filter((r) => r.keywords && r.keywords.length > 0)
+    .map((r) => r.keywords[0]);
+  const availableStatuses = PAYMENT_STATUSES.filter(
+    (s) => !existingStatuses.includes(s.value),
+  );
+  const allStatusesFilled = availableStatuses.length === 0;
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -786,7 +842,7 @@ function PaymentTabContent() {
         <TabHeader
           viewMode={viewMode}
           onViewModeChange={setViewMode}
-          onAdd={() => setIsCreating(true)}
+          onAdd={() => {}}
           actionLabel="Tambah Rule"
           disabled
         />
@@ -800,17 +856,35 @@ function PaymentTabContent() {
       <TabHeader
         viewMode={viewMode}
         onViewModeChange={setViewMode}
-        onAdd={() => setIsCreating(true)}
+        onAdd={() => availableStatuses.length > 0 && setCreatingStatus(availableStatuses[0].value)}
         actionLabel="Tambah Rule"
+        hideAction={allStatusesFilled}
       />
+
+      {/* Status picker buttons for available statuses */}
+      {availableStatuses.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {availableStatuses.map((s) => (
+            <Button
+              key={s.value}
+              variant="outline"
+              size="sm"
+              onClick={() => setCreatingStatus(s.value)}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1.5" />
+              {s.label}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {paymentRules.length === 0 ? (
         <EmptyState
           icon={DollarSign}
           title="Belum ada Payment Rules"
-          description="Buat notifikasi otomatis saat status pembayaran berubah (pending, paid, expired)"
+          description="Buat notifikasi otomatis saat status pembayaran berubah (paid, partial, failed)"
           actionLabel="Create Payment Rule"
-          onAction={() => setIsCreating(true)}
+          onAction={() => setCreatingStatus(PAYMENT_STATUSES[0].value)}
         />
       ) : viewMode === 'list' ? (
         <RulesTable
@@ -836,10 +910,11 @@ function PaymentTabContent() {
       />
 
       <PaymentStatusRuleForm
+        status={creatingStatus}
         rule={editingRule}
-        open={!!(isCreating || editingRule)}
+        open={!!(creatingStatus || editingRule)}
         onClose={() => {
-          setIsCreating(false);
+          setCreatingStatus(null);
           setEditingRule(null);
         }}
         onSuccess={() => fetchRules()}

@@ -37,7 +37,7 @@ export type DrawerState = 'collapsed' | 'expanded';
  * - UI only displays first 10 blocks per section
  * - This prevents overwhelming users with too many options
  */
-const UI_DISPLAY_LIMIT = 10;
+const UI_DISPLAY_LIMIT = 50;
 
 interface BlockDrawerProps {
   state: DrawerState;
@@ -197,7 +197,7 @@ function DrawerMode({
   return (
     <Drawer.Root
       open={true}
-      onOpenChange={() => {}}
+      onOpenChange={() => { }}
       modal={false}
       noBodyStyles
       dismissible={false}

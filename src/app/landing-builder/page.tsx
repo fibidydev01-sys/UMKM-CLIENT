@@ -3,13 +3,14 @@
  * FILE: app/landing-builder/page.tsx
  * ============================================================================
  * Route: /landing-builder
- * Description: Full-Screen Landing Page Builder (Isolated from Dashboard)
- * Layout: Sidebar (left) | Preview (center) | Wide Sheet (right overlay)
+ * Description: Full-Screen Landing Page Builder
+ * Layout: Sidebar (left) | Isolated Preview (center) | Block Drawer (overlay)
+ * NEW: Full Preview Drawer via Vaul bottom sheet
  * ============================================================================
  */
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -27,13 +28,26 @@ import {
   BuilderSidebar,
   BlockDrawer,
   BuilderLoadingSteps,
+  FullPreviewDrawer,
 } from '@/components/landing-builder';
 import type { SectionType, DrawerState } from '@/components/landing-builder';
 import { useTenant } from '@/hooks';
 import { useLandingConfig } from '@/hooks/use-landing-config';
 import { productsApi } from '@/lib/api';
 import { mergeWithTemplateDefaults, type TemplateId } from '@/lib/landing';
-import { Save, Home, PanelLeftClose, PanelLeft, RotateCcw, Smartphone, Tablet, Monitor, Menu, ExternalLink } from 'lucide-react';
+import {
+  Save,
+  Home,
+  PanelLeftClose,
+  PanelLeft,
+  RotateCcw,
+  Smartphone,
+  Tablet,
+  Monitor,
+  Menu,
+  ExternalLink,
+  Eye,
+} from 'lucide-react';
 import Link from 'next/link';
 import type { TenantLandingConfig, Product } from '@/types';
 
@@ -52,11 +66,14 @@ export default function LandingBuilderPage() {
   const [productsLoading, setProductsLoading] = useState(true);
 
   // UI State
-  const [activeSection, setActiveSection] = useState<SectionType>('hero'); // 🚀 Default to hero so drawer shows
+  const [activeSection, setActiveSection] = useState<SectionType>('hero');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [drawerState, setDrawerState] = useState<DrawerState>('collapsed'); // Start collapsed, user can expand manually
-  const [loadingComplete, setLoadingComplete] = useState(false); // 🚀 Track when loading screen dismissed
-  const [device, setDevice] = useState<DeviceType>('desktop'); // 🚀 Device preview mode
+  const [drawerState, setDrawerState] = useState<DrawerState>('collapsed');
+  const [loadingComplete, setLoadingComplete] = useState(false);
+  const [device, setDevice] = useState<DeviceType>('desktop');
+
+  // 🚀 Full Preview Drawer
+  const [fullPreviewOpen, setFullPreviewOpen] = useState(false);
 
   // ============================================================================
   // LANDING CONFIG HOOK
@@ -76,18 +93,16 @@ export default function LandingBuilderPage() {
     onSaveSuccess: () => refresh(),
   });
 
-  // 🚀 Section order state - default order if not in config
   const defaultSectionOrder: SectionType[] = ['hero', 'about', 'products', 'testimonials', 'cta', 'contact'];
   const sectionOrder = landingConfig?.sectionOrder || defaultSectionOrder;
 
   // ============================================================================
-  // FETCH PRODUCTS FOR PREVIEW
+  // FETCH PRODUCTS
   // ============================================================================
 
   useEffect(() => {
     const fetchProducts = async () => {
       if (!tenant) return;
-
       try {
         setProductsLoading(true);
         const response = await productsApi.getByStore(tenant.slug, {
@@ -102,12 +117,11 @@ export default function LandingBuilderPage() {
         setProductsLoading(false);
       }
     };
-
     fetchProducts();
   }, [tenant]);
 
   // ============================================================================
-  // INITIAL TEMPLATE APPLICATION
+  // INITIAL TEMPLATE
   // ============================================================================
 
   useEffect(() => {
@@ -118,66 +132,44 @@ export default function LandingBuilderPage() {
     const mergedConfig = mergeWithTemplateDefaults(
       landingConfig,
       initialTemplateParam as TemplateId,
-      {
-        name: tenant.name,
-        category: tenant.category,
-      }
+      { name: tenant.name, category: tenant.category }
     );
-
     setLandingConfig(mergedConfig as TenantLandingConfig);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTemplateParam, tenant?.name, tenant?.category]);
 
   // ============================================================================
-  // SIDEBAR & SHEET HANDLERS
+  // HANDLERS
   // ============================================================================
 
-  // Step 1: User clicks section → Switch section (drawer stays collapsed)
   const handleSectionClick = useCallback((section: SectionType) => {
     setActiveSection(section);
-    // ✅ Drawer stays collapsed - user controls expand/collapse with toggle button only
   }, []);
 
-  // Step 2: User clicks block → Update config (NO form sheet - data edited in Settings)
   const handleBlockSelect = useCallback((block: string) => {
     if (!activeSection || !landingConfig) return;
-
-    // Update block in config
     const currentSection = landingConfig[activeSection] || {};
     setLandingConfig({
       ...landingConfig,
-      [activeSection]: {
-        ...currentSection,
-        block,
-      },
+      [activeSection]: { ...currentSection, block },
     } as TenantLandingConfig);
-
-    // NO form sheet - just update config directly
   }, [activeSection, landingConfig, setLandingConfig]);
 
-  // 🚀 Quick toggle from sidebar (any section)
   const handleSidebarToggleSection = useCallback((section: SectionType, enabled: boolean) => {
     if (!landingConfig) return;
-
     const currentSection = landingConfig[section] || {};
     setLandingConfig({
       ...landingConfig,
-      [section]: {
-        ...currentSection,
-        enabled,
-      },
+      [section]: { ...currentSection, enabled },
     } as TenantLandingConfig);
   }, [landingConfig, setLandingConfig]);
 
-  // 🚀 Get section enabled status
   const getSectionEnabled = useCallback((section: SectionType): boolean => {
     return landingConfig?.[section]?.enabled ?? true;
   }, [landingConfig]);
 
-  // 🚀 Handle section reordering
   const handleSectionOrderChange = useCallback((newOrder: SectionType[]) => {
     if (!landingConfig) return;
-
     setLandingConfig({
       ...landingConfig,
       sectionOrder: newOrder,
@@ -185,38 +177,27 @@ export default function LandingBuilderPage() {
   }, [landingConfig, setLandingConfig]);
 
   // ============================================================================
-  // PREVENT BODY SCROLL - Override body overflow for this page only
-  // ⚠️ MUST be before any conditional returns to follow Rules of Hooks!
+  // PREVENT BODY SCROLL
   // ============================================================================
 
   useEffect(() => {
-    // Hide body scrollbar to prevent double scrollbar (preview has its own scroll)
     document.body.style.overflow = 'hidden';
-    return () => {
-      // Restore body overflow when leaving page
-      document.body.style.overflow = '';
-    };
+    return () => { document.body.style.overflow = ''; };
   }, []);
 
   // ============================================================================
-  // LOADING STATE - Real loading based on actual data fetching
+  // LOADING
   // ============================================================================
 
   const tenantLoading = tenant === null;
   const configReady = landingConfig !== null && landingConfig !== undefined;
   const isStillLoading = tenantLoading || productsLoading || !configReady;
 
-  // Show loading screen while data is loading OR until animation completes
-  // Key prop forces remount on navigation to reset internal state
   if (isStillLoading || !loadingComplete) {
     return (
       <BuilderLoadingSteps
-        key="builder-loading" // Reset on remount
-        loadingStates={{
-          tenantLoading,
-          productsLoading,
-          configReady,
-        }}
+        key="builder-loading"
+        loadingStates={{ tenantLoading, productsLoading, configReady }}
         onComplete={() => setLoadingComplete(true)}
       />
     );
@@ -231,12 +212,12 @@ export default function LandingBuilderPage() {
   }
 
   // ============================================================================
-  // RENDER: FULL SCREEN ISOLATED LAYOUT
+  // RENDER
   // ============================================================================
 
   return (
     <div className="h-screen flex flex-col">
-      {/* 🚀 Minimal Header: Sidebar Toggle + Menubar */}
+      {/* ── Header ────────────────────────────────────────────── */}
       <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           {/* Sidebar Toggle */}
@@ -252,7 +233,6 @@ export default function LandingBuilderPage() {
             )}
           </Button>
 
-          {/* 🚀 Menubar - All actions in one place */}
           <Menubar className="border-0 bg-transparent">
             {/* Dashboard */}
             <MenubarMenu>
@@ -270,7 +250,7 @@ export default function LandingBuilderPage() {
               </MenubarContent>
             </MenubarMenu>
 
-            {/* Device Preview */}
+            {/* Device Preview (for isolated preview) */}
             <MenubarMenu>
               <MenubarTrigger className="gap-2 cursor-pointer">
                 {device === 'mobile' && <Smartphone className="h-4 w-4" />}
@@ -280,16 +260,13 @@ export default function LandingBuilderPage() {
               </MenubarTrigger>
               <MenubarContent>
                 <MenubarItem onClick={() => setDevice('mobile')} className="gap-2 cursor-pointer">
-                  <Smartphone className="h-4 w-4" />
-                  Mobile
+                  <Smartphone className="h-4 w-4" /> Mobile
                 </MenubarItem>
                 <MenubarItem onClick={() => setDevice('tablet')} className="gap-2 cursor-pointer">
-                  <Tablet className="h-4 w-4" />
-                  Tablet
+                  <Tablet className="h-4 w-4" /> Tablet
                 </MenubarItem>
                 <MenubarItem onClick={() => setDevice('desktop')} className="gap-2 cursor-pointer">
-                  <Monitor className="h-4 w-4" />
-                  Desktop
+                  <Monitor className="h-4 w-4" /> Desktop
                 </MenubarItem>
               </MenubarContent>
             </MenubarMenu>
@@ -301,6 +278,14 @@ export default function LandingBuilderPage() {
                 <span className="hidden sm:inline">Actions</span>
               </MenubarTrigger>
               <MenubarContent>
+                <MenubarItem
+                  onClick={() => setFullPreviewOpen(true)}
+                  className="gap-2 cursor-pointer"
+                >
+                  <Eye className="h-4 w-4" />
+                  Full Preview
+                </MenubarItem>
+                <MenubarSeparator />
                 {hasUnsavedChanges && (
                   <>
                     <MenubarItem onClick={handleDiscard} disabled={isSaving} className="gap-2 cursor-pointer">
@@ -339,8 +324,18 @@ export default function LandingBuilderPage() {
           </Menubar>
         </div>
 
-        {/* Status Badges */}
+        {/* Right: Full Preview Button + Badges */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFullPreviewOpen(true)}
+            className="gap-2 hidden sm:flex"
+          >
+            <Eye className="h-4 w-4" />
+            Full Preview
+          </Button>
+
           {hasUnsavedChanges && (
             <Badge variant="outline" className="text-yellow-600 border-yellow-500">
               Unsaved
@@ -352,9 +347,9 @@ export default function LandingBuilderPage() {
         </div>
       </div>
 
-      {/* Main Layout: Sidebar + Preview */}
+      {/* ── Main Layout ───────────────────────────────────────── */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT: Section Sidebar (Fixed) */}
+        {/* Sidebar */}
         <BuilderSidebar
           activeSection={activeSection}
           onSectionClick={handleSectionClick}
@@ -365,7 +360,7 @@ export default function LandingBuilderPage() {
           onToggleSection={handleSidebarToggleSection}
         />
 
-        {/* CENTER: Live Preview */}
+        {/* Isolated Preview */}
         <div className="flex-1 overflow-hidden bg-gradient-to-br from-muted/30 via-background to-muted/30">
           <LandingErrorBoundary>
             <LivePreview
@@ -373,22 +368,30 @@ export default function LandingBuilderPage() {
               tenant={tenant}
               products={products}
               isLoading={productsLoading}
-              activeSection={activeSection} // 🚀 Pass active section for auto-scroll
-              device={device} // 🚀 Pass device mode from header
+              activeSection={activeSection}
+              device={device}
+              mode="isolated"
             />
           </LandingErrorBoundary>
         </div>
       </div>
 
-      {/* BOTTOM OVERLAY: Block Drawer (2 states: collapsed/expanded) */}
-      {/* Drawer ALWAYS VISIBLE - never fully closes */}
-      {/* Drawer uses fixed positioning to overlay at bottom - must be outside flex container */}
+      {/* Block Drawer */}
       <BlockDrawer
         state={drawerState}
         onStateChange={setDrawerState}
         section={activeSection}
         currentBlock={landingConfig?.[activeSection]?.block}
         onBlockSelect={handleBlockSelect}
+      />
+
+      {/* 🚀 Full Preview Drawer */}
+      <FullPreviewDrawer
+        open={fullPreviewOpen}
+        onOpenChange={setFullPreviewOpen}
+        config={landingConfig}
+        tenant={tenant}
+        products={products}
       />
     </div>
   );

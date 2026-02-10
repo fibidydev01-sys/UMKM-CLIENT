@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import {
   Store,
   Layers,
+  CreditCard,
   LogOut,
   Menu,
   Moon,
@@ -198,6 +199,12 @@ export function SettingsSidebar() {
                   <Link href="/dashboard">
                     <Home className="mr-3 h-5 w-5" />
                     Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/subscription">
+                    <CreditCard className="mr-3 h-5 w-5" />
+                    Langganan
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

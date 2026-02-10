@@ -13,8 +13,8 @@ import {
   Moon,
   Sun,
   Compass,
-  Film,
   Bookmark,
+  CreditCard,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -74,11 +74,6 @@ const navigation: NavGroup[] = [
         title: 'Explore',
         href: '/dashboard/explore',
         icon: Compass,
-      },
-      {
-        title: 'Reels',
-        href: '/dashboard/reels',
-        icon: Film,
       },
       {
         title: 'Tersimpan',
@@ -220,6 +215,12 @@ export function DashboardSidebar() {
                   <Link href="/settings">
                     <Settings className="mr-3 h-5 w-5" />
                     Pengaturan
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard/subscription">
+                    <CreditCard className="mr-3 h-5 w-5" />
+                    Langganan
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

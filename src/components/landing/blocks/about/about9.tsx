@@ -1,16 +1,9 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
+import ScrollFloat from '@/components/ui/scroll-float/ScrollFloat';
 
-/**
- * About2 Props - Mapped from Data Contract (LANDING-DATA-CONTRACT.md)
- *
- * @prop title - aboutTitle: Section heading
- * @prop subtitle - aboutSubtitle: Section subheading
- * @prop content - aboutContent: Main description text
- * @prop image - aboutImage: Cloudinary URL (800x600px)
- * @prop features - aboutFeatures: Array<{icon (Cloudinary URL), title, description}>
- */
 interface About9Props {
   title: string;
   subtitle?: string;
@@ -23,70 +16,49 @@ interface About9Props {
   }>;
 }
 
-/**
- * About Block: about9
- * Design: Side by Side with Feature Gallery
- */
-export function About9({ title, subtitle, content, image, features = [] }: About9Props) {
+export function About9({ title, subtitle, content, image }: About9Props) {
   return (
-    <section id="about" className="py-12">
-      {/* Section Header */}
-      <div className="text-center mb-12">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2 text-lg">{subtitle}</p>}
-      </div>
+    <section id="about" className="relative min-h-screen">
+      {image && (
+        <div className="absolute inset-0 -z-10">
+          <OptimizedImage src={image} alt="" fill className="object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+        </div>
+      )}
+      {!image && <div className="absolute inset-0 -z-10 bg-gray-900" />}
 
-      <div className="grid md:grid-cols-2 gap-12 items-start">
-        {/* Left: Main Image */}
-        {image && (
-          <div>
-            <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl">
-              <OptimizedImage
-                src={image}
-                alt={title}
-                fill
-                className="object-cover"
-              />
-            </div>
-          </div>
-        )}
+      <div className="relative z-10 py-32 md:py-40">
+        <div className="container mx-auto px-4 md:px-6 lg:px-8 max-w-3xl text-center">
+          <ScrollFloat
+            animationDuration={1}
+            ease="back.inOut(2)"
+            stagger={0.03}
+          >
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">{title}</h2>
+          </ScrollFloat>
 
-        {/* Right: Content */}
-        <div className="space-y-6">
-          {content && (
-            <p className="text-muted-foreground leading-relaxed text-lg">
-              {content}
-            </p>
+          {subtitle && (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="text-xl md:text-2xl text-white/90 mb-8"
+            >
+              {subtitle}
+            </motion.p>
           )}
 
-          {/* Features Gallery - Display as image cards */}
-          {features.length > 0 && (
-            <div className="grid grid-cols-2 gap-4 pt-4">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="group rounded-xl border bg-card p-4 hover:shadow-lg transition-all"
-                >
-                  {/* Feature Image */}
-                  {feature.icon && (
-                    <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-3 bg-muted">
-                      <OptimizedImage
-                        src={feature.icon}
-                        alt={feature.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  )}
-                  <h3 className="font-semibold mb-1">{feature.title}</h3>
-                  {feature.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {feature.description}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
+          {content && (
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="text-base md:text-lg text-white/80 leading-relaxed"
+            >
+              {content}
+            </motion.p>
           )}
         </div>
       </div>

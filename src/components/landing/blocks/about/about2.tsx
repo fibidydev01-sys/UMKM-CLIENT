@@ -1,6 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
+import SplitText from '@/components/ui/split-text/SplitText';
 
 interface About2Props {
   title: string;
@@ -14,71 +16,68 @@ interface About2Props {
   }>;
 }
 
-/**
- * About Block: about2
- * Design: SIDE BY SIDE + Feature Cards Gallery
- */
-export function About2({ title, subtitle, content, image, features = [] }: About2Props) {
+export function About2({ title, subtitle, image, features = [] }: About2Props) {
   return (
     <section id="about" className="py-16 md:py-24">
-      {/* Section Header */}
-      <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
-        {subtitle && (
-          <p className="text-lg md:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
-        )}
-      </div>
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div className="text-center mb-12 md:mb-16">
+          <SplitText
+            text={title}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground"
+            delay={50}
+            duration={0.8}
+            ease="power3.out"
+            splitType="words"
+            from={{ opacity: 0, y: 30 }}
+            to={{ opacity: 1, y: 0 }}
+            threshold={0.1}
+          />
+          {subtitle && (
+            <motion.p
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="text-lg md:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto"
+            >
+              {subtitle}
+            </motion.p>
+          )}
+        </div>
 
-      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
-        {/* Left: Main Image */}
-        {image && (
-          <div className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-xl ring-1 ring-border">
-            <OptimizedImage
-              src={image}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
-
-        {/* Right: Content + Features Gallery */}
-        <div className="space-y-8">
-          {content && (
-            <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-              {content}
-            </p>
+        <div className="grid lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-12 items-center">
+          {image && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7 }}
+              className="relative aspect-[16/10] lg:aspect-[4/3] rounded-2xl overflow-hidden shadow-2xl"
+            >
+              <OptimizedImage src={image} alt={title} fill className="object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </motion.div>
           )}
 
-          {/* Features as Image Cards */}
-          {features.length > 0 && (
-            <div className="grid grid-cols-2 gap-4">
-              {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="group rounded-xl border bg-card p-4 hover:shadow-lg hover:border-primary/20 transition-all duration-300"
-                >
-                  {/* Feature Image */}
-                  {feature.icon && (
-                    <div className="relative w-full aspect-square rounded-lg overflow-hidden mb-3 bg-muted">
-                      <OptimizedImage
-                        src={feature.icon}
-                        alt={feature.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </div>
-                  )}
+          <div className="space-y-4">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="flex items-center gap-4 p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+              >
+                <div className="flex-1">
                   <h3 className="font-semibold text-foreground">{feature.title}</h3>
                   {feature.description && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                      {feature.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">{feature.description}</p>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

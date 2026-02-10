@@ -1,7 +1,8 @@
 'use client';
 
+import { motion } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { Card, CardContent } from '@/components/ui/card';
+import GradientText from '@/components/ui/gradient-text/GradientText';
 
 interface About5Props {
   title: string;
@@ -15,73 +16,66 @@ interface About5Props {
   }>;
 }
 
-/**
- * About Block: about5
- * Design: CARDS - Bento-style feature grid
- */
-export function About5({ title, subtitle, content, image, features = [] }: About5Props) {
+export function About5({ title, subtitle, image, features = [] }: About5Props) {
   return (
-    <section id="about" className="py-16 md:py-24">
-      {/* Section Header */}
-      <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
-        {subtitle && (
-          <p className="text-lg md:text-xl text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
-        )}
-        {content && (
-          <p className="text-base text-muted-foreground mt-6 max-w-3xl mx-auto leading-relaxed">
-            {content}
-          </p>
-        )}
-      </div>
+    <section id="about" className="relative py-16 md:py-24 min-h-[600px] flex items-center">
+      {image ? (
+        <div className="absolute inset-0 -z-10">
+          <OptimizedImage src={image} alt="" fill className="object-cover" />
+          <div className="absolute inset-0 bg-black/70" />
+        </div>
+      ) : (
+        <div className="absolute inset-0 -z-10 bg-gray-900" />
+      )}
 
-      {/* Bento Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Main Image Card - Spans 2 columns on lg */}
-        {image && (
-          <Card className="md:col-span-2 lg:col-span-2 overflow-hidden border-0 shadow-xl">
-            <div className="relative aspect-[2/1] md:aspect-[16/9]">
-              <OptimizedImage
-                src={image}
-                alt={title}
-                fill
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6">
-                <p className="text-white/90 text-lg font-medium">{subtitle}</p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Feature Cards */}
-        {features.map((feature, index) => (
-          <Card
-            key={index}
-            className="group hover:shadow-lg hover:border-primary/20 transition-all duration-300"
+      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12 md:mb-16"
+        >
+          <GradientText
+            colors={["#ffffff", "#a5b4fc", "#818cf8", "#a5b4fc", "#ffffff"]}
+            animationSpeed={6}
+            showBorder={false}
+            className="text-3xl md:text-4xl lg:text-5xl font-bold"
           >
-            <CardContent className="p-6">
-              {/* Feature Icon/Image */}
-              {feature.icon && (
-                <div className="relative w-12 h-12 rounded-xl overflow-hidden mb-4 bg-primary/10">
-                  <OptimizedImage
-                    src={feature.icon}
-                    alt={feature.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <h3 className="font-semibold text-foreground text-lg mb-2">{feature.title}</h3>
-              {feature.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
+            {title}
+          </GradientText>
+          {subtitle && (
+            <p className="text-lg md:text-xl text-white/80 mt-4 max-w-2xl mx-auto">{subtitle}</p>
+          )}
+        </motion.div>
+
+        {features.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-5xl mx-auto">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ scale: 1.05 }}
+                className="text-center p-6 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all"
+              >
+                {feature.icon && (
+                  <div className="text-5xl md:text-6xl mb-4">
+                    {feature.icon}
+                  </div>
+                )}
+                <h3 className="text-lg md:text-xl font-bold text-white mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed">
                   {feature.description}
                 </p>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
