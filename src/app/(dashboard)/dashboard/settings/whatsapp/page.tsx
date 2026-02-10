@@ -11,15 +11,8 @@ import { Loader2, CheckCircle2, Phone, RefreshCw, QrCode, AlertCircle } from 'lu
 import { cn, formatPhone } from '@/lib/utils';
 import type { WhatsAppStatus } from '@/types/chat';
 
-// ==========================================
-// CONSTANTS
-// ==========================================
-const QR_REFRESH_INTERVAL = 20000; // 20 seconds
-const QR_TIMEOUT_DURATION = 120000; // 2 minutes
-
-// ==========================================
-// WHATSAPP CONNECTION PAGE
-// ==========================================
+const QR_REFRESH_INTERVAL = 20000;
+const QR_TIMEOUT_DURATION = 120000;
 
 export default function WhatsAppConnectionPage() {
   const router = useRouter();
@@ -49,14 +42,18 @@ export default function WhatsAppConnectionPage() {
     }
   }, [status, router]);
 
-  // WebSocket listeners
+  // WebSocket listeners - FIXED
   useEffect(() => {
+    let mounted = true;
+
     const unsubQR = onQRCode((data) => {
+      if (!mounted) return;
       setQRCode(data.qrCode);
       setStatus('QR_PENDING');
     });
 
     const unsubStatus = onConnectionStatus((data) => {
+      if (!mounted) return;
       isWebSocketUpdate.current = true;
       setStatus(data.status as WhatsAppStatus);
       if (data.phoneNumber) {
@@ -65,31 +62,40 @@ export default function WhatsAppConnectionPage() {
       if (data.status === 'CONNECTED') {
         setQRCode(null);
       }
+
+      // RESET FLAG SETELAH 1 DETIK
+      setTimeout(() => {
+        if (mounted) isWebSocketUpdate.current = false;
+      }, 1000);
     });
 
     checkStatus();
 
     return () => {
+      mounted = false;
       unsubQR();
       unsubStatus();
     };
   }, []);
 
-  // Auto-connect on load
+  // Auto-connect - FIXED
   useEffect(() => {
-    if (
-      hasAutoConnected.current ||
-      isConnecting ||
-      status !== 'DISCONNECTED' ||
-      isWebSocketUpdate.current
-    ) {
+    if (isConnecting || status !== 'DISCONNECTED') {
       return;
     }
 
-    hasAutoConnected.current = true;
-    connect().catch((err) => {
-      console.error('Auto-connect failed:', err);
-    });
+    // RESET hasAutoConnected JIKA WEBSOCKET DISCONNECT
+    if (isWebSocketUpdate.current && status === 'DISCONNECTED') {
+      hasAutoConnected.current = false;
+    }
+
+    if (!hasAutoConnected.current) {
+      hasAutoConnected.current = true;
+      connect().catch((err) => {
+        console.error('Auto-connect failed:', err);
+        hasAutoConnected.current = false; // RESET ON ERROR
+      });
+    }
   }, [status, isConnecting, connect]);
 
   const handleConnect = useCallback(async () => {
@@ -117,7 +123,6 @@ export default function WhatsAppConnectionPage() {
         </p>
       </div>
 
-      {/* Main Card */}
       <Card className="mb-6">
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -138,7 +143,6 @@ export default function WhatsAppConnectionPage() {
         </CardContent>
       </Card>
 
-      {/* Instructions - Only when not connected */}
       {status !== 'CONNECTED' && (
         <Card>
           <CardHeader>
@@ -148,21 +152,15 @@ export default function WhatsAppConnectionPage() {
           <CardContent>
             <ol className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">
-                  1
-                </span>
+                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">1</span>
                 <span>Buka WhatsApp di ponsel Anda</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">
-                  2
-                </span>
+                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">2</span>
                 <span>Tap menu (⋮) → Perangkat Tertaut → Tautkan Perangkat</span>
               </li>
               <li className="flex gap-3">
-                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">
-                  3
-                </span>
+                <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-medium text-xs">3</span>
                 <span>Arahkan kamera ke QR code di atas</span>
               </li>
             </ol>
@@ -172,10 +170,6 @@ export default function WhatsAppConnectionPage() {
     </div>
   );
 }
-
-// ==========================================
-// STATUS BADGE
-// ==========================================
 
 function StatusBadge({ status }: { status: WhatsAppStatus }) {
   const config = {
@@ -206,10 +200,6 @@ function StatusBadge({ status }: { status: WhatsAppStatus }) {
   );
 }
 
-// ==========================================
-// CONNECTION CONTENT - SIMPLIFIED
-// ==========================================
-
 interface ConnectionContentProps {
   status: WhatsAppStatus;
   phoneNumber: string | null;
@@ -217,7 +207,7 @@ interface ConnectionContentProps {
   isConnecting: boolean;
   isWebSocketDisconnect: boolean;
   onConnect: () => void;
-  onDisconnect: () => void;
+  onDisconnect: () => void; // TAMBAHAN: onDisconnect prop
 }
 
 function ConnectionContent({
@@ -227,6 +217,7 @@ function ConnectionContent({
   isConnecting,
   isWebSocketDisconnect,
   onConnect,
+  onDisconnect, // TAMBAHAN: parameter onDisconnect
 }: ConnectionContentProps) {
   const [qrExpired, setQrExpired] = useState(false);
   const [timeLeft, setTimeLeft] = useState(120);
@@ -240,7 +231,6 @@ function ConnectionContent({
       setQrExpired(false);
       setTimeLeft(120);
 
-      // Countdown
       countdownRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -251,7 +241,6 @@ function ConnectionContent({
         });
       }, 1000);
 
-      // Timeout
       timeoutRef.current = setTimeout(() => {
         setQrExpired(true);
       }, QR_TIMEOUT_DURATION);
@@ -262,10 +251,6 @@ function ConnectionContent({
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
   }, [status, qrCode]);
-
-  // ==========================================
-  // RENDER: LOADING (Simple spinner in card)
-  // ==========================================
 
   const isLoading =
     isConnecting ||
@@ -281,25 +266,16 @@ function ConnectionContent({
     );
   }
 
-  // ==========================================
-  // RENDER: QR CODE ACTIVE
-  // ==========================================
-
   if (status === 'QR_PENDING' && qrCode && !qrExpired) {
     return (
       <div className="text-center py-6">
-        {/* QR Code */}
         <div className="inline-block p-4 bg-white rounded-lg shadow-sm mb-4">
           <img src={qrCode} alt="WhatsApp QR Code" className="w-64 h-64" />
         </div>
-
-        {/* Timer */}
         <div className="flex items-center justify-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 mb-4">
           <RefreshCw className="h-4 w-4" />
           <span>Kadaluarsa dalam {timeLeft}s</span>
         </div>
-
-        {/* Refresh Button */}
         <Button variant="outline" size="sm" onClick={onConnect} disabled={isConnecting}>
           {isConnecting ? (
             <>
@@ -316,10 +292,6 @@ function ConnectionContent({
       </div>
     );
   }
-
-  // ==========================================
-  // RENDER: QR EXPIRED
-  // ==========================================
 
   if (status === 'QR_PENDING' && qrExpired) {
     return (
@@ -350,10 +322,7 @@ function ConnectionContent({
     );
   }
 
-  // ==========================================
-  // RENDER: CONNECTED
-  // ==========================================
-
+  // RENDER: CONNECTED - DENGAN TOMBOL DISCONNECT
   if (status === 'CONNECTED') {
     return (
       <div className="text-center py-12">
@@ -369,14 +338,24 @@ function ConnectionContent({
             {formatPhone(phoneNumber)}
           </p>
         )}
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">Mengalihkan ke Inbox...</p>
+
+        {/* TAMBAH TOMBOL DISCONNECT */}
+        <div className="flex gap-2 justify-center mt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onDisconnect}
+            className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+          >
+            <Phone className="h-4 w-4 mr-2" />
+            Putuskan Koneksi
+          </Button>
+        </div>
+
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-2">Mengalihkan ke Inbox...</p>
       </div>
     );
   }
-
-  // ==========================================
-  // RENDER: DISCONNECTED (WebSocket)
-  // ==========================================
 
   if (status === 'DISCONNECTED' && isWebSocketDisconnect) {
     return (
@@ -404,6 +383,5 @@ function ConnectionContent({
     );
   }
 
-  // Fallback
   return null;
 }
