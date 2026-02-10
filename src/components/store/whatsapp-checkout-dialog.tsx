@@ -153,6 +153,7 @@ export function WhatsAppCheckoutDialog({
       const response = await fetch(`${API_URL}/store/${tenant.slug}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           name: name.trim(),
           phone: phone.trim(),
