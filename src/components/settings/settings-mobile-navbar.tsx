@@ -12,6 +12,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Bot,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -33,6 +34,11 @@ const navItems = [
     href: '/settings/toko',
     icon: Store,
     label: 'Toko',
+  },
+  {
+    href: '/settings/auto-reply',
+    icon: Bot,
+    label: 'Auto-Reply',
   },
   {
     href: '/settings/channels',

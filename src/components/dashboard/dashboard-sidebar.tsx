@@ -8,13 +8,13 @@ import {
   Settings,
   ChevronRight,
   LogOut,
-  Send,
   Menu,
   Moon,
   Sun,
   Compass,
   Bookmark,
   CreditCard,
+  Send,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -66,8 +66,8 @@ const navigation: NavGroup[] = [
         icon: User,
       },
       {
-        title: 'Inbox',
-        href: '/dashboard/inbox',
+        title: 'WhatsApp',
+        href: '/dashboard/whatsapp',
         icon: Send,
       },
       {

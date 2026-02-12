@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   User,
-  Send,
   Compass,
   Bookmark,
   Menu,
@@ -14,6 +13,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -37,9 +37,9 @@ const navItems = [
     label: 'Profil',
   },
   {
-    href: '/dashboard/inbox',
+    href: '/dashboard/whatsapp',
     icon: Send,
-    label: 'Inbox',
+    label: 'WhatsApp',
   },
   {
     href: '/dashboard/explore',
