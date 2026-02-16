@@ -187,7 +187,12 @@ export default async function ProductOgImage({ params }: Props) {
     }
 
     // ✅ Safe data extraction with defaults
-    const productImage = product.images?.[0] || null;
+    const productImage =
+      typeof product?.images?.[0] === 'string'
+        ? product.images[0]
+        : product?.images?.[0]?.url ||
+        product?.images?.[0]?.secure_url ||
+        null;
     const productName = product.name || 'Produk';
     const productPrice = product.price || 0;
     const productCategory = product.category || null;
