@@ -6,13 +6,21 @@ import { OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT, OG_COLORS } from '@/lib/og-utils';
 // Route: /twitter-image
 // ==========================================
 
-export const runtime = 'edge';
+// ✅ FIX: Changed from 'edge' to 'nodejs' runtime
+// Edge runtime can cause issues with fetch and revalidation
+export const runtime = 'nodejs';
+
 export const alt = 'Fibidy - Platform Toko Online untuk UMKM Indonesia';
+
 export const size = {
   width: OG_IMAGE_WIDTH,
   height: OG_IMAGE_HEIGHT,
 };
+
 export const contentType = 'image/png';
+
+// ✅ Add revalidation (optional but recommended)
+export const revalidate = 3600; // 1 hour
 
 export default async function TwitterImage() {
   return new ImageResponse(
