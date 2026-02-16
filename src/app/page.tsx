@@ -6,7 +6,7 @@ export default async function HomePage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('fibidy_auth');
 
-  // Server-side redirect, bypass middleware
+  // Server-side redirect based on cookie presence
   if (token) {
     redirect('/dashboard');
   } else {

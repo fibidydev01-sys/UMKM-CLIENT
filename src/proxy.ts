@@ -3,8 +3,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 const PROD_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
-const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-const DEBUG = true;
+const DEBUG = process.env.NODE_ENV === 'development';
 
 const RESERVED_SUBDOMAINS = [
   'www', 'api', 'cdn', 'app', 'admin', 'dashboard',
@@ -16,30 +15,12 @@ const RESERVED_SUBDOMAINS = [
   'null', 'undefined', 'root', 'system', 'mail', 'email',
 ];
 
-const PROTECTED_ROUTES = ['/dashboard'];
-const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
-
-const REWRITABLE_PATHS = [
-  '/opengraph-image',
-  '/twitter-image',
-  '/icon',
-  '/apple-icon',
-  '/sitemap.xml',
-  '/robots.txt',
-];
-
-function isRewritablePath(pathname: string): boolean {
-  return REWRITABLE_PATHS.some(
-    (path) => pathname === path || pathname.startsWith(path + '/')
-  );
-}
-
 function extractSubdomain(hostname: string): string | null {
-  if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-    return null;
-  }
-
-  if (hostname.includes('.vercel.app')) {
+  if (
+    hostname.includes('localhost') ||
+    hostname.includes('127.0.0.1') ||
+    hostname.includes('.vercel.app')
+  ) {
     return null;
   }
 
@@ -50,7 +31,7 @@ function extractSubdomain(hostname: string): string | null {
       return null;
     }
 
-    if (/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(subdomain) || /^[a-z0-9]$/.test(subdomain)) {
+    if (/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(subdomain)) {
       return subdomain;
     }
   }
@@ -58,37 +39,27 @@ function extractSubdomain(hostname: string): string | null {
   return null;
 }
 
-function matchesPath(pathname: string, patterns: string[]): boolean {
-  return patterns.some((pattern) => {
-    if (pattern.endsWith('*')) {
-      return pathname.startsWith(pattern.slice(0, -1));
-    }
-    return pathname === pattern || pathname.startsWith(pattern + '/');
-  });
+function isCustomDomain(hostname: string): boolean {
+  return (
+    !hostname.includes('localhost') &&
+    !hostname.includes('127.0.0.1') &&
+    !hostname.includes('.vercel.app') &&
+    hostname !== PROD_DOMAIN &&
+    hostname !== `www.${PROD_DOMAIN}` &&
+    !hostname.endsWith(`.${PROD_DOMAIN}`)
+  );
 }
 
-function getTokenFromCookies(request: NextRequest): string | null {
-  const token = request.cookies.get('fibidy_auth');
-  return token?.value || null;
-}
-
-/**
- * Resolve custom domain to tenant slug via internal API
- * Called when hostname is not a known subdomain or main domain
- */
 async function resolveCustomDomain(
   hostname: string,
-  request: NextRequest,
+  request: NextRequest
 ): Promise<string | null> {
   try {
-    // Call internal API to resolve custom domain
     const apiUrl = new URL('/api/tenant/resolve-domain', request.url);
     apiUrl.searchParams.set('hostname', hostname);
 
     const response = await fetch(apiUrl.toString(), {
-      headers: {
-        'x-internal-request': 'true', // Mark as internal
-      },
+      headers: { 'x-internal-request': 'true' },
     });
 
     if (!response.ok) return null;
@@ -106,133 +77,62 @@ export async function proxy(request: NextRequest) {
   const hostname = request.headers.get('host') || '';
 
   if (DEBUG) {
-    console.log('[Proxy] Request:', {
-      hostname,
-      pathname,
-      prodDomain: PROD_DOMAIN,
-      isProduction: IS_PRODUCTION,
-    });
+    console.log('[Proxy]', hostname, pathname);
   }
 
-  const subdomain = extractSubdomain(hostname);
-  const shouldRewrite = isRewritablePath(pathname);
-
-  if (DEBUG) {
-    console.log('[Proxy] Subdomain:', subdomain, '| Rewritable:', shouldRewrite);
-  }
-
-  // Skip static/internal KECUALI rewritable paths pada subdomain
+  // ==========================================
+  // 1. SKIP: Static files, API routes
+  // ==========================================
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
-    (pathname.includes('.') && !shouldRewrite)
+    pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|webp|css|js|woff|woff2|ttf)$/)
   ) {
-    if (DEBUG) console.log('[Proxy] Skipping static/internal:', pathname);
     return NextResponse.next();
   }
 
   // ==========================================
-  // SUBDOMAIN REWRITE
+  // 2. SUBDOMAIN ROUTING
   // ==========================================
+  const subdomain = extractSubdomain(hostname);
+
   if (subdomain) {
     const url = request.nextUrl.clone();
+    url.pathname = pathname === '/'
+      ? `/store/${subdomain}`
+      : `/store/${subdomain}${pathname}`;
 
-    if (pathname === '/') {
-      url.pathname = `/store/${subdomain}`;
-    } else {
-      url.pathname = `/store/${subdomain}${pathname}`;
-    }
-
-    if (DEBUG) {
-      console.log('[Proxy] Rewriting to:', url.pathname);
-    }
-
+    if (DEBUG) console.log('[Proxy] Subdomain rewrite:', url.pathname);
     return NextResponse.rewrite(url);
   }
 
   // ==========================================
-  // CUSTOM DOMAIN HANDLING
+  // 3. CUSTOM DOMAIN ROUTING
   // ==========================================
-  if (
-    !subdomain &&
-    !hostname.includes('localhost') &&
-    !hostname.includes('127.0.0.1') &&
-    !hostname.includes('.vercel.app') &&
-    hostname !== PROD_DOMAIN &&
-    hostname !== `www.${PROD_DOMAIN}`
-  ) {
-    if (DEBUG) console.log('[Proxy] Possible custom domain:', hostname);
+  if (isCustomDomain(hostname)) {
+    const slug = await resolveCustomDomain(hostname, request);
 
-    try {
-      // Add timeout protection
-      const tenantSlug = await Promise.race([
-        resolveCustomDomain(hostname, request),
-        new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
-      ]);
+    if (slug) {
+      const url = request.nextUrl.clone();
+      url.pathname = pathname === '/'
+        ? `/store/${slug}`
+        : `/store/${slug}${pathname}`;
 
-      if (tenantSlug) {
-        const url = request.nextUrl.clone();
+      if (DEBUG) console.log('[Proxy] Custom domain rewrite:', url.pathname);
 
-        if (pathname === '/') {
-          url.pathname = `/store/${tenantSlug}`;
-        } else {
-          url.pathname = `/store/${tenantSlug}${pathname}`;
-        }
-
-        if (DEBUG) console.log('[Proxy] Custom domain rewrite:', url.pathname);
-
-        const response = NextResponse.rewrite(url);
-        response.headers.set('x-custom-domain', hostname);
-        response.headers.set('x-tenant-slug', tenantSlug);
-        return response;
-      }
-
-      if (DEBUG) console.log('[Proxy] Custom domain not found:', hostname);
-    } catch (error) {
-      if (DEBUG) console.error('[Proxy] Custom domain timeout:', error);
+      const response = NextResponse.rewrite(url);
+      response.headers.set('x-custom-domain', hostname);
+      response.headers.set('x-tenant-slug', slug);
+      return response;
     }
   }
 
   // ==========================================
-  // ❌ HAPUS BAGIAN INI - Root redirect
+  // 4. PASS THROUGH
+  // Let page.tsx and guards handle auth
   // ==========================================
-  // const token = getTokenFromCookies(request);
-  // const isAuthenticated = !!token;
-  //
-  // if (pathname === '/') {
-  //   if (isAuthenticated) {
-  //     return NextResponse.redirect(new URL('/dashboard', request.url));
-  //   } else {
-  //     return NextResponse.redirect(new URL('/login', request.url));
-  //   }
-  // }
-
-  // ==========================================
-  // PROTECTED ROUTES - Dashboard only
-  // ==========================================
-  if (matchesPath(pathname, PROTECTED_ROUTES)) {
-    const token = getTokenFromCookies(request);
-    if (!token) {
-      if (DEBUG) console.log('[Proxy] Protected route → Login redirect');
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // ==========================================
-  // AUTH ROUTES - Redirect if already logged in
-  // ==========================================
-  if (matchesPath(pathname, AUTH_ROUTES)) {
-    const token = getTokenFromCookies(request);
-    if (token) {
-      if (DEBUG) console.log('[Proxy] Auth route → Dashboard redirect');
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-  }
-
-  if (DEBUG) console.log('[Proxy] No action, continuing...');
+  if (DEBUG) console.log('[Proxy] Pass through');
   return NextResponse.next();
 }
 

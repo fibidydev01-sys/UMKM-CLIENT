@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ================================================================
-# CLIENT — SMART INTERACTIVE COLLECTION
-# Choose what to collect: App, Components, Lib
+# CLIENT — SMART INTERACTIVE COLLECTION V2
+# Choose what to collect: Auth, App, Components, Lib
 # Auto-skip deleted modules (Customers, Orders, WhatsApp, etc.)
 # Run from: client directory
 # ================================================================
@@ -128,6 +128,32 @@ section_header() {
 # COLLECTION FUNCTIONS
 # ================================================================
 
+collect_auth() {
+    local output=$1
+    echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}  COLLECTING: AUTH (Complete Auth Flow)                     ${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════${NC}\n"
+    
+    section_header "AUTH - Pages (Login, Register, Forgot Password)" "$output"
+    collect_folder "$SRC_DIR/app/(auth)" "$output"
+    
+    section_header "AUTH - Components (Forms, Steps, Guards)" "$output"
+    collect_folder "$SRC_DIR/components/auth" "$output"
+    
+    section_header "AUTH - API (Auth Service)" "$output"
+    collect_file "$SRC_DIR/lib/api/auth.ts" "$output"
+    
+    section_header "AUTH - Hooks (useAuth, useRegisterWizard)" "$output"
+    collect_file "$SRC_DIR/hooks/use-auth.ts" "$output"
+    collect_file "$SRC_DIR/hooks/use-register-wizard.ts" "$output"
+    
+    section_header "AUTH - Store (Auth State Management)" "$output"
+    collect_file "$SRC_DIR/stores/auth-store.ts" "$output"
+    
+    section_header "AUTH - Types (Auth Interfaces & Types)" "$output"
+    collect_file "$SRC_DIR/types/auth.ts" "$output"
+}
+
 collect_app() {
     local output=$1
     echo -e "\n${BLUE}═══════════════════════════════════════════════════════════${NC}"
@@ -169,6 +195,9 @@ collect_components() {
     
     section_header "COMPONENTS - Dashboard" "$output"
     collect_folder "$SRC_DIR/components/dashboard" "$output"
+    
+    section_header "COMPONENTS - Domain" "$output"
+    collect_folder "$SRC_DIR/components/domain" "$output"
     
     section_header "COMPONENTS - Landing (Blocks)" "$output"
     collect_folder "$SRC_DIR/components/landing" "$output"
@@ -258,27 +287,35 @@ collect_lib() {
 show_menu() {
     clear
     echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}║   CLIENT — SMART INTERACTIVE COLLECTION                   ║${NC}"
+    echo -e "${BLUE}║   CLIENT — SMART INTERACTIVE COLLECTION V2                ║${NC}"
     echo -e "${BLUE}║   Choose what to collect (Auto-skip deleted modules)      ║${NC}"
     echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
     echo ""
     echo -e "${WHITE}Select folders to collect:${NC}"
     echo ""
-    echo -e "${GREEN}  1)${NC} App (Pages & Routes)"
+    echo -e "${GREEN}  1)${NC} Auth (Complete Auth Flow) 🔐"
+    echo -e "      ${CYAN}→ Pages: Login, Register, Forgot Password${NC}"
+    echo -e "      ${CYAN}→ Components: Forms, Steps, Guards${NC}"
+    echo -e "      ${CYAN}→ API: Auth Service${NC}"
+    echo -e "      ${CYAN}→ Hooks: useAuth, useRegisterWizard${NC}"
+    echo -e "      ${CYAN}→ Store: Auth State${NC}"
+    echo -e "      ${CYAN}→ Types: Auth Interfaces${NC}"
+    echo ""
+    echo -e "${GREEN}  2)${NC} App (Pages & Routes) 📄"
     echo -e "      ${CYAN}→ Root, Auth, Dashboard, Store, Server Routes${NC}"
     echo ""
-    echo -e "${GREEN}  2)${NC} Components"
+    echo -e "${GREEN}  3)${NC} Components 🧩"
     echo -e "      ${CYAN}→ Auth, Dashboard, Landing, Products, Store, Settings, etc.${NC}"
     echo ""
-    echo -e "${GREEN}  3)${NC} Lib (Full Stack)"
+    echo -e "${GREEN}  4)${NC} Lib (Full Stack) 📚"
     echo -e "      ${CYAN}→ Config, Hooks, API, Stores, Types, Providers, Utils${NC}"
     echo ""
-    echo -e "${MAGENTA}  4)${NC} Collect ALL (Smart - skip deleted modules)"
+    echo -e "${MAGENTA}  5)${NC} Collect ALL (Smart - skip deleted modules) 🚀"
     echo ""
-    echo -e "${YELLOW}  5)${NC} Show skip list"
+    echo -e "${YELLOW}  6)${NC} Show skip list"
     echo -e "${RED}  0)${NC} Exit"
     echo ""
-    echo -e "${WHITE}Enter choices (e.g., 1 2 or 4 for all):${NC} "
+    echo -e "${WHITE}Enter choices (e.g., 1 2 or 5 for all):${NC} "
 }
 
 show_skip_list() {
@@ -321,7 +358,7 @@ main() {
         fi
         
         # Handle show skip list
-        if [[ "$choices" == "5" ]]; then
+        if [[ "$choices" == "6" ]]; then
             show_skip_list
             continue
         fi
@@ -333,7 +370,7 @@ main() {
         # File header
         cat > "$output_file" << EOF
 ################################################################
-##  CLIENT — SMART COLLECTION
+##  CLIENT — SMART COLLECTION V2
 ##  Generated: $(date '+%Y-%m-%d %H:%M:%S')
 ##  
 ##  ✅ Auto-skip deleted modules:
@@ -351,8 +388,9 @@ EOF
         echo ""
         
         # Process choices
-        if [[ "$choices" == "4" ]]; then
+        if [[ "$choices" == "5" ]]; then
             # Collect all
+            collect_auth "$output_file"
             collect_app "$output_file"
             collect_components "$output_file"
             collect_lib "$output_file"
@@ -360,9 +398,10 @@ EOF
             # Collect based on selection
             for choice in $choices; do
                 case $choice in
-                    1) collect_app "$output_file" ;;
-                    2) collect_components "$output_file" ;;
-                    3) collect_lib "$output_file" ;;
+                    1) collect_auth "$output_file" ;;
+                    2) collect_app "$output_file" ;;
+                    3) collect_components "$output_file" ;;
+                    4) collect_lib "$output_file" ;;
                     *) echo -e "${RED}Invalid choice: $choice${NC}" ;;
                 esac
             done
