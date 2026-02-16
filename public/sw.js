@@ -1,10 +1,12 @@
 // ==========================================
 // SERVICE WORKER - FIBIDY PWA
 // Basic caching strategy for offline support
+// ✅ FIX: Exclude OG images from cache + version bump
 // ==========================================
 
-const STATIC_CACHE = 'fibidy-static-v1';
-const DYNAMIC_CACHE = 'fibidy-dynamic-v1';
+// ✅ VERSION BUMP - Force clear old cache
+const STATIC_CACHE = 'fibidy-static-v2';
+const DYNAMIC_CACHE = 'fibidy-dynamic-v2';
 
 // Static assets to cache
 const STATIC_ASSETS = [
@@ -16,10 +18,39 @@ const STATIC_ASSETS = [
 ];
 
 // ==========================================
+// HELPER: Should Skip Caching
+// ==========================================
+function shouldSkipCache(url) {
+  const pathname = url.pathname;
+
+  // ✅ Skip OG images (CRITICAL FIX!)
+  if (pathname.includes('/opengraph-image') || pathname.includes('/twitter-image')) {
+    return true;
+  }
+
+  // ✅ Skip API requests
+  if (pathname.startsWith('/api/')) {
+    return true;
+  }
+
+  // ✅ Skip Next.js internal routes
+  if (pathname.startsWith('/_next/')) {
+    return true;
+  }
+
+  // ✅ Skip RSC (React Server Components) requests
+  if (url.searchParams.has('_rsc')) {
+    return true;
+  }
+
+  return false;
+}
+
+// ==========================================
 // INSTALL EVENT
 // ==========================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing...');
+  console.log('[SW] Installing v2...');
 
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
@@ -36,7 +67,7 @@ self.addEventListener('install', (event) => {
 // ACTIVATE EVENT
 // ==========================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating...');
+  console.log('[SW] Activating v2...');
 
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -63,10 +94,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
 
   // Skip non-GET requests
-  if (request.method !== 'GET') return;
-
-  // Skip API requests (always fetch fresh)
-  if (url.pathname.startsWith('/api/')) {
+  if (request.method !== 'GET') {
     return;
   }
 
@@ -75,15 +103,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // ✅ CRITICAL: Skip caching for OG images and other dynamic content
+  if (shouldSkipCache(url)) {
+    console.log('[SW] Skipping cache for:', url.pathname);
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // ==========================================
+  // CACHING STRATEGY: Network First
+  // ==========================================
   event.respondWith(
-    // Network first, fallback to cache
     fetch(request)
       .then((response) => {
-        // Clone response for caching
-        const responseClone = response.clone();
-
-        // Cache successful responses
+        // ✅ Only cache successful responses (200-299)
         if (response.ok) {
+          const responseClone = response.clone();
+
           caches.open(DYNAMIC_CACHE).then((cache) => {
             cache.put(request, responseClone);
           });
@@ -92,20 +128,29 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Fallback to cache
+        // Fallback to cache on network error
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) {
+            console.log('[SW] Serving from cache:', url.pathname);
             return cachedResponse;
           }
 
           // Return offline page for navigation requests
           if (request.mode === 'navigate') {
-            return caches.match('/');
+            return caches.match('/').then((homePage) => {
+              return homePage || new Response('Offline', {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'text/plain' },
+              });
+            });
           }
 
+          // For other requests, return error response
           return new Response('Offline', {
             status: 503,
             statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain' },
           });
         });
       })
@@ -135,7 +180,9 @@ self.addEventListener('push', (event) => {
   );
 });
 
-// Handle notification click
+// ==========================================
+// NOTIFICATION CLICK HANDLER
+// ==========================================
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -157,4 +204,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log('[SW] Service Worker loaded');
+console.log('[SW] Service Worker v2 loaded - OG images excluded from cache');
