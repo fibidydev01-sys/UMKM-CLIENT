@@ -81,14 +81,25 @@ export async function proxy(request: NextRequest) {
   }
 
   // ==========================================
-  // 1. SKIP: Static files, API routes
+  // 1. SKIP: Static files, API routes, OG images
   // ==========================================
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
+    // ✅ CRITICAL FIX: Skip OG image routes
+    pathname.includes('/opengraph-image') ||
+    pathname.includes('/twitter-image') ||
+    // ✅ Skip other Next.js special routes
+    pathname === '/sitemap.xml' ||
+    pathname === '/robots.txt' ||
+    pathname.startsWith('/server-sitemap') ||
+    // Static file extensions
     pathname.match(/\.(ico|png|jpg|jpeg|gif|svg|webp|css|js|woff|woff2|ttf)$/)
   ) {
+    if (DEBUG && (pathname.includes('/opengraph-image') || pathname.includes('/twitter-image'))) {
+      console.log('[Proxy] Skipping OG image route:', pathname);
+    }
     return NextResponse.next();
   }
 
@@ -138,6 +149,13 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
+    /*
+     * Match all request paths except:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (public folder)
+     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };
