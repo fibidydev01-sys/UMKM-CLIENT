@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import GradientText from '@/components/ui/gradient-text/GradientText';
 
 interface About5Props {
   title: string;
@@ -14,6 +13,24 @@ interface About5Props {
     title: string;
     description: string;
   }>;
+}
+
+// Component untuk gradient text effect
+function GradientText({ children, className = '' }: { children: string; className?: string }) {
+  return (
+    <motion.h2
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6 }}
+      className={`${className} bg-gradient-to-r from-white via-indigo-200 to-white bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient`}
+      style={{
+        backgroundImage: 'linear-gradient(90deg, #ffffff 0%, #a5b4fc 25%, #818cf8 50%, #a5b4fc 75%, #ffffff 100%)',
+      }}
+    >
+      {children}
+    </motion.h2>
+  );
 }
 
 export function About5({ title, subtitle, image, features = [] }: About5Props) {
@@ -36,12 +53,7 @@ export function About5({ title, subtitle, image, features = [] }: About5Props) {
           transition={{ duration: 0.6 }}
           className="text-center mb-12 md:mb-16"
         >
-          <GradientText
-            colors={["#ffffff", "#a5b4fc", "#818cf8", "#a5b4fc", "#ffffff"]}
-            animationSpeed={6}
-            showBorder={false}
-            className="text-3xl md:text-4xl lg:text-5xl font-bold"
-          >
+          <GradientText className="text-3xl md:text-4xl lg:text-5xl font-bold">
             {title}
           </GradientText>
           {subtitle && (
@@ -77,6 +89,22 @@ export function About5({ title, subtitle, image, features = [] }: About5Props) {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes gradient {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+        
+        :global(.animate-gradient) {
+          animation: gradient 6s ease infinite;
+          background-size: 200% 100%;
+        }
+      `}</style>
     </section>
   );
 }

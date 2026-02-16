@@ -4,6 +4,10 @@
  * ============================================================================
  * Multi-step loading screen for Landing Builder
  * Shows REAL loading progress based on actual data fetching status
+ * 
+ * ✅ FIXED: Removed ref.current update during render (Line 99)
+ * - Moved ref update to useEffect
+ * - Prevents React warning about accessing refs during render
  * ============================================================================
  */
 'use client';
@@ -93,10 +97,12 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
   // Check if all done
   const allComplete = steps.every(s => s.status === 'completed');
 
-  // Call onComplete when all steps are done
-  // Use a ref to store the onComplete callback to avoid stale closure issues
+  // ✅ FIX: Use useEffect to update ref instead of during render
+  // This prevents "Cannot access refs during render" error
   const onCompleteRef = useRef(onComplete);
-  onCompleteRef.current = onComplete;
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     if (!allComplete) return;

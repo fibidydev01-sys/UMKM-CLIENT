@@ -106,3 +106,18 @@ export const BUSINESS_CATEGORIES = [
 ] as const;
 
 export type BusinessCategory = typeof BUSINESS_CATEGORIES[number]['value'];
+
+/**
+ * Domain Configuration
+ */
+export const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
+
+/**
+ * DNS propagation wait time advice (in minutes)
+ */
+export const DNS_PROPAGATION_WAIT = 10;
+
+/**
+ * SSL polling interval (in milliseconds)
+ */
+export const SSL_POLL_INTERVAL = 10_000; // 10 seconds

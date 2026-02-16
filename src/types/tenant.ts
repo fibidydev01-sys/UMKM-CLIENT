@@ -141,6 +141,19 @@ export interface Tenant {
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
+
+  // ==========================================
+  // CUSTOM DOMAIN
+  // ==========================================
+  customDomain?: string | null;
+  customDomainVerified?: boolean;
+  customDomainToken?: string | null;
+  sslStatus?: string | null; // 'pending' | 'active' | 'failed'
+  sslIssuedAt?: string | null;
+  dnsRecords?: import('./domain').DnsInstructions | null;
+  customDomainAddedAt?: string | null;
+  customDomainVerifiedAt?: string | null;
+
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
@@ -209,6 +222,14 @@ export interface PublicTenant {
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
+
+  // ==========================================
+  // CUSTOM DOMAIN (public-safe fields only)
+  // ==========================================
+  customDomain?: string | null;
+  customDomainVerified?: boolean;
+  sslStatus?: string | null;
+
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;

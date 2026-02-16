@@ -1,3 +1,11 @@
+/**
+ * AnimatedList Component
+ * 
+ * ✅ FIXED: Removed setState in useEffect (Line 141)
+ * - Moved setKeyboardNav(false) to keyboard handler
+ * - Effect now only handles scrolling, not state updates
+ */
+
 import React, { useRef, useState, useEffect, useCallback, ReactNode, MouseEventHandler, UIEvent } from 'react';
 import { motion, useInView } from 'motion/react';
 import './AnimatedList.css';
@@ -119,6 +127,7 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [items, selectedIndex, onItemSelect, enableArrowNavigation]);
 
+  // ✅ FIX: Removed setState from effect body
   useEffect(() => {
     if (!keyboardNav || selectedIndex < 0 || !listRef.current) return;
     const container = listRef.current;
@@ -138,7 +147,9 @@ const AnimatedList: React.FC<AnimatedListProps> = ({
         });
       }
     }
-    setKeyboardNav(false);
+    // ✅ MOVED: Reset keyboard nav flag here after scrolling completes
+    const timer = setTimeout(() => setKeyboardNav(false), 100);
+    return () => clearTimeout(timer);
   }, [selectedIndex, keyboardNav]);
 
   return (

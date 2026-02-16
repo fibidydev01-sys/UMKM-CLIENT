@@ -1,25 +1,11 @@
+// src/proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// ==========================================
-// NEXT.JS 16 PROXY
-// Handles: Auth routes + Subdomain routing
-// Runtime: Node.js (NOT Edge)
-// ==========================================
-
-// ==========================================
-// CONFIGURATION
-// ==========================================
-
 const PROD_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'fibidy.com';
 const IS_PRODUCTION = process.env.NODE_ENV === 'production';
-
-// Enable debug logging
 const DEBUG = true;
 
-/**
- * Reserved subdomains (cannot be tenant slugs)
- */
 const RESERVED_SUBDOMAINS = [
   'www', 'api', 'cdn', 'app', 'admin', 'dashboard',
   'static', 'assets', 'images', 'files', 'uploads',
@@ -30,60 +16,40 @@ const RESERVED_SUBDOMAINS = [
   'null', 'undefined', 'root', 'system', 'mail', 'email',
 ];
 
-/**
- * Protected routes that require authentication
- * Currently unused but reserved for future auth implementation
- */
-// const PROTECTED_ROUTES = [
-//   '/dashboard',
-//   '/dashboard/products',
-//   '/dashboard/customers',
-//   '/dashboard/orders',
-//   '/dashboard/settings',
-// ];
+const PROTECTED_ROUTES = ['/dashboard'];
+const AUTH_ROUTES = ['/login', '/register', '/forgot-password'];
 
-/**
- * Auth routes (redirect to dashboard if already logged in)
- * Currently unused but reserved for future auth implementation
- */
-// const AUTH_ROUTES = [
-//   '/login',
-//   '/register',
-//   '/forgot-password',
-// ];
+const REWRITABLE_PATHS = [
+  '/opengraph-image',
+  '/twitter-image',
+  '/icon',
+  '/apple-icon',
+  '/sitemap.xml',
+  '/robots.txt',
+];
 
-// ==========================================
-// HELPER FUNCTIONS
-// ==========================================
+function isRewritablePath(pathname: string): boolean {
+  return REWRITABLE_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  );
+}
 
-/**
- * Extract subdomain from hostname
- * warungbusari.fibidy.com → "warungbusari"
- * fibidy.com → null
- * www.fibidy.com → null (reserved)
- * localhost:3000 → null
- */
 function extractSubdomain(hostname: string): string | null {
-  // Skip localhost (development)
   if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
     return null;
   }
 
-  // Skip Vercel preview deployments
   if (hostname.includes('.vercel.app')) {
     return null;
   }
 
-  // Production: check for subdomain
   if (hostname.endsWith(`.${PROD_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${PROD_DOMAIN}`, '');
 
-    // Skip reserved subdomains
     if (RESERVED_SUBDOMAINS.includes(subdomain.toLowerCase())) {
       return null;
     }
 
-    // Validate format (alphanumeric and dash)
     if (/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(subdomain) || /^[a-z0-9]$/.test(subdomain)) {
       return subdomain;
     }
@@ -92,41 +58,50 @@ function extractSubdomain(hostname: string): string | null {
   return null;
 }
 
-/**
- * Check if path matches any pattern
- * Currently unused but reserved for future auth implementation
- */
-// function matchesPath(pathname: string, patterns: string[]): boolean {
-//   return patterns.some((pattern) => {
-//     if (pattern.endsWith('*')) {
-//       return pathname.startsWith(pattern.slice(0, -1));
-//     }
-//     return pathname === pattern || pathname.startsWith(pattern + '/');
-//   });
-// }
+function matchesPath(pathname: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => {
+    if (pattern.endsWith('*')) {
+      return pathname.startsWith(pattern.slice(0, -1));
+    }
+    return pathname === pattern || pathname.startsWith(pattern + '/');
+  });
+}
+
+function getTokenFromCookies(request: NextRequest): string | null {
+  const token = request.cookies.get('fibidy_auth');
+  return token?.value || null;
+}
 
 /**
- * Get token from cookies (for future auth use)
- * Currently unused but reserved for future auth implementation
+ * Resolve custom domain to tenant slug via internal API
+ * Called when hostname is not a known subdomain or main domain
  */
-// function getTokenFromCookies(request: NextRequest): string | null {
-//   const tokenCookie = request.cookies.get('fibidy_token');
-//   if (tokenCookie?.value) {
-//     try {
-//       const parsed = JSON.parse(tokenCookie.value);
-//       return parsed?.state?.token || null;
-//     } catch {
-//       return tokenCookie.value;
-//     }
-//   }
-//   return null;
-// }
+async function resolveCustomDomain(
+  hostname: string,
+  request: NextRequest,
+): Promise<string | null> {
+  try {
+    // Call internal API to resolve custom domain
+    const apiUrl = new URL('/api/tenant/resolve-domain', request.url);
+    apiUrl.searchParams.set('hostname', hostname);
 
-// ==========================================
-// PROXY FUNCTION (Next.js 16)
-// ==========================================
+    const response = await fetch(apiUrl.toString(), {
+      headers: {
+        'x-internal-request': 'true', // Mark as internal
+      },
+    });
 
-export function proxy(request: NextRequest) {
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return data.slug || null;
+  } catch (error) {
+    if (DEBUG) console.error('[Proxy] Custom domain resolve failed:', error);
+    return null;
+  }
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get('host') || '';
 
@@ -139,34 +114,27 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  // ==========================================
-  // 1. SKIP STATIC FILES & INTERNALS
-  // ==========================================
+  const subdomain = extractSubdomain(hostname);
+  const shouldRewrite = isRewritablePath(pathname);
+
+  if (DEBUG) {
+    console.log('[Proxy] Subdomain:', subdomain, '| Rewritable:', shouldRewrite);
+  }
+
+  // Skip static/internal KECUALI rewritable paths pada subdomain
   if (
     pathname.startsWith('/_next') ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/static') ||
-    pathname.includes('.') // files with extensions
+    (pathname.includes('.') && !shouldRewrite)
   ) {
     if (DEBUG) console.log('[Proxy] Skipping static/internal:', pathname);
     return NextResponse.next();
   }
 
-  // ==========================================
-  // 2. SUBDOMAIN ROUTING
-  // ==========================================
-  const subdomain = extractSubdomain(hostname);
-
-  if (DEBUG) {
-    console.log('[Proxy] Subdomain extracted:', subdomain);
-  }
-
   if (subdomain) {
-    // Rewrite {slug}.fibidy.com → /store/{slug}/*
-    // URL in browser stays as subdomain
     const url = request.nextUrl.clone();
 
-    // Handle root path
     if (pathname === '/') {
       url.pathname = `/store/${subdomain}`;
     } else {
@@ -181,54 +149,81 @@ export function proxy(request: NextRequest) {
   }
 
   // ==========================================
-  // 3. AUTH ROUTES (Optional - Let AuthGuard handle)
+  // CUSTOM DOMAIN HANDLING
   // ==========================================
-  // Uncomment if you want proxy-level auth checking
+  if (
+    !subdomain &&
+    !hostname.includes('localhost') &&
+    !hostname.includes('127.0.0.1') &&
+    !hostname.includes('.vercel.app') &&
+    hostname !== PROD_DOMAIN &&
+    hostname !== `www.${PROD_DOMAIN}`
+  ) {
+    if (DEBUG) console.log('[Proxy] Possible custom domain:', hostname);
 
-  // const token = getTokenFromCookies(request);
-  // const isAuthenticated = !!token;
+    const tenantSlug = await resolveCustomDomain(hostname, request);
 
-  // // Protect dashboard routes
-  // if (matchesPath(pathname, PROTECTED_ROUTES)) {
-  //   if (!isAuthenticated) {
-  //     const loginUrl = new URL('/login', request.url);
-  //     loginUrl.searchParams.set('from', pathname);
-  //     return NextResponse.redirect(loginUrl);
-  //   }
-  // }
+    if (tenantSlug) {
+      const url = request.nextUrl.clone();
 
-  // // Redirect authenticated users away from auth pages
-  // if (matchesPath(pathname, AUTH_ROUTES)) {
-  //   if (isAuthenticated) {
-  //     return NextResponse.redirect(new URL('/dashboard', request.url));
-  //   }
-  // }
+      if (pathname === '/') {
+        url.pathname = `/store/${tenantSlug}`;
+      } else {
+        url.pathname = `/store/${tenantSlug}${pathname}`;
+      }
 
-  // ==========================================
-  // 4. DEFAULT: Continue
-  // ==========================================
+      if (DEBUG) console.log('[Proxy] Custom domain rewrite:', url.pathname);
+
+      const response = NextResponse.rewrite(url);
+      response.headers.set('x-custom-domain', hostname);
+      response.headers.set('x-tenant-slug', tenantSlug);
+      return response;
+    }
+
+    if (DEBUG) console.log('[Proxy] Custom domain not found:', hostname);
+  }
+
+  const token = getTokenFromCookies(request);
+  const isAuthenticated = !!token;
+
+  if (DEBUG) {
+    console.log('[Proxy] Auth check:', { token: token ? 'exists' : 'none', isAuthenticated });
+  }
+
+  if (pathname === '/') {
+    if (isAuthenticated) {
+      if (DEBUG) console.log('[Proxy] Root → Dashboard (authenticated)');
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    } else {
+      if (DEBUG) console.log('[Proxy] Root → Login (not authenticated)');
+      return NextResponse.redirect(new URL('/login', request.url));
+    }
+  }
+
+  if (matchesPath(pathname, PROTECTED_ROUTES)) {
+    if (!isAuthenticated) {
+      if (DEBUG) console.log('[Proxy] Protected route → Login redirect');
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+  }
+
+  if (matchesPath(pathname, AUTH_ROUTES)) {
+    if (isAuthenticated) {
+      if (DEBUG) console.log('[Proxy] Auth route → Dashboard redirect');
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+  }
+
   if (DEBUG) console.log('[Proxy] No action, continuing...');
   return NextResponse.next();
 }
 
-// ==========================================
-// PROXY CONFIG
-// ==========================================
-
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (images, etc)
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };
 
-// ==========================================
-// DEFAULT EXPORT (REQUIRED for Next.js 16!)
-// ==========================================
 export default proxy;

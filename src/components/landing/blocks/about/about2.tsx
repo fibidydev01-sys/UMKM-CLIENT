@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import SplitText from '@/components/ui/split-text/SplitText';
 
 interface About2Props {
   title: string;
@@ -17,21 +16,53 @@ interface About2Props {
 }
 
 export function About2({ title, subtitle, image, features = [] }: About2Props) {
+  // Animation untuk split text effect
+  const words = title.split(' ');
+
+  const container: Variants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.05,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const wordVariant: Variants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1]
+      }
+    }
+  };
+
   return (
     <section id="about" className="py-16 md:py-24">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
-          <SplitText
-            text={title}
+          <motion.h2
+            variants={container}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
             className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground"
-            delay={50}
-            duration={0.8}
-            ease="power3.out"
-            splitType="words"
-            from={{ opacity: 0, y: 30 }}
-            to={{ opacity: 1, y: 0 }}
-            threshold={0.1}
-          />
+          >
+            {words.map((text, index) => (
+              <motion.span
+                key={index}
+                variants={wordVariant}
+                className="inline-block mr-[0.25em]"
+              >
+                {text}
+              </motion.span>
+            ))}
+          </motion.h2>
           {subtitle && (
             <motion.p
               initial={{ opacity: 0, y: 15 }}

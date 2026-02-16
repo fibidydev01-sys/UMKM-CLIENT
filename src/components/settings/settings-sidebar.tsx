@@ -12,7 +12,6 @@ import {
   Moon,
   Sun,
   Home,
-  Bot,
   ChevronRight,
   type LucideIcon,
 } from 'lucide-react';
@@ -61,17 +60,12 @@ const navigation: NavGroup[] = [
     items: [
       {
         title: 'Toko',
-        href: '/settings/toko',
+        href: '/dashboard/settings/toko',
         icon: Store,
       },
       {
-        title: 'Auto-Reply',
-        href: '/settings/auto-reply',
-        icon: Bot,
-      },
-      {
         title: 'Channels',
-        href: '/settings/channels',
+        href: '/dashboard/settings/channels',
         icon: Layers,
       },
     ],

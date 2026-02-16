@@ -23,7 +23,7 @@ export function Testimonials4({ items, title, subtitle }: Testimonials4Props) {
   if (items.length === 0) return null;
 
   const activeItem = items[activeIndex];
-  const { type: activeAvatarType } = getImageSource(activeItem.avatar);
+  getImageSource(activeItem.avatar);
 
   return (
     <section id="testimonials" className="py-16 md:py-24">

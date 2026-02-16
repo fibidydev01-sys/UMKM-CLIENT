@@ -1,6 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+/**
+ * OnboardingWizard Component
+ * 
+ * ✅ FIXED (ROUND 2): Removed unused useEffect import
+ * - Already using useMemo for derived state
+ * - No effects needed in this component
+ */
+
+import { useState, useMemo } from 'react';
 import {
   IconArchive,
   IconDots,
@@ -8,7 +16,6 @@ import {
   IconRefresh,
   IconTrophy,
 } from '@tabler/icons-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -36,15 +43,17 @@ export function OnboardingWizard() {
     restoreOnboarding,
   } = useOnboarding();
 
+  // ✅ FIX: Compute default open step with useMemo instead of setState in effect
+  const defaultOpenStepId = useMemo(() => {
+    if (!progress) return null;
+    const firstIncomplete = progress.steps.find((s) => !s.completed);
+    return firstIncomplete?.id ?? progress.steps[0]?.id ?? null;
+  }, [progress]);
+
   const [openStepId, setOpenStepId] = useState<string | null>(null);
 
-  // Set initial open step (first incomplete)
-  useEffect(() => {
-    if (progress && !openStepId) {
-      const firstIncomplete = progress.steps.find((s) => !s.completed);
-      setOpenStepId(firstIncomplete?.id ?? progress.steps[0]?.id ?? null);
-    }
-  }, [progress, openStepId]);
+  // ✅ FIX: Use derived state - if user hasn't manually opened a step, use default
+  const effectiveOpenStepId = openStepId ?? defaultOpenStepId;
 
   // Show dismissed state
   if (isDismissed) {
@@ -185,13 +194,13 @@ export function OnboardingWizard() {
               <OnboardingStep
                 key={step.id}
                 step={step}
-                isOpen={openStepId === step.id}
+                isOpen={effectiveOpenStepId === step.id}
                 onToggle={() =>
-                  setOpenStepId(openStepId === step.id ? null : step.id)
+                  setOpenStepId(effectiveOpenStepId === step.id ? null : step.id)
                 }
                 isFirst={index === 0}
                 isPrevOpen={
-                  index > 0 && progress.steps[index - 1]?.id === openStepId
+                  index > 0 && progress.steps[index - 1]?.id === effectiveOpenStepId
                 }
               />
             ))}

@@ -3,8 +3,3 @@ export * from './cta2';
 export * from './cta3';
 export * from './cta4';
 export * from './cta5';
-export * from './cta6';
-export * from './cta7';
-export * from './cta8';
-export * from './cta9';
-export * from './cta10';

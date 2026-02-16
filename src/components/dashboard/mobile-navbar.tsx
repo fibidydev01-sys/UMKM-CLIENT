@@ -4,16 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User,
-  Compass,
-  Bookmark,
-  Menu,
+  LayoutDashboard,
+  Layout,
   Settings,
-  CreditCard,
+  Radio,
+  Menu,
+  Crown,
   Sun,
   Moon,
   LogOut,
-  Send,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -27,29 +26,30 @@ import { useLogout } from '@/hooks';
 
 // ==========================================
 // MOBILE NAVBAR (Bottom Navigation)
-// Only visible on mobile devices
+// ✅ ADDED: Settings Toko & Channels
+// ✅ REMOVED: Pengaturan from menu
 // ==========================================
 
 const navItems = [
   {
     href: '/dashboard',
-    icon: User,
-    label: 'Profil',
+    icon: LayoutDashboard,
+    label: 'Dashboard',
   },
   {
-    href: '/dashboard/whatsapp',
-    icon: Send,
-    label: 'WhatsApp',
+    href: '/dashboard/landing-builder',
+    icon: Layout,
+    label: 'Builder',
   },
   {
-    href: '/dashboard/explore',
-    icon: Compass,
-    label: 'Explore',
+    href: '/dashboard/settings/toko',
+    icon: Settings,
+    label: 'Settings',
   },
   {
-    href: '/dashboard/bookmarks',
-    icon: Bookmark,
-    label: 'Tersimpan',
+    href: '/dashboard/settings/channels',
+    icon: Radio,
+    label: 'Channels',
   },
 ];
 
@@ -102,7 +102,7 @@ export function MobileNavbar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center justify-center px-3 py-2 rounded-lg transition-colors min-w-[60px]',
+                'flex items-center justify-center px-2 py-2 rounded-lg transition-colors min-w-[50px]',
                 active
                   ? 'text-primary'
                   : 'text-muted-foreground hover:text-foreground'
@@ -128,7 +128,7 @@ export function MobileNavbar() {
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                'flex items-center justify-center px-3 py-2 rounded-lg transition-colors min-w-[60px]',
+                'flex items-center justify-center px-2 py-2 rounded-lg transition-colors min-w-[50px]',
                 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -142,14 +142,8 @@ export function MobileNavbar() {
             sideOffset={8}
           >
             <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <Settings className="mr-3 h-5 w-5" />
-                Pengaturan
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
               <Link href="/dashboard/subscription">
-                <CreditCard className="mr-3 h-5 w-5" />
+                <Crown className="mr-3 h-5 w-5" />
                 Langganan
               </Link>
             </DropdownMenuItem>

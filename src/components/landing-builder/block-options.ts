@@ -36,7 +36,7 @@ export interface BlockOption {
  * Number of blocks available per section
  * Update this when you add more blocks!
  */
-const BLOCKS_PER_SECTION = 200; // hero1-hero200, about1-about200, etc.
+const BLOCKS_PER_SECTION = 10; // hero1-hero200, about1-about200, etc.
 
 // ============================================================================
 // SMART GENERATION FUNCTION
@@ -104,7 +104,7 @@ if (process.env.NODE_ENV === 'development') {
     contact: CONTACT_BLOCKS.length,
     cta: CTA_BLOCKS.length,
     total: HERO_BLOCKS.length + ABOUT_BLOCKS.length + PRODUCTS_BLOCKS.length +
-           TESTIMONIALS_BLOCKS.length + CONTACT_BLOCKS.length + CTA_BLOCKS.length,
+      TESTIMONIALS_BLOCKS.length + CONTACT_BLOCKS.length + CTA_BLOCKS.length,
   });
 }
 

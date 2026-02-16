@@ -39,13 +39,17 @@ import {
 } from '@/lib/api/subscription';
 import { useSnapPayment } from '@/hooks/use-snap-payment';
 
-const PLAN_FEATURES = [
-  { feature: 'Produk/Layanan', starter: 'Max 50', business: 'Unlimited' },
-  { feature: 'Pelanggan/Klien', starter: 'Max 200', business: 'Unlimited' },
-  { feature: 'Landing Page', starter: 'Subdomain gratis', business: 'Subdomain gratis' },
-  { feature: 'Component Blocks', starter: '10 variants', business: '50+ variants + update' },
-  { feature: 'WhatsApp Integration', starter: 'Connect + Auto-reply', business: 'Connect + Auto-reply' },
-] as const;
+const PLAN_FEATURES: Array<{
+  feature: string;
+  starter: string | boolean;
+  business: string | boolean;
+}> = [
+    { feature: 'Produk/Layanan', starter: 'Max 50', business: 'Unlimited' },
+    { feature: 'Pelanggan/Klien', starter: 'Max 200', business: 'Unlimited' },
+    { feature: 'Landing Page', starter: 'Subdomain gratis', business: 'Subdomain gratis' },
+    { feature: 'Component Blocks', starter: '10 variants', business: '50+ variants + update' },
+    { feature: 'WhatsApp Integration', starter: 'Connect + Auto-reply', business: 'Connect + Auto-reply' },
+  ];
 
 const PAYMENT_STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   settlement: { label: 'Lunas', variant: 'default' },
@@ -141,8 +145,9 @@ export default function SubscriptionPage() {
           setUpgrading(false);
         },
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Gagal memproses pembayaran');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal memproses pembayaran';
+      toast.error(errorMessage);
       setUpgrading(false);
     }
   };
@@ -154,8 +159,9 @@ export default function SubscriptionPage() {
       await subscriptionApi.cancelSubscription();
       toast.success('Langganan dibatalkan. Akses Business tetap aktif sampai akhir periode.');
       refreshData();
-    } catch (error: any) {
-      toast.error(error.message || 'Gagal membatalkan langganan');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gagal membatalkan langganan';
+      toast.error(errorMessage);
     } finally {
       setCancelling(false);
     }
@@ -311,9 +317,9 @@ export default function SubscriptionPage() {
             <Badge
               variant={
                 isTrial ? 'outline' :
-                isBusiness && isActive ? 'default' :
-                isCancelled ? 'outline' :
-                'secondary'
+                  isBusiness && isActive ? 'default' :
+                    isCancelled ? 'outline' :
+                      'secondary'
               }
             >
               {isTrial && isActive && 'Trial'}

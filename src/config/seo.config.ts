@@ -1,6 +1,6 @@
 // ==========================================
 // SEO CONFIGURATION
-// Subdomain-Ready Architecture
+// Subdomain-Ready Architecture + Custom Domain Support
 // ==========================================
 
 // Environment
@@ -28,11 +28,17 @@ export const seoConfig = {
 
   /**
    * Get tenant URL based on environment
-   * Production: https://{slug}.fibidy.com
+   * Production subdomain: https://{slug}.fibidy.com
+   * Production custom domain: https://{customDomain}
    * Development: http://localhost:3000/store/{slug}
    */
-  getTenantUrl: (slug: string, path: string = '') => {
+  getTenantUrl: (slug: string, path: string = '', customDomain?: string | null) => {
     const cleanPath = path.startsWith('/') ? path : path ? `/${path}` : '';
+
+    // If tenant has a verified custom domain, use it
+    if (IS_PRODUCTION && customDomain) {
+      return `https://${customDomain}${cleanPath}`;
+    }
 
     if (IS_PRODUCTION) {
       return `https://${slug}.${PROD_DOMAIN}${cleanPath}`;

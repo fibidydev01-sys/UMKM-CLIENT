@@ -71,3 +71,10 @@ export function getOgInitials(name: string): string {
   }
   return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
 }
+
+/**
+ * Get API URL - safe for both Edge and Node.js runtime
+ */
+export function getApiUrl(): string {
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+}

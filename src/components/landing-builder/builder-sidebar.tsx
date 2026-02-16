@@ -161,7 +161,7 @@ function SortableSectionItem({
           // ✅ Disabled state = visual only (grayscale + opacity)
           !enabled && 'opacity-50 grayscale'
         )}
-        onClick={(e) => {
+        onClick={() => {
           // ✅ Only trigger click if not dragging (dnd-kit handles delay)
           if (!isDragging) {
             onSectionClick(section.id);

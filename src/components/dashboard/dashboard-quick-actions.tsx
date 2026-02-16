@@ -2,21 +2,21 @@
 
 import {
   Package,
-  Users,
-  ShoppingCart,
   Settings,
   PlusCircle,
-  LayoutGrid,
   Store,
+  Layout,
+  Crown,
+  Rocket,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks';
+import { useTenant } from '@/hooks';
 import { BentoGrid, BentoActionCard } from '@/components/ui/bento-grid';
 
 // ==========================================
 // DASHBOARD QUICK ACTIONS
 // Using BentoGrid & BentoActionCard components
-// 3x3 Layout with Lihat Toko + Settings row
+// 3x3 Layout - ✅ CLEANED: Removed orders, customers
 // ==========================================
 
 interface QuickAction {
@@ -40,15 +40,6 @@ const quickActions: QuickAction[] = [
     gridClass: 'col-span-1 row-span-2',
   },
   {
-    icon: ShoppingCart,
-    name: 'Buat Pesanan',
-    description: 'Catat pesanan baru',
-    href: '/dashboard/orders/new',
-    gradient: 'from-green-500/20 via-green-500/5',
-    iconColor: 'text-green-500',
-    gridClass: 'col-span-1 row-span-1',
-  },
-  {
     icon: Package,
     name: 'Produk',
     description: 'Lihat semua produk',
@@ -58,21 +49,30 @@ const quickActions: QuickAction[] = [
     gridClass: 'col-span-1 row-span-1',
   },
   {
-    icon: Users,
-    name: 'Pelanggan',
-    description: 'Tambah pelanggan baru',
-    href: '/dashboard/customers/new',
+    icon: Layout,
+    name: 'Landing Builder',
+    description: 'Edit landing page',
+    href: '/dashboard/landing-builder',
     gradient: 'from-blue-500/20 via-blue-500/5',
     iconColor: 'text-blue-500',
     gridClass: 'col-span-1 row-span-1',
   },
   {
-    icon: LayoutGrid,
-    name: 'Pesanan',
-    description: 'Kelola semua pesanan',
-    href: '/dashboard/orders',
+    icon: Rocket,
+    name: 'Setup Toko',
+    description: 'Panduan setup',
+    href: '/dashboard/onboarding',
     gradient: 'from-purple-500/20 via-purple-500/5',
     iconColor: 'text-purple-500',
+    gridClass: 'col-span-1 row-span-1',
+  },
+  {
+    icon: Crown,
+    name: 'Langganan',
+    description: 'Kelola langganan',
+    href: '/dashboard/subscription',
+    gradient: 'from-amber-500/20 via-amber-500/5',
+    iconColor: 'text-amber-500',
     gridClass: 'col-span-1 row-span-1',
   },
 ];
@@ -92,7 +92,7 @@ const getBottomRowItems = (tenantSlug: string) => [
     icon: Settings,
     name: 'Pengaturan',
     description: 'Konfigurasi toko',
-    href: '/dashboard/settings',
+    href: '/dashboard/settings/toko',
     gradient: 'from-gray-500/20 via-gray-500/5',
     iconColor: 'text-gray-500',
     gridClass: 'col-span-2 row-span-1',
@@ -100,7 +100,7 @@ const getBottomRowItems = (tenantSlug: string) => [
 ];
 
 export function DashboardQuickActions() {
-  const { tenant } = useAuth();
+  const { tenant } = useTenant();
   const bottomRowItems = getBottomRowItems(tenant?.slug || '');
 
   // Combine all actions
@@ -109,11 +109,11 @@ export function DashboardQuickActions() {
   return (
     <BentoGrid
       className={cn(
-        "grid-cols-3 h-full",
+        'grid-cols-3 h-full',
         // Gap responsive
-        "gap-2 sm:gap-2.5 md:gap-3 lg:gap-4",
+        'gap-2 sm:gap-2.5 md:gap-3 lg:gap-4',
         // Remove default auto-rows, use explicit rows
-        "auto-rows-auto"
+        'auto-rows-auto'
       )}
       style={{
         gridTemplateRows: 'repeat(3, 1fr)',

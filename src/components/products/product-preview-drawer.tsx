@@ -20,7 +20,6 @@ import {
   Trash2,
   Eye,
   EyeOff,
-  X,
   ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -416,15 +415,6 @@ export function ProductPreviewDrawer({
               )}
             </div>
           </div>
-
-          {/* Floating Close Button */}
-          <button
-            onClick={() => onOpenChange(false)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-background/80 backdrop-blur border shadow-sm hover:bg-muted transition-colors z-20"
-            aria-label="Tutup preview"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </Drawer.Content>
       </Drawer.Portal>
     </Drawer.Root>

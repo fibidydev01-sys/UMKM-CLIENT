@@ -1,12 +1,21 @@
 'use client';
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, ComponentType } from 'react';
 import { extractAboutData, useAboutBlock } from '@/lib/landing';
-import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
+import type { TenantLandingConfig, Tenant, PublicTenant, FeatureItem } from '@/types';
 
 interface TenantAboutProps {
   config?: TenantLandingConfig['about'];
   tenant: Tenant | PublicTenant;
+}
+
+// Define the props that About components expect
+interface AboutComponentProps {
+  title: string;
+  subtitle: string;
+  content: string;
+  image: string | undefined;
+  features: FeatureItem[];
 }
 
 /**
@@ -30,7 +39,7 @@ export function TenantAbout({ config, tenant }: TenantAboutProps) {
   // Extract about data directly from tenant (Data Contract fields)
   const aboutData = extractAboutData(tenant, config ? { about: config } : undefined);
 
-  const commonProps = {
+  const commonProps: AboutComponentProps = {
     title: aboutData.title,
     subtitle: aboutData.subtitle,
     content: aboutData.content,
@@ -38,9 +47,9 @@ export function TenantAbout({ config, tenant }: TenantAboutProps) {
     features: aboutData.features,
   };
 
-  // 🚀 SMART: Dynamic component loading
+  // 🚀 SMART: Dynamic component loading with proper typing
   const blockNumber = block.replace('about', '');
-  const AboutComponent = lazy(() =>
+  const AboutComponent = lazy<ComponentType<AboutComponentProps>>(() =>
     import(`./blocks/about/about${blockNumber}`)
       .then((mod) => ({ default: mod[`About${blockNumber}`] }))
       .catch(() => import('./blocks/about/about1').then((mod) => ({ default: mod.About1 })))

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
 import {
   OG_IMAGE_WIDTH,
@@ -6,14 +7,16 @@ import {
   formatOgPrice,
   truncateOgText,
   getOgInitials,
+  getApiUrl,
 } from '@/lib/og-utils';
 
 // ==========================================
 // PRODUCT OPEN GRAPH IMAGE
-// Route: /store/[slug]/product/[id]/opengraph-image
+// Route: /store/[slug]/products/[id]/opengraph-image
 // ==========================================
 
-export const runtime = 'edge';
+// FIX: Ganti ke nodejs runtime agar next: { revalidate } bekerja
+export const runtime = 'nodejs';
 export const alt = 'Product';
 export const size = {
   width: OG_IMAGE_WIDTH,
@@ -28,13 +31,19 @@ interface Props {
 // Fetch product data
 async function getProduct(id: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const apiUrl = getApiUrl();
+    console.log('[OG-Product] Fetching product:', `${apiUrl}/products/public/${id}`);
+
     const res = await fetch(`${apiUrl}/products/public/${id}`, {
       next: { revalidate: 3600 },
     });
+
+    console.log('[OG-Product] Product status:', res.status);
+
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (err) {
+    console.error('[OG-Product] Fetch error:', err);
     return null;
   }
 }
@@ -42,19 +51,27 @@ async function getProduct(id: string) {
 // Fetch tenant data
 async function getTenant(slug: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const apiUrl = getApiUrl();
+    console.log('[OG-Product] Fetching tenant:', `${apiUrl}/tenants/by-slug/${slug}`);
+
     const res = await fetch(`${apiUrl}/tenants/by-slug/${slug}`, {
       next: { revalidate: 3600 },
     });
+
+    console.log('[OG-Product] Tenant status:', res.status);
+
     if (!res.ok) return null;
     return res.json();
-  } catch {
+  } catch (err) {
+    console.error('[OG-Product] Fetch error:', err);
     return null;
   }
 }
 
 export default async function ProductOgImage({ params }: Props) {
   const { slug, id } = await params;
+  console.log('[OG-Product] Generating OG for slug:', slug, 'id:', id);
+
   const [tenant, product] = await Promise.all([
     getTenant(slug),
     getProduct(id),
@@ -62,6 +79,7 @@ export default async function ProductOgImage({ params }: Props) {
 
   // Fallback if not found
   if (!tenant || !product) {
+    console.log('[OG-Product] Not found - tenant:', !!tenant, 'product:', !!product);
     return new ImageResponse(
       (
         <div
@@ -250,7 +268,6 @@ export default async function ProductOgImage({ params }: Props) {
               borderRadius: '16px',
             }}
           >
-            {/* Store Avatar */}
             <div
               style={{
                 width: '50px',

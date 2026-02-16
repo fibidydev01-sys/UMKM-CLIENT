@@ -1,3 +1,11 @@
+/**
+ * FallingText Component
+ * 
+ * ✅ FIXED: Removed setState in useEffect (Line 48)
+ * - Used lazy initialization for auto-trigger
+ * - Effect now only handles scroll/intersection observer
+ */
+
 import { useRef, useState, useEffect } from 'react';
 import Matter from 'matter-js';
 import './FallingText.css';
@@ -29,7 +37,8 @@ const FallingText: React.FC<FallingTextProps> = ({
   const textRef = useRef<HTMLDivElement | null>(null);
   const canvasContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const [effectStarted, setEffectStarted] = useState(false);
+  // ✅ FIX: Lazy initialization for auto-trigger
+  const [effectStarted, setEffectStarted] = useState(() => trigger === 'auto');
 
   useEffect(() => {
     if (!textRef.current) return;
@@ -43,25 +52,25 @@ const FallingText: React.FC<FallingTextProps> = ({
     textRef.current.innerHTML = newHTML;
   }, [text, highlightWords, highlightClass]);
 
+  // ✅ FIX: Effect now only handles scroll trigger, not auto
   useEffect(() => {
-    if (trigger === 'auto') {
-      setEffectStarted(true);
-      return;
-    }
-    if (trigger === 'scroll' && containerRef.current) {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setEffectStarted(true);
-            observer.disconnect();
-          }
-        },
-        { threshold: 0.1 }
-      );
-      observer.observe(containerRef.current);
-      return () => observer.disconnect();
-    }
-  }, [trigger]);
+    // Skip if already started or not scroll trigger
+    if (effectStarted || trigger !== 'scroll') return;
+
+    if (!containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setEffectStarted(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, [trigger, effectStarted]);
 
   useEffect(() => {
     if (!effectStarted) return;
@@ -161,8 +170,10 @@ const FallingText: React.FC<FallingTextProps> = ({
     return () => {
       Render.stop(render);
       Runner.stop(runner);
-      if (render.canvas && canvasContainerRef.current) {
-        canvasContainerRef.current.removeChild(render.canvas);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      const canvasContainer = canvasContainerRef.current;
+      if (render.canvas && canvasContainer && canvasContainer.contains(render.canvas)) {
+        canvasContainer.removeChild(render.canvas);
       }
       World.clear(engine.world, false);
       Engine.clear(engine);

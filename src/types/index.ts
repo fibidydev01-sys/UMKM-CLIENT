@@ -32,6 +32,9 @@ export * from './discover';
 // Chat Types (WhatsApp)
 export * from './chat';
 
+// Domain Types (Custom Domain)
+export * from './domain';
+
 // ==========================================
 // COMMON UTILITY TYPES
 // ==========================================

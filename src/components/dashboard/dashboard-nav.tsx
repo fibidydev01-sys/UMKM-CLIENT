@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
-  Package,
-  Users,
-  ShoppingCart,
   Settings,
-  Store,
   Layout,
   ChevronRight,
+  Rocket,
+  Crown,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -31,6 +29,7 @@ import {
 
 // ==========================================
 // NAVIGATION ITEMS
+// ✅ CLEANED: Removed customers, orders, whatsapp
 // ==========================================
 
 interface NavItem {
@@ -61,24 +60,9 @@ const navigation: NavGroup[] = [
         icon: Layout,
       },
       {
-        title: 'Produk',
-        href: '/dashboard/products',
-        icon: Package,
-        children: [
-          { title: 'Semua Produk', href: '/dashboard/products' },
-          { title: 'Tambah Produk', href: '/dashboard/products/new' },
-          { title: 'Kategori', href: '/dashboard/products/categories' },
-        ],
-      },
-      {
-        title: 'Pelanggan',
-        href: '/dashboard/customers',
-        icon: Users,
-      },
-      {
-        title: 'Pesanan',
-        href: '/dashboard/orders',
-        icon: ShoppingCart,
+        title: 'Setup Toko',
+        href: '/dashboard/onboarding',
+        icon: Rocket,
       },
     ],
   },
@@ -86,14 +70,14 @@ const navigation: NavGroup[] = [
     title: 'Lainnya',
     items: [
       {
-        title: 'Lihat Toko',
-        href: '/store',
-        icon: Store,
+        title: 'Pengaturan',
+        href: '/dashboard/settings/toko',
+        icon: Settings,
       },
       {
-        title: 'Pengaturan',
-        href: '/dashboard/settings',
-        icon: Settings,
+        title: 'Langganan',
+        href: '/dashboard/subscription',
+        icon: Crown,
       },
     ],
   },

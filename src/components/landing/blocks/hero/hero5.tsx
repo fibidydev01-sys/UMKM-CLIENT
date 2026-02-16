@@ -6,7 +6,6 @@ import { ChevronRight, Circle } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Card } from '@/components/ui/card';
-import Iridescence from '@/components/ui/iridescence/Iridescence';
 
 interface Hero5Props {
   title: string;
@@ -30,9 +29,12 @@ export function Hero5({
 }: Hero5Props) {
   return (
     <section className="relative min-h-screen overflow-hidden bg-background py-20">
-      {/* Background - Iridescence */}
+      {/* Animated Iridescent Background */}
       <div className="absolute inset-0 opacity-15">
-        <Iridescence color={[0.5, 0.6, 0.8]} mouseReact amplitude={0.1} speed={1} />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/30 via-purple-400/30 to-pink-400/30 animate-gradient-shift" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(139,_92,_246,_0.3),_transparent_50%)] animate-pulse"
+          style={{ animationDuration: '6s' }} />
+        <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,_rgba(139,_92,_246,_0.2),_rgba(236,_72,_153,_0.2),_rgba(139,_92,_246,_0.2))] animate-spin-slow" />
       </div>
 
       <div className="container relative z-10 px-4 sm:px-6 lg:px-8">
@@ -132,6 +134,35 @@ export function Hero5({
           </Card>
         </motion.div>
       </div>
+
+      <style jsx>{`
+        @keyframes gradient-shift {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+        
+        @keyframes spin-slow {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        
+        :global(.animate-gradient-shift) {
+          background-size: 200% 200%;
+          animation: gradient-shift 10s ease infinite;
+        }
+        
+        :global(.animate-spin-slow) {
+          animation: spin-slow 20s linear infinite;
+        }
+      `}</style>
     </section>
   );
 }

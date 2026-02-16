@@ -1,5 +1,4 @@
-import { redirect } from 'next/navigation';
-
+// src/app/page.tsx
 export default function HomePage() {
-  redirect('/discover');
+  return null;
 }

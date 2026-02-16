@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
 import {
   OG_IMAGE_WIDTH,
@@ -5,6 +6,7 @@ import {
   OG_COLORS,
   getOgInitials,
   truncateOgText,
+  getApiUrl,
 } from '@/lib/og-utils';
 
 // ==========================================
@@ -12,7 +14,9 @@ import {
 // Route: /store/[slug]/opengraph-image
 // ==========================================
 
-export const runtime = 'edge';
+// FIX: Ganti ke nodejs runtime agar next: { revalidate } bekerja
+// Edge runtime TIDAK support next: { revalidate } dan bisa silent fail
+export const runtime = 'nodejs';
 export const alt = 'Toko Online';
 export const size = {
   width: OG_IMAGE_WIDTH,
@@ -27,23 +31,38 @@ interface Props {
 // Fetch tenant data
 async function getTenant(slug: string) {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+    const apiUrl = getApiUrl();
+    console.log('[OG-Tenant] Fetching:', `${apiUrl}/tenants/by-slug/${slug}`);
+
     const res = await fetch(`${apiUrl}/tenants/by-slug/${slug}`, {
       next: { revalidate: 3600 },
     });
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
+
+    console.log('[OG-Tenant] Status:', res.status);
+
+    if (!res.ok) {
+      console.log('[OG-Tenant] Response not OK:', res.statusText);
+      return null;
+    }
+
+    const data = await res.json();
+    console.log('[OG-Tenant] Data received:', data?.name || 'no name');
+    return data;
+  } catch (err) {
+    console.error('[OG-Tenant] Fetch error:', err);
     return null;
   }
 }
 
 export default async function TenantOgImage({ params }: Props) {
   const { slug } = await params;
+  console.log('[OG-Tenant] Generating OG image for slug:', slug);
+
   const tenant = await getTenant(slug);
 
   // Fallback if tenant not found
   if (!tenant) {
+    console.log('[OG-Tenant] Tenant not found, returning fallback');
     return new ImageResponse(
       (
         <div

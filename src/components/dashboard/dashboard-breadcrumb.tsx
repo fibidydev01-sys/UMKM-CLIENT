@@ -18,16 +18,27 @@ import {
 // Auto-generates breadcrumb from pathname
 // ==========================================
 
-// Mapping untuk label yang lebih readable
+// ✅ CLEANED: Removed customers, orders mapping
 const LABEL_MAP: Record<string, string> = {
   dashboard: 'Dashboard',
   products: 'Produk',
-  customers: 'Pelanggan',
-  orders: 'Pesanan',
   settings: 'Pengaturan',
+  'landing-builder': 'Landing Builder',
+  onboarding: 'Setup Toko',
+  subscription: 'Langganan',
   new: 'Tambah Baru',
   edit: 'Edit',
   store: 'Toko',
+  toko: 'Toko',
+  channels: 'Channels',
+  pembayaran: 'Pembayaran',
+  pengiriman: 'Pengiriman',
+  seo: 'SEO',
+  about: 'Tentang',
+  contact: 'Kontak',
+  testimonials: 'Testimoni',
+  cta: 'Call to Action',
+  'hero-section': 'Hero Section',
 };
 
 function formatLabel(segment: string): string {

@@ -1,3 +1,12 @@
+/**
+ * LightPillar Component
+ * 
+ * ✅ FIXED: Removed setState in useEffect (Lines 52, 100)
+ * - Used lazy initialization for WebGL support check
+ * - Removed the check effects entirely
+ * - Also removed unused 'error' variable
+ */
+
 import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import './LightPillar.css';
@@ -42,16 +51,14 @@ const LightPillar: React.FC<LightPillarProps> = ({
   const geometryRef = useRef<THREE.PlaneGeometry | null>(null);
   const mouseRef = useRef<THREE.Vector2>(new THREE.Vector2(0, 0));
   const timeRef = useRef<number>(0);
-  const [webGLSupported, setWebGLSupported] = useState<boolean>(true);
 
-  // Check WebGL support
-  useEffect(() => {
+  // ✅ FIX: Lazy initialization for WebGL support check
+  const [webGLSupported] = useState(() => {
+    if (typeof window === 'undefined') return true;
     const canvas = document.createElement('canvas');
     const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    if (!gl) {
-      setWebGLSupported(false);
-    }
-  }, []);
+    return !!gl;
+  });
 
   useEffect(() => {
     if (!containerRef.current || !webGLSupported) return;
@@ -96,8 +103,9 @@ const LightPillar: React.FC<LightPillarProps> = ({
         stencil: false,
         depth: false
       });
-    } catch (error) {
-      setWebGLSupported(false);
+    } catch {
+      // ✅ FIX: Removed error variable and setState
+      // If WebGL init fails, just return early
       return;
     }
 

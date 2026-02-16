@@ -1,12 +1,13 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { tenantsApi } from '@/lib/api';
 import { TenantAbout } from '@/components/landing';
 import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
 import type { PublicTenant } from '@/types';
 
 // ==========================================
-// ABOUT PAGE
+// ABOUT PAGE - FULL WIDTH
 // ==========================================
 
 interface AboutPageProps {
@@ -29,7 +30,6 @@ export async function generateMetadata({ params }: AboutPageProps): Promise<Meta
     return { title: 'Not Found' };
   }
 
-  // ✅ FIX: No type annotation
   const landingConfig = tenant.landingConfig;
   const aboutContent = landingConfig?.about?.config?.content;
   const description = aboutContent
@@ -55,7 +55,6 @@ export default async function AboutPage({ params }: AboutPageProps) {
     notFound();
   }
 
-  // ✅ FIX: No type annotation
   const landingConfig = tenant.landingConfig;
   const aboutConfig = landingConfig?.about;
 
@@ -68,25 +67,55 @@ export default async function AboutPage({ params }: AboutPageProps) {
     <>
       <BreadcrumbSchema items={breadcrumbs} />
 
-      <div className="container px-4 py-8 space-y-8">
-        {/* Page Header */}
-        <div className="text-center max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            {aboutConfig?.title || 'Tentang Kami'}
-          </h1>
-          {aboutConfig?.subtitle && (
-            <p className="text-lg text-muted-foreground">
-              {aboutConfig.subtitle}
-            </p>
-          )}
-        </div>
-
-        {/* About Content */}
-        <TenantAbout
-          config={aboutConfig}
-          tenant={tenant}
-        />
+      {/* FULL WIDTH - No container wrapper */}
+      <div className="w-full">
+        {/* About Content with Lazy Loading */}
+        <Suspense fallback={<AboutSkeleton />}>
+          <TenantAbout
+            config={aboutConfig}
+            tenant={tenant}
+          />
+        </Suspense>
       </div>
     </>
+  );
+}
+
+// Loading skeleton
+function AboutSkeleton() {
+  return (
+    <div className="w-full py-16 md:py-24">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
+        <div className="animate-pulse space-y-8">
+          {/* Header skeleton */}
+          <div className="text-center space-y-4">
+            <div className="h-10 bg-muted rounded-lg w-2/3 mx-auto" />
+            <div className="h-6 bg-muted rounded-lg w-1/2 mx-auto" />
+          </div>
+
+          {/* Grid skeleton */}
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            <div className="aspect-[4/4] bg-muted rounded-2xl" />
+            <div className="space-y-4">
+              <div className="h-6 bg-muted rounded w-full" />
+              <div className="h-6 bg-muted rounded w-5/6" />
+              <div className="h-6 bg-muted rounded w-4/6" />
+
+              <div className="space-y-3 pt-4">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-4 p-4 bg-muted/50 rounded-xl">
+                    <div className="w-10 h-10 bg-muted rounded-lg shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-5 bg-muted rounded w-1/3" />
+                      <div className="h-4 bg-muted rounded w-2/3" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,3 +1,11 @@
+/**
+ * Magnet Component
+ * 
+ * ✅ FIXED (ROUND 2): Removed ALL setState in useEffect
+ * - Removed setIsActive from effect body
+ * - Used derived state pattern for active state
+ */
+
 import React, { useState, useEffect, useRef, ReactNode, HTMLAttributes } from 'react';
 
 interface MagnetProps extends HTMLAttributes<HTMLDivElement> {
@@ -22,15 +30,17 @@ const Magnet: React.FC<MagnetProps> = ({
   innerClassName = '',
   ...props
 }) => {
-  const [isActive, setIsActive] = useState<boolean>(false);
-  const [position, setPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [rawIsActive, setRawIsActive] = useState<boolean>(false);
+  const [rawPosition, setRawPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const magnetRef = useRef<HTMLDivElement>(null);
 
+  // ✅ FIX: Use derived state - if disabled, override active state and position
+  const isActive = disabled ? false : rawIsActive;
+  const position = disabled ? { x: 0, y: 0 } : rawPosition;
+
   useEffect(() => {
-    if (disabled) {
-      setPosition({ x: 0, y: 0 });
-      return;
-    }
+    // ✅ FIX: Don't call setState when disabled - just skip effect entirely
+    if (disabled) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!magnetRef.current) return;
@@ -43,13 +53,13 @@ const Magnet: React.FC<MagnetProps> = ({
       const distY = Math.abs(centerY - e.clientY);
 
       if (distX < width / 2 + padding && distY < height / 2 + padding) {
-        setIsActive(true);
+        setRawIsActive(true);
         const offsetX = (e.clientX - centerX) / magnetStrength;
         const offsetY = (e.clientY - centerY) / magnetStrength;
-        setPosition({ x: offsetX, y: offsetY });
+        setRawPosition({ x: offsetX, y: offsetY });
       } else {
-        setIsActive(false);
-        setPosition({ x: 0, y: 0 });
+        setRawIsActive(false);
+        setRawPosition({ x: 0, y: 0 });
       }
     };
 

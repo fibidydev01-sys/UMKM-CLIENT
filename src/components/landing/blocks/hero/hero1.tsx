@@ -8,7 +8,6 @@ import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import LiquidEther from '@/components/ui/liquid-ether/LiquidEther';
 
 interface Hero1Props {
   title: string;
@@ -43,16 +42,13 @@ export function Hero1({
 }: Hero1Props) {
   return (
     <section className="relative min-h-screen overflow-hidden bg-background">
-      {/* Background - LiquidEther */}
+      {/* Animated Gradient Background */}
       <div className="absolute inset-0 opacity-40">
-        <LiquidEther
-          mouseForce={20}
-          cursorSize={100}
-          colors={['#5227FF', '#FF9FFC', '#B19EEF']}
-          autoDemo={true}
-          autoSpeed={0.3}
-          resolution={0.5}
-        />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-purple-500/20 to-pink-500/20 animate-gradient-xy" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent animate-pulse"
+          style={{ animationDuration: '8s' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-500/30 via-transparent to-transparent animate-pulse"
+          style={{ animationDuration: '10s', animationDelay: '2s' }} />
       </div>
 
       {/* Floating Icons */}
@@ -158,6 +154,22 @@ export function Hero1({
           )}
         </motion.div>
       </div>
+
+      <style jsx>{`
+        @keyframes gradient-xy {
+          0%, 100% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+        }
+        
+        :global(.animate-gradient-xy) {
+          background-size: 400% 400%;
+          animation: gradient-xy 15s ease infinite;
+        }
+      `}</style>
     </section>
   );
 }

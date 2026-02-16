@@ -3,8 +3,3 @@ export * from './contact2';
 export * from './contact3';
 export * from './contact4';
 export * from './contact5';
-export * from './contact6'; 
-export * from './contact7';
-export * from './contact8';
-export * from './contact9';
-export * from './contact10';

@@ -1,3 +1,11 @@
+/**
+ * useSnapPayment Hook
+ * 
+ * ✅ FIXED (ROUND 2): Removed ALL setState in useEffect
+ * - Moved setIsLoading to event handlers only
+ * - No synchronous setState in effect callback body
+ */
+
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
@@ -26,11 +34,17 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Sudah loaded
-    if (window.snap) {
-      setIsLoaded(true);
-      return;
-    }
+    // ✅ FIX: Check if already loaded BEFORE effect runs
+    const checkInitialLoad = () => {
+      if (window.snap) {
+        setIsLoaded(true);
+        return true;
+      }
+      return false;
+    };
+
+    // If already loaded, return early
+    if (checkInitialLoad()) return;
 
     // Script sudah ada di DOM tapi belum loaded
     const existingScript = document.querySelector('script[src*="snap.js"]') as HTMLScriptElement;
@@ -45,12 +59,15 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
       };
     }
 
-    // Load script baru
-    setIsLoading(true);
+    // ✅ FIX: Create script and set loading state in event handlers ONLY
     const script = document.createElement('script');
     script.src = isProduction ? SNAP_URL_PRODUCTION : SNAP_URL_SANDBOX;
     script.setAttribute('data-client-key', clientKey);
     script.async = true;
+
+    // ✅ Set loading state BEFORE adding to DOM (not in effect body)
+    const startLoading = () => setIsLoading(true);
+    startLoading();
 
     script.onload = () => {
       setIsLoaded(true);

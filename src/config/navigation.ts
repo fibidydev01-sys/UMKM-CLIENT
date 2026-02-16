@@ -7,6 +7,7 @@ import {
   Store,
   MessageSquare,
   Bot,
+  Globe,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -83,6 +84,11 @@ export const dashboardNav: NavGroup[] = [
         title: 'Pengaturan',
         href: '/dashboard/settings',
         icon: Settings,
+      },
+      {
+        title: 'Domain',
+        href: '/dashboard/settings/domain',
+        icon: Globe,
       },
     ],
   },

@@ -4,17 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  User,
+  LayoutDashboard,
+  Layout,
   Settings,
+  Radio,
+  Crown,
   ChevronRight,
-  LogOut,
   Menu,
   Moon,
   Sun,
-  Compass,
-  Bookmark,
-  CreditCard,
-  Send,
+  LogOut,
   type LucideIcon,
 } from 'lucide-react';
 import {
@@ -41,6 +40,8 @@ import { useLogout } from '@/hooks';
 
 // ==========================================
 // NAVIGATION ITEMS
+// ✅ ADDED: Settings Toko & Channels
+// ✅ REMOVED: Pengaturan from menu
 // ==========================================
 
 interface NavItem {
@@ -61,24 +62,24 @@ const navigation: NavGroup[] = [
     title: 'Menu Utama',
     items: [
       {
-        title: 'Profil',
+        title: 'Dashboard',
         href: '/dashboard',
-        icon: User,
+        icon: LayoutDashboard,
       },
       {
-        title: 'WhatsApp',
-        href: '/dashboard/whatsapp',
-        icon: Send,
+        title: 'Landing Builder',
+        href: '/dashboard/landing-builder',
+        icon: Layout,
       },
       {
-        title: 'Explore',
-        href: '/dashboard/explore',
-        icon: Compass,
+        title: 'Settings Toko',
+        href: '/dashboard/settings/toko',
+        icon: Settings,
       },
       {
-        title: 'Tersimpan',
-        href: '/dashboard/bookmarks',
-        icon: Bookmark,
+        title: 'Channels',
+        href: '/dashboard/settings/channels',
+        icon: Radio,
       },
     ],
   },
@@ -86,7 +87,6 @@ const navigation: NavGroup[] = [
 
 // ==========================================
 // DASHBOARD SIDEBAR COMPONENT
-// Clean version - No logos
 // ==========================================
 
 export function DashboardSidebar() {
@@ -198,9 +198,7 @@ export function DashboardSidebar() {
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <SidebarMenuButton
-                  className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-                >
+                <SidebarMenuButton className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground">
                   <Menu className="h-5 w-5" />
                   <span>Menu</span>
                 </SidebarMenuButton>
@@ -212,14 +210,8 @@ export function DashboardSidebar() {
                 sideOffset={4}
               >
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">
-                    <Settings className="mr-3 h-5 w-5" />
-                    Pengaturan
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
                   <Link href="/dashboard/subscription">
-                    <CreditCard className="mr-3 h-5 w-5" />
+                    <Crown className="mr-3 h-5 w-5" />
                     Langganan
                   </Link>
                 </DropdownMenuItem>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useTenant } from './use-tenant';
 import { useProducts } from './use-products';
 import {
@@ -27,29 +27,27 @@ interface UseOnboardingReturn {
 
 export function useOnboarding(): UseOnboardingReturn {
   const { tenant } = useTenant();
-  const { products, isLoading: productsLoading } = useProducts();
+  const { products } = useProducts();
 
-  const [isDismissed, setIsDismissed] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  // ✅ FIX 1: Lazy initialization from localStorage (no useEffect needed!)
+  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem(DISMISSED_KEY) === 'true';
+  });
 
-  // Check localStorage for dismissed state on mount
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const dismissed = localStorage.getItem(DISMISSED_KEY);
-      setIsDismissed(dismissed === 'true');
+  // ✅ FIX 2: Derive both progress AND error from useMemo (no useState for error!)
+  const { progress, error } = useMemo(() => {
+    if (!tenant) {
+      return { progress: null, error: null };
     }
-  }, []);
-
-  // Calculate progress
-  const progress = useMemo(() => {
-    if (!tenant) return null;
 
     try {
       const productsCount = products?.length || 0;
-      return calculateOnboardingProgress(tenant, productsCount);
+      const result = calculateOnboardingProgress(tenant, productsCount);
+      return { progress: result, error: null };
     } catch (err) {
-      setError('Failed to calculate progress');
-      return null;
+      console.error('Failed to calculate progress:', err);
+      return { progress: null, error: 'Failed to calculate progress' };
     }
   }, [tenant, products]);
 
@@ -77,7 +75,7 @@ export function useOnboarding(): UseOnboardingReturn {
     // For now, this is a placeholder for potential API refresh
   }, []);
 
-  // ✅ FIX: Only wait for tenant! Products can be 0 (no problem for calculation)
+  // Only wait for tenant! Products can be 0 (no problem for calculation)
   // Progress calculation is INSTANT - no need to wait for products API!
   const isLoading = !tenant;
 
