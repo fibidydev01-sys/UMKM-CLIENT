@@ -132,6 +132,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // ==========================================
+  // SUBDOMAIN REWRITE
+  // ==========================================
   if (subdomain) {
     const url = request.nextUrl.clone();
 
@@ -161,47 +164,56 @@ export async function proxy(request: NextRequest) {
   ) {
     if (DEBUG) console.log('[Proxy] Possible custom domain:', hostname);
 
-    const tenantSlug = await resolveCustomDomain(hostname, request);
+    try {
+      // Add timeout protection
+      const tenantSlug = await Promise.race([
+        resolveCustomDomain(hostname, request),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
+      ]);
 
-    if (tenantSlug) {
-      const url = request.nextUrl.clone();
+      if (tenantSlug) {
+        const url = request.nextUrl.clone();
 
-      if (pathname === '/') {
-        url.pathname = `/store/${tenantSlug}`;
-      } else {
-        url.pathname = `/store/${tenantSlug}${pathname}`;
+        if (pathname === '/') {
+          url.pathname = `/store/${tenantSlug}`;
+        } else {
+          url.pathname = `/store/${tenantSlug}${pathname}`;
+        }
+
+        if (DEBUG) console.log('[Proxy] Custom domain rewrite:', url.pathname);
+
+        const response = NextResponse.rewrite(url);
+        response.headers.set('x-custom-domain', hostname);
+        response.headers.set('x-tenant-slug', tenantSlug);
+        return response;
       }
 
-      if (DEBUG) console.log('[Proxy] Custom domain rewrite:', url.pathname);
-
-      const response = NextResponse.rewrite(url);
-      response.headers.set('x-custom-domain', hostname);
-      response.headers.set('x-tenant-slug', tenantSlug);
-      return response;
-    }
-
-    if (DEBUG) console.log('[Proxy] Custom domain not found:', hostname);
-  }
-
-  const token = getTokenFromCookies(request);
-  const isAuthenticated = !!token;
-
-  if (DEBUG) {
-    console.log('[Proxy] Auth check:', { token: token ? 'exists' : 'none', isAuthenticated });
-  }
-
-  if (pathname === '/') {
-    if (isAuthenticated) {
-      if (DEBUG) console.log('[Proxy] Root → Dashboard (authenticated)');
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    } else {
-      if (DEBUG) console.log('[Proxy] Root → Login (not authenticated)');
-      return NextResponse.redirect(new URL('/login', request.url));
+      if (DEBUG) console.log('[Proxy] Custom domain not found:', hostname);
+    } catch (error) {
+      if (DEBUG) console.error('[Proxy] Custom domain timeout:', error);
     }
   }
 
+  // ==========================================
+  // ❌ HAPUS BAGIAN INI - Root redirect
+  // ==========================================
+  // const token = getTokenFromCookies(request);
+  // const isAuthenticated = !!token;
+  //
+  // if (pathname === '/') {
+  //   if (isAuthenticated) {
+  //     return NextResponse.redirect(new URL('/dashboard', request.url));
+  //   } else {
+  //     return NextResponse.redirect(new URL('/login', request.url));
+  //   }
+  // }
+
+  // ==========================================
+  // PROTECTED ROUTES - Dashboard only
+  // ==========================================
   if (matchesPath(pathname, PROTECTED_ROUTES)) {
-    if (!isAuthenticated) {
+    const token = getTokenFromCookies(request);
+    if (!token) {
       if (DEBUG) console.log('[Proxy] Protected route → Login redirect');
       const loginUrl = new URL('/login', request.url);
       loginUrl.searchParams.set('from', pathname);
@@ -209,8 +221,12 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // ==========================================
+  // AUTH ROUTES - Redirect if already logged in
+  // ==========================================
   if (matchesPath(pathname, AUTH_ROUTES)) {
-    if (isAuthenticated) {
+    const token = getTokenFromCookies(request);
+    if (token) {
       if (DEBUG) console.log('[Proxy] Auth route → Dashboard redirect');
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }

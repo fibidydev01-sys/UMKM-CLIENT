@@ -1,4 +1,15 @@
 // src/app/page.tsx
-export default function HomePage() {
-  return null;
+import { redirect } from 'next/navigation';
+import { cookies } from 'next/headers';
+
+export default async function HomePage() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('fibidy_auth');
+
+  // Server-side redirect, bypass middleware
+  if (token) {
+    redirect('/dashboard');
+  } else {
+    redirect('/login');
+  }
 }
