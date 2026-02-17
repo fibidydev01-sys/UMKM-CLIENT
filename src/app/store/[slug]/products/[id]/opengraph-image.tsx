@@ -8,13 +8,24 @@ export const size = {
 };
 export const contentType = 'image/png';
 
-export default async function ProductOgImage() {
-  // ✅ HARDCODED TEST DATA
-  const productName = 'Double Dragon Burger';
-  const productPrice = 115000;
-  const tenantName = 'Burger China';
-  const slug = 'burgerchina';
+interface Props {
+  params: Promise<{ slug: string; id: string }>;
+}
 
+// ==========================================
+// HELPERS
+// ==========================================
+function getApiUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api`;
+  }
+  return 'http://localhost:8000/api';
+}
+
+function createFallbackImage(message: string) {
   return new ImageResponse(
     (
       <div
@@ -22,125 +33,341 @@ export default async function ProductOgImage() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          background: 'white',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#f3f4f6',
         }}
       >
-        {/* Left Side - Icon */}
         <div
           style={{
-            width: '50%',
-            height: '100%',
+            fontSize: '48px',
+            fontWeight: 'bold',
+            color: '#111827',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: '#f3f4f6',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <div style={{ fontSize: '120px' }}>📦</div>
-            <div style={{ fontSize: '24px', color: '#6b7280' }}>No Image</div>
-          </div>
+          Fibidy
         </div>
-
-        {/* Right Side - Product Info */}
         <div
           style={{
-            width: '50%',
-            height: '100%',
+            fontSize: '28px',
+            color: '#6b7280',
             display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            padding: '50px',
+            marginTop: '20px',
           }}
         >
-          {/* Product Name */}
-          <div
-            style={{
-              fontSize: '48px',
-              fontWeight: 'bold',
-              color: '#111827',
-              marginBottom: '20px',
-              display: 'flex',
-            }}
-          >
-            {productName}
-          </div>
+          {message}
+        </div>
+      </div>
+    ),
+    { width: 1200, height: 630 }
+  );
+}
 
-          {/* Price */}
-          <div
-            style={{
-              fontSize: '42px',
-              fontWeight: 'bold',
-              color: '#2563eb',
-              marginBottom: '30px',
-              display: 'flex',
-            }}
-          >
-            Rp {productPrice.toLocaleString('id-ID')}
-          </div>
+async function getProduct(id: string): Promise<any | null> {
+  const apiUrl = getApiUrl();
+  const endpoint = `${apiUrl}/products/public/${id}`;
 
-          {/* Store Info */}
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch(endpoint, {
+      next: { revalidate: 3600 },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function getTenant(slug: string): Promise<any | null> {
+  const apiUrl = getApiUrl();
+  const endpoint = `${apiUrl}/tenants/by-slug/${slug}`;
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch(endpoint, {
+      next: { revalidate: 3600 },
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+// ==========================================
+// MAIN COMPONENT
+// ==========================================
+export default async function ProductOgImage({ params }: Props) {
+  try {
+    const { slug, id } = await params;
+
+    if (!slug || !id) {
+      return createFallbackImage('Invalid Request');
+    }
+
+    // ✅ FETCH REAL DATA
+    const [tenant, product] = await Promise.all([
+      getTenant(slug),
+      getProduct(id),
+    ]);
+
+    if (!tenant) {
+      return createFallbackImage('Toko Tidak Ditemukan');
+    }
+
+    if (!product) {
+      return createFallbackImage('Produk Tidak Ditemukan');
+    }
+
+    // Extract data
+    const productName = product.name || 'Produk';
+    const productPrice = product.price || 0;
+    const productCategory = product.category || null;
+    const comparePrice = product.comparePrice || null;
+    const tenantName = tenant.name || 'Toko';
+
+    const hasDiscount = comparePrice && comparePrice > productPrice;
+    const discountPercent = hasDiscount
+      ? Math.round((1 - productPrice / comparePrice) * 100)
+      : 0;
+
+    // Get initials for avatar
+    const getInitials = (name: string) => {
+      return name
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    };
+
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            background: 'white',
+          }}
+        >
+          {/* Left Side - Icon */}
           <div
             style={{
+              width: '50%',
+              height: '100%',
               display: 'flex',
               alignItems: 'center',
-              padding: '20px',
+              justifyContent: 'center',
               background: '#f3f4f6',
-              borderRadius: '16px',
+              position: 'relative',
             }}
           >
             <div
               style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '12px',
-                background: '#2563eb',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: '15px',
               }}
             >
-              <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>
-                BC
+              <div style={{ fontSize: '120px' }}>📦</div>
+              <div style={{ fontSize: '24px', color: '#6b7280', display: 'flex' }}>
+                No Image
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ fontSize: '22px', fontWeight: '600', color: '#111827', display: 'flex' }}>
-                {tenantName}
+
+            {/* Discount Badge */}
+            {hasDiscount && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '30px',
+                  left: '30px',
+                  background: '#ef4444',
+                  color: 'white',
+                  padding: '12px 24px',
+                  borderRadius: '12px',
+                  fontSize: '28px',
+                  fontWeight: 'bold',
+                  display: 'flex',
+                }}
+              >
+                -{discountPercent}%
               </div>
-              <div style={{ fontSize: '18px', color: '#6b7280', display: 'flex' }}>
-                {slug}.fibidy.com
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* WhatsApp CTA */}
+          {/* Right Side - Product Info */}
           <div
             style={{
-              marginTop: '30px',
+              width: '50%',
+              height: '100%',
               display: 'flex',
-              alignItems: 'center',
-              color: '#25D366',
-              fontSize: '24px',
-              fontWeight: '600',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              padding: '50px',
             }}
           >
-            <div style={{ fontSize: '28px', marginRight: '10px' }}>💬</div>
-            Order via WhatsApp
+            {/* Category */}
+            {productCategory && (
+              <div
+                style={{
+                  fontSize: '20px',
+                  color: '#2563eb',
+                  fontWeight: '600',
+                  marginBottom: '15px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  display: 'flex',
+                }}
+              >
+                {productCategory}
+              </div>
+            )}
+
+            {/* Product Name */}
+            <div
+              style={{
+                fontSize: '48px',
+                fontWeight: 'bold',
+                color: '#111827',
+                marginBottom: '20px',
+                display: 'flex',
+              }}
+            >
+              {productName.length > 50
+                ? productName.substring(0, 50) + '...'
+                : productName}
+            </div>
+
+            {/* Price */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'baseline',
+                marginBottom: '30px',
+              }}
+            >
+              <div
+                style={{
+                  fontSize: '42px',
+                  fontWeight: 'bold',
+                  color: '#2563eb',
+                  display: 'flex',
+                  marginRight: '15px',
+                }}
+              >
+                Rp {productPrice.toLocaleString('id-ID')}
+              </div>
+              {hasDiscount && comparePrice && (
+                <div
+                  style={{
+                    fontSize: '28px',
+                    color: '#6b7280',
+                    textDecoration: 'line-through',
+                    display: 'flex',
+                  }}
+                >
+                  Rp {comparePrice.toLocaleString('id-ID')}
+                </div>
+              )}
+            </div>
+
+            {/* Store Info */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '20px',
+                background: '#f3f4f6',
+                borderRadius: '16px',
+              }}
+            >
+              <div
+                style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '12px',
+                  background: '#2563eb',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: '15px',
+                }}
+              >
+                <div
+                  style={{
+                    color: 'white',
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                  }}
+                >
+                  {getInitials(tenantName)}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div
+                  style={{
+                    fontSize: '22px',
+                    fontWeight: '600',
+                    color: '#111827',
+                    display: 'flex',
+                  }}
+                >
+                  {tenantName}
+                </div>
+                <div
+                  style={{
+                    fontSize: '18px',
+                    color: '#6b7280',
+                    display: 'flex',
+                  }}
+                >
+                  {slug}.fibidy.com
+                </div>
+              </div>
+            </div>
+
+            {/* WhatsApp CTA */}
+            <div
+              style={{
+                marginTop: '30px',
+                display: 'flex',
+                alignItems: 'center',
+                color: '#25D366',
+                fontSize: '24px',
+                fontWeight: '600',
+              }}
+            >
+              <div style={{ fontSize: '28px', marginRight: '10px' }}>💬</div>
+              Order via WhatsApp
+            </div>
           </div>
         </div>
-      </div>
-    ),
-    {
-      width: 1200,
-      height: 630,
-    }
-  );
+      ),
+      {
+        width: 1200,
+        height: 630,
+      }
+    );
+  } catch (error: any) {
+    console.error('[OG] Error:', error.message);
+    return createFallbackImage('Error Generating Image');
+  }
 }
