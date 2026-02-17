@@ -56,12 +56,18 @@ function getInitials(name: string): string {
 }
 
 function getApiUrl(): string {
-  // Production
+  // Use env variable if set (for external backend)
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // Production: Use current domain
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}/api`;
   }
-  // Local
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
+  // Fallback to localhost:8000 (your backend)
+  return 'http://localhost:8000/api';
 }
 
 function optimizeImageUrl(url: string | null): string | null {
