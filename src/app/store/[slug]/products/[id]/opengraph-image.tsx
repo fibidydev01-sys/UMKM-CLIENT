@@ -1,26 +1,16 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
-import {
-  OG_IMAGE_WIDTH,
-  OG_IMAGE_HEIGHT,
-  OG_COLORS,
-  formatOgPrice,
-  truncateOgText,
-  getOgInitials,
-  getApiUrl,
-} from '@/lib/og-utils';
 
 // ==========================================
-// PRODUCT OPEN GRAPH IMAGE - FIXED VERSION
+// PRODUCT OPEN GRAPH IMAGE - STANDALONE
 // Route: /store/[slug]/products/[id]/opengraph-image
 // ==========================================
 
-// ✅ FIX #1: Edge runtime untuk stability
 export const runtime = 'edge';
 export const alt = 'Product';
 export const size = {
-  width: OG_IMAGE_WIDTH,
-  height: OG_IMAGE_HEIGHT,
+  width: 1200,
+  height: 630,
 };
 export const contentType = 'image/png';
 
@@ -29,7 +19,78 @@ interface Props {
 }
 
 // ==========================================
-// HELPER: Create Fallback Image
+// INLINE HELPERS (No external dependencies)
+// ==========================================
+
+const OG_WIDTH = 1200;
+const OG_HEIGHT = 630;
+
+const COLORS = {
+  primary: '#2563eb',
+  text: '#111827',
+  textLight: '#6b7280',
+  backgroundGray: '#f3f4f6',
+  error: '#ef4444',
+};
+
+function formatPrice(price: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(price);
+}
+
+function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .substring(0, 2);
+}
+
+function getApiUrl(): string {
+  // Production
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}/api`;
+  }
+  // Local
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+}
+
+function optimizeImageUrl(url: string | null): string | null {
+  if (!url) return null;
+
+  try {
+    // Cloudinary
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/w_600,h_600,c_limit,q_auto,f_auto/');
+    }
+
+    // Unsplash
+    if (url.includes('images.unsplash.com')) {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set('w', '600');
+      urlObj.searchParams.set('h', '600');
+      urlObj.searchParams.set('fit', 'crop');
+      urlObj.searchParams.set('q', '80');
+      return urlObj.toString();
+    }
+
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+// ==========================================
+// FALLBACK IMAGE
 // ==========================================
 function createFallbackImage(message: string) {
   return new ImageResponse(
@@ -42,7 +103,7 @@ function createFallbackImage(message: string) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: OG_COLORS.backgroundGray,
+          background: COLORS.backgroundGray,
           padding: '60px',
         }}
       >
@@ -50,7 +111,7 @@ function createFallbackImage(message: string) {
           style={{
             fontSize: '48px',
             fontWeight: 'bold',
-            color: OG_COLORS.text,
+            color: COLORS.text,
             textAlign: 'center',
             marginBottom: '20px',
           }}
@@ -60,7 +121,7 @@ function createFallbackImage(message: string) {
         <div
           style={{
             fontSize: '28px',
-            color: OG_COLORS.textLight,
+            color: COLORS.textLight,
             textAlign: 'center',
           }}
         >
@@ -68,19 +129,17 @@ function createFallbackImage(message: string) {
         </div>
       </div>
     ),
-    { ...size }
+    { width: OG_WIDTH, height: OG_HEIGHT }
   );
 }
 
 // ==========================================
-// FETCH: Product Data with Timeout
+// FETCH FUNCTIONS
 // ==========================================
 async function getProduct(id: string): Promise<any | null> {
   const apiUrl = getApiUrl();
   const endpoint = `${apiUrl}/products/public/${id}`;
 
-  console.log('[OG-Product] Fetching:', endpoint);
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -92,35 +151,17 @@ async function getProduct(id: string): Promise<any | null> {
 
     clearTimeout(timeoutId);
 
-    console.log('[OG-Product] Status:', res.status);
-
-    if (!res.ok) {
-      console.error('[OG-Product] API returned error:', res.status, res.statusText);
-      return null;
-    }
-
-    const data = await res.json();
-    console.log('[OG-Product] Product fetched:', data?.name || 'no name');
-    return data;
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
-      console.error('[OG-Product] Timeout after 5s');
-    } else {
-      console.error('[OG-Product] Fetch error:', err.message);
-    }
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
     return null;
   }
 }
 
-// ==========================================
-// FETCH: Tenant Data with Timeout
-// ==========================================
 async function getTenant(slug: string): Promise<any | null> {
   const apiUrl = getApiUrl();
   const endpoint = `${apiUrl}/tenants/by-slug/${slug}`;
 
-  console.log('[OG-Product] Fetching tenant:', endpoint);
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
@@ -132,65 +173,44 @@ async function getTenant(slug: string): Promise<any | null> {
 
     clearTimeout(timeoutId);
 
-    console.log('[OG-Product] Tenant status:', res.status);
-
-    if (!res.ok) {
-      console.error('[OG-Product] Tenant API error:', res.status, res.statusText);
-      return null;
-    }
-
-    const data = await res.json();
-    console.log('[OG-Product] Tenant fetched:', data?.name || 'no name');
-    return data;
-  } catch (err: any) {
-    if (err.name === 'AbortError') {
-      console.error('[OG-Product] Tenant timeout after 5s');
-    } else {
-      console.error('[OG-Product] Tenant fetch error:', err.message);
-    }
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
     return null;
   }
 }
 
 // ==========================================
-// MAIN: Generate OG Image
+// MAIN COMPONENT
 // ==========================================
 export default async function ProductOgImage({ params }: Props) {
   try {
     const { slug, id } = await params;
-    console.log('[OG-Product] Generating for slug:', slug, 'id:', id);
 
-    // ✅ Validate params
     if (!slug || !id) {
-      console.error('[OG-Product] Missing params');
       return createFallbackImage('Invalid Request');
     }
 
-    // ✅ Fetch data with parallel requests
     const [tenant, product] = await Promise.all([
       getTenant(slug),
       getProduct(id),
     ]);
 
-    // ✅ Handle missing tenant
     if (!tenant) {
-      console.error('[OG-Product] Tenant not found');
       return createFallbackImage('Toko Tidak Ditemukan');
     }
 
-    // ✅ Handle missing product
     if (!product) {
-      console.error('[OG-Product] Product not found');
       return createFallbackImage('Produk Tidak Ditemukan');
     }
 
-    // ✅ Safe data extraction with defaults
-    const productImage =
+    // Extract image
+    const rawImageUrl =
       typeof product?.images?.[0] === 'string'
         ? product.images[0]
-        : product?.images?.[0]?.url ||
-        product?.images?.[0]?.secure_url ||
-        null;
+        : product?.images?.[0]?.url || product?.images?.[0]?.secure_url || null;
+
+    const productImage = optimizeImageUrl(rawImageUrl);
     const productName = product.name || 'Produk';
     const productPrice = product.price || 0;
     const productCategory = product.category || null;
@@ -203,10 +223,8 @@ export default async function ProductOgImage({ params }: Props) {
 
     const tenantName = tenant.name || 'Toko';
 
-    console.log('[OG-Product] Rendering image for:', productName);
-
     // ==========================================
-    // RENDER: OG Image
+    // RENDER OG IMAGE
     // ==========================================
     return new ImageResponse(
       (
@@ -226,7 +244,7 @@ export default async function ProductOgImage({ params }: Props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: OG_COLORS.backgroundGray,
+              background: COLORS.backgroundGray,
               position: 'relative',
             }}
           >
@@ -242,14 +260,13 @@ export default async function ProductOgImage({ params }: Props) {
                 }}
               />
             ) : (
-              // ✅ FIX #2: Hapus SVG, ganti dengan emoji
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
                   gap: '20px',
-                  color: OG_COLORS.textLight,
+                  color: COLORS.textLight,
                 }}
               >
                 <div style={{ fontSize: '120px' }}>📦</div>
@@ -257,14 +274,13 @@ export default async function ProductOgImage({ params }: Props) {
               </div>
             )}
 
-            {/* Discount Badge */}
             {hasDiscount && (
               <div
                 style={{
                   position: 'absolute',
                   top: '30px',
                   left: '30px',
-                  background: OG_COLORS.error,
+                  background: COLORS.error,
                   color: 'white',
                   padding: '12px 24px',
                   borderRadius: '12px',
@@ -288,12 +304,11 @@ export default async function ProductOgImage({ params }: Props) {
               padding: '50px',
             }}
           >
-            {/* Category Badge */}
             {productCategory && (
               <div
                 style={{
                   fontSize: '20px',
-                  color: OG_COLORS.primary,
+                  color: COLORS.primary,
                   fontWeight: '600',
                   marginBottom: '15px',
                   textTransform: 'uppercase',
@@ -304,20 +319,18 @@ export default async function ProductOgImage({ params }: Props) {
               </div>
             )}
 
-            {/* Product Name */}
             <div
               style={{
                 fontSize: '48px',
                 fontWeight: 'bold',
-                color: OG_COLORS.text,
+                color: COLORS.text,
                 lineHeight: 1.2,
                 marginBottom: '20px',
               }}
             >
-              {truncateOgText(productName, 50)}
+              {truncateText(productName, 50)}
             </div>
 
-            {/* Price */}
             <div
               style={{
                 display: 'flex',
@@ -330,32 +343,31 @@ export default async function ProductOgImage({ params }: Props) {
                 style={{
                   fontSize: '42px',
                   fontWeight: 'bold',
-                  color: OG_COLORS.primary,
+                  color: COLORS.primary,
                 }}
               >
-                {formatOgPrice(productPrice)}
+                {formatPrice(productPrice)}
               </div>
               {hasDiscount && comparePrice && (
                 <div
                   style={{
                     fontSize: '28px',
-                    color: OG_COLORS.textLight,
+                    color: COLORS.textLight,
                     textDecoration: 'line-through',
                   }}
                 >
-                  {formatOgPrice(comparePrice)}
+                  {formatPrice(comparePrice)}
                 </div>
               )}
             </div>
 
-            {/* Store Info Card */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '15px',
                 padding: '20px',
-                background: OG_COLORS.backgroundGray,
+                background: COLORS.backgroundGray,
                 borderRadius: '16px',
               }}
             >
@@ -364,28 +376,26 @@ export default async function ProductOgImage({ params }: Props) {
                   width: '50px',
                   height: '50px',
                   borderRadius: '12px',
-                  background: OG_COLORS.primary,
+                  background: COLORS.primary,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
                 <span style={{ color: 'white', fontSize: '24px', fontWeight: 'bold' }}>
-                  {getOgInitials(tenantName)}
+                  {getInitials(tenantName)}
                 </span>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div style={{ fontSize: '22px', fontWeight: '600', color: OG_COLORS.text }}>
-                  {truncateOgText(tenantName, 25)}
+                <div style={{ fontSize: '22px', fontWeight: '600', color: COLORS.text }}>
+                  {truncateText(tenantName, 25)}
                 </div>
-                <div style={{ fontSize: '18px', color: OG_COLORS.textLight }}>
+                <div style={{ fontSize: '18px', color: COLORS.textLight }}>
                   {slug}.fibidy.com
                 </div>
               </div>
             </div>
 
-            {/* WhatsApp CTA */}
-            {/* ✅ FIX #3: Hapus SVG, ganti dengan emoji */}
             <div
               style={{
                 marginTop: '30px',
@@ -403,11 +413,10 @@ export default async function ProductOgImage({ params }: Props) {
           </div>
         </div>
       ),
-      { ...size }
+      { width: OG_WIDTH, height: OG_HEIGHT }
     );
   } catch (error: any) {
-    // ✅ Catch-all error handler
-    console.error('[OG-Product] Fatal error:', error.message);
+    console.error('[OG] Fatal error:', error.message);
     return createFallbackImage('Error Generating Image');
   }
 }
