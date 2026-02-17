@@ -11,12 +11,12 @@ import {
 } from '@/lib/og-utils';
 
 // ==========================================
-// PRODUCT OPEN GRAPH IMAGE - SUPER ROBUST VERSION
+// PRODUCT OPEN GRAPH IMAGE - FIXED VERSION
 // Route: /store/[slug]/products/[id]/opengraph-image
 // ==========================================
 
-// ✅ FIX: nodejs runtime untuk production stability
-export const runtime = 'nodejs';
+// ✅ FIX #1: Edge runtime untuk stability
+export const runtime = 'edge';
 export const alt = 'Product';
 export const size = {
   width: OG_IMAGE_WIDTH,
@@ -73,7 +73,7 @@ function createFallbackImage(message: string) {
 }
 
 // ==========================================
-// FETCH: Product Data with Timeout & Retry
+// FETCH: Product Data with Timeout
 // ==========================================
 async function getProduct(id: string): Promise<any | null> {
   const apiUrl = getApiUrl();
@@ -82,7 +82,6 @@ async function getProduct(id: string): Promise<any | null> {
   console.log('[OG-Product] Fetching:', endpoint);
 
   try {
-    // ✅ Timeout after 5 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -114,7 +113,7 @@ async function getProduct(id: string): Promise<any | null> {
 }
 
 // ==========================================
-// FETCH: Tenant Data with Timeout & Retry
+// FETCH: Tenant Data with Timeout
 // ==========================================
 async function getTenant(slug: string): Promise<any | null> {
   const apiUrl = getApiUrl();
@@ -123,7 +122,6 @@ async function getTenant(slug: string): Promise<any | null> {
   console.log('[OG-Product] Fetching tenant:', endpoint);
 
   try {
-    // ✅ Timeout after 5 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
@@ -244,6 +242,7 @@ export default async function ProductOgImage({ params }: Props) {
                 }}
               />
             ) : (
+              // ✅ FIX #2: Hapus SVG, ganti dengan emoji
               <div
                 style={{
                   display: 'flex',
@@ -253,18 +252,7 @@ export default async function ProductOgImage({ params }: Props) {
                   color: OG_COLORS.textLight,
                 }}
               >
-                <svg
-                  width="120"
-                  height="120"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
+                <div style={{ fontSize: '120px' }}>📦</div>
                 <span style={{ fontSize: '24px' }}>No Image</span>
               </div>
             )}
@@ -397,6 +385,7 @@ export default async function ProductOgImage({ params }: Props) {
             </div>
 
             {/* WhatsApp CTA */}
+            {/* ✅ FIX #3: Hapus SVG, ganti dengan emoji */}
             <div
               style={{
                 marginTop: '30px',
@@ -408,9 +397,7 @@ export default async function ProductOgImage({ params }: Props) {
                 fontWeight: '600',
               }}
             >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z" />
-              </svg>
+              <span style={{ fontSize: '28px' }}>💬</span>
               Order via WhatsApp
             </div>
           </div>
