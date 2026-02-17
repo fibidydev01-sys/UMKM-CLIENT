@@ -1,26 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Phone, MapPin, MessageCircle, Mail, Send, ArrowRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Phone, MapPin, MessageCircle, Mail, Send } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-/**
- * Contact2 Props - Mapped from Data Contract (LANDING-DATA-CONTRACT.md)
- *
- * @prop title - contactTitle: Section heading
- * @prop subtitle - contactSubtitle: Section subheading
- * @prop whatsapp - whatsapp: WhatsApp number
- * @prop phone - phone: Phone number
- * @prop email - email: Email address
- * @prop address - address: Physical address
- * @prop storeName - name: Store name (for WhatsApp message)
- * @prop mapUrl - contactMapUrl: Google Maps embed URL
- * @prop showMap - contactShowMap: Toggle map visibility
- * @prop showForm - contactShowForm: Toggle contact form visibility
- */
 interface Contact5Props {
   title: string;
   subtitle?: string;
@@ -36,7 +22,13 @@ interface Contact5Props {
 
 /**
  * Contact Block: contact5
- * Design: Split Layout with Map & Form support
+ * Design: STACKED WITH ACCENT
+ *
+ * - Vertical accent bar kiri (konsisten products3 / cta5)
+ * - Layout: kiri info stacked, kanan map (kalau showMap=true)
+ * - Form full-width di bawah kalau showForm=true
+ * - Info rows dengan label mono + value, divide-y
+ * - WA CTA di footer row kalau no form
  */
 export function Contact5({
   title,
@@ -58,7 +50,6 @@ export function Contact5({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Send via WhatsApp with form data
     if (whatsapp) {
       const message = `Halo ${storeName || ''}!\n\nNama: ${formData.name}\nEmail: ${formData.email}\nPesan: ${formData.message}`;
       window.open(`https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`, '_blank');
@@ -66,120 +57,192 @@ export function Contact5({
   };
 
   return (
-    <section id="contact" className="py-12">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
-      </div>
+    <section id="contact" className="py-20 md:py-28">
 
-      <div className="grid md:grid-cols-2 gap-8">
-        {/* Left: Contact Info */}
-        <div className="space-y-4">
-          {whatsapp && (
-            <a
-              href={whatsappLink!}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-4 p-4 rounded-lg hover:bg-green-500/5 transition-colors"
-            >
-              <div className="flex-shrink-0 p-3 bg-green-500/10 rounded-full">
-                <MessageCircle className="h-5 w-5 text-green-500" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">WhatsApp</p>
-                <p className="text-sm text-muted-foreground">+{whatsapp}</p>
-              </div>
-            </a>
-          )}
+      {/* ── Top rule ── */}
+      <div className="h-px bg-border mb-10 md:mb-14" />
 
-          {phone && (
-            <a
-              href={`tel:${phone}`}
-              className="flex items-center gap-4 p-4 rounded-lg hover:bg-primary/5 transition-colors"
-            >
-              <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                <Phone className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Telepon</p>
-                <p className="text-sm text-muted-foreground">{phone}</p>
-              </div>
-            </a>
-          )}
+      {/* ── Main layout with accent bar ── */}
+      <div className="flex gap-6 md:gap-8 items-stretch">
 
-          {email && (
-            <a
-              href={`mailto:${email}`}
-              className="flex items-center gap-4 p-4 rounded-lg hover:bg-primary/5 transition-colors"
-            >
-              <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                <Mail className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Email</p>
-                <p className="text-sm text-muted-foreground">{email}</p>
-              </div>
-            </a>
-          )}
+        {/* Vertical accent bar — konsisten products3 / cta5 */}
+        <div className="w-0.5 bg-foreground rounded-full shrink-0" />
 
-          {address && (
-            <div className="flex items-center gap-4 p-4 rounded-lg">
-              <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                <MapPin className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-sm">Alamat</p>
-                <p className="text-sm text-muted-foreground">{address}</p>
-              </div>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+
+          {/* Header */}
+          <div className="mb-8 md:mb-12 space-y-2.5">
+            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+              Kontak Kami
+            </p>
+            <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Info + optional map side by side */}
+          <div className={`grid gap-8 md:gap-12 ${showMap && mapUrl ? 'md:grid-cols-2' : ''}`}>
+
+            {/* Info rows */}
+            <div className="divide-y divide-border">
+              {whatsapp && whatsappLink && (
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group flex items-center justify-between py-4
+                             hover:text-green-600 transition-colors duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <MessageCircle className="h-4 w-4 text-muted-foreground group-hover:text-green-600 transition-colors" />
+                    <div>
+                      <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                        WhatsApp
+                      </p>
+                      <p className="text-sm font-medium text-foreground">+{whatsapp}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40
+                                        group-hover:text-green-600 group-hover:translate-x-0.5
+                                        transition-all duration-200" />
+                </a>
+              )}
+
+              {phone && (
+                <a
+                  href={`tel:${phone}`}
+                  className="group flex items-center justify-between py-4
+                             hover:text-foreground/70 transition-colors duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                        Telepon
+                      </p>
+                      <p className="text-sm font-medium text-foreground">{phone}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40
+                                        group-hover:translate-x-0.5 transition-transform duration-200" />
+                </a>
+              )}
+
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="group flex items-center justify-between py-4
+                             hover:text-foreground/70 transition-colors duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                        Email
+                      </p>
+                      <p className="text-sm font-medium text-foreground">{email}</p>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground/40
+                                        group-hover:translate-x-0.5 transition-transform duration-200" />
+                </a>
+              )}
+
+              {address && (
+                <div className="flex items-start gap-3 py-4">
+                  <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                      Alamat
+                    </p>
+                    <p className="text-sm font-medium text-foreground">{address}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* WA CTA footer row jika no form */}
+              {!showForm && whatsappLink && (
+                <div className="flex items-center justify-between py-4">
+                  <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40">
+                    Respon cepat
+                  </span>
+                  <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex items-center gap-3 text-sm font-medium
+                               text-foreground hover:text-foreground/60 transition-colors duration-200"
+                  >
+                    <span className="border-b border-foreground/30 group-hover:border-transparent
+                                     transition-colors duration-200 pb-px">
+                      Chat via WhatsApp
+                    </span>
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full
+                                     border border-foreground/20 transition-all duration-200
+                                     group-hover:bg-foreground group-hover:border-foreground group-hover:text-background">
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </span>
+                  </a>
+                </div>
+              )}
             </div>
-          )}
 
-          {/* Google Maps */}
-          {showMap && mapUrl && (
-            <div className="mt-6 rounded-xl overflow-hidden border">
-              <iframe
-                src={mapUrl}
-                width="100%"
-                height="250"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Google Maps"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Right: Form or WhatsApp CTA */}
-        <div>
-          {showForm ? (
-            <form onSubmit={handleSubmit} className="space-y-4 bg-muted/30 rounded-xl p-6">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nama</Label>
-                <Input
-                  id="name"
-                  placeholder="Nama Anda"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
+            {/* Map (kanan kalau showMap) */}
+            {showMap && mapUrl && (
+              <div className="rounded-2xl overflow-hidden border border-border h-full min-h-[280px]">
+                <iframe
+                  src={mapUrl}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, minHeight: '280px' }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Google Maps"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="form-email">Email</Label>
-                <Input
-                  id="form-email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
+            )}
+          </div>
+
+          {/* Form full-width di bawah */}
+          {showForm && (
+            <form onSubmit={handleSubmit} className="mt-10 md:mt-12 border border-border rounded-2xl p-6 md:p-8 space-y-5">
+              <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+                Kirim Pesan
+              </p>
+              <div className="grid sm:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <Label htmlFor="c5-name" className="text-xs font-medium">Nama</Label>
+                  <Input
+                    id="c5-name"
+                    placeholder="Nama Anda"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="c5-email" className="text-xs font-medium">Email</Label>
+                  <Input
+                    id="c5-email"
+                    type="email"
+                    placeholder="email@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="message">Pesan</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="c5-message" className="text-xs font-medium">Pesan</Label>
                 <Textarea
-                  id="message"
+                  id="c5-message"
                   placeholder="Tulis pesan Anda..."
                   rows={4}
                   value={formData.message}
@@ -187,23 +250,21 @@ export function Contact5({
                   required
                 />
               </div>
-              <Button type="submit" className="w-full gap-2">
-                <Send className="h-4 w-4" />
-                Kirim Pesan
-              </Button>
+              <div className="flex justify-end">
+                <Button type="submit" className="gap-2">
+                  <Send className="h-4 w-4" />
+                  Kirim via WhatsApp
+                </Button>
+              </div>
             </form>
-          ) : whatsappLink ? (
-            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl p-8 flex flex-col justify-center h-full">
-              <Button asChild size="lg" className="w-full gap-2">
-                <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-5 w-5" />
-                  Chat via WhatsApp
-                </a>
-              </Button>
-            </div>
-          ) : null}
+          )}
+
         </div>
       </div>
+
+      {/* ── Bottom rule ── */}
+      <div className="h-px bg-border mt-10 md:mt-14" />
+
     </section>
   );
 }

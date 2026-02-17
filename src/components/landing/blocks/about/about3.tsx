@@ -1,9 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { OptimizedImage } from '@/components/ui/optimized-image';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import BlurText from '@/components/ui/blur-text/BlurText';
+import { Separator } from '@/components/ui/separator';
 
 interface About3Props {
   title: string;
@@ -19,80 +16,64 @@ interface About3Props {
 
 export function About3({ title, subtitle, content, features = [] }: About3Props) {
   return (
-    <section id="about" className="py-16 md:py-24">
-      <div className="container mx-auto px-4 md:px-6 lg:px-8">
-        <div className="mb-12 md:mb-16 max-w-4xl mx-auto">
-          <div className="text-center mb-6">
-            <div className="flex justify-center">
-              <BlurText
-                text={title}
-                delay={150}
-                animateBy="words"
-                direction="top"
-                className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground text-center"
-              />
-            </div>
-            {subtitle && (
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="text-lg md:text-xl text-muted-foreground mt-4 text-center"
-              >
-                {subtitle}
-              </motion.p>
-            )}
+    <section id="about" className="bg-background py-16 md:py-24">
+      <div className="container mx-auto px-8 md:px-12 lg:px-16">
+
+        {/* ── Header Center full width ── */}
+        <div className="flex flex-col items-center text-center mb-10">
+          <div className="mb-5 flex items-center gap-4 w-full max-w-xs sm:max-w-sm">
+            <Separator className="flex-1 bg-border" />
+            <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground whitespace-nowrap font-medium">
+              Tentang Kami
+            </span>
+            <Separator className="flex-1 bg-border" />
           </div>
-          {content && (
-            <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="text-base md:text-lg text-muted-foreground leading-relaxed text-justify"
-            >
-              {content}
-            </motion.p>
-          )}
+
+          <h2 className="text-[32px] sm:text-[38px] md:text-[44px] font-black leading-[1.05] tracking-tight text-foreground max-w-2xl">
+            {title}
+          </h2>
         </div>
 
-        <div className="space-y-16 md:space-y-24">
-          {features.map((feature, index) => {
-            const isEven = index % 2 === 0;
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7 }}
-                className="grid md:grid-cols-2 gap-8 lg:gap-12 items-center"
-              >
-                {feature.icon && (
-                  <div className={`relative ${isEven ? 'md:order-1' : 'md:order-2'}`}>
-                    <AspectRatio ratio={4 / 3} className="rounded-2xl overflow-hidden shadow-2xl">
-                      <OptimizedImage
-                        src={feature.icon}
-                        alt={feature.title}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-                    </AspectRatio>
+        {/* ── Split 50/50 — Deskripsi KIRI sejajar List KANAN ── */}
+        <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+          {/* LEFT — Deskripsi justify, top-aligned */}
+          <div className="pt-4">
+            {subtitle && (
+              <p className="text-sm text-muted-foreground leading-relaxed text-justify mb-4">
+                {subtitle}
+              </p>
+            )}
+            {content && (
+              <p className="text-sm text-muted-foreground leading-relaxed text-justify">
+                {content}
+              </p>
+            )}
+          </div>
+
+          {/* RIGHT — Features List */}
+          {features.length > 0 && (
+            <div className="divide-y divide-border">
+              {features.map((feature, index) => (
+                <div key={index} className="flex items-center gap-4 py-4">
+                  {feature.icon && (
+                    <span className="text-sm text-muted-foreground shrink-0 w-10">{feature.icon}</span>
+                  )}
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-0.5">
+                      {feature.title}
+                    </h3>
+                    {feature.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {feature.description}
+                      </p>
+                    )}
                   </div>
-                )}
-                <div className={isEven ? 'md:order-2' : 'md:order-1'}>
-                  <h3 className="text-2xl md:text-3xl font-bold text-foreground mb-4">
-                    {feature.title}
-                  </h3>
-                  <p className="text-base md:text-lg text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
                 </div>
-              </motion.div>
-            );
-          })}
+              ))}
+            </div>
+          )}
+
         </div>
       </div>
     </section>

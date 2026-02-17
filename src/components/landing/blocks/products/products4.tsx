@@ -1,10 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 import type { Product } from '@/types';
 
 interface Products4Props {
@@ -19,7 +18,7 @@ interface Products4Props {
 
 /**
  * Products Block: products4
- * Design: CAROUSEL - Horizontal slider with navigation
+ * Design: ELEGANT CAROUSEL
  */
 export function Products4({
   products,
@@ -32,86 +31,143 @@ export function Products4({
 }: Products4Props) {
   const displayProducts = products.slice(0, limit);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   if (displayProducts.length === 0) return null;
 
-  const checkScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const handleScroll = useCallback(() => {
+    if (!scrollRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+    const maxScroll = scrollWidth - clientWidth;
+    setScrollProgress(maxScroll > 0 ? scrollLeft / maxScroll : 0);
+    setCanScrollLeft(scrollLeft > 4);
+    setCanScrollRight(scrollLeft < maxScroll - 4);
+  }, []);
 
-  const scroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const scrollAmount = scrollRef.current.clientWidth * 0.8;
-      scrollRef.current.scrollBy({
-        left: direction === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
-      });
-      setTimeout(checkScroll, 300);
-    }
-  };
+  const scroll = useCallback((direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const cardWidth = scrollRef.current.querySelector('[data-card]')?.clientWidth ?? 300;
+    const gap = 20;
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -(cardWidth + gap) * 2 : (cardWidth + gap) * 2,
+      behavior: 'smooth',
+    });
+    setTimeout(handleScroll, 350);
+  }, [handleScroll]);
 
   return (
-    <section id="products" className="py-16 md:py-24">
-      {/* Header with Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 md:mb-10">
-        <div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
+    <section id="products" className="py-20 md:py-28">
+
+      {/* ── Header ── */}
+      <div className="flex items-end justify-between gap-6 mb-8 md:mb-10">
+
+        {/* Left: Title */}
+        <div className="space-y-2.5 min-w-0">
+          <div className="w-8 h-px bg-foreground" />
+          <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground truncate">
+            {title}
+          </h2>
           {subtitle && (
-            <p className="text-lg text-muted-foreground mt-2">{subtitle}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
+              {subtitle}
+            </p>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
+
+        {/* Right: Nav + View all */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
-            className="rounded-full"
+            aria-label="Sebelumnya"
+            className="w-9 h-9 rounded-full border border-border flex items-center justify-center
+                       text-foreground transition-all duration-200
+                       hover:bg-foreground hover:text-background hover:border-foreground
+                       disabled:opacity-20 disabled:cursor-not-allowed
+                       disabled:hover:bg-transparent disabled:hover:text-foreground disabled:hover:border-border"
           >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
+            <ArrowLeft className="h-3.5 w-3.5" />
+          </button>
+          <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
-            className="rounded-full"
+            aria-label="Selanjutnya"
+            className="w-9 h-9 rounded-full border border-border flex items-center justify-center
+                       text-foreground transition-all duration-200
+                       hover:bg-foreground hover:text-background hover:border-foreground
+                       disabled:opacity-20 disabled:cursor-not-allowed
+                       disabled:hover:bg-transparent disabled:hover:text-foreground disabled:hover:border-border"
           >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
+            <ArrowRight className="h-3.5 w-3.5" />
+          </button>
+
+          {showViewAll && <div className="w-px h-5 bg-border mx-1" />}
           {showViewAll && (
-            <Link href={productsLink} className="ml-2">
-              <Button variant="ghost" className="gap-2">
-                Lihat Semua
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+            <Link
+              href={productsLink}
+              className="group inline-flex items-center gap-1.5 text-sm font-medium
+                         text-muted-foreground hover:text-foreground transition-colors duration-200"
+            >
+              Semua
+              <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           )}
         </div>
       </div>
 
-      {/* Carousel */}
-      <div
-        ref={scrollRef}
-        onScroll={checkScroll}
-        className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-4"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-      >
-        {displayProducts.map((product) => (
-          <div
-            key={product.id}
-            className="flex-shrink-0 w-[280px] sm:w-[300px] md:w-[320px] snap-start"
-          >
-            <ProductCard product={product} storeSlug={storeSlug} />
-          </div>
-        ))}
+      {/* ── Carousel ── */}
+      <div className="relative">
+        <div
+          className="pointer-events-none absolute right-0 top-0 bottom-0 w-16 md:w-24 z-10
+                     bg-gradient-to-l from-background to-transparent transition-opacity duration-300"
+          style={{ opacity: canScrollRight ? 1 : 0 }}
+        />
+        <div
+          className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 md:w-12 z-10
+                     bg-gradient-to-r from-background to-transparent transition-opacity duration-300"
+          style={{ opacity: canScrollLeft ? 1 : 0 }}
+        />
+
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex gap-4 md:gap-5 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {displayProducts.map((product, index) => (
+            <div
+              key={product.id}
+              data-card
+              className="flex-shrink-0 snap-start
+                         w-[calc(50%-8px)] sm:w-[calc(33.333%-11px)] lg:w-[calc(25%-15px)]"
+            >
+              <div className="flex items-center gap-1.5 mb-2.5">
+                <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+              </div>
+              <ProductCard product={product} storeSlug={storeSlug} />
+            </div>
+          ))}
+          <div className="flex-shrink-0 w-4 md:w-6" aria-hidden="true" />
+        </div>
       </div>
+
+      {/* ── Progress bar ── */}
+      <div className="mt-6 flex items-center gap-4">
+        <div className="flex-1 h-px bg-border relative overflow-hidden rounded-full">
+          <div
+            className="absolute left-0 top-0 h-full bg-foreground rounded-full transition-all duration-200 ease-out"
+            style={{ width: `${Math.max(8, scrollProgress * 100)}%` }}
+          />
+        </div>
+        <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40 shrink-0">
+          {Math.round(scrollProgress * 100)}%
+        </span>
+      </div>
+
     </section>
   );
 }

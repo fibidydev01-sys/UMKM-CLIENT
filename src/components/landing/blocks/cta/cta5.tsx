@@ -2,17 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
-/**
- * Cta2 Props - Mapped from Data Contract (LANDING-DATA-CONTRACT.md)
- *
- * @prop title - ctaTitle: CTA heading
- * @prop subtitle - ctaSubtitle: CTA description
- * @prop buttonText - ctaButtonText: Button label
- * @prop buttonLink - ctaButtonLink: Button destination URL
- * @prop buttonVariant - ctaButtonStyle: 'default' | 'secondary' | 'outline'
- */
 interface Cta5Props {
   title: string;
   subtitle?: string;
@@ -23,33 +13,84 @@ interface Cta5Props {
 
 /**
  * CTA Block: cta5
- * Design: Bold Center
+ * Design: SIDE ACCENT
+ *
+ * - Vertical accent bar kiri thick (konsisten dengan products3)
+ * - Layout asimetris: teks kiri 2/3, CTA kanan 1/3
+ * - Label mono + judul besar + subtitle stacked di kiri
+ * - Button pojok kanan bawah, aligned ke baseline judul
+ * - Border top + bottom sebagai framing
  */
 export function Cta5({
   title,
   subtitle,
   buttonText,
   buttonLink,
-  buttonVariant,
 }: Cta5Props) {
   return (
-    <section className="py-20 my-8">
-      <div className="text-center max-w-4xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-          {title}
-        </h2>
-        {subtitle && (
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {subtitle}
-          </p>
-        )}
-        <Link href={buttonLink}>
-          <Button size="lg" variant={buttonVariant} className="gap-2 h-14 px-8 text-lg">
-            {buttonText}
-            <ArrowRight className="h-5 w-5" />
-          </Button>
-        </Link>
+    <section className="py-14 md:py-20 my-8">
+
+      {/* Top rule */}
+      <div className="h-px bg-border mb-10 md:mb-14" />
+
+      {/* Main layout */}
+      <div className="flex gap-6 md:gap-8 items-stretch">
+
+        {/* Vertical accent bar — konsisten dengan products3 */}
+        <div className="w-0.5 bg-foreground rounded-full shrink-0" />
+
+        {/* Content: full width, split internal */}
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-8 md:gap-16 items-end">
+
+          {/* Left: label + title + subtitle */}
+          <div className="space-y-3">
+            <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+              Tunggu Apa Lagi
+            </p>
+            <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-sm pt-1">
+                {subtitle}
+              </p>
+            )}
+          </div>
+
+          {/* Right: CTA stacked bottom */}
+          <div className="flex flex-col items-start md:items-end justify-end gap-3 md:pb-1">
+
+            {/* Counter decoration */}
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40">
+              01 / CTA
+            </span>
+
+            <Link
+              href={buttonLink}
+              className="group inline-flex items-center gap-3 text-sm font-medium
+                         text-foreground hover:text-foreground/60 transition-colors duration-200"
+            >
+              <span className="border-b border-foreground/30 group-hover:border-transparent
+                               transition-colors duration-200 pb-px">
+                {buttonText}
+              </span>
+              <span
+                className="inline-flex items-center justify-center w-8 h-8 rounded-full
+                           border border-foreground/20 transition-all duration-200
+                           group-hover:bg-foreground group-hover:border-foreground
+                           group-hover:text-background"
+              >
+                <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+          </div>
+
+        </div>
       </div>
+
+      {/* Bottom rule */}
+      <div className="h-px bg-border mt-10 md:mt-14" />
+
     </section>
   );
 }

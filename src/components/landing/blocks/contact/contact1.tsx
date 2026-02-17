@@ -1,7 +1,5 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Phone, MapPin, MessageCircle } from 'lucide-react';
 
 interface Contact1Props {
@@ -15,9 +13,13 @@ interface Contact1Props {
 
 /**
  * Contact Block: contact1
- * Design: Default
+ * Design: CLEAN ROW LIST
  *
- * Classic contact card layout (original design)
+ * - Header: label mono + judul besar (konsisten Hero1/Products)
+ * - Kontak sebagai row items dengan border-b separator
+ * - No card wrapper, no icon bubble — clean & flat
+ * - WhatsApp row punya hover accent hijau subtle
+ * - Max-width centered, compact
  */
 export function Contact1({
   title,
@@ -32,74 +34,84 @@ export function Contact1({
     : null;
 
   return (
-    <section id="contact" className="py-12">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold">{title}</h2>
-        {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
+    <section id="contact" className="py-20 md:py-28">
+
+      {/* ── Header ── */}
+      <div className="mb-10 md:mb-14 space-y-3">
+        <div className="w-8 h-px bg-foreground" />
+        <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground">
+          {title}
+        </h2>
+        {subtitle && (
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
+            {subtitle}
+          </p>
+        )}
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="grid gap-4">
-              {whatsapp && (
-                <a
-                  href={whatsappLink!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-4 p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors dark:bg-green-950/30 dark:hover:bg-green-950/50"
-                >
-                  <div className="flex-shrink-0 p-3 bg-green-500 rounded-full">
-                    <MessageCircle className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-medium">WhatsApp</p>
-                    <p className="text-sm text-muted-foreground">+{whatsapp}</p>
-                  </div>
-                </a>
-              )}
+      {/* ── Contact rows ── */}
+      <div className="max-w-lg divide-y divide-border">
 
-              {phone && (
-                <a
-                  href={`tel:${phone}`}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                    <Phone className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Telepon</p>
-                    <p className="text-sm text-muted-foreground">{phone}</p>
-                  </div>
-                </a>
-              )}
-
-              {address && (
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-                  <div className="flex-shrink-0 p-3 bg-primary/10 rounded-full">
-                    <MapPin className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Alamat</p>
-                    <p className="text-sm text-muted-foreground">{address}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {whatsappLink && (
-              <div className="mt-6 text-center">
-                <Button asChild size="lg" className="gap-2">
-                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="h-5 w-5" />
-                    Chat via WhatsApp
-                  </a>
-                </Button>
+        {whatsapp && whatsappLink && (
+          <a
+            href={whatsappLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center justify-between py-4 hover:text-green-600
+                       transition-colors duration-200"
+          >
+            <div className="flex items-center gap-4">
+              <MessageCircle className="h-4 w-4 text-muted-foreground group-hover:text-green-600 transition-colors duration-200" />
+              <div>
+                <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                  WhatsApp
+                </p>
+                <p className="text-sm font-medium text-foreground">+{whatsapp}</p>
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40
+                             group-hover:text-green-600 transition-colors duration-200">
+              Chat →
+            </span>
+          </a>
+        )}
+
+        {phone && (
+          <a
+            href={`tel:${phone}`}
+            className="group flex items-center justify-between py-4 hover:text-foreground/70
+                       transition-colors duration-200"
+          >
+            <div className="flex items-center gap-4">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                  Telepon
+                </p>
+                <p className="text-sm font-medium text-foreground">{phone}</p>
+              </div>
+            </div>
+            <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40
+                             group-hover:text-foreground/60 transition-colors duration-200">
+              Hubungi →
+            </span>
+          </a>
+        )}
+
+        {address && (
+          <div className="flex items-start gap-4 py-4">
+            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-0.5">
+                Alamat
+              </p>
+              <p className="text-sm font-medium text-foreground">{address}</p>
+            </div>
+          </div>
+        )}
+
       </div>
+
     </section>
   );
 }

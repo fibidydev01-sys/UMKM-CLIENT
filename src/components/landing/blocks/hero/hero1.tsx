@@ -1,12 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Sparkles, ChevronRight, Box, Layers, Zap, Package, Grid3x3, Blocks } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
 
 interface Hero1Props {
@@ -20,156 +18,116 @@ interface Hero1Props {
   storeName?: string;
 }
 
-const floatingIcons = [
-  { Icon: Box, position: { top: '15%', left: '8%' }, delay: 0 },
-  { Icon: Layers, position: { top: '25%', right: '12%' }, delay: 0.2 },
-  { Icon: Zap, position: { top: '45%', left: '5%' }, delay: 0.4 },
-  { Icon: Package, position: { bottom: '30%', left: '15%' }, delay: 0.6 },
-  { Icon: Grid3x3, position: { bottom: '20%', right: '18%' }, delay: 0.8 },
-  { Icon: Blocks, position: { top: '60%', right: '8%' }, delay: 1.0 },
-  { Icon: Box, position: { top: '35%', left: '25%' }, delay: 0.3 },
-  { Icon: Package, position: { bottom: '45%', right: '25%' }, delay: 0.7 },
-];
-
 export function Hero1({
   title,
   subtitle,
-  ctaText,
   ctaLink = '/products',
   showCta = true,
+  backgroundImage,
   logo,
   storeName,
 }: Hero1Props) {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-background">
-      {/* Animated Gradient Background */}
-      <div className="absolute inset-0 opacity-40">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-purple-500/20 to-pink-500/20 animate-gradient-xy" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-primary/30 via-transparent to-transparent animate-pulse"
-          style={{ animationDuration: '8s' }} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-purple-500/30 via-transparent to-transparent animate-pulse"
-          style={{ animationDuration: '10s', animationDelay: '2s' }} />
-      </div>
+    <section className="relative min-h-screen overflow-hidden bg-background flex flex-col">
 
-      {/* Floating Icons */}
-      <div className="absolute inset-0 pointer-events-none hidden md:block">
-        {floatingIcons.map(({ Icon, position, delay }, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, scale: 0.5, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{
-              delay: delay,
-              duration: 0.6,
-              repeat: Infinity,
-              repeatType: 'reverse',
-              repeatDelay: 3,
-            }}
-            className="absolute"
-            style={position}
-          >
-            <Card className="p-4 bg-background/80 backdrop-blur-sm border-primary/20 shadow-lg">
-              <Icon className="h-8 w-8 text-primary" />
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+      {/* ── Main Split Grid ── */}
+      <div className="flex flex-1 flex-col lg:grid lg:grid-cols-2 min-h-screen">
 
-      {/* Content */}
-      <div className="container relative z-10 px-4 sm:px-6 lg:px-8 min-h-screen flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="max-w-4xl mx-auto text-center space-y-8"
-        >
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-          >
-            <Badge variant="outline" className="px-4 py-2 text-sm font-medium bg-primary/5 border-primary/20">
-              <Sparkles className="h-4 w-4 mr-2 text-primary" />
-              {storeName || 'Welcome'}
-            </Badge>
-          </motion.div>
-
-          {/* Logo */}
-          {logo && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex justify-center"
-            >
-              <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shadow-xl ring-2 ring-border">
-                <OptimizedImage src={logo} alt={storeName || 'Logo'} fill className="object-cover" />
+        {/* ── LEFT — Card Image ── */}
+        <div className="flex items-center justify-center px-8 sm:px-10 lg:px-12 py-12 lg:py-16 order-1">
+          <div className="w-full max-w-sm lg:max-w-none">
+            <div className="overflow-hidden border border-border rounded-2xl">
+              <div className="aspect-[3/4] relative w-full">
+                {backgroundImage ? (
+                  <OptimizedImage
+                    src={backgroundImage}
+                    alt={title}
+                    fill
+                    priority
+                    className="object-cover"
+                  />
+                ) : logo ? (
+                  <OptimizedImage
+                    src={logo}
+                    alt={title}
+                    fill
+                    className="object-contain p-12"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <span className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-medium">
+                      No Image
+                    </span>
+                  </div>
+                )}
               </div>
-            </motion.div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT — Text Content ── */}
+        <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 py-16 lg:py-24 order-2">
+
+          {/* Logo + Store Badge */}
+          {(storeName || logo) && (
+            <div className="mb-8 flex items-center gap-3">
+              {logo && (
+                <Card className="relative w-14 h-14 overflow-hidden border border-border bg-card rounded-xl shrink-0">
+                  <OptimizedImage
+                    src={logo}
+                    alt={storeName ?? 'Logo'}
+                    fill
+                    className="object-cover"
+                  />
+                </Card>
+              )}
+              {storeName && (
+                <Badge
+                  variant="outline"
+                  className="rounded-sm px-3 py-1 text-[10px] tracking-[0.2em] uppercase font-medium border-border text-muted-foreground bg-transparent"
+                >
+                  {storeName}
+                </Badge>
+              )}
+            </div>
           )}
 
+          {/* Eyebrow */}
+          <div className="mb-5 flex items-center gap-3 max-w-[260px]">
+            <Separator className="flex-1 bg-border" />
+            <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
+              Selamat Datang
+            </span>
+            <Separator className="flex-1 bg-border" />
+          </div>
+
           {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight tracking-tight"
-          >
+          <h1 className="text-[36px] sm:text-[42px] md:text-[48px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground mb-6 max-w-lg">
             {title}
-          </motion.h1>
+          </h1>
 
           {/* Subtitle */}
           {subtitle && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="text-lg md:text-xl lg:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-            >
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mb-10">
               {subtitle}
-            </motion.p>
+            </p>
           )}
 
-          {/* Dual CTA */}
-          {showCta && ctaText && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-            >
+          {!subtitle && <div className="mb-10" />}
+
+          {/* CTA */}
+          {showCta && (
+            <div>
               <Link href={ctaLink}>
-                <InteractiveHoverButton className="min-w-[200px] text-base md:text-lg px-8 py-5 font-semibold">
-                  {ctaText}
+                <InteractiveHoverButton className="px-9 py-4 text-sm font-semibold tracking-wide">
+                  Pesan Sekarang
                 </InteractiveHoverButton>
               </Link>
-              <Button variant="outline" size="lg" className="min-w-[200px] text-base md:text-lg px-8 py-5 h-auto gap-2" asChild>
-                <Link href="#products">
-                  Lihat Produk
-                  <ChevronRight className="h-5 w-5" />
-                </Link>
-              </Button>
-            </motion.div>
+            </div>
           )}
-        </motion.div>
-      </div>
+        </div>
 
-      <style jsx>{`
-        @keyframes gradient-xy {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        
-        :global(.animate-gradient-xy) {
-          background-size: 400% 400%;
-          animation: gradient-xy 15s ease infinite;
-        }
-      `}</style>
+      </div>
     </section>
   );
 }

@@ -36,7 +36,7 @@ export interface BlockOption {
  * Number of blocks available per section
  * Update this when you add more blocks!
  */
-const BLOCKS_PER_SECTION = 10; // hero1-hero200, about1-about200, etc.
+const BLOCKS_PER_SECTION = 5; // hero1-hero200, about1-about200, etc.
 
 // ============================================================================
 // SMART GENERATION FUNCTION

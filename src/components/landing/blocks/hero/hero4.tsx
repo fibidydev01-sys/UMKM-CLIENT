@@ -1,12 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
-
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import LightPillar from '@/components/ui/light-pillar/LightPillar';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
 
 interface Hero4Props {
   title: string;
@@ -19,120 +18,110 @@ interface Hero4Props {
   storeName?: string;
 }
 
-const testimonialAvatars = [
-  { initials: 'JD', color: 'bg-blue-500' },
-  { initials: 'SM', color: 'bg-green-500' },
-  { initials: 'AR', color: 'bg-purple-500' },
-  { initials: 'KL', color: 'bg-pink-500' },
-  { initials: 'MT', color: 'bg-orange-500' },
-];
-
 export function Hero4({
   title,
   subtitle,
-  ctaText,
   ctaLink = '/products',
   showCta = true,
+  backgroundImage,
+  logo,
+  storeName,
 }: Hero4Props) {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-background flex items-center justify-center">
-      {/* Background - LightPillar */}
-      <div className="absolute inset-0 opacity-25">
-        <LightPillar
-          topColor="#5227FF"
-          bottomColor="#FF9FFC"
-          intensity={1.2}
-          rotationSpeed={0.3}
-          glowAmount={0.006}
-          pillarWidth={2.5}
-          quality="high"
-        />
+    <section className="relative min-h-screen bg-background flex flex-col overflow-hidden">
+
+      {/* ── TOP — Card Image ── */}
+      <div className="flex justify-center px-6 sm:px-10 pt-10 pb-0 flex-1">
+        <div className="w-full max-w-4xl">
+          <div className="overflow-hidden border border-border rounded-2xl w-full">
+            <div className="aspect-video relative w-full">
+              {backgroundImage ? (
+                <OptimizedImage
+                  src={backgroundImage}
+                  alt={title}
+                  fill
+                  priority
+                  className="object-cover"
+                />
+              ) : logo ? (
+                <OptimizedImage
+                  src={logo}
+                  alt={title}
+                  fill
+                  className="object-contain p-16"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center">
+                  <span className="text-[11px] uppercase tracking-[0.2em] text-foreground/20 font-medium">
+                    No Image
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="container relative z-10 px-4 sm:px-6 lg:px-8 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="max-w-5xl mx-auto text-center space-y-10"
-        >
-          {/* Title */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight"
-          >
-            {title}
-          </motion.h1>
+      {/* ── BOTTOM — Text Content ── */}
+      <div className="flex flex-col items-center text-center px-6 sm:px-10 pt-12 pb-20">
 
-          {/* Subtitle */}
-          {subtitle && (
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.6 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
-            >
-              {subtitle}
-            </motion.p>
-          )}
+        {/* Logo + Badge */}
+        {(storeName || logo) && (
+          <div className="mb-7 flex flex-col items-center gap-3">
+            {logo && (
+              <Card className="relative w-14 h-14 overflow-hidden border border-border bg-card shadow-lg rounded-xl shrink-0">
+                <OptimizedImage
+                  src={logo}
+                  alt={storeName ?? 'Logo'}
+                  fill
+                  className="object-cover"
+                />
+              </Card>
+            )}
+            {storeName && (
+              <Badge
+                variant="outline"
+                className="rounded-sm px-3 py-1 text-[10px] tracking-[0.2em] uppercase font-medium border-border text-muted-foreground bg-transparent"
+              >
+                {storeName}
+              </Badge>
+            )}
+          </div>
+        )}
 
-          {/* CTA */}
-          {showCta && ctaText && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
-              <Link href={ctaLink}>
-                <InteractiveHoverButton className="min-w-[200px] text-base md:text-lg px-8 py-5 font-semibold">
-                  {ctaText}
-                </InteractiveHoverButton>
-              </Link>
-            </motion.div>
-          )}
+        {/* Eyebrow */}
+        <div className="mb-5 flex items-center gap-4 w-full max-w-xs sm:max-w-sm">
+          <Separator className="flex-1 bg-border" />
+          <span className="text-[11px] uppercase tracking-[0.3em] text-muted-foreground whitespace-nowrap font-medium">
+            Selamat Datang
+          </span>
+          <Separator className="flex-1 bg-border" />
+        </div>
 
-          {/* Social Proof */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="flex flex-col items-center gap-6 pt-8"
-          >
-            {/* Avatars */}
-            <div className="flex items-center -space-x-3">
-              {testimonialAvatars.map((avatar, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + index * 0.1, duration: 0.3 }}
-                >
-                  <Avatar className={`h-12 w-12 border-2 border-background ${avatar.color}`}>
-                    <AvatarFallback className="text-white font-semibold">
-                      {avatar.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </motion.div>
-              ))}
-            </div>
+        {/* Title */}
+        <h1 className="max-w-3xl text-[36px] sm:text-[44px] md:text-[52px] lg:text-[60px] font-black leading-[1.0] tracking-tight text-foreground mb-5">
+          {title}
+        </h1>
 
-            {/* Rating */}
-            <div className="flex items-center gap-4">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-bold text-foreground">5.0</span>
-                <span className="text-sm text-muted-foreground">from 200+ reviews</span>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
+        {/* Subtitle */}
+        {subtitle && (
+          <p className="mb-10 max-w-lg text-sm text-muted-foreground leading-relaxed">
+            {subtitle}
+          </p>
+        )}
+
+        {!subtitle && <div className="mb-10" />}
+
+        {/* CTA */}
+        {showCta && (
+          <Link href={ctaLink}>
+            <InteractiveHoverButton className="px-10 py-4 text-sm font-semibold tracking-wide">
+              Pesan Sekarang
+            </InteractiveHoverButton>
+          </Link>
+        )}
       </div>
+
     </section>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/card';
+import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { getImageSource } from '@/lib/cloudinary';
 import type { Testimonial } from '@/types';
@@ -15,81 +16,107 @@ interface Testimonials5Props {
 
 /**
  * Testimonials Block: testimonials5
- * Design: MASONRY - Varied card heights, 3 columns
+ * Design: SINGLE FOCUS FLIPPED - Avatar tabs on top, card below
+ * Typography: Matched to Hero1 (font-black, tracking-tight, uppercase eyebrow)
  */
 export function Testimonials5({ items, title, subtitle }: Testimonials5Props) {
+  const [activeIndex, setActiveIndex] = useState(0);
+
   if (items.length === 0) return null;
+
+  const activeItem = items[activeIndex];
 
   return (
     <section id="testimonials" className="py-16 md:py-24">
-      {/* Header */}
+      {/* Header — Hero1 style */}
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
+
+        {/* Eyebrow */}
+        <div className="mb-5 flex items-center justify-center gap-3 max-w-[260px] mx-auto">
+          <Separator className="flex-1 bg-border" />
+          <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
+            Testimoni
+          </span>
+          <Separator className="flex-1 bg-border" />
+        </div>
+
+        {/* Title */}
+        <h2 className="text-[32px] sm:text-[38px] md:text-[44px] font-black leading-[1.0] tracking-tight text-foreground max-w-2xl mx-auto">
+          {title}
+        </h2>
+
+        {/* Subtitle */}
         {subtitle && (
-          <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto mt-4">
+            {subtitle}
+          </p>
         )}
       </div>
 
-      {/* Masonry Grid */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-        {items.map((item, index) => {
-          const key = item.id || `testimonial-${index}`;
-          const { type: avatarType } = getImageSource(item.avatar);
+      <div className="max-w-2xl mx-auto">
+        {/* Avatar Tabs — DI ATAS */}
+        <div className="flex justify-center gap-3 mb-5">
+          {items.map((item, index) => {
+            const { type: avatarType } = getImageSource(item.avatar);
+            const isActive = index === activeIndex;
+            return (
+              <button
+                key={item.id || index}
+                onClick={() => setActiveIndex(index)}
+                className={`rounded-full transition-all duration-300 ${isActive
+                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110'
+                  : 'opacity-40 hover:opacity-70'
+                  }`}
+                aria-label={item.name}
+              >
+                <Avatar className="h-11 w-11">
+                  {avatarType !== 'none' ? (
+                    <OptimizedImage
+                      src={item.avatar}
+                      alt={item.name}
+                      width={44}
+                      height={44}
+                      crop="thumb"
+                      gravity="face"
+                      className="object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
+                      {item.name.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+              </button>
+            );
+          })}
+        </div>
 
-          return (
-            <Card
-              key={key}
-              className="break-inside-avoid border-border/50 hover:shadow-lg transition-shadow"
-            >
-              <CardContent className="p-6">
-                {/* Rating */}
-                {typeof item.rating === 'number' && item.rating > 0 && (
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={`${key}-star-${i}`}
-                        className={`h-4 w-4 ${i < item.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted'
-                          }`}
-                      />
-                    ))}
-                  </div>
-                )}
+        {/* Nama + Role — Hero1 font-black + uppercase tracking */}
+        <div className="text-center mb-6">
+          <p className="font-black text-[16px] tracking-tight text-foreground leading-none">
+            {activeItem.name}
+          </p>
+          {activeItem.role && (
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mt-2 font-medium">
+              {activeItem.role}
+            </p>
+          )}
+        </div>
 
-                {/* Content */}
-                <p className="text-foreground leading-relaxed mb-5">
-                  &quot;{item.content}&quot;
-                </p>
+        {/* Card — DI BAWAH */}
+        <Card className="border-0 shadow-lg bg-card">
+          <CardContent className="p-6 md:p-8 text-center flex flex-col items-center min-h-[220px] justify-center">
+            {/* Eyebrow inside card */}
+            <span className="text-[10px] uppercase tracking-[0.28em] text-primary/50 font-medium mb-5 block">
+              ★ Ulasan Pelanggan
+            </span>
 
-                {/* Author */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    {avatarType !== 'none' ? (
-                      <OptimizedImage
-                        src={item.avatar}
-                        alt={item.name}
-                        width={40}
-                        height={40}
-                        crop="thumb"
-                        gravity="face"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {item.name.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    )}
-                  </Avatar>
-                  <div>
-                    <p className="font-semibold text-foreground">{item.name}</p>
-                    {item.role && (
-                      <p className="text-sm text-muted-foreground">{item.role}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+            {/* Content */}
+            <p className="text-sm text-foreground leading-relaxed">
+              &quot;{activeItem.content}&quot;
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

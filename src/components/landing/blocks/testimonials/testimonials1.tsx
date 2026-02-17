@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Star, Quote } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { getImageSource } from '@/lib/cloudinary';
 import type { Testimonial } from '@/types';
@@ -16,22 +16,40 @@ interface Testimonials1Props {
 /**
  * Testimonials Block: testimonials1
  * Design: GRID CARDS - 3 column with hover effects
+ * Typography: Matched to Hero1 (font-black, tracking-tight, uppercase eyebrow)
  */
 export function Testimonials1({ items, title, subtitle }: Testimonials1Props) {
   if (items.length === 0) return null;
 
   return (
     <section id="testimonials" className="py-16 md:py-24">
-      {/* Header */}
+      {/* Header — Hero1 style */}
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
+
+        {/* Eyebrow — same as Hero1 */}
+        <div className="mb-5 flex items-center justify-center gap-3 max-w-[260px] mx-auto">
+          <Separator className="flex-1 bg-border" />
+          <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
+            Testimoni
+          </span>
+          <Separator className="flex-1 bg-border" />
+        </div>
+
+        {/* Title — Hero1 font-black tracking-tight */}
+        <h2 className="text-[32px] sm:text-[38px] md:text-[44px] font-black leading-[1.0] tracking-tight text-foreground max-w-2xl mx-auto">
+          {title}
+        </h2>
+
+        {/* Subtitle — Hero1 text-sm muted */}
         {subtitle && (
-          <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto mt-4">
+            {subtitle}
+          </p>
         )}
       </div>
 
       {/* Grid */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex flex-wrap justify-center gap-6">
         {items.map((item, index) => {
           const key = item.id || `testimonial-${index}`;
           const { type: avatarType } = getImageSource(item.avatar);
@@ -39,32 +57,29 @@ export function Testimonials1({ items, title, subtitle }: Testimonials1Props) {
           return (
             <Card
               key={key}
-              className="group relative hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-border/50"
+              className="
+                w-full
+                md:w-[calc(50%-12px)]
+                lg:w-[calc(33.333%-16px)]
+                flex flex-col
+                hover:shadow-xl hover:-translate-y-1
+                transition-all duration-300
+                border-border/50
+              "
             >
-              <CardContent className="p-6">
-                {/* Quote Icon */}
-                <Quote className="h-8 w-8 text-primary/20 mb-4" />
-
-                {/* Rating */}
-                {typeof item.rating === 'number' && item.rating > 0 && (
-                  <div className="flex gap-1 mb-4">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={`${key}-star-${i}`}
-                        className={`h-4 w-4 ${i < item.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted'
-                          }`}
-                      />
-                    ))}
-                  </div>
-                )}
+              <CardContent className="p-6 flex flex-col flex-1">
+                {/* Decorative mark — Hero1 eyebrow style */}
+                <span className="text-[10px] uppercase tracking-[0.28em] text-primary/50 font-medium mb-4 block">
+                  ★ Ulasan
+                </span>
 
                 {/* Content */}
-                <p className="text-foreground leading-relaxed mb-6">
+                <p className="text-sm text-foreground leading-relaxed mb-6 flex-1">
                   &quot;{item.content}&quot;
                 </p>
 
-                {/* Author */}
-                <div className="flex items-center gap-3 pt-4 border-t border-border/50">
+                {/* Author — pinned at bottom */}
+                <div className="flex items-center gap-3 pt-4 border-t border-border/50 shrink-0">
                   <Avatar className="h-10 w-10 ring-2 ring-background shadow">
                     {avatarType !== 'none' ? (
                       <OptimizedImage
@@ -83,9 +98,14 @@ export function Testimonials1({ items, title, subtitle }: Testimonials1Props) {
                     )}
                   </Avatar>
                   <div>
-                    <p className="font-semibold text-foreground">{item.name}</p>
+                    {/* Name — Hero1 font-black style */}
+                    <p className="font-black text-[13px] tracking-tight text-foreground leading-none">
+                      {item.name}
+                    </p>
                     {item.role && (
-                      <p className="text-sm text-muted-foreground">{item.role}</p>
+                      <p className="text-[11px] uppercase tracking-[0.15em] text-muted-foreground mt-1 font-medium">
+                        {item.role}
+                      </p>
                     )}
                   </div>
                 </div>

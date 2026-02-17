@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Star, Quote } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import { getImageSource } from '@/lib/cloudinary';
 import type { Testimonial } from '@/types';
@@ -15,7 +16,8 @@ interface Testimonials4Props {
 
 /**
  * Testimonials Block: testimonials4
- * Design: SINGLE FOCUS - One testimonial centered, clickable avatars
+ * Design: SINGLE FOCUS - Card quote, avatar tabs selector
+ * Typography: Matched to Hero1 (font-black, tracking-tight, uppercase eyebrow)
  */
 export function Testimonials4({ items, title, subtitle }: Testimonials4Props) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -23,74 +25,90 @@ export function Testimonials4({ items, title, subtitle }: Testimonials4Props) {
   if (items.length === 0) return null;
 
   const activeItem = items[activeIndex];
-  getImageSource(activeItem.avatar);
 
   return (
     <section id="testimonials" className="py-16 md:py-24">
-      {/* Header */}
+      {/* Header — Hero1 style */}
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
+
+        {/* Eyebrow */}
+        <div className="mb-5 flex items-center justify-center gap-3 max-w-[260px] mx-auto">
+          <Separator className="flex-1 bg-border" />
+          <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
+            Testimoni
+          </span>
+          <Separator className="flex-1 bg-border" />
+        </div>
+
+        {/* Title */}
+        <h2 className="text-[32px] sm:text-[38px] md:text-[44px] font-black leading-[1.0] tracking-tight text-foreground max-w-2xl mx-auto">
+          {title}
+        </h2>
+
+        {/* Subtitle */}
         {subtitle && (
-          <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">{subtitle}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto mt-4">
+            {subtitle}
+          </p>
         )}
       </div>
 
-      <div className="max-w-3xl mx-auto text-center">
-        {/* Quote Icon */}
-        <Quote className="h-12 w-12 text-primary/30 mx-auto mb-6" />
+      <div className="max-w-2xl mx-auto">
+        {/* Card */}
+        <Card className="border-0 shadow-lg bg-card mb-8">
+          <CardContent className="p-6 md:p-8 text-center flex flex-col items-center min-h-[220px] justify-center">
+            {/* Eyebrow inside card */}
+            <span className="text-[10px] uppercase tracking-[0.28em] text-primary/50 font-medium mb-5 block">
+              ★ Ulasan Pelanggan
+            </span>
 
-        {/* Rating */}
-        {typeof activeItem.rating === 'number' && activeItem.rating > 0 && (
-          <div className="flex justify-center gap-1 mb-6">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Star
-                key={`star-${i}`}
-                className={`h-5 w-5 ${i < activeItem.rating! ? 'text-yellow-500 fill-yellow-500' : 'text-muted'
-                  }`}
-              />
-            ))}
-          </div>
-        )}
+            {/* Content */}
+            <p className="text-sm text-foreground leading-relaxed">
+              &quot;{activeItem.content}&quot;
+            </p>
+          </CardContent>
+        </Card>
 
-        {/* Content */}
-        <p className="text-xl md:text-2xl lg:text-3xl text-foreground leading-relaxed mb-8">
-          &quot;{activeItem.content}&quot;
-        </p>
-
-        {/* Active Author */}
-        <div className="mb-10">
-          <p className="font-bold text-foreground text-xl">{activeItem.name}</p>
+        {/* Name + Role — Hero1 font-black + uppercase tracking */}
+        <div className="text-center mb-5">
+          <p className="font-black text-[16px] tracking-tight text-foreground leading-none">
+            {activeItem.name}
+          </p>
           {activeItem.role && (
-            <p className="text-muted-foreground mt-1">{activeItem.role}</p>
+            <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground mt-2 font-medium">
+              {activeItem.role}
+            </p>
           )}
         </div>
 
-        {/* Avatar Selector */}
+        {/* Avatar Tabs */}
         <div className="flex justify-center gap-3">
           {items.map((item, index) => {
             const { type: avatarType } = getImageSource(item.avatar);
+            const isActive = index === activeIndex;
             return (
               <button
                 key={item.id || index}
                 onClick={() => setActiveIndex(index)}
-                className={`relative transition-all duration-300 ${index === activeIndex
-                  ? 'scale-110 ring-4 ring-primary ring-offset-2 ring-offset-background rounded-full'
-                  : 'opacity-50 hover:opacity-80'
+                className={`rounded-full transition-all duration-300 ${isActive
+                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-110'
+                  : 'opacity-40 hover:opacity-70'
                   }`}
+                aria-label={item.name}
               >
-                <Avatar className="h-12 w-12 md:h-14 md:w-14">
+                <Avatar className="h-11 w-11">
                   {avatarType !== 'none' ? (
                     <OptimizedImage
                       src={item.avatar}
                       alt={item.name}
-                      width={56}
-                      height={56}
+                      width={44}
+                      height={44}
                       crop="thumb"
                       gravity="face"
                       className="object-cover"
                     />
                   ) : (
-                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-sm">
                       {item.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   )}

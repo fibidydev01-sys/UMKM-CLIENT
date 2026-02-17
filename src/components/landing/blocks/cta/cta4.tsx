@@ -2,17 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
-/**
- * Cta2 Props - Mapped from Data Contract (LANDING-DATA-CONTRACT.md)
- *
- * @prop title - ctaTitle: CTA heading
- * @prop subtitle - ctaSubtitle: CTA description
- * @prop buttonText - ctaButtonText: Button label
- * @prop buttonLink - ctaButtonLink: Button destination URL
- * @prop buttonVariant - ctaButtonStyle: 'default' | 'secondary' | 'outline'
- */
 interface Cta4Props {
   title: string;
   subtitle?: string;
@@ -23,32 +13,56 @@ interface Cta4Props {
 
 /**
  * CTA Block: cta4
- * Design: Bold Center
+ * Design: MINIMAL STACKED
+ *
+ * - Centered, whitespace lega, zero decoration
+ * - Judul besar stacked dengan subtitle di bawah
+ * - CTA = text link dengan underline animasi, bukan button
+ * - Cocok jadi section penutup halaman
+ * - Sangat minimal, bicara lewat tipografi saja
  */
 export function Cta4({
   title,
   subtitle,
   buttonText,
   buttonLink,
-  buttonVariant,
 }: Cta4Props) {
   return (
-    <section className="py-20 my-8">
-      <div className="text-center max-w-4xl mx-auto px-4">
-        <h2 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+    <section className="py-24 md:py-36 my-8">
+      <div className="max-w-2xl mx-auto text-center space-y-8">
+
+        {/* Eyebrow */}
+        <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+          ✦ &nbsp; Ayo Mulai &nbsp; ✦
+        </p>
+
+        {/* Title */}
+        <h2 className="text-[36px] sm:text-[48px] lg:text-[64px] font-black leading-[1.0] tracking-tight text-foreground">
           {title}
         </h2>
+
+        {/* Subtitle */}
         {subtitle && (
-          <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-sm mx-auto">
             {subtitle}
           </p>
         )}
-        <Link href={buttonLink}>
-          <Button size="lg" variant={buttonVariant} className="gap-2 h-14 px-8 text-lg">
-            {buttonText}
-            <ArrowRight className="h-5 w-5" />
-          </Button>
-        </Link>
+
+        {/* CTA — pure text link, no button */}
+        <div className="pt-2">
+          <Link
+            href={buttonLink}
+            className="group inline-flex items-center gap-3 text-base font-medium text-foreground
+                       hover:text-foreground/60 transition-colors duration-200"
+          >
+            <span className="border-b-2 border-foreground group-hover:border-foreground/30
+                             transition-colors duration-200 pb-0.5">
+              {buttonText}
+            </span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        </div>
+
       </div>
     </section>
   );

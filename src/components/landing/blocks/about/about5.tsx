@@ -1,7 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { OptimizedImage } from '@/components/ui/optimized-image';
+import { Separator } from '@/components/ui/separator';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface About5Props {
   title: string;
@@ -15,96 +15,62 @@ interface About5Props {
   }>;
 }
 
-// Component untuk gradient text effect
-function GradientText({ children, className = '' }: { children: string; className?: string }) {
+export function About5({ title, subtitle, content, features = [] }: About5Props) {
   return (
-    <motion.h2
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.6 }}
-      className={`${className} bg-gradient-to-r from-white via-indigo-200 to-white bg-[length:200%_100%] bg-clip-text text-transparent animate-gradient`}
-      style={{
-        backgroundImage: 'linear-gradient(90deg, #ffffff 0%, #a5b4fc 25%, #818cf8 50%, #a5b4fc 75%, #ffffff 100%)',
-      }}
-    >
-      {children}
-    </motion.h2>
-  );
-}
+    <section id="about" className="bg-background py-16 md:py-24">
+      <div className="container mx-auto px-8 md:px-12 lg:px-16">
 
-export function About5({ title, subtitle, image, features = [] }: About5Props) {
-  return (
-    <section id="about" className="relative py-16 md:py-24 min-h-[600px] flex items-center">
-      {image ? (
-        <div className="absolute inset-0 -z-10">
-          <OptimizedImage src={image} alt="" fill className="object-cover" />
-          <div className="absolute inset-0 bg-black/70" />
-        </div>
-      ) : (
-        <div className="absolute inset-0 -z-10 bg-gray-900" />
-      )}
+        {/* ── Header — center ── */}
+        <div className="mb-10 flex flex-col items-center text-center">
+          <div className="mb-5 flex items-center gap-3 max-w-[260px]">
+            <Separator className="flex-1 bg-border" />
+            <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
+              Tentang Kami
+            </span>
+            <Separator className="flex-1 bg-border" />
+          </div>
 
-      <div className="container mx-auto px-4 md:px-6 lg:px-8 relative z-10 w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12 md:mb-16"
-        >
-          <GradientText className="text-3xl md:text-4xl lg:text-5xl font-bold">
+          <h2 className="text-[32px] sm:text-[38px] md:text-[44px] font-black leading-[1.05] tracking-tight text-foreground mb-4 max-w-2xl">
             {title}
-          </GradientText>
-          {subtitle && (
-            <p className="text-lg md:text-xl text-white/80 mt-4 max-w-2xl mx-auto">{subtitle}</p>
-          )}
-        </motion.div>
+          </h2>
 
+          {subtitle && (
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl">
+              {subtitle}
+            </p>
+          )}
+
+          {content && (
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-xl mt-3">
+              {content}
+            </p>
+          )}
+        </div>
+
+        {/* ── Features Grid 4 col ── */}
         {features.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {features.map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="text-center p-6 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/15 transition-all"
-              >
-                {feature.icon && (
-                  <div className="text-5xl md:text-6xl mb-4">
-                    {feature.icon}
-                  </div>
-                )}
-                <h3 className="text-lg md:text-xl font-bold text-white mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-white/70 leading-relaxed">
-                  {feature.description}
-                </p>
-              </motion.div>
+              <Card key={index} className="border border-border bg-card rounded-xl">
+                <CardContent className="p-5 flex flex-col items-center text-center">
+                  {feature.icon && (
+                    <span className="text-3xl mb-3">{feature.icon}</span>
+                  )}
+                  <h3 className="text-sm font-semibold text-foreground mb-2">
+                    {feature.title}
+                  </h3>
+                  {feature.description && (
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      {feature.description}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
-      </div>
 
-      <style jsx>{`
-        @keyframes gradient {
-          0%, 100% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-        }
-        
-        :global(.animate-gradient) {
-          animation: gradient 6s ease infinite;
-          background-size: 200% 100%;
-        }
-      `}</style>
+      </div>
     </section>
   );
 }

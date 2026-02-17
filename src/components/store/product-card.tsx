@@ -1,19 +1,16 @@
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
-// ❌ REMOVE: import Image from 'next/image';
-// ❌ REMOVE: import { CldImage } from 'next-cloudinary';
-import { OptimizedImage } from '@/components/ui/optimized-image'; // ✅ ADD
+import { OptimizedImage } from '@/components/ui/optimized-image';
 import Link from 'next/link';
 import { ShoppingCart, Plus, Check } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { productUrl } from '@/lib/store-url';
-// ❌ REMOVE: import { getThumbnailUrl } from '@/lib/cloudinary';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -42,9 +39,7 @@ export function ProductCard({
     };
   }, [product.comparePrice, product.price, product.trackStock, product.stock]);
 
-  // ✅ SIMPLIFIED: Just use the first image URL directly
   const imageUrl = product.images?.[0];
-
   const url = useMemo(() => productUrl(storeSlug, product.id), [storeSlug, product.id]);
 
   const handleAddToCart = useCallback((e: React.MouseEvent) => {
@@ -66,11 +61,10 @@ export function ProductCard({
   }, [isOutOfStock, addItem, product]);
 
   return (
-    <Card className="group overflow-hidden transition-shadow hover:shadow-md">
+    <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card">
       <Link href={url}>
-        {/* Image Container */}
+        {/* Image — Card overflow-hidden handles the rounding */}
         <div className="relative aspect-square overflow-hidden bg-muted">
-          {/* ✅ OPTIMIZED: Auto-detects Cloudinary vs External */}
           <OptimizedImage
             src={imageUrl}
             alt={product.name}
@@ -81,7 +75,7 @@ export function ProductCard({
             className="object-cover transition-transform group-hover:scale-105"
             fallback={
               <div className="flex h-full items-center justify-center">
-                <ShoppingCart className="h-12 w-12 text-muted-foreground/30" />
+                <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
               </div>
             }
           />
@@ -89,53 +83,51 @@ export function ProductCard({
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
             {hasDiscount && (
-              <Badge variant="destructive" className="text-xs">
+              <Badge variant="destructive" className="text-xs px-1.5 py-0">
                 -{discountPercent}%
               </Badge>
             )}
             {product.isFeatured && (
-              <Badge className="text-xs bg-primary">Unggulan</Badge>
+              <Badge className="text-xs px-1.5 py-0 bg-primary">Unggulan</Badge>
             )}
           </div>
 
           {/* Out of Stock Overlay */}
           {isOutOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Badge variant="secondary" className="text-sm">
-                Stok Habis
-              </Badge>
+              <Badge variant="secondary" className="text-sm">Stok Habis</Badge>
             </div>
           )}
 
-          {/* Quick Add Button */}
+          {/* Quick Add — desktop hover */}
           {showAddToCart && !isOutOfStock && (
             <div className="hidden md:block absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 size="icon"
                 className={cn(
-                  'h-9 w-9 rounded-full shadow-lg',
+                  'h-8 w-8 rounded-full shadow-lg',
                   isAdding && 'bg-green-500 hover:bg-green-500'
                 )}
                 onClick={handleAddToCart}
               >
-                {isAdding ? <Check className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                {isAdding ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
               </Button>
             </div>
           )}
         </div>
 
-        {/* Content - unchanged */}
-        <CardContent className="p-3">
+        {/* Footer — slim, no CardContent wrapper */}
+        <div className="px-3 py-2.5">
           {product.category && (
-            <p className="text-xs text-muted-foreground mb-1 truncate">
+            <p className="text-xs text-muted-foreground truncate leading-none mb-1">
               {product.category}
             </p>
           )}
-          <h3 className="font-medium text-sm leading-tight line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-medium text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="font-semibold text-primary">
+          <div className="mt-1.5 flex items-baseline gap-1.5">
+            <span className="font-semibold text-sm text-primary">
               {formatPrice(product.price)}
             </span>
             {hasDiscount && (
@@ -145,29 +137,31 @@ export function ProductCard({
             )}
           </div>
           {product.unit && (
-            <p className="text-xs text-muted-foreground mt-1">per {product.unit}</p>
+            <p className="text-xs text-muted-foreground leading-none mt-1">
+              per {product.unit}
+            </p>
           )}
           {itemQty > 0 && (
-            <div className="mt-2 flex items-center gap-1 text-xs text-primary">
+            <div className="mt-1.5 flex items-center gap-1 text-xs text-primary">
               <ShoppingCart className="h-3 w-3" />
               <span>{itemQty} di keranjang</span>
             </div>
           )}
-        </CardContent>
+        </div>
       </Link>
 
-      {/* Mobile Add to Cart - unchanged */}
+      {/* Mobile Add to Cart */}
       {showAddToCart && !isOutOfStock && (
-        <div className="px-3 pb-3 md:hidden">
-          <Button size="sm" variant="outline" className="w-full" onClick={handleAddToCart}>
+        <div className="px-3 pb-2.5 md:hidden">
+          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={handleAddToCart}>
             {isAdding ? (
-              <><Check className="h-4 w-4 mr-2" />Ditambahkan</>
+              <><Check className="h-3.5 w-3.5 mr-1.5" />Ditambahkan</>
             ) : (
-              <><Plus className="h-4 w-4 mr-2" />Tambah</>
+              <><Plus className="h-3.5 w-3.5 mr-1.5" />Tambah</>
             )}
           </Button>
         </div>
       )}
-    </Card>
+    </div>
   );
 }

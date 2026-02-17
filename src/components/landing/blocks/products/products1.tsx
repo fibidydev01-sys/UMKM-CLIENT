@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { ProductCard } from '@/components/store/product-card';
 import type { Product } from '@/types';
 
@@ -18,7 +17,7 @@ interface Products1Props {
 
 /**
  * Products Block: products1
- * Design: CLASSIC GRID - 4 columns responsive
+ * Design: EDITORIAL GRID
  */
 export function Products1({
   products,
@@ -30,35 +29,70 @@ export function Products1({
   limit = 8,
 }: Products1Props) {
   const displayProducts = products.slice(0, limit);
-
   if (displayProducts.length === 0) return null;
 
   return (
-    <section id="products" className="py-16 md:py-24">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10 md:mb-12">
-        <div>
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">{title}</h2>
+    <section id="products" className="py-20 md:py-28">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-12 md:mb-16">
+        <div className="space-y-3">
+          <div className="w-8 h-px bg-foreground" />
+          <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground">
+            {title}
+          </h2>
           {subtitle && (
-            <p className="text-lg text-muted-foreground mt-2 max-w-2xl">{subtitle}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
+              {subtitle}
+            </p>
           )}
         </div>
+
         {showViewAll && (
-          <Link href={productsLink}>
-            <Button variant="outline" size="lg" className="gap-2 shrink-0">
-              Lihat Semua
-              <ArrowRight className="h-4 w-4" />
-            </Button>
+          <Link
+            href={productsLink}
+            className="group inline-flex items-center gap-2 text-sm font-medium text-foreground
+                       border-b border-foreground/30 pb-0.5 hover:border-foreground
+                       transition-colors duration-200 shrink-0 self-end sm:self-auto"
+          >
+            Lihat Semua
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-1" />
           </Link>
         )}
       </div>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {displayProducts.map((product) => (
-          <ProductCard key={product.id} product={product} storeSlug={storeSlug} />
+      {/* ── Grid ── */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-10 md:gap-x-6 md:gap-y-14">
+        {displayProducts.map((product, index) => (
+          <div key={product.id} className="flex flex-col gap-3">
+            <span className="text-[10px] font-mono text-muted-foreground/50 tracking-[0.2em] uppercase select-none">
+              {String(index + 1).padStart(2, '0')}
+            </span>
+            <div className="flex-1">
+              <ProductCard product={product} storeSlug={storeSlug} />
+            </div>
+          </div>
         ))}
       </div>
+
+      {/* ── Footer ── */}
+      <div className="flex items-center justify-between mt-12 md:mt-16 pt-6 border-t border-border/60">
+        <span className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground/40">
+          {String(displayProducts.length).padStart(2, '0')} Produk
+        </span>
+        {showViewAll && (
+          <Link
+            href={productsLink}
+            className="group inline-flex items-center gap-2 text-[10px] font-mono
+                       tracking-[0.2em] uppercase text-muted-foreground hover:text-foreground
+                       transition-colors duration-200"
+          >
+            Semua Koleksi
+            <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
+        )}
+      </div>
+
     </section>
   );
 }
