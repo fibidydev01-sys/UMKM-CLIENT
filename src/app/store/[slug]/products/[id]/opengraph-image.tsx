@@ -25,6 +25,32 @@ function getApiUrl(): string {
   return 'http://localhost:8000/api';
 }
 
+function optimizeImageUrl(url: string | null): string | null {
+  if (!url) return null;
+
+  try {
+    // Cloudinary
+    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
+      return url.replace('/upload/', '/upload/w_600,h_600,c_limit,q_80,f_auto/');
+    }
+
+    // Unsplash
+    if (url.includes('images.unsplash.com')) {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set('w', '600');
+      urlObj.searchParams.set('h', '600');
+      urlObj.searchParams.set('fit', 'crop');
+      urlObj.searchParams.set('q', '80');
+      urlObj.searchParams.set('auto', 'format');
+      return urlObj.toString();
+    }
+
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 function createFallbackImage(message: string) {
   return new ImageResponse(
     (
@@ -120,7 +146,6 @@ export default async function ProductOgImage({ params }: Props) {
       return createFallbackImage('Invalid Request');
     }
 
-    // ✅ FETCH REAL DATA
     const [tenant, product] = await Promise.all([
       getTenant(slug),
       getProduct(id),
@@ -146,6 +171,16 @@ export default async function ProductOgImage({ params }: Props) {
       ? Math.round((1 - productPrice / comparePrice) * 100)
       : 0;
 
+    // ✅ Extract and optimize image URL
+    const rawImageUrl =
+      typeof product?.images?.[0] === 'string'
+        ? product.images[0]
+        : product?.images?.[0]?.url ||
+        product?.images?.[0]?.secure_url ||
+        null;
+
+    const productImage = optimizeImageUrl(rawImageUrl);
+
     // Get initials for avatar
     const getInitials = (name: string) => {
       return name
@@ -166,7 +201,7 @@ export default async function ProductOgImage({ params }: Props) {
             background: 'white',
           }}
         >
-          {/* Left Side - Icon */}
+          {/* Left Side - Product Image or Icon */}
           <div
             style={{
               width: '50%',
@@ -178,18 +213,35 @@ export default async function ProductOgImage({ params }: Props) {
               position: 'relative',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-            >
-              <div style={{ fontSize: '120px' }}>📦</div>
-              <div style={{ fontSize: '24px', color: '#6b7280', display: 'flex' }}>
-                No Image
+            {productImage ? (
+              // ✅ TRY: Render external image
+              <img
+                src={productImage}
+                alt={productName}
+                width="510"
+                height="535"
+                style={{
+                  maxWidth: '85%',
+                  maxHeight: '85%',
+                  objectFit: 'contain',
+                  borderRadius: '16px',
+                }}
+              />
+            ) : (
+              // ✅ FALLBACK: Icon if no image
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                }}
+              >
+                <div style={{ fontSize: '120px' }}>📦</div>
+                <div style={{ fontSize: '24px', color: '#6b7280', display: 'flex' }}>
+                  No Image
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Discount Badge */}
             {hasDiscount && (
