@@ -16,13 +16,13 @@ import {
   SocialShare,
   generateProductBreadcrumbs,
 } from '@/components/seo';
-import { createProductMetadata, getTenantUrl } from '@/lib/seo';
+import { createProductMetadata } from '@/lib/seo';
 import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import type { PublicTenant, Product } from '@/types';
 
 // ==========================================
-// PRODUCT DETAIL PAGE
+// PRODUCT DETAIL PAGE - FIXED URL
 // ==========================================
 
 interface ProductPageProps {
@@ -138,11 +138,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
   );
 
-  // Generate product URL for sharing
-  const productPath = product.slug
-    ? `/p/${product.slug}`
-    : `/product/${product.id}`;
-  const productUrl = getTenantUrl(tenant.slug, productPath);
+  // ✅ FIX: Generate correct product URL for sharing
+  const productUrl = `https://www.fibidy.com/store/${tenant.slug}/products/${product.id}`;
 
   return (
     <>
@@ -167,7 +164,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         tenant={{
           name: tenant.name,
           slug: tenant.slug,
-          whatsapp: tenant.whatsapp || '', // ✅ FIX: Provide default empty string
+          whatsapp: tenant.whatsapp || '',
         }}
       />
 
