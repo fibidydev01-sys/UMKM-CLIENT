@@ -20,7 +20,7 @@ import {
 import { toast } from 'sonner';
 
 // ==========================================
-// SOCIAL SHARE COMPONENT
+// SOCIAL SHARE COMPONENT - FIXED
 // ==========================================
 
 interface SocialShareProps {
@@ -50,7 +50,8 @@ export function SocialShare({
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     twitter: `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`,
     linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodedUrl}&title=${encodedTitle}&summary=${encodedDescription}`,
-    whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
+    // ✅ FIX: WhatsApp dengan line break agar URL terpisah (trigger OG fetch)
+    whatsapp: `https://wa.me/?text=${encodedTitle}%0A%0A${encodedUrl}`,
   };
 
   // Copy link to clipboard
@@ -67,7 +68,12 @@ export function SocialShare({
 
   // Open share popup
   const handleShare = (platform: keyof typeof shareLinks) => {
-    window.open(shareLinks[platform], '_blank', 'width=600,height=400');
+    if (platform === 'whatsapp') {
+      // ✅ Open WhatsApp directly (mobile will open app, desktop opens web)
+      window.location.href = shareLinks[platform];
+    } else {
+      window.open(shareLinks[platform], '_blank', 'width=600,height=400');
+    }
   };
 
   // Native share (mobile)
