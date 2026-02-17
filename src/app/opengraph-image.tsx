@@ -1,26 +1,23 @@
 import { ImageResponse } from 'next/og';
-import { OG_IMAGE_WIDTH, OG_IMAGE_HEIGHT, OG_COLORS } from '@/lib/og-utils';
 
 // ==========================================
-// DEFAULT PLATFORM OPEN GRAPH IMAGE
+// DEFAULT PLATFORM OPEN GRAPH IMAGE - FIXED
 // Route: /opengraph-image
 // ==========================================
 
-// ✅ FIX: Changed from 'edge' to 'nodejs' runtime
-// Edge runtime can cause issues with fetch and revalidation
-export const runtime = 'nodejs';
-
+export const runtime = 'edge';
 export const alt = 'Fibidy - Platform Toko Online untuk UMKM Indonesia';
-
 export const size = {
-  width: OG_IMAGE_WIDTH,
-  height: OG_IMAGE_HEIGHT,
+  width: 1200,
+  height: 630,
 };
-
 export const contentType = 'image/png';
+export const revalidate = 3600;
 
-// ✅ Add revalidation (optional but recommended)
-export const revalidate = 3600; // 1 hour
+const COLORS = {
+  primary: '#2563eb',
+  primaryDark: '#1e40af',
+};
 
 export default async function OgImage() {
   return new ImageResponse(
@@ -33,7 +30,7 @@ export default async function OgImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: `linear-gradient(135deg, ${OG_COLORS.primary} 0%, ${OG_COLORS.primaryDark} 100%)`,
+          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
           padding: '60px',
         }}
       >
@@ -51,19 +48,8 @@ export default async function OgImage() {
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
           }}
         >
-          <svg
-            width="60"
-            height="60"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke={OG_COLORS.primary}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
+          {/* ✅ FIX: Replace SVG with emoji */}
+          <div style={{ fontSize: '60px' }}>🏪</div>
         </div>
 
         {/* Title */}
@@ -74,6 +60,7 @@ export default async function OgImage() {
             color: 'white',
             marginBottom: '20px',
             textAlign: 'center',
+            display: 'flex',
           }}
         >
           Fibidy
@@ -87,6 +74,7 @@ export default async function OgImage() {
             textAlign: 'center',
             maxWidth: '800px',
             lineHeight: 1.4,
+            display: 'flex',
           }}
         >
           Platform Toko Online untuk UMKM Indonesia
@@ -100,20 +88,39 @@ export default async function OgImage() {
             marginTop: '50px',
           }}
         >
-          {['✓ Gratis', '✓ Mudah', '✓ WhatsApp Order'].map((feature) => (
-            <div
-              key={feature}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white',
-                fontSize: '24px',
-                fontWeight: '500',
-              }}
-            >
-              {feature}
-            </div>
-          ))}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'white',
+              fontSize: '24px',
+              fontWeight: '500',
+            }}
+          >
+            ✓ Gratis
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'white',
+              fontSize: '24px',
+              fontWeight: '500',
+            }}
+          >
+            ✓ Mudah
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              color: 'white',
+              fontSize: '24px',
+              fontWeight: '500',
+            }}
+          >
+            ✓ WhatsApp Order
+          </div>
         </div>
 
         {/* URL */}
@@ -123,12 +130,13 @@ export default async function OgImage() {
             bottom: '40px',
             fontSize: '20px',
             color: 'rgba(255, 255, 255, 0.7)',
+            display: 'flex',
           }}
         >
           fibidy.com
         </div>
       </div>
     ),
-    { ...size }
+    { width: 1200, height: 630 }
   );
 }
