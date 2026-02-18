@@ -27,14 +27,10 @@ function getApiUrl(): string {
 
 function optimizeImageUrl(url: string | null): string | null {
   if (!url) return null;
-
   try {
-    // Cloudinary
     if (url.includes('cloudinary.com') && url.includes('/upload/')) {
       return url.replace('/upload/', '/upload/w_600,h_600,c_limit,q_80,f_auto/');
     }
-
-    // Unsplash
     if (url.includes('images.unsplash.com')) {
       const urlObj = new URL(url);
       urlObj.searchParams.set('w', '600');
@@ -44,7 +40,6 @@ function optimizeImageUrl(url: string | null): string | null {
       urlObj.searchParams.set('auto', 'format');
       return urlObj.toString();
     }
-
     return url;
   } catch {
     return null;
@@ -62,27 +57,14 @@ function createFallbackImage(message: string) {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#f3f4f6',
+          // ✅ FIX: pink brand
+          background: 'linear-gradient(135deg, #FF1F6D 0%, #cc1257 100%)',
         }}
       >
-        <div
-          style={{
-            fontSize: '48px',
-            fontWeight: 'bold',
-            color: '#111827',
-            display: 'flex',
-          }}
-        >
+        <div style={{ fontSize: '48px', fontWeight: 'bold', color: 'white', display: 'flex' }}>
           Fibidy
         </div>
-        <div
-          style={{
-            fontSize: '28px',
-            color: '#6b7280',
-            display: 'flex',
-            marginTop: '20px',
-          }}
-        >
+        <div style={{ fontSize: '28px', color: 'rgba(255,255,255,0.8)', display: 'flex', marginTop: '20px' }}>
           {message}
         </div>
       </div>
@@ -93,19 +75,14 @@ function createFallbackImage(message: string) {
 
 async function getProduct(id: string): Promise<any | null> {
   const apiUrl = getApiUrl();
-  const endpoint = `${apiUrl}/products/public/${id}`;
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${apiUrl}/products/public/${id}`, {
       next: { revalidate: 3600 },
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -115,19 +92,14 @@ async function getProduct(id: string): Promise<any | null> {
 
 async function getTenant(slug: string): Promise<any | null> {
   const apiUrl = getApiUrl();
-  const endpoint = `${apiUrl}/tenants/by-slug/${slug}`;
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${apiUrl}/tenants/by-slug/${slug}`, {
       next: { revalidate: 3600 },
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -142,24 +114,13 @@ export default async function ProductOgImage({ params }: Props) {
   try {
     const { slug, id } = await params;
 
-    if (!slug || !id) {
-      return createFallbackImage('Invalid Request');
-    }
+    if (!slug || !id) return createFallbackImage('Invalid Request');
 
-    const [tenant, product] = await Promise.all([
-      getTenant(slug),
-      getProduct(id),
-    ]);
+    const [tenant, product] = await Promise.all([getTenant(slug), getProduct(id)]);
 
-    if (!tenant) {
-      return createFallbackImage('Toko Tidak Ditemukan');
-    }
+    if (!tenant) return createFallbackImage('Toko Tidak Ditemukan');
+    if (!product) return createFallbackImage('Produk Tidak Ditemukan');
 
-    if (!product) {
-      return createFallbackImage('Produk Tidak Ditemukan');
-    }
-
-    // Extract data
     const productName = product.name || 'Produk';
     const productPrice = product.price || 0;
     const productCategory = product.category || null;
@@ -171,37 +132,21 @@ export default async function ProductOgImage({ params }: Props) {
       ? Math.round((1 - productPrice / comparePrice) * 100)
       : 0;
 
-    // ✅ Extract and optimize image URL
     const rawImageUrl =
       typeof product?.images?.[0] === 'string'
         ? product.images[0]
-        : product?.images?.[0]?.url ||
-        product?.images?.[0]?.secure_url ||
-        null;
+        : product?.images?.[0]?.url || product?.images?.[0]?.secure_url || null;
 
     const productImage = optimizeImageUrl(rawImageUrl);
 
-    // Get initials for avatar
-    const getInitials = (name: string) => {
-      return name
-        .split(' ')
-        .map((word) => word[0])
-        .join('')
-        .toUpperCase()
-        .substring(0, 2);
-    };
+    const getInitials = (name: string) =>
+      name.split(' ').map((w) => w[0]).join('').toUpperCase().substring(0, 2);
 
     return new ImageResponse(
       (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            display: 'flex',
-            background: 'white',
-          }}
-        >
-          {/* Left Side - Product Image or Icon */}
+        <div style={{ width: '100%', height: '100%', display: 'flex', background: 'white' }}>
+
+          {/* Left Side - Product Image */}
           <div
             style={{
               width: '50%',
@@ -209,48 +154,32 @@ export default async function ProductOgImage({ params }: Props) {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#f3f4f6',
+              background: '#f9f0f4', // ✅ pink tint
               position: 'relative',
             }}
           >
             {productImage ? (
-              // ✅ TRY: Render external image
               <img
                 src={productImage}
                 alt={productName}
                 width="510"
                 height="535"
-                style={{
-                  maxWidth: '85%',
-                  maxHeight: '85%',
-                  objectFit: 'contain',
-                  borderRadius: '16px',
-                }}
+                style={{ maxWidth: '85%', maxHeight: '85%', objectFit: 'contain', borderRadius: '16px' }}
               />
             ) : (
-              // ✅ FALLBACK: Icon if no image
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                }}
-              >
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontSize: '120px' }}>📦</div>
-                <div style={{ fontSize: '24px', color: '#6b7280', display: 'flex' }}>
-                  No Image
-                </div>
+                <div style={{ fontSize: '24px', color: '#6b7280', display: 'flex' }}>No Image</div>
               </div>
             )}
 
-            {/* Discount Badge */}
             {hasDiscount && (
               <div
                 style={{
                   position: 'absolute',
                   top: '30px',
                   left: '30px',
-                  background: '#ef4444',
+                  background: '#FF1F6D', // ✅ pink brand
                   color: 'white',
                   padding: '12px 24px',
                   borderRadius: '12px',
@@ -280,7 +209,7 @@ export default async function ProductOgImage({ params }: Props) {
               <div
                 style={{
                   fontSize: '20px',
-                  color: '#2563eb',
+                  color: '#FF1F6D', // ✅ pink brand
                   fontWeight: '600',
                   marginBottom: '15px',
                   textTransform: 'uppercase',
@@ -302,24 +231,16 @@ export default async function ProductOgImage({ params }: Props) {
                 display: 'flex',
               }}
             >
-              {productName.length > 50
-                ? productName.substring(0, 50) + '...'
-                : productName}
+              {productName.length > 50 ? productName.substring(0, 50) + '...' : productName}
             </div>
 
             {/* Price */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'baseline',
-                marginBottom: '30px',
-              }}
-            >
+            <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: '30px' }}>
               <div
                 style={{
                   fontSize: '42px',
                   fontWeight: 'bold',
-                  color: '#2563eb',
+                  color: '#FF1F6D', // ✅ pink brand
                   display: 'flex',
                   marginRight: '15px',
                 }}
@@ -327,14 +248,7 @@ export default async function ProductOgImage({ params }: Props) {
                 Rp {productPrice.toLocaleString('id-ID')}
               </div>
               {hasDiscount && comparePrice && (
-                <div
-                  style={{
-                    fontSize: '28px',
-                    color: '#6b7280',
-                    textDecoration: 'line-through',
-                    display: 'flex',
-                  }}
-                >
+                <div style={{ fontSize: '28px', color: '#6b7280', textDecoration: 'line-through', display: 'flex' }}>
                   Rp {comparePrice.toLocaleString('id-ID')}
                 </div>
               )}
@@ -346,7 +260,7 @@ export default async function ProductOgImage({ params }: Props) {
                 display: 'flex',
                 alignItems: 'center',
                 padding: '20px',
-                background: '#f3f4f6',
+                background: '#f9f0f4', // ✅ pink tint
                 borderRadius: '16px',
               }}
             >
@@ -355,42 +269,22 @@ export default async function ProductOgImage({ params }: Props) {
                   width: '50px',
                   height: '50px',
                   borderRadius: '12px',
-                  background: '#2563eb',
+                  background: '#FF1F6D', // ✅ pink brand
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: '15px',
                 }}
               >
-                <div
-                  style={{
-                    color: 'white',
-                    fontSize: '24px',
-                    fontWeight: 'bold',
-                    display: 'flex',
-                  }}
-                >
+                <div style={{ color: 'white', fontSize: '24px', fontWeight: 'bold', display: 'flex' }}>
                   {getInitials(tenantName)}
                 </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <div
-                  style={{
-                    fontSize: '22px',
-                    fontWeight: '600',
-                    color: '#111827',
-                    display: 'flex',
-                  }}
-                >
+                <div style={{ fontSize: '22px', fontWeight: '600', color: '#111827', display: 'flex' }}>
                   {tenantName}
                 </div>
-                <div
-                  style={{
-                    fontSize: '18px',
-                    color: '#6b7280',
-                    display: 'flex',
-                  }}
-                >
+                <div style={{ fontSize: '18px', color: '#6b7280', display: 'flex' }}>
                   {slug}.fibidy.com
                 </div>
               </div>
@@ -413,10 +307,7 @@ export default async function ProductOgImage({ params }: Props) {
           </div>
         </div>
       ),
-      {
-        width: 1200,
-        height: 630,
-      }
+      { width: 1200, height: 630 }
     );
   } catch (error: any) {
     console.error('[OG] Error:', error.message);

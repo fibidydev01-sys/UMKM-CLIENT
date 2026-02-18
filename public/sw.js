@@ -1,20 +1,19 @@
 // ==========================================
 // SERVICE WORKER - FIBIDY PWA
 // Basic caching strategy for offline support
-// ✅ FIX: Exclude OG images from cache + version bump
+// ✅ FIX: Correct icon paths + production domain + version bump
 // ==========================================
 
 // ✅ VERSION BUMP - Force clear old cache
-const STATIC_CACHE = 'fibidy-static-v2';
-const DYNAMIC_CACHE = 'fibidy-dynamic-v2';
+const STATIC_CACHE = 'fibidy-static-v3';
+const DYNAMIC_CACHE = 'fibidy-dynamic-v3';
 
 // Static assets to cache
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
   '/favicon.ico',
-  '/icon.png',
-  '/apple-icon.png',
+  '/apple-touch-icon.png',
 ];
 
 // ==========================================
@@ -50,7 +49,7 @@ function shouldSkipCache(url) {
 // INSTALL EVENT
 // ==========================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v2...');
+  console.log('[SW] Installing v3...');
 
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
@@ -59,7 +58,6 @@ self.addEventListener('install', (event) => {
     })
   );
 
-  // Activate immediately
   self.skipWaiting();
 });
 
@@ -67,7 +65,7 @@ self.addEventListener('install', (event) => {
 // ACTIVATE EVENT
 // ==========================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v2...');
+  console.log('[SW] Activating v3...');
 
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -82,7 +80,6 @@ self.addEventListener('activate', (event) => {
     })
   );
 
-  // Claim all clients immediately
   self.clients.claim();
 });
 
@@ -116,26 +113,21 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // ✅ Only cache successful responses (200-299)
         if (response.ok) {
           const responseClone = response.clone();
-
           caches.open(DYNAMIC_CACHE).then((cache) => {
             cache.put(request, responseClone);
           });
         }
-
         return response;
       })
       .catch(() => {
-        // Fallback to cache on network error
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) {
             console.log('[SW] Serving from cache:', url.pathname);
             return cachedResponse;
           }
 
-          // Return offline page for navigation requests
           if (request.mode === 'navigate') {
             return caches.match('/').then((homePage) => {
               return homePage || new Response('Offline', {
@@ -146,7 +138,6 @@ self.addEventListener('fetch', (event) => {
             });
           }
 
-          // For other requests, return error response
           return new Response('Offline', {
             status: 503,
             statusText: 'Service Unavailable',
@@ -158,7 +149,7 @@ self.addEventListener('fetch', (event) => {
 });
 
 // ==========================================
-// PUSH NOTIFICATION (Future feature)
+// PUSH NOTIFICATION
 // ==========================================
 self.addEventListener('push', (event) => {
   if (!event.data) return;
@@ -167,8 +158,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body || 'Anda memiliki notifikasi baru',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: '/icons/apple-touch-icon-192x192.png',
+    badge: '/icons/apple-touch-icon-72x72.png',
     vibrate: [100, 50, 100],
     data: {
       url: data.url || '/',
@@ -190,13 +181,11 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window' }).then((clientList) => {
-      // Focus existing window if open
       for (const client of clientList) {
         if (client.url === url && 'focus' in client) {
           return client.focus();
         }
       }
-      // Open new window
       if (clients.openWindow) {
         return clients.openWindow(url);
       }
@@ -204,4 +193,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log('[SW] Service Worker v2 loaded - OG images excluded from cache');
+console.log('[SW] Service Worker v3 loaded - Fibidy Production Ready 🚀');

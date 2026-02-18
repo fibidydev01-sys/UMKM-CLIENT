@@ -2,11 +2,10 @@
 import { ImageResponse } from 'next/og';
 
 // ==========================================
-// TENANT STORE OPEN GRAPH IMAGE - FIXED
+// TENANT STORE OPEN GRAPH IMAGE
 // Route: /store/[slug]/opengraph-image
 // ==========================================
 
-// ✅ FIX: Edge runtime untuk stability
 export const runtime = 'edge';
 export const alt = 'Toko Online';
 export const size = {
@@ -20,12 +19,12 @@ interface Props {
 }
 
 // ==========================================
-// INLINE HELPERS (No external dependencies)
+// INLINE HELPERS
 // ==========================================
 
 const COLORS = {
-  primary: '#2563eb',
-  primaryDark: '#1e40af',
+  primary: '#FF1F6D',       // ✅ FIX: Fibidy pink
+  primaryDark: '#cc1257',   // ✅ FIX: Fibidy pink dark
   text: '#111827',
   textLight: '#6b7280',
   backgroundGray: '#f3f4f6',
@@ -124,6 +123,9 @@ export default async function TenantOgImage({ params }: Props) {
 
     const productCount = tenant._count?.products || 0;
 
+    // ✅ Logo Fibidy untuk header bar
+    const fibidyLogoUrl = new URL('/apple-touch-icon.png', 'https://www.fibidy.com').toString();
+
     return new ImageResponse(
       (
         <div
@@ -135,30 +137,50 @@ export default async function TenantOgImage({ params }: Props) {
             background: 'white',
           }}
         >
-          {/* Header Bar */}
+          {/* ✅ Header Bar — pink + logo Fibidy asli */}
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               padding: '30px 50px',
-              background: COLORS.primary,
+              background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
             }}
           >
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '15px',
+                gap: '12px',
                 color: 'white',
               }}
             >
-              <div style={{ fontSize: '32px' }}>🏪</div>
+              {/* ✅ Logo Fibidy dari public */}
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  background: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <img
+                  src={fibidyLogoUrl}
+                  alt="Fibidy"
+                  width={40}
+                  height={40}
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
               <div style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex' }}>
                 Fibidy
               </div>
             </div>
-            <div style={{ color: 'white', fontSize: '20px', display: 'flex' }}>
+            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '20px', display: 'flex' }}>
               {slug}.fibidy.com
             </div>
           </div>
@@ -173,7 +195,7 @@ export default async function TenantOgImage({ params }: Props) {
               gap: '50px',
             }}
           >
-            {/* Logo/Avatar */}
+            {/* Logo/Avatar Toko */}
             <div
               style={{
                 width: '200px',
@@ -197,11 +219,7 @@ export default async function TenantOgImage({ params }: Props) {
                   alt={tenant.name}
                   width="200"
                   height="200"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               ) : (
                 <div
@@ -261,7 +279,6 @@ export default async function TenantOgImage({ params }: Props) {
                   marginTop: '20px',
                 }}
               >
-                {/* Product Count */}
                 <div
                   style={{
                     display: 'flex',
@@ -275,7 +292,6 @@ export default async function TenantOgImage({ params }: Props) {
                   <div style={{ display: 'flex' }}>{productCount}+ Produk</div>
                 </div>
 
-                {/* WhatsApp */}
                 <div
                   style={{
                     display: 'flex',

@@ -3,48 +3,35 @@ module.exports = {
   // ==========================================
   // BASIC CONFIGURATION
   // ==========================================
-  siteUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://fibidy.com',
-
-  // ==========================================
-  // OUTPUT CONFIGURATION
-  // ==========================================
+  siteUrl: 'https://www.fibidy.com',
   generateRobotsTxt: true,
   generateIndexSitemap: true,
-
-  // ==========================================
-  // SITEMAP SPLITTING
-  // Split ketika URLs > 45000 (buffer dari limit 50k)
-  // ==========================================
+  outDir: 'public',
   sitemapSize: 45000,
-
-  // ==========================================
-  // CHANGE FREQUENCY & PRIORITY DEFAULTS
-  // ==========================================
   changefreq: 'daily',
   priority: 0.7,
 
   // ==========================================
-  // EXCLUDE PATHS
-  // Pages yang tidak perlu di-index
+  // EXCLUDE — semua yang bukan halaman publik
+  // Berdasarkan actual build output
   // ==========================================
   exclude: [
-    '/dashboard',
-    '/dashboard/*',
-    '/api',
-    '/api/*',
     '/login',
     '/register',
     '/forgot-password',
-    '/reset-password',
-    '/verify-email',
-    '/404',
-    '/500',
+    '/dashboard',
+    '/dashboard/*',
+    '/api/*',
+    '/_not-found',
+    '/store/*',
     '/server-sitemap-index.xml',
     '/server-sitemap/*',
+    '/opengraph-image',
+    '/twitter-image',
   ],
 
   // ==========================================
-  // ROBOTS.TXT CONFIGURATION
+  // ROBOTS.TXT
   // ==========================================
   robotsTxtOptions: {
     policies: [
@@ -55,73 +42,47 @@ module.exports = {
           '/dashboard/',
           '/api/',
           '/_next/',
-          '/admin/',
-          '/*.json$',
-          '/private/',
-          '/checkout/',
-          '/cart/',
+          '/login',
+          '/register',
+          '/forgot-password',
         ],
       },
       {
         userAgent: 'Googlebot',
         allow: '/',
-        disallow: ['/dashboard/', '/api/'],
+        disallow: [
+          '/dashboard/',
+          '/api/',
+          '/login',
+          '/register',
+        ],
       },
-      // Block SEO spam bots
-      {
-        userAgent: 'AhrefsBot',
-        disallow: '/',
-      },
-      {
-        userAgent: 'SemrushBot',
-        disallow: '/',
-      },
-      {
-        userAgent: 'MJ12bot',
-        disallow: '/',
-      },
-      {
-        userAgent: 'DotBot',
-        disallow: '/',
-      },
-      {
-        userAgent: 'BLEXBot',
-        disallow: '/',
-      },
+      { userAgent: 'AhrefsBot', disallow: '/' },
+      { userAgent: 'SemrushBot', disallow: '/' },
+      { userAgent: 'MJ12bot', disallow: '/' },
+      { userAgent: 'DotBot', disallow: '/' },
+      { userAgent: 'BLEXBot', disallow: '/' },
+      { userAgent: 'PetalBot', disallow: '/' },
+      { userAgent: 'DataForSeoBot', disallow: '/' },
     ],
-
-    // ==========================================
-    // ADDITIONAL SITEMAPS
-    // Dynamic sitemaps untuk tenant & products
-    // ==========================================
     additionalSitemaps: [
-      `${process.env.NEXT_PUBLIC_APP_URL || 'https://fibidy.com'}/server-sitemap-index.xml`,
+      'https://www.fibidy.com/server-sitemap-index.xml',
     ],
   },
 
   // ==========================================
-  // TRANSFORM FUNCTION
-  // Customize URL entries
+  // TRANSFORM
   // ==========================================
   transform: async (config, path) => {
-    // Custom priority untuk halaman tertentu
     let priority = config.priority;
     let changefreq = config.changefreq;
 
-    // Homepage
     if (path === '/') {
       priority = 1.0;
       changefreq = 'daily';
-    }
-    // Marketing pages
-    else if (['/pricing', '/faq', '/about'].includes(path)) {
-      priority = 0.8;
-      changefreq = 'weekly';
-    }
-    // Legal pages
-    else if (['/terms', '/privacy'].includes(path)) {
-      priority = 0.3;
-      changefreq = 'yearly';
+    } else if (path === '/store') {
+      priority = 0.9;
+      changefreq = 'daily';
     }
 
     return {

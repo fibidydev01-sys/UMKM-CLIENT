@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Download, Smartphone } from 'lucide-react';
+import { X, Download } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -34,8 +35,6 @@ export function InstallPrompt({ onInstall, onDismiss }: InstallPromptProps) {
 
   const handleInstall = () => {
     if (isIOS) {
-      // iOS doesn't support beforeinstallprompt
-      // Show instructions instead
       alert(
         'Untuk install di iPhone/iPad:\n\n' +
         '1. Tap tombol Share (📤)\n' +
@@ -67,9 +66,15 @@ export function InstallPrompt({ onInstall, onDismiss }: InstallPromptProps) {
           </button>
 
           <div className="flex items-start gap-4">
-            {/* Icon */}
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-lg">
-              <Smartphone className="h-7 w-7 text-pink-500" />
+            {/* ✅ Logo Fibidy — ganti Smartphone icon */}
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white shadow-lg overflow-hidden">
+              <Image
+                src="/apple-touch-icon.png"
+                alt="Fibidy"
+                width={48}
+                height={48}
+                className="object-contain"
+              />
             </div>
 
             {/* Content */}

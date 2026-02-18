@@ -78,7 +78,7 @@ const nextConfig: NextConfig = {
   },
 
   // ==========================================
-  // HEADERS (Security + PWA)
+  // HEADERS (Security + PWA + SEO Cache)
   // ==========================================
   async headers() {
     return [
@@ -107,6 +107,11 @@ const nextConfig: NextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          // ✅ TAMBAHAN: Permissions Policy
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+          },
         ],
       },
       {
@@ -130,6 +135,45 @@ const nextConfig: NextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=604800', // 1 week
+          },
+        ],
+      },
+      // ✅ TAMBAHAN: Sitemap cache (explicit files, no wildcard)
+      {
+        source: '/sitemap.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      {
+        source: '/sitemap-0.xml',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=3600, stale-while-revalidate=86400',
+          },
+        ],
+      },
+      // ✅ TAMBAHAN: robots.txt cache
+      {
+        source: '/robots.txt',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=86400',
+          },
+        ],
+      },
+      // ✅ TAMBAHAN: favicon cache 1 tahun
+      {
+        source: '/favicon.ico',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

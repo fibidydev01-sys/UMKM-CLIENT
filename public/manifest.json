@@ -7,7 +7,7 @@
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#ffffff",
-  "theme_color": "#ec4899",
+  "theme_color": "#FF1F6D",
   "lang": "id",
   "dir": "ltr",
   "categories": [
@@ -18,64 +18,64 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "/icons/icon-72x72.png",
+      "src": "/icons/apple-touch-icon-57x57.png",
+      "sizes": "57x57",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/apple-touch-icon-72x72.png",
       "sizes": "72x72",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-96x96.png",
-      "sizes": "96x96",
+      "src": "/icons/apple-touch-icon-76x76.png",
+      "sizes": "76x76",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-128x128.png",
-      "sizes": "128x128",
+      "src": "/icons/apple-touch-icon-114x114.png",
+      "sizes": "114x114",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-144x144.png",
+      "src": "/icons/apple-touch-icon-120x120.png",
+      "sizes": "120x120",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/apple-touch-icon-144x144.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-152x152.png",
+      "src": "/icons/apple-touch-icon-152x152.png",
       "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icons/apple-touch-icon-180x180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-512x512.png",
+      "src": "/apple-touch-icon.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icons/icon-maskable-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon-maskable-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
@@ -86,7 +86,7 @@
       "url": "/dashboard",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/icons/apple-touch-icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -98,7 +98,7 @@
       "url": "/dashboard/products",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/icons/apple-touch-icon-96x96.png",
           "sizes": "96x96"
         }
       ]
@@ -110,7 +110,7 @@
       "url": "/dashboard/orders",
       "icons": [
         {
-          "src": "/icons/icon-96x96.png",
+          "src": "/icons/apple-touch-icon-96x96.png",
           "sizes": "96x96"
         }
       ]

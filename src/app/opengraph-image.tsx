@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 // ==========================================
-// DEFAULT PLATFORM OPEN GRAPH IMAGE - FIXED
+// DEFAULT PLATFORM OPEN GRAPH IMAGE
 // Route: /opengraph-image
 // ==========================================
 
@@ -14,12 +14,10 @@ export const size = {
 export const contentType = 'image/png';
 export const revalidate = 3600;
 
-const COLORS = {
-  primary: '#2563eb',
-  primaryDark: '#1e40af',
-};
-
 export default async function OgImage() {
+  // ✅ Fetch logo dari public folder
+  const logoUrl = new URL('/apple-touch-icon.png', 'https://www.fibidy.com').toString();
+
   return new ImageResponse(
     (
       <div
@@ -30,11 +28,12 @@ export default async function OgImage() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+          // ✅ FIX: warna brand Fibidy #FF1F6D
+          background: 'linear-gradient(135deg, #FF1F6D 0%, #cc1257 100%)',
           padding: '60px',
         }}
       >
-        {/* Logo Container */}
+        {/* ✅ Logo Fibidy dari public */}
         <div
           style={{
             display: 'flex',
@@ -46,10 +45,17 @@ export default async function OgImage() {
             borderRadius: '24px',
             marginBottom: '40px',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
           }}
         >
-          {/* ✅ FIX: Replace SVG with emoji */}
-          <div style={{ fontSize: '60px' }}>🏪</div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={logoUrl}
+            alt="Fibidy"
+            width={96}
+            height={96}
+            style={{ objectFit: 'contain' }}
+          />
         </div>
 
         {/* Title */}
@@ -88,39 +94,20 @@ export default async function OgImage() {
             marginTop: '50px',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: 'white',
-              fontSize: '24px',
-              fontWeight: '500',
-            }}
-          >
-            ✓ Gratis
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: 'white',
-              fontSize: '24px',
-              fontWeight: '500',
-            }}
-          >
-            ✓ Mudah
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              color: 'white',
-              fontSize: '24px',
-              fontWeight: '500',
-            }}
-          >
-            ✓ WhatsApp Order
-          </div>
+          {['✓ Gratis', '✓ Mudah', '✓ WhatsApp Order'].map((f) => (
+            <div
+              key={f}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                color: 'white',
+                fontSize: '24px',
+                fontWeight: '500',
+              }}
+            >
+              {f}
+            </div>
+          ))}
         </div>
 
         {/* URL */}

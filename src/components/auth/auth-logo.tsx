@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Store } from 'lucide-react';
+import Image from 'next/image';
 import { siteConfig } from '@/config/site';
 
 // ==========================================
@@ -12,15 +12,22 @@ interface AuthLogoProps {
 
 export function AuthLogo({ size = 'md' }: AuthLogoProps) {
   const sizes = {
-    sm: { icon: 'h-6 w-6', text: 'text-xl' },
-    md: { icon: 'h-8 w-8', text: 'text-2xl' },
-    lg: { icon: 'h-10 w-10', text: 'text-3xl' },
+    sm: { img: 32, text: 'text-xl' },
+    md: { img: 40, text: 'text-2xl' },
+    lg: { img: 48, text: 'text-3xl' },
   };
 
   return (
     <Link href="/" className="flex items-center gap-2 group">
-      <div className="flex items-center justify-center rounded-xl bg-primary p-2 group-hover:bg-primary/90 transition-colors">
-        <Store className={`${sizes[size].icon} text-primary-foreground`} />
+      <div className="flex items-center justify-center rounded-xl overflow-hidden group-hover:opacity-90 transition-opacity">
+        <Image
+          src="/apple-touch-icon.png"
+          alt={siteConfig.name}
+          width={sizes[size].img}
+          height={sizes[size].img}
+          className="object-contain"
+          priority
+        />
       </div>
       <span className={`font-bold ${sizes[size].text} text-foreground`}>
         {siteConfig.name}
