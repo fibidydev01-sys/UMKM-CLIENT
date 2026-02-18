@@ -19,6 +19,31 @@ import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { SocialLinks } from '@/types';
 
+// ─── Social Media Config ──────────────────────────────────────────────────────
+const SOCIAL_FIELDS: {
+  key: keyof SocialLinks;
+  label: string;
+  placeholder: string;
+}[] = [
+    // ── Mainstream ──────────────────────────────────
+    { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username' },
+    { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/page' },
+    { key: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@username' },
+    { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel' },
+    { key: 'twitter', label: 'Twitter / X', placeholder: 'https://twitter.com/username' },
+    { key: 'threads', label: 'Threads', placeholder: 'https://threads.net/@username' },
+    // ── Messaging ───────────────────────────────────
+    { key: 'whatsapp', label: 'WhatsApp', placeholder: 'https://wa.me/628xxxxxxxxxx' },
+    { key: 'telegram', label: 'Telegram', placeholder: 'https://t.me/username' },
+    // ── Visual / Portfolio ──────────────────────────
+    { key: 'pinterest', label: 'Pinterest', placeholder: 'https://pinterest.com/username' },
+    { key: 'behance', label: 'Behance', placeholder: 'https://behance.net/username' },
+    { key: 'dribbble', label: 'Dribbble', placeholder: 'https://dribbble.com/username' },
+    { key: 'vimeo', label: 'Vimeo', placeholder: 'https://vimeo.com/username' },
+    // ── Professional ────────────────────────────────
+    { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/name' },
+  ];
+
 // ─── Wizard Steps ─────────────────────────────────────────────────────────────
 const STEPS = [
   {
@@ -266,56 +291,18 @@ export default function SeoPage() {
 
               {/* Step 2: Social Media */}
               {currentStep === 1 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="social-instagram">Instagram</Label>
-                    <Input
-                      id="social-instagram"
-                      placeholder="https://instagram.com/username"
-                      value={formData.socialLinks.instagram || ''}
-                      onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="social-facebook">Facebook</Label>
-                    <Input
-                      id="social-facebook"
-                      placeholder="https://facebook.com/page"
-                      value={formData.socialLinks.facebook || ''}
-                      onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="social-tiktok">TikTok</Label>
-                    <Input
-                      id="social-tiktok"
-                      placeholder="https://tiktok.com/@username"
-                      value={formData.socialLinks.tiktok || ''}
-                      onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="social-youtube">YouTube</Label>
-                    <Input
-                      id="social-youtube"
-                      placeholder="https://youtube.com/@channel"
-                      value={formData.socialLinks.youtube || ''}
-                      onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="social-twitter">Twitter / X</Label>
-                    <Input
-                      id="social-twitter"
-                      placeholder="https://twitter.com/username"
-                      value={formData.socialLinks.twitter || ''}
-                      onChange={(e) => handleSocialLinkChange('twitter', e.target.value)}
-                    />
-                  </div>
+                <div className="space-y-4">
+                  {SOCIAL_FIELDS.map(({ key, label, placeholder }) => (
+                    <div key={key} className="space-y-2">
+                      <Label htmlFor={`social-${key}`}>{label}</Label>
+                      <Input
+                        id={`social-${key}`}
+                        placeholder={placeholder}
+                        value={formData.socialLinks[key] || ''}
+                        onChange={(e) => handleSocialLinkChange(key, e.target.value)}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
@@ -368,40 +355,16 @@ export default function SeoPage() {
               </div>
             </div>
 
-            {/* Social Media Links */}
+            {/* Social Media Links - Preview */}
             <div>
               <h4 className="text-sm font-medium mb-3">Social Media Links</h4>
               <div className="rounded-lg border p-4 bg-muted/30 space-y-2">
-                {formData.socialLinks.instagram && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Instagram:</span>{' '}
-                    {formData.socialLinks.instagram}
+                {SOCIAL_FIELDS.filter(({ key }) => formData.socialLinks[key]).map(({ key, label }) => (
+                  <p key={key} className="text-sm">
+                    <span className="text-muted-foreground">{label}:</span>{' '}
+                    {formData.socialLinks[key]}
                   </p>
-                )}
-                {formData.socialLinks.facebook && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Facebook:</span>{' '}
-                    {formData.socialLinks.facebook}
-                  </p>
-                )}
-                {formData.socialLinks.tiktok && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">TikTok:</span>{' '}
-                    {formData.socialLinks.tiktok}
-                  </p>
-                )}
-                {formData.socialLinks.youtube && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">YouTube:</span>{' '}
-                    {formData.socialLinks.youtube}
-                  </p>
-                )}
-                {formData.socialLinks.twitter && (
-                  <p className="text-sm">
-                    <span className="text-muted-foreground">Twitter/X:</span>{' '}
-                    {formData.socialLinks.twitter}
-                  </p>
-                )}
+                ))}
                 {!Object.values(formData.socialLinks).some((v) => v) && (
                   <p className="text-sm text-muted-foreground">Belum ada social media yang diisi</p>
                 )}

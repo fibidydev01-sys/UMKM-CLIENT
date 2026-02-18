@@ -8,11 +8,21 @@ import type { TenantLandingConfig, Testimonial } from './landing';
 // SOCIAL LINKS TYPE
 // ==========================================
 export interface SocialLinks {
+  // Existing
   instagram?: string;
   facebook?: string;
   tiktok?: string;
   youtube?: string;
   twitter?: string;
+  // New
+  whatsapp?: string;
+  telegram?: string;
+  pinterest?: string;
+  linkedin?: string;
+  behance?: string;
+  dribbble?: string;
+  threads?: string;
+  vimeo?: string;
 }
 
 // ==========================================

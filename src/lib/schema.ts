@@ -85,15 +85,22 @@ export function generateLocalBusinessSchema(tenant: {
     instagram?: string;
     facebook?: string;
     tiktok?: string;
+    youtube?: string;
+    twitter?: string;
+    threads?: string;
+    whatsapp?: string;
+    telegram?: string;
+    pinterest?: string;
+    behance?: string;
+    dribbble?: string;
+    vimeo?: string;
+    linkedin?: string;
   } | null;
 }) {
   const tenantUrl = getTenantUrl(tenant.slug);
 
-  // Collect social links
-  const sameAs: string[] = [];
-  if (tenant.socialLinks?.instagram) sameAs.push(tenant.socialLinks.instagram);
-  if (tenant.socialLinks?.facebook) sameAs.push(tenant.socialLinks.facebook);
-  if (tenant.socialLinks?.tiktok) sameAs.push(tenant.socialLinks.tiktok);
+  // Collect all social links into sameAs
+  const sameAs: string[] = Object.values(tenant.socialLinks ?? {}).filter(Boolean) as string[];
 
   return {
     '@context': 'https://schema.org',

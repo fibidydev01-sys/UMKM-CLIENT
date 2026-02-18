@@ -24,7 +24,6 @@ export function StoreNav({ tenant }: StoreNavProps) {
   const pathname = usePathname();
   const urls = useStoreUrls(tenant.slug);
 
-  // ✅ FIX: No type annotation
   const landingConfig = tenant.landingConfig;
 
   // Check what data exists
@@ -34,7 +33,7 @@ export function StoreNav({ tenant }: StoreNavProps) {
     landingConfig?.testimonials?.config?.items
   ).length > 0;
 
-  // Build nav items based on available data
+  // Build nav items — sama persis dengan desktop, tanpa Lacak Pesanan
   const navItems = [
     { href: urls.home, label: 'Beranda', icon: Home, show: true },
     { href: urls.path('/about'), label: 'Tentang Kami', icon: Info, show: hasAbout },

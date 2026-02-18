@@ -30,6 +30,34 @@ interface SeoSettingsProps {
 }
 
 // ============================================================================
+// SOCIAL MEDIA CONFIG
+// ============================================================================
+
+const SOCIAL_FIELDS: {
+  key: keyof SocialLinks;
+  label: string;
+  placeholder: string;
+}[] = [
+    // ── Mainstream ──────────────────────────────────
+    { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username' },
+    { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/page' },
+    { key: 'tiktok', label: 'TikTok', placeholder: 'https://tiktok.com/@username' },
+    { key: 'youtube', label: 'YouTube', placeholder: 'https://youtube.com/@channel' },
+    { key: 'twitter', label: 'Twitter / X', placeholder: 'https://twitter.com/username' },
+    { key: 'threads', label: 'Threads', placeholder: 'https://threads.net/@username' },
+    // ── Messaging ───────────────────────────────────
+    { key: 'whatsapp', label: 'WhatsApp', placeholder: 'https://wa.me/628xxxxxxxxxx' },
+    { key: 'telegram', label: 'Telegram', placeholder: 'https://t.me/username' },
+    // ── Visual / Portfolio ──────────────────────────
+    { key: 'pinterest', label: 'Pinterest', placeholder: 'https://pinterest.com/username' },
+    { key: 'behance', label: 'Behance', placeholder: 'https://behance.net/username' },
+    { key: 'dribbble', label: 'Dribbble', placeholder: 'https://dribbble.com/username' },
+    { key: 'vimeo', label: 'Vimeo', placeholder: 'https://vimeo.com/username' },
+    // ── Professional ────────────────────────────────
+    { key: 'linkedin', label: 'LinkedIn', placeholder: 'https://linkedin.com/company/name' },
+  ];
+
+// ============================================================================
 // COMPONENT
 // ============================================================================
 
@@ -119,7 +147,7 @@ export function SeoSettings({
                 </p>
               </div>
 
-              {/* Preview */}
+              {/* Google Preview */}
               <div className="rounded-lg border p-4 bg-muted/30">
                 <p className="text-xs text-muted-foreground mb-2">Preview di Google:</p>
                 <div className="space-y-1">
@@ -147,7 +175,7 @@ export function SeoSettings({
             Link ke akun social media toko Anda. Akan ditampilkan di footer toko.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           {isLoading || !settings ? (
             <div className="space-y-4">
               <Skeleton className="h-10 w-full" />
@@ -156,51 +184,17 @@ export function SeoSettings({
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="social-instagram">Instagram</Label>
-                <Input
-                  id="social-instagram"
-                  placeholder="https://instagram.com/username"
-                  value={settings.socialLinks.instagram || ''}
-                  onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="social-facebook">Facebook</Label>
-                <Input
-                  id="social-facebook"
-                  placeholder="https://facebook.com/page"
-                  value={settings.socialLinks.facebook || ''}
-                  onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="social-tiktok">TikTok</Label>
-                <Input
-                  id="social-tiktok"
-                  placeholder="https://tiktok.com/@username"
-                  value={settings.socialLinks.tiktok || ''}
-                  onChange={(e) => handleSocialLinkChange('tiktok', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="social-youtube">YouTube</Label>
-                <Input
-                  id="social-youtube"
-                  placeholder="https://youtube.com/@channel"
-                  value={settings.socialLinks.youtube || ''}
-                  onChange={(e) => handleSocialLinkChange('youtube', e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="social-twitter">Twitter / X</Label>
-                <Input
-                  id="social-twitter"
-                  placeholder="https://twitter.com/username"
-                  value={settings.socialLinks.twitter || ''}
-                  onChange={(e) => handleSocialLinkChange('twitter', e.target.value)}
-                />
-              </div>
+              {SOCIAL_FIELDS.map(({ key, label, placeholder }) => (
+                <div key={key} className="space-y-2">
+                  <Label htmlFor={`social-${key}`}>{label}</Label>
+                  <Input
+                    id={`social-${key}`}
+                    placeholder={placeholder}
+                    value={settings.socialLinks[key] || ''}
+                    onChange={(e) => handleSocialLinkChange(key, e.target.value)}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

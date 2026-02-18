@@ -50,7 +50,6 @@ export default async function ContactPage({ params }: ContactPageProps) {
     notFound();
   }
 
-  // ✅ FIX: No type annotation
   const landingConfig = tenant.landingConfig;
   const contactConfig = landingConfig?.contact;
 
@@ -63,20 +62,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
     <>
       <BreadcrumbSchema items={breadcrumbs} />
 
-      <div className="container px-4 py-8 space-y-8">
-        {/* Page Header */}
-        <div className="text-center max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            {contactConfig?.title || 'Hubungi Kami'}
-          </h1>
-          {contactConfig?.subtitle && (
-            <p className="text-lg text-muted-foreground">
-              {contactConfig.subtitle}
-            </p>
-          )}
-        </div>
-
-        {/* Contact Content */}
+      <div className="container px-4 py-8">
         <TenantContact
           config={contactConfig}
           tenant={tenant}

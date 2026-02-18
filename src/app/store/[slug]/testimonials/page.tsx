@@ -4,7 +4,6 @@ import { tenantsApi } from '@/lib/api';
 import { normalizeTestimonials } from '@/lib/landing';
 import { TenantTestimonials } from '@/components/landing';
 import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
-import { Star } from 'lucide-react';
 import type { PublicTenant, Testimonial } from '@/types';
 
 // ==========================================
@@ -50,17 +49,9 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
     notFound();
   }
 
-  // ✅ FIX: No type annotation
   const landingConfig = tenant.landingConfig;
   const testimonialConfig = landingConfig?.testimonials;
-  // ✅ FIX: Get testimonials from tenant.testimonials (same as landing page)
   const testimonialItems = normalizeTestimonials(tenant.testimonials as Testimonial[] | undefined);
-
-  // Calculate stats
-  const totalReviews = testimonialItems.length;
-  const avgRating = totalReviews > 0
-    ? (testimonialItems.reduce((acc, t) => acc + (t.rating || 5), 0) / totalReviews).toFixed(1)
-    : '0';
 
   const breadcrumbs = [
     ...generateTenantBreadcrumbs({ name: tenant.name, slug: tenant.slug }),
@@ -71,54 +62,15 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
     <>
       <BreadcrumbSchema items={breadcrumbs} />
 
-      <div className="container px-4 py-8 space-y-8">
-        {/* Page Header with Stats */}
-        <div className="text-center max-w-3xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold mb-4">
-            {testimonialConfig?.title || 'Testimoni Pelanggan'}
-          </h1>
-          {testimonialConfig?.subtitle && (
-            <p className="text-lg text-muted-foreground mb-6">
-              {testimonialConfig.subtitle}
-            </p>
-          )}
-
-          {/* Stats */}
-          {totalReviews > 0 && (
-            <div className="flex items-center justify-center gap-6">
-              <div className="flex items-center gap-2">
-                <div className="flex">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Star
-                      key={star}
-                      className={`h-5 w-5 ${star <= Math.round(Number(avgRating))
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-muted-foreground'
-                        }`}
-                    />
-                  ))}
-                </div>
-                <span className="font-semibold text-lg">{avgRating}</span>
-              </div>
-              <span className="text-muted-foreground">•</span>
-              <span className="text-muted-foreground">
-                {totalReviews} review
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Testimonials Content */}
-        {totalReviews > 0 ? (
+      <div className="container px-4 py-8">
+        {testimonialItems.length > 0 ? (
           <TenantTestimonials
             config={testimonialConfig}
             tenant={tenant}
           />
         ) : (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
-            <p className="text-muted-foreground">
-              Belum ada testimoni
-            </p>
+            <p className="text-muted-foreground">Belum ada testimoni</p>
           </div>
         )}
       </div>

@@ -3,6 +3,8 @@
 // Shared types for discover feature
 // ══════════════════════════════════════════════════════════════
 
+import type { SocialLinks } from './tenant';
+
 // ══════════════════════════════════════════════════════════════
 // TENANT TYPES
 // ══════════════════════════════════════════════════════════════
@@ -32,11 +34,7 @@ export interface TenantDetail {
   theme?: {
     primaryColor?: string;
   };
-  socialLinks?: {
-    instagram?: string;
-    facebook?: string;
-    tiktok?: string;
-  };
+  socialLinks?: SocialLinks;
   _count?: {
     products: number;
   };
