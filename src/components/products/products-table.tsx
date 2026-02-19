@@ -106,7 +106,7 @@ export function ProductsTable({
   const onToggleActive = useCallback(async (product: Product) => {
     try {
       await productsApi.update(product.id, { isActive: !product.isActive });
-      toast.success(product.isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
+      toast.success(product.isActive ? 'Postingan dinonaktifkan' : 'Postingan diaktifkan');
       await refreshData();
     } catch (err) {
       toast.error('Gagal mengubah status', getErrorMessage(err));
@@ -151,11 +151,11 @@ export function ProductsTable({
 
     try {
       await productsApi.delete(deleteProduct.id);
-      toast.success('Produk berhasil dihapus');
+      toast.success('Postingan berhasil dihapus');
       setDeleteProduct(null);
       await refreshData();
     } catch (err) {
-      toast.error('Gagal menghapus produk', getErrorMessage(err));
+      toast.error('Gagal menghapus postingan', getErrorMessage(err));
     } finally {
       setIsDeleting(false);
     }
@@ -180,13 +180,13 @@ export function ProductsTable({
 
     try {
       const result = await productsApi.bulkDelete(bulkDeleteIds);
-      toast.success(result.message || `${result.count} produk berhasil dihapus`);
+      toast.success(result.message || `${result.count} postingan berhasil dihapus`);
       setRowSelection({});
       setIsBulkDeleteOpen(false);
       setBulkDeleteIds([]);
       await refreshData();
     } catch (err) {
-      toast.error('Gagal menghapus produk', getErrorMessage(err));
+      toast.error('Gagal menghapus postingan', getErrorMessage(err));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -244,7 +244,7 @@ export function ProductsTable({
                   colSpan={columns.length}
                   className="h-24 text-center"
                 >
-                  Tidak ada produk ditemukan.
+                  Tidak ada postingan ditemukan.
                 </TableCell>
               </TableRow>
             )}
@@ -302,10 +302,10 @@ export function ProductsTable({
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
-              <AlertDialogTitle>Hapus {bulkDeleteIds.length} Produk</AlertDialogTitle>
+              <AlertDialogTitle>Hapus {bulkDeleteIds.length} Postingan</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="pt-2">
-              Apakah Anda yakin ingin menghapus <strong>{bulkDeleteIds.length} produk</strong> yang dipilih?
+              Apakah Anda yakin ingin menghapus <strong>{bulkDeleteIds.length} postingan</strong> yang dipilih?
               Tindakan ini tidak dapat dibatalkan.
             </AlertDialogDescription>
           </AlertDialogHeader>

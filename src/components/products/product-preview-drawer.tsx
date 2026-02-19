@@ -65,7 +65,6 @@ export function ProductPreviewDrawer({
   const prevProductIdRef = useRef(product?.id);
   useEffect(() => {
     if (open && scrollContainerRef.current) {
-      // Only scroll to top if product changed
       if (prevProductIdRef.current !== product?.id) {
         scrollContainerRef.current.scrollTop = 0;
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -140,6 +139,7 @@ export function ProductPreviewDrawer({
   const stock = product.stock ?? 0;
   const minStock = product.minStock ?? 5;
   const isLowStock = product.trackStock && stock <= minStock;
+  const isCustomPrice = product.price === 0;
 
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
@@ -261,22 +261,35 @@ export function ProductPreviewDrawer({
 
             {/* Content Area */}
             <div className="px-4 pb-8 max-w-2xl mx-auto">
-              {/* Price Section */}
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                  Harga
-                </h3>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-2xl font-bold">
-                    {formatPrice(product.price)}
-                  </span>
-                  {product.comparePrice && product.comparePrice > product.price && (
-                    <span className="text-sm text-muted-foreground line-through">
-                      {formatPrice(product.comparePrice)}
+
+              {/* Price Section — sembunyikan jika custom price */}
+              {!isCustomPrice && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Harga
+                  </h3>
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-2xl font-bold">
+                      {formatPrice(product.price)}
                     </span>
-                  )}
+                    {product.comparePrice && product.comparePrice > product.price && (
+                      <span className="text-sm text-muted-foreground line-through">
+                        {formatPrice(product.comparePrice)}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Custom Price Badge */}
+              {isCustomPrice && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                    Harga
+                  </h3>
+                  <Badge variant="secondary">Harga Atas Permintaan</Badge>
+                </div>
+              )}
 
               <Separator className="my-6" />
 
@@ -333,8 +346,8 @@ export function ProductPreviewDrawer({
                   </div>
                 )}
 
-                {/* Cost Price */}
-                {product.costPrice && (
+                {/* Cost Price — sembunyikan jika custom price */}
+                {product.costPrice && !isCustomPrice && (
                   <div className="flex items-start gap-3">
                     <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>

@@ -56,8 +56,8 @@ export default function NewProductPage() {
     return (
       <>
         <PageHeader
-          title="Tambah Produk"
-          description="Tambah produk baru ke toko Anda"
+          title="Tambah"
+          description="Tambah postingan baru ke toko Anda"
         />
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
@@ -92,8 +92,8 @@ export default function NewProductPage() {
   return (
     <>
       <PageHeader
-        title="Tambah Produk"
-        description="Tambah produk baru ke toko Anda"
+        title="Tambah"
+        description="Tambah postingan baru ke toko Anda"
       />
       <ProductForm categories={categories} />
     </>

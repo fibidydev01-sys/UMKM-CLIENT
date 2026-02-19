@@ -51,6 +51,7 @@ export function WhatsAppOrderButton({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isCustomPrice = product.price === 0;
   const maxStock = product.trackStock ? (product.stock ?? 0) : 999;
 
   const incrementQty = () => {
@@ -61,10 +62,10 @@ export function WhatsAppOrderButton({
     if (qty > 1) setQty(qty - 1);
   };
 
-  // Calculate totals
-  const subtotal = product.price * qty;
+  // Calculate totals — hanya jika ada harga
+  const subtotal = isCustomPrice ? 0 : product.price * qty;
   const taxRate = tenant.taxRate || 0;
-  const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
+  const tax = !isCustomPrice && taxRate > 0 ? subtotal * (taxRate / 100) : 0;
   const total = subtotal + tax;
 
   // Get enabled payment options for info
@@ -103,7 +104,18 @@ export function WhatsAppOrderButton({
 
     const paymentInfo = getPaymentInfoString();
 
-    const message = `Halo ${tenant.name},
+    const message = isCustomPrice
+      ? `Halo ${tenant.name},
+
+Saya ingin menanyakan harga untuk:
+
+*${product.name}*
+Jumlah: ${qty} ${product.unit || 'pcs'}
+${name ? `\nNama: ${name}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
+
+Mohon informasi harga dan ketersediaan.
+Terima kasih! 🙏`
+      : `Halo ${tenant.name},
 
 Saya ingin memesan:
 
@@ -186,12 +198,16 @@ Terima kasih! 🙏`;
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-2xl mx-auto w-full px-6 py-4 space-y-4">
+
               {/* Product Info */}
               <div className="rounded-lg bg-muted p-3">
                 <p className="font-medium">{product.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatPrice(product.price)} / {product.unit || 'pcs'}
-                </p>
+                {/* Sembunyikan harga jika custom price */}
+                {!isCustomPrice && (
+                  <p className="text-sm text-muted-foreground">
+                    {formatPrice(product.price)} / {product.unit || 'pcs'}
+                  </p>
+                )}
                 {product.trackStock && (
                   <p className="text-xs text-muted-foreground mt-1">
                     Stok tersedia: {product.stock}
@@ -261,23 +277,25 @@ Terima kasih! 🙏`;
                 />
               </div>
 
-              {/* Total */}
-              <div className="rounded-lg border p-3 space-y-1">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span>{formatPrice(subtotal)}</span>
-                </div>
-                {tax > 0 && (
+              {/* Total — sembunyikan jika custom price */}
+              {!isCustomPrice && (
+                <div className="rounded-lg border p-3 space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
-                    <span>{formatPrice(tax)}</span>
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span>{formatPrice(subtotal)}</span>
                   </div>
-                )}
-                <div className="flex justify-between font-semibold pt-1 border-t">
-                  <span>Total</span>
-                  <span>{formatPrice(total)}</span>
+                  {tax > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
+                      <span>{formatPrice(tax)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-semibold pt-1 border-t">
+                    <span>Total</span>
+                    <span>{formatPrice(total)}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
 

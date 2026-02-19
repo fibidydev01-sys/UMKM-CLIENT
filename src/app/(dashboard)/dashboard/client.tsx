@@ -103,7 +103,7 @@ export function DashboardClient() {
         isAtLimit={planInfo?.isAtLimit?.products}
         onAtLimit={() =>
           showUpgradeModal(
-            `Batas ${planInfo?.limits.maxProducts} produk tercapai. Upgrade ke Business untuk produk unlimited.`
+            `Batas ${planInfo?.limits.maxProducts} Postingan tercapai. Upgrade ke Business untuk produk unlimited.`
           )
         }
       />
@@ -284,7 +284,7 @@ function ProductsTabContent({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         actionHref="/dashboard/products/new"
-        actionLabel="Tambah Produk"
+        actionLabel="Tambah"
         onAtLimit={isAtLimit ? onAtLimit : undefined}
       />
       {viewMode === 'list' ? (

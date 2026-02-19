@@ -28,9 +28,11 @@ export function ProductCard({
   const addItem = useCartStore((state) => state.addItem);
   const itemQty = useItemQty(product.id);
 
-  const { hasDiscount, discountPercent, isOutOfStock } = useMemo(() => {
-    const hasDiscount = product.comparePrice && product.comparePrice > product.price;
+  const { hasDiscount, discountPercent, isOutOfStock, isCustomPrice } = useMemo(() => {
+    const isCustomPrice = product.price === 0;
+    const hasDiscount = !isCustomPrice && product.comparePrice && product.comparePrice > product.price;
     return {
+      isCustomPrice,
       hasDiscount,
       discountPercent: hasDiscount
         ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
@@ -63,7 +65,7 @@ export function ProductCard({
   return (
     <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card">
       <Link href={url}>
-        {/* Image — Card overflow-hidden handles the rounding */}
+        {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <OptimizedImage
             src={imageUrl}
@@ -99,8 +101,8 @@ export function ProductCard({
             </div>
           )}
 
-          {/* Quick Add — desktop hover */}
-          {showAddToCart && !isOutOfStock && (
+          {/* Quick Add — desktop hover, sembunyikan jika custom price */}
+          {showAddToCart && !isOutOfStock && !isCustomPrice && (
             <div className="hidden md:block absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
                 size="icon"
@@ -116,7 +118,7 @@ export function ProductCard({
           )}
         </div>
 
-        {/* Footer — slim, no CardContent wrapper */}
+        {/* Footer */}
         <div className="px-3 py-2.5">
           {product.category && (
             <p className="text-xs text-muted-foreground truncate leading-none mb-1">
@@ -126,22 +128,29 @@ export function ProductCard({
           <h3 className="font-medium text-sm leading-snug line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
-          <div className="mt-1.5 flex items-baseline gap-1.5">
-            <span className="font-semibold text-sm text-primary">
-              {formatPrice(product.price)}
-            </span>
-            {hasDiscount && (
-              <span className="text-xs text-muted-foreground line-through">
-                {formatPrice(product.comparePrice!)}
-              </span>
-            )}
-          </div>
-          {product.unit && (
-            <p className="text-xs text-muted-foreground leading-none mt-1">
-              per {product.unit}
-            </p>
+
+          {/* Harga — sembunyikan jika custom price */}
+          {!isCustomPrice && (
+            <>
+              <div className="mt-1.5 flex items-baseline gap-1.5">
+                <span className="font-semibold text-sm text-primary">
+                  {formatPrice(product.price)}
+                </span>
+                {hasDiscount && (
+                  <span className="text-xs text-muted-foreground line-through">
+                    {formatPrice(product.comparePrice!)}
+                  </span>
+                )}
+              </div>
+              {product.unit && (
+                <p className="text-xs text-muted-foreground leading-none mt-1">
+                  per {product.unit}
+                </p>
+              )}
+            </>
           )}
-          {itemQty > 0 && (
+
+          {itemQty > 0 && !isCustomPrice && (
             <div className="mt-1.5 flex items-center gap-1 text-xs text-primary">
               <ShoppingCart className="h-3 w-3" />
               <span>{itemQty} di keranjang</span>
@@ -150,8 +159,8 @@ export function ProductCard({
         </div>
       </Link>
 
-      {/* Mobile Add to Cart */}
-      {showAddToCart && !isOutOfStock && (
+      {/* Mobile Add to Cart — sembunyikan jika custom price */}
+      {showAddToCart && !isOutOfStock && !isCustomPrice && (
         <div className="px-3 pb-2.5 md:hidden">
           <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={handleAddToCart}>
             {isAdding ? (

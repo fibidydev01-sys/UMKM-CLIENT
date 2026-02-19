@@ -12,7 +12,8 @@ interface ProductInfoProps {
 }
 
 export function ProductInfo({ product }: ProductInfoProps) {
-  const hasDiscount = product.comparePrice && product.comparePrice > product.price;
+  const isCustomPrice = product.price === 0;
+  const hasDiscount = !isCustomPrice && product.comparePrice && product.comparePrice > product.price;
   const discountPercent = hasDiscount
     ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
     : 0;
@@ -41,26 +42,30 @@ export function ProductInfo({ product }: ProductInfoProps) {
         )}
       </div>
 
-      {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="text-3xl font-bold text-primary">
-          {formatPrice(product.price)}
-        </span>
-        {hasDiscount && (
-          <>
-            <span className="text-lg text-muted-foreground line-through">
-              {formatPrice(product.comparePrice!)}
+      {/* Price — sembunyikan jika 0 */}
+      {!isCustomPrice && (
+        <>
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-bold text-primary">
+              {formatPrice(product.price)}
             </span>
-            <Badge variant="destructive">-{discountPercent}%</Badge>
-          </>
-        )}
-      </div>
+            {hasDiscount && (
+              <>
+                <span className="text-lg text-muted-foreground line-through">
+                  {formatPrice(product.comparePrice!)}
+                </span>
+                <Badge variant="destructive">-{discountPercent}%</Badge>
+              </>
+            )}
+          </div>
 
-      {/* Unit */}
-      {product.unit && (
-        <p className="text-sm text-muted-foreground">
-          Harga per {product.unit}
-        </p>
+          {/* Unit */}
+          {product.unit && (
+            <p className="text-sm text-muted-foreground">
+              Harga per {product.unit}
+            </p>
+          )}
+        </>
       )}
 
       <Separator />

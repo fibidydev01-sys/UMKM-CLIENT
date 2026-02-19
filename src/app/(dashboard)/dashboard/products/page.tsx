@@ -163,12 +163,12 @@ export default function ProductsPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Produk" description="Kelola produk toko Anda">
+        <PageHeader title="Postingan" description="Kelola postingan toko Anda">
           <div className="flex items-center gap-2">
             <ViewToggle />
             <Button disabled>
               <Plus className="h-4 w-4 mr-2" />
-              Tambah Produk
+              Tambah
             </Button>
           </div>
         </PageHeader>
@@ -218,7 +218,7 @@ export default function ProductsPage() {
           <Button asChild>
             <Link href="/dashboard/products/new">
               <Plus className="h-4 w-4 mr-2" />
-              Tambah Produk
+              Tambah
             </Link>
           </Button>
         </div>

@@ -119,13 +119,13 @@ export default function EditProductPage() {
     return (
       <>
         <PageHeader
-          title="Produk Tidak Ditemukan"
-          description={error || 'Data produk tidak ditemukan'}
+          title="Postingan Tidak Ditemukan"
+          description={error || 'Data postingan tidak ditemukan'}
         />
         <Button variant="outline" asChild>
           <Link href="/dashboard/products">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali ke Daftar Produk
+            Kembali ke Daftar Postingan
           </Link>
         </Button>
       </>
@@ -136,7 +136,7 @@ export default function EditProductPage() {
   return (
     <>
       <PageHeader
-        title="Edit Produk"
+        title="Edit"
         description={`Mengedit: ${product.name}`}
       />
       <ProductForm product={product} categories={categories} />

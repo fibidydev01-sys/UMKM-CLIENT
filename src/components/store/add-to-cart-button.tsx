@@ -22,13 +22,18 @@ export function AddToCartButton({
 }: AddToCartButtonProps) {
   const [showAdded, setShowAdded] = useState(false);
 
-  // Get actions directly from store (stable references)
   const addItem = useCartStore((state) => state.addItem);
   const incrementQty = useCartStore((state) => state.incrementQty);
   const decrementQty = useCartStore((state) => state.decrementQty);
 
-  // Get qty with memoized selector
   const qty = useItemQty(product.id);
+
+  // Jika custom price, tidak perlu render tombol sama sekali
+  const isCustomPrice = product.price === 0;
+  const isOutOfStock = product.trackStock && (product.stock ?? 0) <= 0;
+  const isMaxStock = product.trackStock && (product.stock ?? 0) > 0 && qty >= (product.stock ?? 0);
+
+  if (isCustomPrice) return null;
 
   const handleAdd = () => {
     addItem({
@@ -39,23 +44,12 @@ export function AddToCartButton({
       unit: product.unit || undefined,
       maxStock: product.trackStock ? (product.stock ?? undefined) : undefined,
     });
-
-    // Show feedback
     setShowAdded(true);
     setTimeout(() => setShowAdded(false), 1500);
   };
 
-  const handleIncrement = () => {
-    incrementQty(product.id);
-  };
-
-  const handleDecrement = () => {
-    decrementQty(product.id);
-  };
-
-  // Check stock
-  const isOutOfStock = product.trackStock && (product.stock ?? 0) <= 0;
-  const isMaxStock = product.trackStock && (product.stock ?? 0) > 0 && qty >= (product.stock ?? 0);
+  const handleIncrement = () => incrementQty(product.id);
+  const handleDecrement = () => decrementQty(product.id);
 
   // Icon only variant
   if (variant === 'icon') {

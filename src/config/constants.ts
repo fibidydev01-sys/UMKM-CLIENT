@@ -71,17 +71,36 @@ export const PAYMENT_METHODS = [
 ] as const;
 
 /**
- * Unit Options
+ * Unit Options untuk Produk Fisik
  */
-export const UNIT_OPTIONS = [
+export const UNIT_OPTIONS_PRODUK = [
   { value: 'pcs', label: 'Pcs' },
   { value: 'kg', label: 'Kg' },
   { value: 'gram', label: 'Gram' },
   { value: 'liter', label: 'Liter' },
   { value: 'porsi', label: 'Porsi' },
+  { value: 'paket', label: 'Paket' },
+] as const;
+
+/**
+ * Unit Options untuk Jasa / Layanan
+ */
+export const UNIT_OPTIONS_JASA = [
   { value: 'jam', label: 'Jam' },
   { value: 'hari', label: 'Hari' },
+  { value: 'sesi', label: 'Sesi' },
   { value: 'paket', label: 'Paket' },
+  { value: 'proyek', label: 'Proyek' },
+] as const;
+
+/**
+ * Unit Options (semua — untuk backward compatibility)
+ * @deprecated Gunakan UNIT_OPTIONS_PRODUK atau UNIT_OPTIONS_JASA
+ */
+export const UNIT_OPTIONS = [
+  ...UNIT_OPTIONS_PRODUK,
+  { value: 'jam', label: 'Jam' },
+  { value: 'hari', label: 'Hari' },
 ] as const;
 
 export const BUSINESS_CATEGORIES = [
