@@ -63,8 +63,8 @@ export function ProductCard({
   }, [isOutOfStock, addItem, product]);
 
   return (
-    <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card">
-      <Link href={url}>
+    <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card h-full flex flex-col">
+      <Link href={url} className="flex flex-col flex-1">
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <OptimizedImage
@@ -119,7 +119,7 @@ export function ProductCard({
         </div>
 
         {/* Footer */}
-        <div className="px-3 py-2.5">
+        <div className="px-3 py-2.5 flex-1">
           {product.category && (
             <p className="text-xs text-muted-foreground truncate leading-none mb-1">
               {product.category}

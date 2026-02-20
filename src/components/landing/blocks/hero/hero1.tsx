@@ -21,6 +21,7 @@ interface Hero1Props {
 export function Hero1({
   title,
   subtitle,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
@@ -120,7 +121,7 @@ export function Hero1({
             <div>
               <Link href={ctaLink}>
                 <InteractiveHoverButton className="px-9 py-4 text-sm font-semibold tracking-wide">
-                  Pesan Sekarang
+                  {ctaText ?? 'Pesan Sekarang'}
                 </InteractiveHoverButton>
               </Link>
             </div>

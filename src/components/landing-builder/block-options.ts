@@ -3,40 +3,25 @@
  * FILE: src/components/landing-builder/block-options.ts
  * PURPOSE: Auto-generated block options for landing builder
  * ============================================================================
- *
- * 🚀 SMART STATIC GENERATION (Next.js Compatible!)
- *
- * This file generates block options automatically based on numeric ranges.
- * NO FILESYSTEM SCANNING (Next.js doesn't support import.meta.glob)
- * Instead, we generate options for blocks 1-200 statically.
- *
- * HOW IT WORKS:
- * - Generates options for hero1-hero200, about1-about200, etc.
- * - Dynamic imports in tenant components will load the actual files
- * - If file doesn't exist, fallback to block 1 (handled in tenant components)
- *
- * TO ADD MORE BLOCKS:
- * - Just add the new .tsx file (e.g., hero201.tsx)
- * - Update BLOCKS_PER_SECTION constant below
- * - That's it! No other changes needed.
- *
- * ============================================================================
  */
 
 export interface BlockOption {
-  value: string; // e.g., 'hero1', 'hero201'
-  label: string; // e.g., 'Hero 1', 'Hero 201'
+  value: string;
+  label: string;
 }
 
 // ============================================================================
-// CONFIGURATION
+// CONFIGURATION - Atur jumlah block per section di sini!
 // ============================================================================
 
-/**
- * Number of blocks available per section
- * Update this when you add more blocks!
- */
-const BLOCKS_PER_SECTION = 5; // hero1-hero200, about1-about200, etc.
+const BLOCKS_PER_SECTION: Record<SectionType, number> = {
+  hero: 25,
+  about: 5,
+  products: 5,
+  testimonials: 5,
+  contact: 5,
+  cta: 5,
+};
 
 // ============================================================================
 // SMART GENERATION FUNCTION
@@ -44,17 +29,8 @@ const BLOCKS_PER_SECTION = 5; // hero1-hero200, about1-about200, etc.
 
 type SectionType = 'hero' | 'about' | 'products' | 'testimonials' | 'contact' | 'cta';
 
-/**
- * 🚀 Generate block options for a section
- *
- * Creates options for blocks 1 to BLOCKS_PER_SECTION
- * Text only (no icons, no emoji)
- *
- * @param section - Section name (hero, about, products, etc.)
- * @param count - Number of blocks (default: BLOCKS_PER_SECTION)
- * @returns Array of block options sorted numerically
- */
-function generateBlocks(section: SectionType, count: number = BLOCKS_PER_SECTION): BlockOption[] {
+function generateBlocks(section: SectionType): BlockOption[] {
+  const count = BLOCKS_PER_SECTION[section];
   const blocks: BlockOption[] = [];
 
   for (let i = 1; i <= count; i++) {
@@ -92,7 +68,7 @@ export const BLOCK_OPTIONS_MAP = {
 } as const;
 
 // ============================================================================
-// DEBUG: Log generated blocks (dev mode only)
+// DEBUG
 // ============================================================================
 
 if (process.env.NODE_ENV === 'development') {
@@ -107,4 +83,3 @@ if (process.env.NODE_ENV === 'development') {
       TESTIMONIALS_BLOCKS.length + CONTACT_BLOCKS.length + CTA_BLOCKS.length,
   });
 }
-

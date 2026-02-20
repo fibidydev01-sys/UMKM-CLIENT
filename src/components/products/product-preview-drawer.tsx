@@ -281,16 +281,6 @@ export function ProductPreviewDrawer({
                 </div>
               )}
 
-              {/* Custom Price Badge */}
-              {isCustomPrice && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    Harga
-                  </h3>
-                  <Badge variant="secondary">Harga Atas Permintaan</Badge>
-                </div>
-              )}
-
               <Separator className="my-6" />
 
               {/* Description */}
