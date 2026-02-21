@@ -2,32 +2,36 @@
 
 import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { ArrowUpRight } from 'lucide-react';
 
 interface Hero22Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero22: Monochrome Vertical Split — left half full-bleed grayscale image,
-// right half dark editorial text panel. Clean, premium, zero hardcode.
 export function Hero22({
   title,
   subtitle,
-  ctaText = 'Pesan Sekarang',
+  description,
+  category,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero22Props) {
-  const words = title.split(' ');
+  const label = eyebrow ?? category ?? '';
+  const words = title.trim().split(/\s+/);
   const mid = Math.ceil(words.length / 2);
   const topLine = words.slice(0, mid).join(' ');
   const botLine = words.slice(mid).join(' ');
@@ -82,15 +86,17 @@ export function Hero22({
           style={{ background: 'linear-gradient(to bottom, transparent 60%, #080808 100%)' }}
         />
 
-        {/* Image index label — bottom left */}
-        <div className="absolute bottom-5 left-5 z-10">
-          <span
-            className="text-[8px] tracking-[0.3em] uppercase"
-            style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
-          >
-            01 / {storeName ?? 'Collection'}
-          </span>
-        </div>
+        {/* Image index label */}
+        {storeName && (
+          <div className="absolute bottom-5 left-5 z-10">
+            <span
+              className="text-[8px] tracking-[0.3em] uppercase"
+              style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
+            >
+              01 / {storeName}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT: Editorial text panel ── */}
@@ -99,13 +105,13 @@ export function Hero22({
         style={{ borderLeft: '1px solid rgba(255,255,255,0.06)' }}
       >
 
-        {/* Top: store label */}
+        {/* Top: store + label */}
         <div className="flex items-center gap-3 mb-auto">
           <span
             className="text-[9px] tracking-[0.35em] uppercase"
             style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
           >
-            {storeName ?? 'Store'}
+            {storeName ? `${storeName}${label ? ` · ${label}` : ''}` : label}
           </span>
           <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
         </div>
@@ -114,19 +120,21 @@ export function Hero22({
         <div className="flex-1 flex flex-col justify-center py-10">
 
           {/* Ghost watermark storeName */}
-          <div
-            className="select-none pointer-events-none mb-1"
-            style={{
-              fontSize: 'clamp(0.6rem, 1.2vw, 0.85rem)',
-              color: 'transparent',
-              WebkitTextStroke: '0.5px rgba(255,255,255,0.1)',
-              fontWeight: 900,
-              letterSpacing: '0.25em',
-              textTransform: 'uppercase',
-            }}
-          >
-            {storeName ?? 'Store'}
-          </div>
+          {storeName && (
+            <div
+              className="select-none pointer-events-none mb-1"
+              style={{
+                fontSize: 'clamp(0.6rem, 1.2vw, 0.85rem)',
+                color: 'transparent',
+                WebkitTextStroke: '0.5px rgba(255,255,255,0.1)',
+                fontWeight: 900,
+                letterSpacing: '0.25em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {storeName}
+            </div>
+          )}
 
           {/* Title solid */}
           <h1
@@ -159,19 +167,19 @@ export function Hero22({
           <div className="w-10 h-px my-6" style={{ background: 'rgba(255,255,255,0.18)' }} />
 
           {/* Subtitle */}
-          {subtitle && (
+          {(subtitle || description) && (
             <p
               className="text-xs leading-relaxed max-w-[240px]"
               style={{ color: 'rgba(255,255,255,0.38)', fontWeight: 300, letterSpacing: '0.01em' }}
             >
-              {subtitle}
+              {subtitle ?? description}
             </p>
           )}
         </div>
 
-        {/* Bottom: CTA + scroll indicator */}
+        {/* Bottom: CTA + vertical scroll line */}
         <div className="flex items-end justify-between mt-auto">
-          {showCta && (
+          {showCta && ctaText && (
             <Link href={ctaLink}>
               <button
                 className="flex items-center gap-2.5 px-7 py-3 text-[10px] tracking-[0.22em] uppercase transition-all hover:bg-white hover:text-black active:scale-95"
@@ -183,7 +191,9 @@ export function Hero22({
                 }}
               >
                 {ctaText}
-                <ArrowUpRight size={10} />
+                <svg width="10" height="10" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 10L10 1M10 1H3M10 1V8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </Link>
           )}
@@ -198,7 +208,7 @@ export function Hero22({
               className="text-[7px] tracking-[0.3em] uppercase"
               style={{ color: 'rgba(255,255,255,0.2)', fontWeight: 300 }}
             >
-              Scroll
+              {label || '·'}
             </span>
           </div>
         </div>

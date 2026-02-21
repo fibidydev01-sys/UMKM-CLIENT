@@ -2,36 +2,42 @@
 
 import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { ArrowUpRight } from 'lucide-react';
 
 interface Hero25Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
+  logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero25: Monochrome Editorial — full bleed background image, Swiss grid tension,
-// mixed-weight typography overlay, grayscale, zero color.
 export function Hero25({
   title,
   subtitle,
+  description,
+  category,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
+  logo,
   storeName,
+  eyebrow,
 }: Hero25Props) {
-  const words = title.split(' ');
+  const label = eyebrow ?? category ?? '';
+  const words = title.trim().split(/\s+/);
   const mid = Math.ceil(words.length / 2);
   const topLine = words.slice(0, mid).join(' ');
   const botLine = words.slice(mid).join(' ');
 
-  const marqueeText = Array(8)
-    .fill(`— ${storeName ?? 'STORE'} · Koleksi Premium · Pesan Sekarang `)
-    .join('');
+  const marqueeChunk = [storeName, label, ctaText].filter(Boolean).join(' · ');
+  const marqueeText = Array(8).fill(`— ${marqueeChunk} `).join('');
 
   return (
     <section
@@ -42,22 +48,29 @@ export function Hero25({
       }}
     >
       {/* ── FULL BACKGROUND IMAGE ── */}
-      {backgroundImage && (
-        <div className="absolute inset-0 z-0">
-          <OptimizedImage
-            src={backgroundImage}
-            alt={title}
-            fill
-            priority
-            className="object-cover grayscale contrast-110"
-          />
-          {/* Dark overlay so text stays readable */}
-          <div
-            className="absolute inset-0"
-            style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.75) 100%)' }}
-          />
-        </div>
-      )}
+      <div className="absolute inset-0 z-0">
+        {backgroundImage ? (
+          <>
+            <OptimizedImage
+              src={backgroundImage}
+              alt={title}
+              fill
+              priority
+              className="object-cover grayscale contrast-110"
+            />
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.75) 100%)' }}
+            />
+          </>
+        ) : logo ? (
+          <div className="absolute inset-0 flex items-center justify-center" style={{ background: '#111' }}>
+            <div className="relative w-40 h-40 grayscale opacity-15">
+              <OptimizedImage src={logo} alt={title} fill className="object-contain" />
+            </div>
+          </div>
+        ) : null}
+      </div>
 
       {/* Noise texture */}
       <div
@@ -78,18 +91,18 @@ export function Hero25({
       {/* ── MAIN CONTENT ── */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-5 sm:px-10 pt-16 pb-4">
 
-        {/* Store label */}
+        {/* Store + label */}
         <div className="w-full flex items-center gap-3 mb-4 sm:mb-6">
           <span
             className="text-[10px] font-bold tracking-[0.3em] uppercase"
             style={{ color: 'rgba(255,255,255,0.5)' }}
           >
-            {storeName ?? 'Store'} · Collection
+            {storeName ? `${storeName}${label ? ` · ${label}` : ''}` : label}
           </span>
           <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.15)' }} />
         </div>
 
-        {/* Title top — solid white */}
+        {/* Title solid */}
         <h1
           className="w-full text-left font-black leading-[0.9]"
           style={{
@@ -101,7 +114,7 @@ export function Hero25({
           {topLine}
         </h1>
 
-        {/* Title bottom — ghost outline */}
+        {/* Title ghost */}
         <h1
           className="w-full text-left font-black leading-[0.9] select-none mt-1"
           style={{
@@ -116,16 +129,26 @@ export function Hero25({
 
         {/* Bottom row — subtitle + CTA */}
         <div className="w-full flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 mt-8 sm:mt-12">
-          {subtitle && (
-            <p
-              className="max-w-xs text-sm leading-relaxed"
-              style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.01em' }}
-            >
-              {subtitle}
-            </p>
-          )}
+          <div className="flex flex-col gap-2 max-w-xs">
+            {(subtitle || description) && (
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.01em' }}
+              >
+                {subtitle ?? description}
+              </p>
+            )}
+            {subtitle && description && (
+              <p
+                className="text-xs leading-relaxed"
+                style={{ color: 'rgba(255,255,255,0.3)', letterSpacing: '0.01em' }}
+              >
+                {description}
+              </p>
+            )}
+          </div>
 
-          {showCta && (
+          {showCta && ctaText && (
             <Link href={ctaLink} className="shrink-0">
               <button
                 className="flex items-center gap-3 px-8 py-3.5 text-[11px] font-black tracking-[0.2em] uppercase transition-all hover:bg-white hover:text-black active:scale-95"
@@ -135,8 +158,10 @@ export function Hero25({
                   background: 'transparent',
                 }}
               >
-                Pesan Sekarang
-                <ArrowUpRight size={12} />
+                {ctaText}
+                <svg width="12" height="12" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 10L10 1M10 1H3M10 1V8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </Link>
           )}

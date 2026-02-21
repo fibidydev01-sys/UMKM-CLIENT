@@ -3,334 +3,219 @@
 import Link from 'next/link';
 import { InteractiveHoverButton } from '@/components/ui/interactive-hover-button';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { Badge } from '@/components/ui/badge';
 
 interface Hero19Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero19: Y2K Retro — chunky Antonio/Bebas display font, pink brand colors from globals,
-// chrome-ish gradient accents, star ✦ decorations, bold pill badges, distorted deco text,
-// silver/holographic vibe meets UMKM Indonesia warmth.
 export function Hero19({
   title,
   subtitle,
+  description,
+  category,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero19Props) {
-  const titleWords = title.split(' ');
-  const half = Math.ceil(titleWords.length / 2);
-  const line1 = titleWords.slice(0, half).join(' ');
-  const line2 = titleWords.slice(half).join(' ');
+  const label = eyebrow ?? category ?? '';
+  const words = title.trim().split(/\s+/);
+  const mid = Math.ceil(words.length / 2);
+  const lineA = words.slice(0, mid).join(' ');
+  const lineB = words.slice(mid).join(' ');
 
   return (
-    <section className="relative min-h-screen bg-background flex flex-col overflow-hidden">
+    <section
+      className="relative min-h-screen w-full overflow-hidden flex flex-col"
+      style={{ background: '#0d0d0d', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+    >
 
-      {/* ── Y2K GRID LINES (decorative) ── */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, var(--color-primary) 1px, transparent 1px),
-            linear-gradient(to bottom, var(--color-primary) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-        }}
-      />
+      {/* ── FULL BLEED BG IMAGE ── */}
+      <div className="absolute inset-0 z-0">
+        {backgroundImage ? (
+          <div className="absolute inset-0" style={{ filter: 'grayscale(1) brightness(0.38)' }}>
+            <OptimizedImage
+              src={backgroundImage}
+              alt={title}
+              fill
+              priority
+              className="object-cover"
+            />
+          </div>
+        ) : logo ? (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="relative w-40 h-40 opacity-10">
+              <OptimizedImage src={logo} alt={title} fill className="object-contain" />
+            </div>
+          </div>
+        ) : null}
 
-      {/* ── BIG DECORATIVE BG TEXT ── */}
-      <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden"
-        aria-hidden
-      >
-        <span
-          className="text-primary/5 font-black select-none whitespace-nowrap"
+        {/* Vignette */}
+        <div
+          className="absolute inset-0"
           style={{
-            fontSize: 'clamp(8rem, 28vw, 22rem)',
-            fontFamily: 'var(--font-antonio), var(--font-bebas-neue), Impact, sans-serif',
-            letterSpacing: '-0.05em',
-            lineHeight: 1,
+            background: 'radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,0.72) 100%)',
           }}
-        >
-          {storeName ?? 'STORE'}
-        </span>
+        />
+
+        {/* Bottom heavy fade */}
+        <div
+          className="absolute inset-x-0 bottom-0 h-1/2"
+          style={{ background: 'linear-gradient(to top, #0d0d0d 0%, transparent 100%)' }}
+        />
+
+        {/* Top fade */}
+        <div
+          className="absolute inset-x-0 top-0 h-32"
+          style={{ background: 'linear-gradient(to bottom, #0d0d0d 0%, transparent 100%)' }}
+        />
+
+        {/* Film grain */}
+        <div
+          className="absolute inset-0 opacity-[0.055] pointer-events-none"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+            backgroundSize: '200px 200px',
+          }}
+        />
       </div>
 
-      {/* ── TOP BAR ── */}
-      <div className="relative z-10 flex items-center justify-between px-6 sm:px-10 pt-8 pb-0">
+      {/* ── TOPBAR ── */}
+      <div className="relative z-10 flex items-center justify-between px-7 sm:px-12 pt-8">
         <div className="flex items-center gap-2.5">
           {logo && (
-            <div className="relative w-9 h-9 rounded-xl overflow-hidden border-2 border-primary/30 shrink-0">
-              <OptimizedImage src={logo} alt={storeName ?? 'Store'} fill className="object-cover" />
+            <div className="relative w-6 h-6 rounded-full overflow-hidden border border-white/15">
+              <OptimizedImage src={logo} alt={storeName ?? title} fill className="object-cover" />
             </div>
           )}
+          {storeName && (
+            <span
+              className="text-white/70 font-semibold tracking-[0.2em] uppercase"
+              style={{ fontSize: '10px' }}
+            >
+              {storeName}
+            </span>
+          )}
+        </div>
+
+        {label && (
           <span
-            className="text-foreground font-black tracking-tight"
-            style={{
-              fontSize: 'clamp(0.9rem, 2vw, 1.1rem)',
-              fontFamily: 'var(--font-antonio), sans-serif',
-              letterSpacing: '0.05em',
-            }}
+            className="font-medium tracking-[0.35em] uppercase"
+            style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)' }}
           >
-            {storeName ?? 'STORE'}
+            {label}
           </span>
-        </div>
-
-        {/* Y2K star badges */}
-        <div className="flex items-center gap-2">
-          {['✦ NEW', '✦ HOT'].map((tag) => (
-            <span
-              key={tag}
-              className="text-[10px] font-black tracking-widest px-3 py-1 rounded-full border-2 border-primary text-primary"
-              style={{ fontFamily: 'var(--font-antonio), sans-serif' }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
+        )}
       </div>
 
-      {/* ── MAIN CONTENT ── */}
-      <div className="relative z-10 flex-1 flex flex-col lg:flex-row items-center px-6 sm:px-10 py-8 gap-8">
+      {/* ── SPACER ── */}
+      <div className="flex-1" />
 
-        {/* LEFT: Typography */}
-        <div className="flex-1 flex flex-col justify-center gap-6">
+      {/* ── MAIN CONTENT — bottom anchored ── */}
+      <div className="relative z-10 px-7 sm:px-12 pb-12">
 
-          {/* Eyebrow */}
-          <div className="flex items-center gap-3">
-            <div
-              className="px-4 py-1.5 rounded-full text-[10px] font-black tracking-[0.3em] uppercase"
-              style={{
-                background: 'linear-gradient(135deg, var(--color-primary), oklch(0.808 0.151 343.198))',
-                color: 'white',
-                fontFamily: 'var(--font-antonio), sans-serif',
-              }}
+        {/* Eyebrow */}
+        {label && (
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-5 h-px bg-white/25" />
+            <span
+              className="tracking-[0.4em] uppercase font-medium"
+              style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)' }}
             >
-              ✦ Koleksi Terbaru ✦
-            </div>
+              {label}
+            </span>
           </div>
+        )}
 
-          {/* MASSIVE Y2K title */}
-          <div>
+        {/* TITLE — two lines, second line ghosted */}
+        <div className="mb-7">
+          <h1
+            className="text-white font-black leading-[0.88] tracking-[-0.04em] block"
+            style={{ fontSize: 'clamp(3.5rem, 10vw, 9rem)' }}
+          >
+            {lineA}
+          </h1>
+          {lineB && (
             <h1
-              className="text-foreground leading-[0.85] tracking-[-0.04em]"
+              className="font-black leading-[0.88] tracking-[-0.04em] block"
               style={{
-                fontSize: 'clamp(4rem, 12vw, 10rem)',
-                fontFamily: 'var(--font-antonio), var(--font-bebas-neue), Impact, sans-serif',
-                fontWeight: 900,
+                fontSize: 'clamp(3.5rem, 10vw, 9rem)',
+                color: 'transparent',
+                WebkitTextStroke: '1.5px rgba(255,255,255,0.22)',
               }}
             >
-              {line1}
+              {lineB}
             </h1>
-            {line2 && (
-              <h1
-                className="leading-[0.85] tracking-[-0.04em]"
-                style={{
-                  fontSize: 'clamp(4rem, 12vw, 10rem)',
-                  fontFamily: 'var(--font-antonio), var(--font-bebas-neue), Impact, sans-serif',
-                  fontWeight: 900,
-                  // Chrome/holographic gradient on line 2
-                  background: 'linear-gradient(135deg, var(--color-primary) 0%, oklch(0.808 0.151 343.198) 40%, oklch(0.718 0.202 349.761) 70%, var(--color-primary) 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="w-full h-px mb-7" style={{ background: 'rgba(255,255,255,0.08)' }} />
+
+        {/* Bottom row */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+
+          {/* Subtitle + description */}
+          <div className="flex flex-col gap-2 max-w-[38ch]">
+            {subtitle && (
+              <p
+                className="leading-[1.75]"
+                style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.01em' }}
               >
-                {line2}
-              </h1>
+                {subtitle}
+              </p>
+            )}
+            {description && (
+              <p
+                className="leading-[1.75]"
+                style={{ fontSize: '11px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.01em' }}
+              >
+                {description}
+              </p>
             )}
           </div>
 
-          {/* Subtitle with Caveat handwriting font */}
-          {subtitle && (
-            <p
-              className="text-muted-foreground max-w-sm leading-relaxed"
-              style={{
-                fontSize: 'clamp(1rem, 2vw, 1.25rem)',
-                fontFamily: 'var(--font-caveat), cursive',
-              }}
-            >
-              ✦ {subtitle}
-            </p>
-          )}
-
-          {/* Y2K pill features */}
-          <div className="flex flex-wrap gap-2">
-            {['🚀 Fast Delivery', '💎 Premium', '🔒 Aman', '⭐ 4.9 Rating'].map((item) => (
-              <Badge
-                key={item}
-                variant="secondary"
-                className="rounded-full px-4 py-1.5 text-[11px] font-bold tracking-wide border border-primary/20"
-                style={{ fontFamily: 'var(--font-antonio), sans-serif' }}
-              >
-                {item}
-              </Badge>
-            ))}
-          </div>
-
-          {/* CTA */}
-          {showCta && (
-            <div className="flex items-center gap-4 mt-2">
+          {/* CTA + store mark */}
+          <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
+            {showCta && ctaText && (
               <Link href={ctaLink}>
-                <button
-                  className="relative px-10 py-4 rounded-full font-black text-sm tracking-widest uppercase text-white overflow-hidden transition-transform hover:scale-105 active:scale-95"
+                <InteractiveHoverButton
+                  className="px-7 py-3 text-[10px] tracking-[0.28em] uppercase font-semibold"
                   style={{
-                    background: 'linear-gradient(135deg, var(--color-primary) 0%, oklch(0.496 0.265 354.308) 100%)',
-                    fontFamily: 'var(--font-antonio), sans-serif',
-                    letterSpacing: '0.15em',
-                    boxShadow: '0 4px 24px oklch(0.656 0.241 354.308 / 0.4)',
-                  }}
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    color: 'rgba(255,255,255,0.85)',
+                    backdropFilter: 'blur(8px)',
+                  } as React.CSSProperties}
                 >
-                  {/* Shine effect */}
-                  <span
-                    className="absolute inset-0 rounded-full pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(105deg, transparent 20%, rgba(255,255,255,0.25) 50%, transparent 80%)',
-                    }}
-                  />
-                  ✦ Pesan Sekarang ✦
-                </button>
+                  {ctaText}
+                </InteractiveHoverButton>
               </Link>
-
-              <Link href={ctaLink} className="text-primary font-bold text-sm tracking-wide hover:underline"
-                style={{ fontFamily: 'var(--font-antonio), sans-serif' }}>
-                Lihat Semua →
-              </Link>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT: Image with Y2K frame */}
-        <div className="relative lg:w-[42%] flex-shrink-0 flex items-center justify-center">
-
-          {/* Outer decorative ring */}
-          <div
-            className="absolute inset-[-12px] rounded-3xl pointer-events-none"
-            style={{
-              background: 'linear-gradient(135deg, var(--color-primary), oklch(0.808 0.151 343.198), var(--color-primary))',
-              opacity: 0.15,
-            }}
-          />
-
-          {/* Star decorations */}
-          {[
-            { top: '-16px', right: '-8px', size: '2rem' },
-            { bottom: '10%', left: '-20px', size: '1.5rem' },
-            { top: '20%', right: '-24px', size: '1.2rem' },
-          ].map((pos, i) => (
-            <span
-              key={i}
-              className="absolute text-primary pointer-events-none font-black z-10"
-              style={{ ...pos, fontSize: pos.size, fontFamily: 'sans-serif' }}
-              aria-hidden
-            >
-              ✦
-            </span>
-          ))}
-
-          {/* Main image card */}
-          <div
-            className="relative overflow-hidden bg-muted w-full"
-            style={{
-              borderRadius: '24px',
-              aspectRatio: '4/5',
-              maxWidth: 'min(380px, 80vw)',
-              border: '3px solid',
-              borderColor: 'oklch(0.808 0.151 343.198 / 0.4)',
-              boxShadow: '0 20px 60px oklch(0.656 0.241 354.308 / 0.25)',
-            }}
-          >
-            {backgroundImage ? (
-              <OptimizedImage
-                src={backgroundImage}
-                alt={title}
-                fill
-                priority
-                className="object-cover"
-              />
-            ) : logo ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-                <div className="relative w-28 h-28">
-                  <OptimizedImage src={logo} alt={title} fill className="object-contain" />
-                </div>
-              </div>
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center bg-secondary">
-                <span className="text-primary/30 text-xs tracking-widest uppercase font-black"
-                  style={{ fontFamily: 'var(--font-antonio), sans-serif' }}>
-                  No Image
-                </span>
-              </div>
             )}
-
-            {/* Y2K gradient overlay bottom */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-24"
-              style={{
-                background: 'linear-gradient(to top, oklch(0.656 0.241 354.308 / 0.6), transparent)',
-              }}
-            />
-
-            {/* Floating store name tag on image */}
-            <div
-              className="absolute bottom-4 left-4 right-4 flex items-center justify-between"
-            >
+            {storeName && (
               <span
-                className="text-white font-black text-sm tracking-wide"
-                style={{ fontFamily: 'var(--font-antonio), sans-serif', letterSpacing: '0.1em' }}
+                className="tracking-[0.35em] uppercase"
+                style={{ fontSize: '8px', color: 'rgba(255,255,255,0.18)' }}
               >
-                {storeName ?? 'STORE'}
+                {storeName}
               </span>
-              <span className="text-white/80 font-black text-xs" style={{ fontFamily: 'var(--font-antonio), sans-serif' }}>
-                ✦ 2025
-              </span>
-            </div>
+            )}
           </div>
 
-          {/* Floating mini stats card */}
-          <div
-            className="absolute -bottom-4 -right-4 sm:-right-8 bg-background border-2 border-primary/20 rounded-2xl px-4 py-3 shadow-xl z-10"
-          >
-            <p className="text-primary font-black text-xl leading-none"
-              style={{ fontFamily: 'var(--font-antonio), sans-serif' }}>
-              10K+
-            </p>
-            <p className="text-muted-foreground text-[10px] tracking-widest uppercase font-bold mt-0.5"
-              style={{ fontFamily: 'var(--font-antonio), sans-serif' }}>
-              Happy Customers
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* ── BOTTOM MARQUEE ── */}
-      <div
-        className="relative z-10 overflow-hidden py-3 border-t border-border"
-        style={{ background: 'var(--color-primary)' }}
-      >
-        <div
-          className="flex whitespace-nowrap gap-0"
-          style={{ animation: 'marquee 20s linear infinite' }}
-        >
-          {Array(6).fill(null).map((_, i) => (
-            <span
-              key={i}
-              className="text-white text-[11px] font-black tracking-[0.3em] uppercase pr-10"
-              style={{ fontFamily: 'var(--font-antonio), sans-serif' }}
-            >
-              ✦ {storeName ?? 'STORE'} &nbsp; ✦ KOLEKSI TERBARU &nbsp; ✦ FREE ONGKIR &nbsp; ✦ TERPERCAYA &nbsp;
-            </span>
-          ))}
         </div>
       </div>
 

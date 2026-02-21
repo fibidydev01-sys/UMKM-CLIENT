@@ -2,31 +2,36 @@
 
 import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { ArrowUpRight } from 'lucide-react';
 
 interface Hero21Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero21: Clean editorial — max negative space, bold title + subtitle,
-// full-width image with glass caption bar. Zero hardcode, monochrome.
 export function Hero21({
   title,
   subtitle,
-  ctaText = 'Pesan Sekarang',
+  description,
+  category,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero21Props) {
+  const label = eyebrow ?? category ?? '';
+
   return (
     <section
       className="relative min-h-screen flex flex-col overflow-hidden"
@@ -50,18 +55,18 @@ export function Hero21({
         {/* ── TITLE ROW ── */}
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            {/* Store label */}
+            {/* Store + label */}
             <div className="flex items-center gap-3 mb-4">
               <span
                 className="text-[9px] tracking-[0.35em] uppercase"
                 style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
               >
-                {storeName ?? 'Store'} · Collection
+                {storeName ? `${storeName}${label ? ` · ${label}` : ''}` : label}
               </span>
               <div className="w-12 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
             </div>
 
-            {/* Title solid */}
+            {/* Title */}
             <h1
               className="font-black leading-[0.88]"
               style={{
@@ -73,19 +78,11 @@ export function Hero21({
               {title}
             </h1>
 
-            {/* Subtitle */}
-            {subtitle && (
-              <p
-                className="mt-3 text-sm max-w-sm leading-relaxed"
-                style={{ color: 'rgba(255,255,255,0.38)', fontWeight: 300 }}
-              >
-                {subtitle}
-              </p>
-            )}
+
           </div>
 
           {/* CTA */}
-          {showCta && (
+          {showCta && ctaText && (
             <Link href={ctaLink} className="shrink-0">
               <button
                 className="flex items-center gap-2 px-7 py-3 text-[10px] tracking-[0.22em] uppercase transition-all hover:bg-white hover:text-black active:scale-95"
@@ -97,7 +94,9 @@ export function Hero21({
                 }}
               >
                 {ctaText}
-                <ArrowUpRight size={11} />
+                <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 10L10 1M10 1H3M10 1V8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </button>
             </Link>
           )}
@@ -136,41 +135,45 @@ export function Hero21({
             }}
           >
             <div className="flex flex-col gap-1">
-              <span
-                className="text-[8px] tracking-[0.25em] uppercase px-2 py-0.5 w-fit"
-                style={{
-                  color: 'rgba(255,255,255,0.4)',
-                  border: '1px solid rgba(255,255,255,0.12)',
-                  fontWeight: 300,
-                }}
-              >
-                Terbaru
-              </span>
+              {label && (
+                <span
+                  className="text-[8px] tracking-[0.25em] uppercase px-2 py-0.5 w-fit"
+                  style={{
+                    color: 'rgba(255,255,255,0.4)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    fontWeight: 300,
+                  }}
+                >
+                  {label}
+                </span>
+              )}
               <p className="font-bold text-sm mt-0.5" style={{ color: '#ffffff' }}>
                 {title}
               </p>
-              {subtitle && (
+              {(subtitle || description) && (
                 <p
                   className="text-[11px] max-w-md truncate"
                   style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 300 }}
                 >
-                  {subtitle}
+                  {subtitle ?? description}
                 </p>
               )}
             </div>
 
             <Link href={ctaLink}>
               <div
-                className="w-9 h-9 flex items-center justify-center shrink-0 hover:scale-105 transition-transform"
+                className="w-9 h-9 flex items-center justify-center shrink-0 hover:opacity-80 transition-opacity"
                 style={{ background: '#ffffff' }}
               >
-                <ArrowUpRight size={15} style={{ color: '#000000' }} />
+                <svg width="15" height="15" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 10L10 1M10 1H3M10 1V8" stroke="#000000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
               </div>
             </Link>
           </div>
         </div>
 
-        {/* ── BOTTOM: thin rule + store info ── */}
+        {/* ── BOTTOM strip ── */}
         <div
           className="flex items-center justify-between pt-2"
           style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}
@@ -179,17 +182,16 @@ export function Hero21({
             className="text-[8px] tracking-[0.3em] uppercase"
             style={{ color: 'rgba(255,255,255,0.18)', fontWeight: 300 }}
           >
-            {storeName ?? 'Store'} · Premium Collection
+            {storeName ? `${storeName}${label ? ` · ${label}` : ''}` : label}
           </span>
-          <div className="flex items-center gap-2">
-            <div className="w-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.2)' }} />
+          {description && subtitle && (
             <span
               className="text-[8px] tracking-[0.3em] uppercase"
               style={{ color: 'rgba(255,255,255,0.18)', fontWeight: 300 }}
             >
-              Est. Quality
+              {description}
             </span>
-          </div>
+          )}
         </div>
 
       </div>

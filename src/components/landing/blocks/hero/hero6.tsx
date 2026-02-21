@@ -8,36 +8,41 @@ import { Badge } from '@/components/ui/badge';
 interface Hero6Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero6: Split Screen — Left text, Right image. Editorial / Magazine feel.
 export function Hero6({
   title,
   subtitle,
+  description,
+  category,
   ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero6Props) {
   return (
     <section className="relative min-h-screen bg-background flex flex-col lg:flex-row overflow-hidden">
 
       {/* ── LEFT — Text Panel ── */}
-      <div className="relative z-10 flex flex-col justify-between lg:w-1/2 px-8 sm:px-14 pt-16 pb-12">
+      <div className="relative z-10 flex flex-col justify-between lg:w-1/2 px-8 sm:px-14 pt-16 pb-12 order-1">
 
         {/* Top: Store identity */}
         <div className="flex items-center gap-2.5">
           {logo && (
             <div className="relative w-7 h-7 rounded-full overflow-hidden border border-border shrink-0">
-              <OptimizedImage src={logo} alt={storeName ?? 'Logo'} fill className="object-cover" />
+              <OptimizedImage src={logo} alt={storeName ?? title} fill className="object-cover" />
             </div>
           )}
           {storeName && (
@@ -50,10 +55,12 @@ export function Hero6({
         {/* Middle: Big title */}
         <div className="flex-1 flex flex-col justify-center py-14">
 
-          {/* Eyebrow */}
-          <p className="mb-5 text-[10px] tracking-[0.28em] uppercase text-muted-foreground/70 font-medium">
-            Koleksi Terbaru
-          </p>
+          {/* Eyebrow — prioritas: eyebrow prop, fallback: category */}
+          {(eyebrow || category) && (
+            <p className="mb-5 text-[10px] tracking-[0.28em] uppercase text-muted-foreground/70 font-medium">
+              {eyebrow ?? category}
+            </p>
+          )}
 
           {/* Title */}
           <h1
@@ -68,16 +75,25 @@ export function Hero6({
 
           {/* Subtitle */}
           {subtitle && (
-            <p className="max-w-xs text-sm text-muted-foreground leading-relaxed mb-9">
+            <p className="max-w-xs text-base font-medium text-foreground/80 leading-snug mb-3">
               {subtitle}
             </p>
           )}
+
+          {/* Description */}
+          {description && (
+            <p className="max-w-xs text-sm text-muted-foreground leading-relaxed mb-9">
+              {description}
+            </p>
+          )}
+
+          {!description && <div className="mb-9" />}
 
           {/* CTA */}
           {showCta && (
             <Link href={ctaLink}>
               <InteractiveHoverButton className="px-9 py-4 text-sm font-semibold tracking-wide self-start">
-                {ctaText ?? 'Pesan Sekarang'}
+                {ctaText}
               </InteractiveHoverButton>
             </Link>
           )}
@@ -91,7 +107,7 @@ export function Hero6({
       </div>
 
       {/* ── RIGHT — Image Panel ── */}
-      <div className="relative lg:w-1/2 min-h-[50vh] lg:min-h-screen bg-muted overflow-hidden">
+      <div className="relative lg:w-1/2 min-h-[50vh] lg:min-h-screen bg-muted overflow-hidden order-2">
         {backgroundImage ? (
           <OptimizedImage
             src={backgroundImage}
@@ -113,14 +129,16 @@ export function Hero6({
         )}
 
         {/* Overlay badge */}
-        <div className="absolute bottom-6 left-6">
-          <Badge
-            variant="secondary"
-            className="rounded-sm px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase font-medium"
-          >
-            {storeName ?? 'Store'}
-          </Badge>
-        </div>
+        {storeName && (
+          <div className="absolute bottom-6 left-6">
+            <Badge
+              variant="secondary"
+              className="rounded-sm px-3 py-1.5 text-[10px] tracking-[0.15em] uppercase font-medium"
+            >
+              {storeName}
+            </Badge>
+          </div>
+        )}
       </div>
 
     </section>

@@ -9,52 +9,66 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 interface Hero15Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
 export function Hero15({
   title,
   subtitle,
+  description,
+  category,
   ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero15Props) {
   return (
     <section className="relative min-h-screen bg-slate-700 flex flex-col items-center overflow-hidden">
 
       {/* ── BLURRED BG ── */}
       <div className="absolute inset-0 z-0">
-        {backgroundImage ? (
+        {(backgroundImage || logo) && (
           <div className="absolute inset-0 scale-110 overflow-hidden">
             <OptimizedImage
-              src={backgroundImage}
+              src={(backgroundImage ?? logo)!}
               alt=""
               fill
-              className="object-cover object-center blur-3xl brightness-50 saturate-75"
+              className="object-cover blur-2xl scale-110"
             />
           </div>
-        ) : (
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-600 via-slate-700 to-slate-900" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/50" />
+        <div className="absolute inset-0 bg-black/50" />
       </div>
 
       {/* ── TITLE + SUBTITLE ── */}
       <div className="relative z-10 flex flex-col items-center text-center px-8 pt-12 pb-6">
-        <h1 className="text-[36px] sm:text-[42px] md:text-[48px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-white drop-shadow-lg mb-6 max-w-lg">
+        {(eyebrow || category) && (
+          <p className="text-[10px] tracking-[0.28em] uppercase text-white/50 font-medium mb-4">
+            {eyebrow ?? category}
+          </p>
+        )}
+        <h1 className="text-[36px] sm:text-[42px] md:text-[48px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-white drop-shadow-lg mb-4 max-w-lg">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-sm text-white/60 leading-relaxed max-w-sm">
+          <p className="text-base font-medium text-white/80 leading-snug max-w-sm mb-2">
             {subtitle}
+          </p>
+        )}
+        {description && (
+          <p className="text-sm text-white/60 leading-relaxed max-w-sm">
+            {description}
           </p>
         )}
       </div>
@@ -120,19 +134,15 @@ export function Hero15({
                   <span className="text-zinc-300 text-xs tracking-widest uppercase">No Image</span>
                 </div>
               )}
-              {/* notch */}
               <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-2 bg-black/70 rounded-full z-10" />
-              {/* home bar */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-16 h-1.5 bg-white/30 rounded-full z-10" />
-              {/* bottom gradient */}
               <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-black/70 to-transparent z-10" />
 
-              {/* ── CTA ── */}
               {showCta && (
                 <div className="absolute bottom-7 left-0 right-0 flex justify-center z-20 px-4">
                   <Link href={ctaLink}>
                     <InteractiveHoverButton className="px-9 py-4 text-sm font-semibold tracking-wide">
-                      {ctaText ?? 'Pesan Sekarang'}
+                      {ctaText}
                     </InteractiveHoverButton>
                   </Link>
                 </div>
@@ -171,19 +181,23 @@ export function Hero15({
         </div>
       </div>
 
-      {/* ── BOTTOM: Location pin ── */}
+      {/* ── BOTTOM ── */}
       <div className="relative z-10 flex flex-col items-center pb-10 pt-4 gap-2">
-        <div className="flex items-center gap-2">
-          <svg className="w-4 h-4 text-white/60" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-          </svg>
-          <span className="text-sm text-white/70 font-bold tracking-wide">
-            {storeName ?? 'Your Store'}, Indonesia.
-          </span>
-        </div>
-        <p className="text-white/25 text-[10px] tracking-[0.15em] italic">
-          curated by {storeName ?? 'store'}
-        </p>
+        {storeName && (
+          <>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-white/60" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>
+              <span className="text-sm text-white/70 font-bold tracking-wide">
+                {storeName}, Indonesia.
+              </span>
+            </div>
+            <p className="text-white/25 text-[10px] tracking-[0.15em] italic">
+              curated by {storeName}
+            </p>
+          </>
+        )}
       </div>
 
     </section>

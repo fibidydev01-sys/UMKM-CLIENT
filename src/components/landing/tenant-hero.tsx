@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, ComponentType } from 'react';
 import { extractHeroData, useHeroBlock } from '@/lib/landing';
 import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
@@ -9,19 +9,35 @@ interface TenantHeroProps {
   tenant: Tenant | PublicTenant;
 }
 
+interface HeroComponentProps {
+  title: string;
+  subtitle?: string;
+  description?: string;
+  category?: string;
+  ctaText?: string;
+  ctaLink?: string;
+  showCta?: boolean;
+  backgroundImage?: string;
+  logo?: string;
+  storeName?: string;
+  eyebrow?: string;
+}
+
 /**
  * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
  *
  * NO MANUAL IMPORTS! Just add hero201.tsx and it works!
  *
  * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
- * - title → tenant.heroTitle (fallback: tenant.name)
- * - subtitle → tenant.heroSubtitle (fallback: tenant.description)
- * - ctaText → tenant.heroCtaText
- * - ctaLink → tenant.heroCtaLink
+ * - title       → tenant.heroTitle (fallback: tenant.name)
+ * - subtitle    → tenant.heroSubtitle (fallback: tenant.description)
+ * - description → tenant.description
+ * - category    → tenant.category
+ * - ctaText     → tenant.heroCtaText
+ * - ctaLink     → tenant.heroCtaLink
  * - backgroundImage → tenant.heroBackgroundImage
- * - logo → tenant.logo
- * - storeName → tenant.name
+ * - logo        → tenant.logo
+ * - storeName   → tenant.name
  *
  * 🚀 SUPPORTS ALL BLOCKS: hero1, hero2, hero3, ..., hero200, hero9999!
  */
@@ -32,9 +48,11 @@ export function TenantHero({ config, tenant }: TenantHeroProps) {
   // Extract hero data directly from tenant (Data Contract fields)
   const heroData = extractHeroData(tenant, config ? { hero: config } : undefined);
 
-  const commonProps = {
+  const commonProps: HeroComponentProps = {
     title: heroData.title,
     subtitle: heroData.subtitle,
+    description: 'description' in tenant ? tenant.description || undefined : undefined,
+    category: 'category' in tenant ? tenant.category || undefined : undefined,
     ctaText: heroData.ctaText,
     ctaLink: heroData.ctaLink,
     showCta: true,
@@ -47,11 +65,14 @@ export function TenantHero({ config, tenant }: TenantHeroProps) {
   const blockNumber = block.replace('hero', '');
   const HeroComponent = lazy(() =>
     import(`./blocks/hero/hero${blockNumber}`)
-      .then((mod) => ({ default: mod[`Hero${blockNumber}`] }))
-      .catch(() => import('./blocks/hero/hero1').then((mod) => ({ default: mod.Hero1 })))
+      .then((mod) => ({ default: mod[`Hero${blockNumber}`] as ComponentType<HeroComponentProps> }))
+      .catch(() =>
+        import('./blocks/hero/hero1').then((mod) => ({
+          default: mod.Hero1 as ComponentType<HeroComponentProps>,
+        }))
+      )
   );
 
-  // Render with Suspense for lazy loading
   return (
     <Suspense fallback={<HeroSkeleton />}>
       <HeroComponent {...commonProps} />

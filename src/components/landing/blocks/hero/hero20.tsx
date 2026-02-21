@@ -2,31 +2,41 @@
 
 import Link from 'next/link';
 import { OptimizedImage } from '@/components/ui/optimized-image';
-import { ArrowUpRight, ShieldCheck, Truck, Star } from 'lucide-react';
+
 
 interface Hero20Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero20: Monochrome Dark Glass — frosted dark card, split image/content,
-// hairline borders, editorial typography. Zero color, zero hardcode.
 export function Hero20({
   title,
   subtitle,
-  ctaText = 'Pesan Sekarang',
+  description,
+  category,
+  ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero20Props) {
+  const label = eyebrow ?? category ?? '';
+  const words = title.trim().split(/\s+/);
+  const mid = Math.ceil(words.length / 2);
+  const lineA = words.slice(0, mid).join(' ');
+  const lineB = words.slice(mid).join(' ');
+
   return (
     <section
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-5 sm:px-10 py-12"
@@ -45,7 +55,7 @@ export function Hero20({
         }}
       />
 
-      {/* Subtle radial glow center */}
+      {/* Subtle radial glow */}
       <div
         className="absolute inset-0 z-0 pointer-events-none"
         style={{
@@ -54,14 +64,9 @@ export function Hero20({
       />
 
       {/* ── PILL TAGS ── */}
-      <div className="relative z-10 flex flex-wrap justify-center gap-2 mb-6">
-        {[
-          { icon: <Star size={10} />, label: 'Premium' },
-          { icon: <Truck size={10} />, label: 'Free Ongkir' },
-          { icon: <ShieldCheck size={10} />, label: 'Garansi Resmi' },
-        ].map(({ icon, label }) => (
+      {label && (
+        <div className="relative z-10 flex flex-wrap justify-center gap-2 mb-6">
           <div
-            key={label}
             className="flex items-center gap-1.5 px-3.5 py-1.5 text-[9px] font-semibold tracking-[0.18em] uppercase"
             style={{
               background: 'rgba(255,255,255,0.04)',
@@ -69,11 +74,10 @@ export function Hero20({
               color: 'rgba(255,255,255,0.4)',
             }}
           >
-            {icon}
             {label}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {/* ── MAIN GLASS CARD ── */}
       <div
@@ -88,7 +92,7 @@ export function Hero20({
         {/* LEFT: Image panel */}
         <div
           className="relative lg:w-[45%] shrink-0 overflow-hidden"
-          style={{ minHeight: 'clamp(260px, 50vw, 500px)' }}
+          style={{ minHeight: 'clamp(320px, 60vw, 600px)' }}
         >
           {backgroundImage ? (
             <OptimizedImage
@@ -120,7 +124,7 @@ export function Hero20({
               className="text-[8px] tracking-[0.3em] uppercase"
               style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
             >
-              01 / {storeName ?? 'Collection'}
+              01 / {storeName ?? ''}
             </span>
           </div>
         </div>
@@ -129,7 +133,7 @@ export function Hero20({
         <div className="hidden lg:block w-px shrink-0" style={{ background: 'rgba(255,255,255,0.07)' }} />
 
         {/* RIGHT: Content */}
-        <div className="flex-1 flex flex-col justify-between p-7 sm:p-10 lg:p-12">
+        <div className="flex-1 flex flex-col justify-between p-8 sm:p-12 lg:p-14">
 
           {/* Top */}
           <div>
@@ -139,7 +143,7 @@ export function Hero20({
                 className="text-[9px] tracking-[0.35em] uppercase"
                 style={{ color: 'rgba(255,255,255,0.3)', fontWeight: 300 }}
               >
-                {storeName ?? 'Store'} · Collection
+                {storeName ? `${storeName}${label ? ` · ${label}` : ''}` : label}
               </span>
               <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.07)' }} />
             </div>
@@ -148,56 +152,46 @@ export function Hero20({
             <h1
               className="font-black leading-[0.88] mb-1"
               style={{
-                fontSize: 'clamp(2rem, 5vw, 4rem)',
+                fontSize: 'clamp(2.8rem, 7vw, 6rem)',
                 color: '#ffffff',
-                letterSpacing: '-0.03em',
+                letterSpacing: '-0.04em',
               }}
             >
-              {title.split(' ').slice(0, Math.ceil(title.split(' ').length / 2)).join(' ')}
+              {lineA}
             </h1>
 
             {/* Title ghost outline */}
-            <h1
-              className="font-black leading-[0.88] select-none"
-              style={{
-                fontSize: 'clamp(2rem, 5vw, 4rem)',
-                color: 'transparent',
-                WebkitTextStroke: '1px rgba(255,255,255,0.2)',
-                letterSpacing: '-0.03em',
-              }}
-            >
-              {title.split(' ').slice(Math.ceil(title.split(' ').length / 2)).join(' ') || title}
-            </h1>
+            {lineB && (
+              <h1
+                className="font-black leading-[0.88] select-none"
+                style={{
+                  fontSize: 'clamp(2.8rem, 7vw, 6rem)',
+                  color: 'transparent',
+                  WebkitTextStroke: '1px rgba(255,255,255,0.2)',
+                  letterSpacing: '-0.04em',
+                }}
+              >
+                {lineB}
+              </h1>
+            )}
 
             {/* Thin rule */}
             <div className="w-8 h-px my-6" style={{ background: 'rgba(255,255,255,0.15)' }} />
 
             {/* Subtitle */}
-            {subtitle && (
+            {(subtitle || description) && (
               <p
                 className="text-sm leading-relaxed max-w-xs"
                 style={{ color: 'rgba(255,255,255,0.38)', fontWeight: 300, letterSpacing: '0.01em' }}
               >
-                {subtitle}
+                {subtitle ?? description}
               </p>
             )}
           </div>
 
-          {/* Bottom: trust + CTA */}
+          {/* Bottom: CTA */}
           <div className="flex flex-col gap-5 mt-8">
-            {/* Trust row */}
-            <div className="flex items-center gap-2">
-              <ShieldCheck size={12} style={{ color: 'rgba(255,255,255,0.25)' }} />
-              <span
-                className="text-[10px] leading-relaxed"
-                style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}
-              >
-                Terpercaya & bergaransi — pengiriman ke seluruh Indonesia
-              </span>
-            </div>
-
-            {/* CTA */}
-            {showCta && (
+            {showCta && ctaText && (
               <Link href={ctaLink}>
                 <button
                   className="w-full flex items-center justify-center gap-2.5 py-4 text-[10px] tracking-[0.22em] uppercase transition-all hover:bg-white hover:text-black active:scale-[0.99]"
@@ -208,8 +202,7 @@ export function Hero20({
                     fontWeight: 300,
                   }}
                 >
-                  {ctaText}
-                  <ArrowUpRight size={11} />
+                  {ctaText} ↗
                 </button>
               </Link>
             )}
@@ -217,41 +210,21 @@ export function Hero20({
         </div>
       </div>
 
-      {/* ── BOTTOM BADGE STRIP ── */}
+
+      {/* ── BOTTOM 3 EMPTY BOXES ── */}
       <div
-        className="relative z-10 flex justify-center gap-3 mt-3 w-full"
+        className="relative z-10 flex gap-3 mt-3 w-full"
         style={{ maxWidth: 'min(1000px, 95vw)' }}
       >
-        {[
-          { icon: <Truck size={11} />, label: 'Free Ongkir', sub: 'Seluruh Indonesia' },
-          { icon: <ShieldCheck size={11} />, label: 'Garansi Resmi', sub: 'Produk Original' },
-          { icon: <Star size={11} />, label: 'Top Seller', sub: storeName ?? 'Store' },
-        ].map(({ icon, label, sub }) => (
+        {[0, 1, 2].map((i) => (
           <div
-            key={label}
-            className="flex-1 flex items-center gap-2.5 px-4 py-3"
+            key={i}
+            className="flex-1 h-12"
             style={{
               background: 'rgba(255,255,255,0.02)',
               border: '1px solid rgba(255,255,255,0.06)',
-              minWidth: 0,
             }}
-          >
-            <span style={{ color: 'rgba(255,255,255,0.25)' }}>{icon}</span>
-            <div className="min-w-0">
-              <p
-                className="text-[10px] font-bold leading-tight truncate"
-                style={{ color: 'rgba(255,255,255,0.6)' }}
-              >
-                {label}
-              </p>
-              <p
-                className="text-[9px] truncate"
-                style={{ color: 'rgba(255,255,255,0.25)', fontWeight: 300 }}
-              >
-                {sub}
-              </p>
-            </div>
-          </div>
+          />
         ))}
       </div>
 

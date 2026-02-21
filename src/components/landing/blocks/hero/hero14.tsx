@@ -8,40 +8,45 @@ import { Heart, MessageCircle, Send, Bookmark, Instagram } from 'lucide-react';
 interface Hero14Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero14: Dark Cinematic — clean dark bg, IG-style white card center (from Hero13)
 export function Hero14({
   title,
   subtitle,
+  description,
+  category,
   ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero14Props) {
   const handle = storeName
     ? storeName.toLowerCase().replace(/\s+/g, '_') + '_'
-    : 'your.store_';
+    : undefined;
 
   return (
     <section className="relative min-h-screen bg-zinc-900 flex flex-col overflow-hidden">
 
-      {/* ── BG: bersih, tidak blur ── */}
+      {/* ── BG ── */}
       <div className="absolute inset-0 z-0">
         {backgroundImage ? (
           <OptimizedImage
             src={backgroundImage}
             alt=""
             fill
-            className="object-cover brightness-40 saturate-50"
+            className="object-cover blur-2xl scale-110"
           />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-950" />
@@ -54,8 +59,12 @@ export function Hero14({
         <div className="flex items-center gap-2.5">
           <Instagram className="w-5 h-5 text-white/80" />
           <div>
-            <p className="text-white/90 text-[11px] font-bold leading-tight">{storeName ?? 'Store'}</p>
-            <p className="text-white/40 text-[10px] leading-tight">Koleksi Pilihan.</p>
+            {storeName && (
+              <p className="text-white/90 text-[11px] font-bold leading-tight">{storeName}</p>
+            )}
+            {(eyebrow || category) && (
+              <p className="text-white/40 text-[10px] leading-tight">{eyebrow ?? category}</p>
+            )}
           </div>
         </div>
         <div className="flex gap-1">
@@ -71,9 +80,14 @@ export function Hero14({
         >
           {title}
         </h1>
+        {subtitle && (
+          <p className="text-white/80 text-base font-medium mt-2 max-w-xs">
+            {subtitle}
+          </p>
+        )}
       </div>
 
-      {/* ── CENTER: IG Post Card (Hero13 style) ── */}
+      {/* ── CENTER: IG Post Card ── */}
       <div className="relative z-10 flex justify-center items-center flex-1 px-6 py-6">
         <div
           className="w-full bg-white rounded-2xl overflow-hidden shadow-2xl border border-white/40"
@@ -83,14 +97,16 @@ export function Hero14({
           <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-zinc-100">
             <div className="relative w-8 h-8 rounded-full overflow-hidden border border-zinc-200 shrink-0 bg-zinc-100">
               {logo ? (
-                <OptimizedImage src={logo} alt={storeName ?? 'Store'} fill className="object-cover" />
+                <OptimizedImage src={logo} alt={storeName ?? title} fill className="object-cover" />
               ) : (
                 <div className="w-full h-full bg-zinc-200 flex items-center justify-center text-zinc-500 text-xs font-bold">
-                  {storeName?.charAt(0) ?? 'S'}
+                  {storeName?.charAt(0)}
                 </div>
               )}
             </div>
-            <span className="text-[13px] font-semibold text-zinc-800 tracking-tight">{handle}</span>
+            {handle && (
+              <span className="text-[13px] font-semibold text-zinc-800 tracking-tight">{handle}</span>
+            )}
           </div>
 
           {/* Card image */}
@@ -119,7 +135,7 @@ export function Hero14({
           {/* Action bar */}
           <div className="flex items-center justify-between px-4 py-3.5 border-t border-zinc-100">
             <div className="flex items-center gap-5">
-              <Heart className="w-5 h-5 text-zinc-700" strokeWidth={1.8} />
+              <Heart className="w-5 h-5 text-rose-500 fill-rose-500" strokeWidth={1.8} />
               <MessageCircle className="w-5 h-5 text-zinc-700" strokeWidth={1.8} />
               <Send className="w-5 h-5 text-zinc-700" strokeWidth={1.8} />
             </div>
@@ -131,7 +147,7 @@ export function Hero14({
             <div className="px-4 pb-4">
               <Link href={ctaLink}>
                 <InteractiveHoverButton className="w-full py-3 text-xs font-semibold tracking-wide text-center">
-                  {ctaText ?? 'Pesan Sekarang'}
+                  {ctaText}
                 </InteractiveHoverButton>
               </Link>
             </div>
@@ -141,12 +157,11 @@ export function Hero14({
 
       {/* ── BOTTOM ── */}
       <div className="relative z-10 flex flex-col items-center text-center px-10 pb-10 gap-3">
-        {subtitle && (
+        {description && (
           <p className="text-white/60 text-xs leading-relaxed max-w-xs">
-            {subtitle}
+            {description}
           </p>
         )}
-        {/* Barcode decorative */}
         <div className="flex gap-px items-end opacity-40">
           {[3, 1, 4, 1, 5, 2, 1, 3, 2, 4, 1, 2, 3, 1, 2, 4, 3, 1, 2, 1, 3, 2].map((h, i) => (
             <div
@@ -156,9 +171,11 @@ export function Hero14({
             />
           ))}
         </div>
-        <p className="text-white/30 text-[10px] tracking-[0.15em] uppercase">
-          {storeName ?? 'your.store'}
-        </p>
+        {storeName && (
+          <p className="text-white/30 text-[10px] tracking-[0.15em] uppercase">
+            {storeName}
+          </p>
+        )}
       </div>
 
     </section>

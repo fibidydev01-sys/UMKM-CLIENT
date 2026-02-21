@@ -8,24 +8,29 @@ import { Badge } from '@/components/ui/badge';
 interface Hero9Props {
   title: string;
   subtitle?: string;
+  description?: string;
+  category?: string;
   ctaText?: string;
   ctaLink?: string;
   showCta?: boolean;
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
+  eyebrow?: string;
 }
 
-// Hero9: Floating Card — Centered content with stacked/layered card image floating below text.
 export function Hero9({
   title,
   subtitle,
+  description,
+  category,
   ctaText,
   ctaLink = '/products',
   showCta = true,
   backgroundImage,
   logo,
   storeName,
+  eyebrow,
 }: Hero9Props) {
   return (
     <section className="relative min-h-screen bg-background flex flex-col items-center overflow-hidden">
@@ -47,7 +52,7 @@ export function Hero9({
         <div className="flex items-center gap-2.5">
           {logo && (
             <div className="relative w-7 h-7 rounded-lg overflow-hidden border border-border shrink-0">
-              <OptimizedImage src={logo} alt={storeName ?? 'Logo'} fill className="object-cover" />
+              <OptimizedImage src={logo} alt={storeName ?? title} fill className="object-cover" />
             </div>
           )}
           {storeName && (
@@ -56,33 +61,43 @@ export function Hero9({
             </span>
           )}
         </div>
-        <Badge
-          variant="outline"
-          className="rounded-full px-3 py-1 text-[10px] tracking-[0.15em] uppercase font-medium border-border text-muted-foreground"
-        >
-          Koleksi Baru
-        </Badge>
+        {(eyebrow || category) && (
+          <Badge
+            variant="outline"
+            className="rounded-full px-3 py-1 text-[10px] tracking-[0.15em] uppercase font-medium border-border text-muted-foreground"
+          >
+            {eyebrow ?? category}
+          </Badge>
+        )}
       </div>
 
       {/* Center: text */}
       <div className="flex flex-col items-center text-center px-6 sm:px-12 max-w-3xl mx-auto z-10 pt-6 pb-14">
         <h1
-          className="font-black leading-[1.0] tracking-tight text-foreground mb-6"
+          className="font-black leading-[1.0] tracking-tight text-foreground mb-4"
           style={{ fontSize: 'clamp(2rem, 5vw, 4rem)' }}
         >
           {title}
         </h1>
 
         {subtitle && (
-          <p className="max-w-sm text-sm text-muted-foreground leading-relaxed mb-9">
+          <p className="max-w-sm text-base font-medium text-foreground/80 leading-snug mb-3">
             {subtitle}
           </p>
         )}
 
+        {description && (
+          <p className="max-w-sm text-sm text-muted-foreground leading-relaxed mb-9">
+            {description}
+          </p>
+        )}
+
+        {!description && <div className="mb-9" />}
+
         {showCta && (
           <Link href={ctaLink}>
             <InteractiveHoverButton className="px-10 py-4 text-sm font-semibold tracking-wide">
-              {ctaText ?? 'Pesan Sekarang'}
+              {ctaText}
             </InteractiveHoverButton>
           </Link>
         )}
