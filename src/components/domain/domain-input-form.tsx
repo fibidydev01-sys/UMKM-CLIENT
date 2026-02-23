@@ -10,7 +10,7 @@ import { Globe, AlertTriangle, Info, Trash2, RefreshCw } from 'lucide-react';
 
 interface DomainInputFormProps {
   onSubmit: (domain: string) => Promise<boolean>;
-  onCancel?: () => void; // ✅ Tombol batal — tutup form
+  onCancel?: () => void;
 }
 
 export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
@@ -20,76 +20,67 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // ==========================================
-  // CEK KONDISI DARI TENANT DATA (FE ONLY)
-  // ==========================================
-
-  // Pernah punya domain sebelumnya (sudah dihapus)?
   const hadDomainBefore = !!tenant?.customDomainRemovedAt;
-
-  // Safety check — harusnya ga sampai sini kalau ada domain aktif
   const hasActiveDomain = !!tenant?.customDomain;
-
   const isReRequest = hadDomainBefore;
-
-  // ==========================================
-  // SUBMIT HANDLER
-  // ==========================================
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('🚀 [DomainInputForm] handleSubmit triggered');
+    console.log('🔍 [DomainInputForm] domain value:', domain);
+    console.log('🔍 [DomainInputForm] tenant id:', tenant?.id);
+    console.log('🔍 [DomainInputForm] tenant customDomain:', tenant?.customDomain);
 
     const cleanDomain = domain.toLowerCase().trim();
     const domainRegex =
       /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/i;
 
     if (!cleanDomain) {
+      console.warn('❌ domain kosong');
       alert('Silakan masukkan domain Anda');
       return;
     }
 
     if (!domainRegex.test(cleanDomain)) {
+      console.warn('❌ format domain invalid:', cleanDomain);
       alert('Format domain tidak valid. Contoh: tokoku.com');
       return;
     }
 
-    // Re-request → minta konfirmasi dulu
     if (isReRequest && !confirmDelete) {
+      console.log('⚠️ re-request, minta konfirmasi dulu');
       setConfirmDelete(true);
       return;
     }
 
+    console.log('📡 memanggil onSubmit dengan domain:', cleanDomain);
     setIsSubmitting(true);
     try {
-      await onSubmit(cleanDomain);
+      const result = await onSubmit(cleanDomain);
+      console.log('✅ onSubmit result:', result);
       setConfirmDelete(false);
+    } catch (err) {
+      console.error('❌ onSubmit error:', err);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ==========================================
-  // SAFETY GUARD: Ada domain aktif
-  // ==========================================
   if (hasActiveDomain) {
     return (
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
           Kamu sudah memiliki domain aktif: <strong>{tenant?.customDomain}</strong>.
-          Hapus domain tersebut terlebih dahulu sebelum mendaftarkan yang baru.
+          Hapus domain tersebih dahulu sebelum mendaftarkan yang baru.
         </AlertDescription>
       </Alert>
     );
   }
 
-  // ==========================================
-  // RENDER
-  // ==========================================
   return (
     <div className="space-y-4">
-
-      {/* WARNING: Re-request setelah hapus domain */}
       {isReRequest && (
         <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
@@ -113,7 +104,6 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
         </Alert>
       )}
 
-      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="domain">
@@ -136,7 +126,6 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
               />
             </div>
 
-            {/* Tombol submit — berubah jadi konfirmasi kalau re-request */}
             {confirmDelete ? (
               <Button
                 type="submit"
@@ -145,15 +134,9 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
                 className="shrink-0"
               >
                 {isSubmitting ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Memproses...
-                  </>
+                  <><RefreshCw className="h-4 w-4 mr-2 animate-spin" />Memproses...</>
                 ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Ya, Daftar Domain Baru
-                  </>
+                  <><Trash2 className="h-4 w-4 mr-2" />Ya, Daftar Domain Baru</>
                 )}
               </Button>
             ) : (
@@ -165,7 +148,7 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
 
           {confirmDelete ? (
             <p className="text-xs text-destructive font-medium">
-              ⚠️ Kamu perlu setup DNS baru dari awal di registrar domain kamu.
+              ⚠️ Kamu perlu setup DNS baru dari awal.
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
@@ -174,35 +157,21 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
           )}
         </div>
 
-        {/* Cancel konfirmasi re-request */}
         {confirmDelete && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setConfirmDelete(false)}
-            className="w-full"
-          >
+          <Button type="button" variant="ghost" size="sm"
+            onClick={() => setConfirmDelete(false)} className="w-full">
             Batal
           </Button>
         )}
 
-        {/* Tombol Batal form (kembali ke empty state) */}
         {!confirmDelete && onCancel && (
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            className="w-full"
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="ghost" size="sm"
+            onClick={onCancel} className="w-full" disabled={isSubmitting}>
             Batal
           </Button>
         )}
       </form>
 
-      {/* Info box */}
       <div className="bg-muted/50 rounded-lg p-4 space-y-2">
         <div className="flex items-center gap-2">
           <Info className="h-4 w-4 text-muted-foreground shrink-0" />
@@ -212,11 +181,6 @@ export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
           <li>Kamu sudah membeli domain dari registrar (Niagahoster, GoDaddy, dll)</li>
           <li>Kamu punya akses ke pengaturan DNS domain tersebut</li>
           <li>Setelah disimpan, kamu akan mendapat DNS records untuk dipasang di registrar</li>
-          {isReRequest && (
-            <li className="text-amber-600 dark:text-amber-400 font-medium">
-              Domain tidak bisa di-rename — harus hapus lalu daftar ulang
-            </li>
-          )}
         </ul>
       </div>
     </div>
