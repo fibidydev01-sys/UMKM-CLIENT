@@ -2,18 +2,35 @@
 
 import { useDomainStatus } from '@/hooks';
 import { useAuthStore } from '@/stores';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, ExternalLink, Globe, Shield, Trash2, RefreshCw, Loader2, Clock } from 'lucide-react';
+import {
+  CheckCircle2,
+  ExternalLink,
+  Globe,
+  Shield,
+  Trash2,
+  RefreshCw,
+  Loader2,
+  Clock,
+} from 'lucide-react';
 import { getTenantFullUrl } from '@/lib/store-url';
+import { ROOT_DOMAIN } from '@/config/constants'; // ✅ Tidak hardcode 'fibidy.com'
 
 // ==========================================
 // DOMAIN STATUS CARD
 // Dipakai untuk 2 state:
 // 1. DNS verified, SSL pending  → tampil tombol "Cek SSL"
 // 2. Fully active (SSL active)  → tampil domain live ✅
+// DomainStatusCard handle sendiri berdasarkan sslStatus
 // ==========================================
 
 interface DomainStatusCardProps {
@@ -55,7 +72,7 @@ export function DomainStatusCard({
           <Clock className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
             ✅ DNS terverifikasi! Vercel sedang menerbitkan SSL certificate...
-            Klik <strong>&#34;Cek Status&#34;</strong> untuk memperbarui.
+            Klik <strong>&ldquo;Cek Status&rdquo;</strong> untuk memperbarui.
           </AlertDescription>
         </Alert>
       )}
@@ -70,8 +87,7 @@ export function DomainStatusCard({
           <CardDescription>
             {isActive
               ? 'Custom domain Anda sudah terhubung dengan toko online'
-              : 'DNS sudah verified, menunggu SSL certificate dari Vercel'
-            }
+              : 'DNS sudah verified, menunggu SSL certificate dari Vercel'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -108,23 +124,31 @@ export function DomainStatusCard({
             {/* SSL Status */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Shield className={`h-4 w-4 ${isActive ? 'text-green-600' : 'text-amber-500'}`} />
+                <Shield
+                  className={`h-4 w-4 ${isActive ? 'text-green-600' : 'text-amber-500'}`}
+                />
                 <span className="text-sm">SSL</span>
               </div>
               <Badge variant={isActive ? 'default' : 'secondary'}>
-                {isActive ? '✅ Aktif (HTTPS)' : sslStatus === 'pending' ? '⏳ Pending' : sslStatus || 'Pending'}
+                {isActive
+                  ? '✅ Aktif (HTTPS)'
+                  : sslStatus === 'pending'
+                    ? '⏳ Pending'
+                    : sslStatus || 'Pending'}
               </Badge>
             </div>
           </div>
 
-          {/* Active domain info */}
+          {/* Active domain info — pakai ROOT_DOMAIN, bukan hardcode */}
           {isActive && (
             <div className="bg-muted/50 rounded-lg p-4">
               <h4 className="text-sm font-medium mb-2">URL Toko Anda:</h4>
               <ul className="text-xs text-muted-foreground space-y-1">
                 <li>✅ <strong>{domain}</strong> (Custom Domain)</li>
                 <li>✅ <strong>www.{domain}</strong> (Redirect otomatis)</li>
-                <li className="line-through opacity-50">{tenant.slug}.fibidy.com (Tidak aktif)</li>
+                <li className="line-through opacity-50">
+                  {tenant.slug}.{ROOT_DOMAIN} (Tidak aktif)
+                </li>
               </ul>
             </div>
           )}
@@ -133,7 +157,7 @@ export function DomainStatusCard({
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        {/* Cek Status — manual */}
+        {/* Cek Status — manual, hanya tampil kalau SSL belum active */}
         {!isActive && (
           <Button
             onClick={onCheckStatus}

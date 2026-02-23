@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ================================================================
-# CUSTOM DOMAIN FILES COLLECTOR - COMPLETE VERSION
-# Collects ALL 19 files for custom domain feature
+# CUSTOM DOMAIN FILES COLLECTOR - CLEAN VERSION
+# Collects 17 files (dns-instructions-card & dns-setup-modal dihapus)
 # Run from: client directory
 # ================================================================
 
@@ -19,61 +19,48 @@ SRC_DIR="$PROJECT_ROOT/src"
 OUT="collections"
 mkdir -p "$OUT"
 
-# Generate output filename
 TIMESTAMP=$(date '+%Y-%m-%d-%H-%M-%S')
-OUTPUT_FILE="$OUT/CUSTOM-DOMAIN-COMPLETE-$TIMESTAMP.txt"
+OUTPUT_FILE="$OUT/CUSTOM-DOMAIN-CLEAN-$TIMESTAMP.txt"
 
 # ================================================================
-# FILE LIST - ALL 19 CUSTOM DOMAIN FILES
+# FILE LIST - 17 FILES (CLEAN - no polling, no wizard)
 # ================================================================
 FILES=(
     # ==========================================
     # PHASE 1: FOUNDATION (7 files)
     # ==========================================
-    
-    # Types
     "src/types/tenant.ts"
     "src/types/domain.ts"
     "src/types/index.ts"
-    
-    # API
     "src/lib/api/domain.ts"
     "src/lib/api/index.ts"
-    
-    # Hooks
     "src/hooks/use-domain.ts"
     "src/hooks/index.ts"
-    
+
     # ==========================================
     # PHASE 2: CONFIG & ROUTING (6 files)
     # ==========================================
-    
-    # Config
     "src/config/constants.ts"
     "src/config/navigation.ts"
     "src/config/seo.config.ts"
-    
-    # Utils
     "src/lib/store-url.ts"
-    
-    # Proxy & API Route
     "src/proxy.ts"
     "src/app/api/tenant/resolve-domain/route.ts"
-    
+
     # ==========================================
-    # PHASE 3: UI COMPONENTS (6 files)
+    # PHASE 3: UI COMPONENTS (4 files — CLEAN)
+    # ❌ DIHAPUS: dns-instructions-card.tsx
+    # ❌ DIHAPUS: dns-setup-modal.tsx
     # ==========================================
-    
-    # Page
     "src/app/(dashboard)/dashboard/settings/domain/page.tsx"
-    
-    # Components
     "src/components/domain/custom-domain-setup.tsx"
     "src/components/domain/domain-input-form.tsx"
     "src/components/domain/dns-instructions.tsx"
     "src/components/domain/domain-status-card.tsx"
     "src/components/domain/index.ts"
 )
+
+TOTAL_FILES=${#FILES[@]}
 
 # ================================================================
 # HELPER FUNCTIONS
@@ -82,11 +69,11 @@ FILES=(
 collect_file() {
     local file_path=$1
     local full_path="$PROJECT_ROOT/$file_path"
-    
+
     if [ -f "$full_path" ]; then
         local lines=$(wc -l < "$full_path" 2>/dev/null || echo "0")
         echo -e "${GREEN}  ✓${NC} $file_path ${CYAN}($lines lines)${NC}"
-        
+
         echo "================================================" >> "$OUTPUT_FILE"
         echo "FILE: $file_path" >> "$OUTPUT_FILE"
         echo "Lines: $lines" >> "$OUTPUT_FILE"
@@ -107,41 +94,48 @@ collect_file() {
 
 clear
 echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║   CUSTOM DOMAIN FILES COLLECTOR - COMPLETE                 ║${NC}"
-echo -e "${BLUE}║   Frontend (19 files)                                      ║${NC}"
+echo -e "${BLUE}║   CUSTOM DOMAIN FILES COLLECTOR - CLEAN VERSION            ║${NC}"
+echo -e "${BLUE}║   Frontend ($TOTAL_FILES files) — No polling, no wizard            ║${NC}"
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# Check if we're in the right directory
 if [ ! -d "$SRC_DIR" ]; then
     echo -e "${RED}ERROR: SRC_DIR not found: $SRC_DIR${NC}"
-    echo -e "${YELLOW}Make sure you run this script from the client directory${NC}"
+    echo -e "${YELLOW}Jalankan script ini dari folder client/${NC}"
     exit 1
 fi
 
-# Create file header
+# Header
 cat > "$OUTPUT_FILE" << EOF
 ################################################################
-##  CUSTOM DOMAIN FEATURE - COMPLETE COLLECTION
+##  CUSTOM DOMAIN FEATURE - CLEAN COLLECTION
 ##  Generated: $(date '+%Y-%m-%d %H:%M:%S')
-##  
-##  📦 Next.js Frontend (19 files)
-##  
+##
+##  📦 Next.js Frontend ($TOTAL_FILES files)
+##  ✅ No auto-polling
+##  ✅ No wizard step berlapis
+##  ✅ Manual "Cek Status" button
+##  ✅ DNS records dari Vercel langsung
+##
 ##  Phase 1 - Foundation (7 files):
 ##    - Types: tenant.ts, domain.ts, index.ts
 ##    - API: domain.ts, index.ts
 ##    - Hooks: use-domain.ts, index.ts
-##  
+##
 ##  Phase 2 - Config & Routing (6 files):
 ##    - Config: constants.ts, navigation.ts, seo.config.ts
 ##    - Utils: store-url.ts
 ##    - Proxy: proxy.ts
 ##    - API Route: resolve-domain/route.ts
-##  
-##  Phase 3 - UI Components (6 files):
+##
+##  Phase 3 - UI Components (4 files — CLEAN):
 ##    - Page: domain/page.tsx
 ##    - Components: custom-domain-setup.tsx, domain-input-form.tsx,
 ##                  dns-instructions.tsx, domain-status-card.tsx, index.ts
+##
+##  ❌ DIHAPUS (file lama):
+##    - dns-instructions-card.tsx
+##    - dns-setup-modal.tsx
 ################################################################
 
 
@@ -149,53 +143,37 @@ EOF
 
 echo -e "${CYAN}Collecting files...${NC}\n"
 
-# Track statistics
 FOUND_COUNT=0
 MISSING_COUNT=0
 
-# Collect Phase 1
+# Phase 1
 echo -e "${YELLOW}═══ PHASE 1: FOUNDATION (7 files) ═══${NC}"
 echo "## PHASE 1: FOUNDATION" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
-
 for i in {0..6}; do
-    if collect_file "${FILES[$i]}"; then
-        ((FOUND_COUNT++))
-    else
-        ((MISSING_COUNT++))
-    fi
+    if collect_file "${FILES[$i]}"; then ((FOUND_COUNT++)); else ((MISSING_COUNT++)); fi
 done
 
 echo "" >> "$OUTPUT_FILE"
 
-# Collect Phase 2
+# Phase 2
 echo ""
 echo -e "${YELLOW}═══ PHASE 2: CONFIG & ROUTING (6 files) ═══${NC}"
 echo "## PHASE 2: CONFIG & ROUTING" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
-
 for i in {7..12}; do
-    if collect_file "${FILES[$i]}"; then
-        ((FOUND_COUNT++))
-    else
-        ((MISSING_COUNT++))
-    fi
+    if collect_file "${FILES[$i]}"; then ((FOUND_COUNT++)); else ((MISSING_COUNT++)); fi
 done
 
 echo "" >> "$OUTPUT_FILE"
 
-# Collect Phase 3
+# Phase 3
 echo ""
-echo -e "${YELLOW}═══ PHASE 3: UI COMPONENTS (6 files) ═══${NC}"
+echo -e "${YELLOW}═══ PHASE 3: UI COMPONENTS (4 files — CLEAN) ═══${NC}"
 echo "## PHASE 3: UI COMPONENTS" >> "$OUTPUT_FILE"
 echo "" >> "$OUTPUT_FILE"
-
 for i in {13..18}; do
-    if collect_file "${FILES[$i]}"; then
-        ((FOUND_COUNT++))
-    else
-        ((MISSING_COUNT++))
-    fi
+    if collect_file "${FILES[$i]}"; then ((FOUND_COUNT++)); else ((MISSING_COUNT++)); fi
 done
 
 # Summary
@@ -205,55 +183,38 @@ echo -e "${GREEN}║  ✅ COLLECTION COMPLETE!                                  
 echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-# File info
 FILE_SIZE=$(du -h "$OUTPUT_FILE" 2>/dev/null | cut -f1)
 TOTAL_LINES=$(grep "^Lines:" "$OUTPUT_FILE" | awk '{sum+=$2} END {print sum}')
 
-echo -e "${CYAN}📂 Output: $OUTPUT_FILE${NC}"
-echo -e "${CYAN}📊 Files found: ${GREEN}$FOUND_COUNT${CYAN} / ${YELLOW}19${NC}"
-
-if [ $MISSING_COUNT -gt 0 ]; then
-    echo -e "${RED}⚠️  Missing files: $MISSING_COUNT${NC}"
-fi
-
-echo -e "${CYAN}📦 Total size: $FILE_SIZE${NC}"
-echo -e "${CYAN}📝 Total lines: $TOTAL_LINES${NC}"
+echo -e "${CYAN}📂 Output : $OUTPUT_FILE${NC}"
+echo -e "${CYAN}📊 Found  : ${GREEN}$FOUND_COUNT${CYAN} / ${YELLOW}$TOTAL_FILES${NC}"
+[ $MISSING_COUNT -gt 0 ] && echo -e "${RED}⚠️  Missing: $MISSING_COUNT${NC}"
+echo -e "${CYAN}📦 Size   : $FILE_SIZE${NC}"
+echo -e "${CYAN}📝 Lines  : $TOTAL_LINES${NC}"
 echo ""
 
-# List of collected files by phase
-echo -e "${BLUE}Collected files by phase:${NC}"
+echo -e "${BLUE}Files by phase:${NC}"
 echo ""
-
 echo -e "${YELLOW}Phase 1 - Foundation:${NC}"
-for i in {0..6}; do
-    echo "  • ${FILES[$i]}"
-done
+for i in {0..6}; do echo "  • ${FILES[$i]}"; done
 
 echo ""
 echo -e "${YELLOW}Phase 2 - Config & Routing:${NC}"
-for i in {7..12}; do
-    echo "  • ${FILES[$i]}"
-done
+for i in {7..12}; do echo "  • ${FILES[$i]}"; done
 
 echo ""
-echo -e "${YELLOW}Phase 3 - UI Components:${NC}"
-for i in {13..18}; do
-    echo "  • ${FILES[$i]}"
-done
+echo -e "${YELLOW}Phase 3 - UI Components (CLEAN):${NC}"
+for i in {13..18}; do echo "  • ${FILES[$i]}"; done
 
 echo ""
+echo -e "${RED}Dihapus (file lama):${NC}"
+echo "  ✗ src/components/domain/dns-instructions-card.tsx"
+echo "  ✗ src/components/domain/dns-setup-modal.tsx"
+echo ""
 
-# Check if all files found
-if [ $FOUND_COUNT -eq 19 ]; then
-    echo -e "${GREEN}✅ SUCCESS: All 19 files collected!${NC}"
-    echo ""
-    echo -e "${CYAN}Next steps:${NC}"
-    echo "  1. Review: cat $OUTPUT_FILE"
-    echo "  2. Share with team or backup"
-    echo "  3. Deploy to production"
+if [ $FOUND_COUNT -eq $TOTAL_FILES ]; then
+    echo -e "${GREEN}✅ SUCCESS: Semua $TOTAL_FILES files terkumpul!${NC}"
 else
-    echo -e "${RED}⚠️  WARNING: Some files are missing!${NC}"
-    echo -e "${YELLOW}Please create the missing files before deployment.${NC}"
+    echo -e "${RED}⚠️  WARNING: $MISSING_COUNT file tidak ditemukan!${NC}"
 fi
-
 echo ""

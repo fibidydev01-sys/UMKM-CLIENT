@@ -14,17 +14,14 @@ import { DomainStatusCard } from './domain-status-card';
 // ==========================================
 
 export function CustomDomainSetup() {
-  const { isLoading, isChecking, error, requestDomain, checkStatus, removeDomain, resetError } = useDomainSetup();
-  const { hasDomain, isVerified, sslStatus, isFullyActive } = useDomainStatus();
+  const { isLoading, isChecking, error, requestDomain, checkStatus, removeDomain, resetError } =
+    useDomainSetup();
+  const { hasDomain, isVerified, sslStatus } = useDomainStatus();
 
   // Wrapper — karena removeDomain return boolean, props komponen expect void
   const handleRemove = async (): Promise<void> => {
     await removeDomain();
   };
-
-  // ==========================================
-  // RENDER — derived dari tenant state langsung
-  // ==========================================
 
   return (
     <div className="space-y-6">
@@ -35,7 +32,10 @@ export function CustomDomainSetup() {
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>{error}</span>
-            <button onClick={resetError} className="text-sm underline hover:no-underline ml-4">
+            <button
+              onClick={resetError}
+              className="text-sm underline hover:no-underline ml-4"
+            >
               Tutup
             </button>
           </AlertDescription>
@@ -53,6 +53,10 @@ export function CustomDomainSetup() {
         />
       )}
 
+      {/* ============================================
+          STATE 2: ADA DOMAIN, BELUM VERIFIED
+          → Tampilkan DNS instructions
+          ============================================ */}
       {hasDomain && !isVerified && (
         <DnsInstructions
           onCheckStatus={checkStatus}
@@ -62,17 +66,12 @@ export function CustomDomainSetup() {
         />
       )}
 
-      {hasDomain && isVerified && !isFullyActive && (
-        <DomainStatusCard
-          onCheckStatus={checkStatus}
-          onRemove={handleRemove}
-          isChecking={isChecking}
-          isLoading={isLoading}
-          sslStatus={sslStatus}
-        />
-      )}
-
-      {isFullyActive && (
+      {/* ============================================
+          STATE 3: VERIFIED (SSL pending atau active)
+          → DomainStatusCard handle tampilan sendiri
+             berdasarkan sslStatus di dalamnya
+          ============================================ */}
+      {hasDomain && isVerified && (
         <DomainStatusCard
           onCheckStatus={checkStatus}
           onRemove={handleRemove}
