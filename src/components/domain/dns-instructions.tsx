@@ -28,7 +28,9 @@ export function DnsInstructions({
   isChecking,
   isLoading,
 }: DnsInstructionsProps) {
-  const { domain, dnsRecords } = useDomainStatus();
+  const { domain, dnsRecords: rawDnsRecords } = useDomainStatus();
+  // Guard: pastikan selalu array — backend bisa return object/null
+  const dnsRecords = Array.isArray(rawDnsRecords) ? rawDnsRecords : [];
   const [copied, setCopied] = useState<string | null>(null);
 
   const copyToClipboard = (text: string, label: string) => {
@@ -174,7 +176,6 @@ export function DnsInstructions({
 
       {/* Action Buttons */}
       <div className="flex gap-3">
-        {/* Cek Status — manual, user yang klik */}
         <Button
           onClick={onCheckStatus}
           disabled={isChecking || isLoading}
@@ -193,7 +194,6 @@ export function DnsInstructions({
           )}
         </Button>
 
-        {/* Hapus Domain */}
         <Button
           onClick={onRemove}
           disabled={isLoading || isChecking}
