@@ -5,19 +5,20 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, CreditCard, Truck } from 'lucide-react';
+import { Search, CreditCard, Truck, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Import wizard pages as components
 import SeoPage from '../seo/page';
 import PembayaranPage from '../pembayaran/page';
 import PengirimanPage from '../pengiriman/page';
+import DomainPage from '../domain/page';
 
 // ══════════════════════════════════════════════════════════════
 // TYPES & CONSTANTS
 // ══════════════════════════════════════════════════════════════
 
-type TabType = 'pencarian' | 'pembayaran' | 'pengiriman';
+type TabType = 'pencarian' | 'pembayaran' | 'pengiriman' | 'domain';
 
 const TABS = [
   {
@@ -34,6 +35,11 @@ const TABS = [
     id: 'pengiriman' as const,
     label: 'Pengiriman',
     icon: Truck,
+  },
+  {
+    id: 'domain' as const,
+    label: 'Domain',
+    icon: Globe,
   },
 ];
 
@@ -72,12 +78,13 @@ export function ChannelsClient() {
       </div>
 
       {/* ════════════════════════════════════════════════════════ */}
-      {/* TAB CONTENT - Import wizard pages as components         */}
+      {/* TAB CONTENT                                             */}
       {/* ════════════════════════════════════════════════════════ */}
       <div>
         {activeTab === 'pencarian' && <SeoPage />}
         {activeTab === 'pembayaran' && <PembayaranPage />}
         {activeTab === 'pengiriman' && <PengirimanPage />}
+        {activeTab === 'domain' && <DomainPage />}
       </div>
     </div>
   );

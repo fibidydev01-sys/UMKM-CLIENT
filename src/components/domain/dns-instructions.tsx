@@ -50,7 +50,7 @@ export function DnsInstructions({
         <AlertDescription>
           Tambahkan DNS records berikut di registrar domain Anda. DNS propagasi membutuhkan waktu{' '}
           <strong>10 menit – 48 jam</strong>. Setelah dipasang, klik{' '}
-          <strong>"Cek Status"</strong> untuk verifikasi.
+          <strong>&#34;Cek Status&#34;</strong> untuk verifikasi.
         </AlertDescription>
       </Alert>
 
@@ -158,7 +158,7 @@ export function DnsInstructions({
             <li>Cari menu <strong>DNS Management</strong> atau <strong>DNS Settings</strong></li>
             <li>Tambahkan records di atas (klik tombol copy untuk menyalin)</li>
             <li>Simpan perubahan</li>
-            <li>Kembali ke halaman ini dan klik <strong>"Cek Status"</strong></li>
+            <li>Kembali ke halaman ini dan klik <strong>&#34;Cek Status&#34;</strong></li>
           </ol>
 
           <Button asChild variant="outline" size="sm" className="mt-2">

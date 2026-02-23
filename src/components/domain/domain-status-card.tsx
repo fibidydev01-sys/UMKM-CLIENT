@@ -55,7 +55,7 @@ export function DomainStatusCard({
           <Clock className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800 dark:text-blue-200">
             ✅ DNS terverifikasi! Vercel sedang menerbitkan SSL certificate...
-            Klik <strong>"Cek Status"</strong> untuk memperbarui.
+            Klik <strong>&#34;Cek Status&#34;</strong> untuk memperbarui.
           </AlertDescription>
         </Alert>
       )}
