@@ -1,18 +1,37 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useSyncExternalStore } from 'react';
 import { domainApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import { useAuthStore } from '@/stores';
 import type { DomainStatus, DomainStatusResponse, DnsRecord } from '@/types';
 
 // ==========================================
+// HYDRATION DETECTION
+// useSyncExternalStore: server snapshot = false, client snapshot = true
+// Tidak pakai useEffect + setState → tidak ada cascading render
+// ==========================================
+function useIsClient(): boolean {
+  return useSyncExternalStore(
+    () => () => { },           // subscribe — tidak perlu listen apa-apa
+    () => true,               // getSnapshot  (client)
+    () => false,              // getServerSnapshot (SSR / sebelum hydrate)
+  );
+}
+
+// ==========================================
 // USE DOMAIN STATUS HOOK
 // Derived langsung dari tenant — no extra state
+// + isHydrating: true sampai komponen mount di client
 // ==========================================
 
-export function useDomainStatus(): DomainStatus {
+export function useDomainStatus(): DomainStatus & { isHydrating: boolean } {
   const tenant = useAuthStore((s) => s.tenant);
+  const isClient = useIsClient();
+
+  // isHydrating = true selama belum mount di client
+  // Setelah mount, isClient = true → isHydrating = false
+  const isHydrating = !isClient;
 
   return useMemo(
     () => ({
@@ -23,8 +42,9 @@ export function useDomainStatus(): DomainStatus {
       isFullyActive:
         !!tenant?.customDomainVerified && tenant?.sslStatus === 'active',
       dnsRecords: (tenant?.dnsRecords as DnsRecord[]) ?? [],
+      isHydrating,
     }),
-    [tenant],
+    [tenant, isHydrating],
   );
 }
 
