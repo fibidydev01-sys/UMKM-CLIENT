@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageUpload } from '@/components/upload';
 import { PreviewModal } from '@/components/settings';
 import { Testimonials1 } from '@/components/landing/blocks';
 import { generateThemeCSS } from '@/lib/theme';
@@ -16,7 +11,8 @@ import { toast } from 'sonner';
 import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import type { Testimonial } from '@/types';
+import type { TestimonialsFormData, Testimonial } from '@/types';
+import { StepHeader, StepTestimoni } from '@/components/settings/testimonials-section';
 
 // ─── Wizard steps ──────────────────────────────────────────────────────────
 const STEPS = [
@@ -30,19 +26,9 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
     <div className="flex items-center">
       {STEPS.map((_, i) => (
         <div key={i} className="flex items-center">
-          <div
-            className={cn(
-              'w-2 h-2 rounded-full transition-colors duration-200',
-              i <= currentStep ? 'bg-primary' : 'bg-muted'
-            )}
-          />
+          <div className={cn('w-2 h-2 rounded-full transition-colors duration-200', i <= currentStep ? 'bg-primary' : 'bg-muted')} />
           {i < STEPS.length - 1 && (
-            <div
-              className={cn(
-                'w-8 h-px transition-colors duration-200',
-                i < currentStep ? 'bg-primary' : 'bg-muted'
-              )}
-            />
+            <div className={cn('w-8 h-px transition-colors duration-200', i < currentStep ? 'bg-primary' : 'bg-muted')} />
           )}
         </div>
       ))}
@@ -56,12 +42,7 @@ export default function TestimonialsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-
-  const [formData, setFormData] = useState<{
-    testimonialsTitle: string;
-    testimonialsSubtitle: string;
-    testimonials: Testimonial[];
-  } | null>(null);
+  const [formData, setFormData] = useState<TestimonialsFormData | null>(null);
 
   useEffect(() => {
     if (tenant && formData === null) {
@@ -73,14 +54,11 @@ export default function TestimonialsPage() {
     }
   }, [tenant, formData]);
 
-  const updateFormData = <K extends keyof NonNullable<typeof formData>>(
-    key: K,
-    value: NonNullable<typeof formData>[K]
-  ) => {
+  const updateFormData = <K extends keyof TestimonialsFormData>(key: K, value: TestimonialsFormData[K]) => {
     if (formData) setFormData({ ...formData, [key]: value });
   };
 
-  // ─── Soft warning: kabari kalau ada field kosong ──────────────────────
+  // ─── Soft warning ──────────────────────────────────────────────────────
   const checkEmptyFields = () => {
     if (!formData) return;
     const missing: string[] = [];
@@ -146,7 +124,8 @@ export default function TestimonialsPage() {
           </div>
         ) : (
           <div className="flex flex-col pb-20 lg:pb-0">
-            {/* ── Header ──────────────────────────────────────────── */}
+
+            {/* ── Header ── */}
             <div>
               <div className="flex items-center justify-center lg:justify-between mb-5">
                 <div className="hidden lg:flex">
@@ -155,9 +134,7 @@ export default function TestimonialsPage() {
                     Sebelumnya
                   </Button>
                 </div>
-
                 <StepIndicator currentStep={currentStep} />
-
                 <div className="hidden lg:flex">
                   <Button variant="ghost" size="sm" onClick={handleNext}>
                     Selanjutnya
@@ -165,164 +142,26 @@ export default function TestimonialsPage() {
                   </Button>
                 </div>
               </div>
-
               <div className="text-center mb-6">
                 <h3 className="text-sm font-semibold">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{STEPS[currentStep].desc}</p>
               </div>
             </div>
 
-            {/* ── Body ────────────────────────────────────────────── */}
+            {/* ── Body ── */}
             <div className="min-h-[280px]">
               {currentStep === 0 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="testimonialsTitle">Judul Section</Label>
-                    <Input
-                      id="testimonialsTitle"
-                      placeholder="Kata Mereka"
-                      value={formData.testimonialsTitle}
-                      onChange={(e) => updateFormData('testimonialsTitle', e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">Heading utama Testimonials Section</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="testimonialsSubtitle">Subtitle Section</Label>
-                    <Input
-                      id="testimonialsSubtitle"
-                      placeholder="Apa kata pelanggan tentang kami"
-                      value={formData.testimonialsSubtitle}
-                      onChange={(e) => updateFormData('testimonialsSubtitle', e.target.value)}
-                    />
-                    <p className="text-xs text-muted-foreground">Sub-heading di bawah judul</p>
-                  </div>
-                </div>
+                <StepHeader formData={formData} updateFormData={updateFormData} />
               )}
-
               {currentStep === 1 && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <Label>Daftar Testimonial</Label>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        const newTestimonial: Testimonial = {
-                          id: Math.random().toString(36).substring(2, 9),
-                          name: '',
-                          role: '',
-                          content: '',
-                        };
-                        updateFormData('testimonials', [...formData.testimonials, newTestimonial]);
-                      }}
-                    >
-                      + Tambah Testimonial
-                    </Button>
-                  </div>
-
-                  {formData.testimonials.length === 0 ? (
-                    <div className="flex items-center justify-center min-h-[200px] border-2 border-dashed rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        Belum ada testimonial. Klik &quot;Tambah Testimonial&quot; untuk menambahkan.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {formData.testimonials.map((testimonial, index) => (
-                        <Card key={testimonial.id || index} className="p-4">
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium">Testimonial #{index + 1}</span>
-                              <Button
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                className="text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  const updated = formData.testimonials.filter((_, i) => i !== index);
-                                  updateFormData('testimonials', updated);
-                                }}
-                              >
-                                Hapus
-                              </Button>
-                            </div>
-                            <div className="grid gap-3 md:grid-cols-2">
-                              <div className="space-y-1">
-                                <Label className="text-xs">Nama Pelanggan</Label>
-                                <Input
-                                  placeholder="John Doe"
-                                  value={testimonial.name}
-                                  onChange={(e) => {
-                                    const updated = [...formData.testimonials];
-                                    updated[index] = { ...updated[index], name: e.target.value };
-                                    updateFormData('testimonials', updated);
-                                  }}
-                                />
-                              </div>
-                              <div className="space-y-1">
-                                <Label className="text-xs">Role/Pekerjaan (Opsional)</Label>
-                                <Input
-                                  placeholder="Food Blogger"
-                                  value={testimonial.role}
-                                  onChange={(e) => {
-                                    const updated = [...formData.testimonials];
-                                    updated[index] = { ...updated[index], role: e.target.value };
-                                    updateFormData('testimonials', updated);
-                                  }}
-                                />
-                              </div>
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Avatar (Opsional)</Label>
-                              <div className="max-w-[120px]">
-                                <ImageUpload
-                                  value={testimonial.avatar}
-                                  onChange={(url) => {
-                                    const updated = [...formData.testimonials];
-                                    updated[index] = { ...updated[index], avatar: url };
-                                    updateFormData('testimonials', updated);
-                                  }}
-                                  onRemove={() => {
-                                    const updated = [...formData.testimonials];
-                                    updated[index] = { ...updated[index], avatar: '' };
-                                    updateFormData('testimonials', updated);
-                                  }}
-                                  folder="fibidy/testimonial-avatars"
-                                  aspectRatio={1}
-                                  placeholder="Upload avatar"
-                                />
-                              </div>
-                              <p className="text-xs text-muted-foreground">Square 200x200px, PNG/JPG</p>
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs">Isi Testimoni</Label>
-                              <Textarea
-                                placeholder="Produknya sangat berkualitas dan pelayanannya memuaskan!"
-                                rows={3}
-                                value={testimonial.content}
-                                onChange={(e) => {
-                                  const updated = [...formData.testimonials];
-                                  updated[index] = { ...updated[index], content: e.target.value };
-                                  updateFormData('testimonials', updated);
-                                }}
-                              />
-                              <p className="text-xs text-muted-foreground">Rekomendasi: 50-150 kata</p>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <StepTestimoni formData={formData} updateFormData={updateFormData} />
               )}
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Mobile Nav ───────────────────────────────────────────── */}
+      {/* ── Mobile Nav ── */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center justify-between z-40">
         <Button variant="ghost" size="sm" onClick={handlePrev} className={currentStep > 0 ? '' : 'invisible'}>
           <ChevronLeft className="h-4 w-4 mr-1" />
@@ -334,13 +173,11 @@ export default function TestimonialsPage() {
         </Button>
       </div>
 
-      {/* ── Preview ──────────────────────────────────────────────── */}
+      {/* ── Preview ── */}
       <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} onSave={handleSave} isSaving={isSaving} title="Preview Testimonials Section">
         {formData && (
           <>
-            <style
-              dangerouslySetInnerHTML={{ __html: generateThemeCSS(tenant?.theme?.primaryColor) }}
-            />
+            <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(tenant?.theme?.primaryColor) }} />
             {formData.testimonials.length === 0 ? (
               <div className="border rounded-lg p-8 bg-muted/20 text-center mt-4">
                 <p className="text-muted-foreground">

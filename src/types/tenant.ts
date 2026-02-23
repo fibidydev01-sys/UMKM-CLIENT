@@ -84,6 +84,12 @@ export interface ShippingMethods {
   couriers: Courier[];
 }
 
+export interface SeoFormData {
+  metaTitle: string;
+  metaDescription: string;
+  socialLinks: SocialLinks;
+}
+
 // ==========================================
 // TENANT INTERFACES
 // ==========================================
@@ -163,6 +169,7 @@ export interface Tenant {
   dnsRecords?: import('./domain').DnsInstructions | null;
   customDomainAddedAt?: string | null;
   customDomainVerifiedAt?: string | null;
+  customDomainRemovedAt?: string | null;
 
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
@@ -306,6 +313,66 @@ export interface UpdateTenantInput {
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
+}
+
+// ==========================================
+// HERO SECTION FORM DATA
+// ==========================================
+export interface HeroFormData {
+  name: string;
+  description: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  heroCtaText: string;
+  heroBackgroundImage: string;
+  logo: string;
+  primaryColor: string;
+  category: string;
+}
+
+export interface AboutFormData {
+  aboutTitle: string;
+  aboutSubtitle: string;
+  aboutContent: string;
+  aboutImage: string;
+  aboutFeatures: FeatureItem[];
+}
+
+export interface TestimonialsFormData {
+  testimonialsTitle: string;
+  testimonialsSubtitle: string;
+  testimonials: Testimonial[];
+}
+
+export interface ContactFormData {
+  contactTitle: string;
+  contactSubtitle: string;
+  contactMapUrl: string;
+  contactShowMap: boolean;
+  contactShowForm: boolean;
+  phone: string;
+  whatsapp: string;
+  address: string;
+}
+
+export interface CtaFormData {
+  ctaTitle: string;
+  ctaSubtitle: string;
+  ctaButtonText: string;
+  ctaButtonLink: string;
+  ctaButtonStyle: 'primary' | 'secondary' | 'outline';
+}
+
+export interface PembayaranFormData {
+  currency: string;
+  taxRate: number;
+  paymentMethods: PaymentMethods;
+}
+
+export interface PengirimanFormData {
+  freeShippingThreshold: number | null;
+  defaultShippingCost: number;
+  shippingMethods: ShippingMethods;
 }
 
 // ==========================================

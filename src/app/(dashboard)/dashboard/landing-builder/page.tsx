@@ -62,7 +62,7 @@ export default function LandingBuilderPage() {
 
   // UI State
   const [activeSection, setActiveSection] = useState<SectionType>('hero');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [drawerState, setDrawerState] = useState<DrawerState>('collapsed');
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [device] = useState<DeviceType>('desktop');

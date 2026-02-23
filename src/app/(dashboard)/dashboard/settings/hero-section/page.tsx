@@ -3,12 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ImageUpload } from '@/components/upload';
 import { PreviewModal } from '@/components/settings';
 import { Hero1 } from '@/components/landing/blocks';
 import { generateThemeCSS } from '@/lib/theme';
@@ -16,6 +11,8 @@ import { toast } from 'sonner';
 import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import type { HeroFormData } from '@/types';
+import { StepIdentitas, StepCerita, StepTampilan } from '@/components/settings/hero-section';
 
 // ─── Theme colors ──────────────────────────────────────────────────────────
 const THEME_COLORS = [
@@ -68,18 +65,7 @@ export default function HeroSectionPage() {
   const [isRemovingHeroBg, setIsRemovingHeroBg] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
-
-  const [formData, setFormData] = useState<{
-    name: string;
-    description: string;
-    heroTitle: string;
-    heroSubtitle: string;
-    heroCtaText: string;
-    heroBackgroundImage: string;
-    logo: string;
-    primaryColor: string;
-    category: string;
-  } | null>(null);
+  const [formData, setFormData] = useState<HeroFormData | null>(null);
 
   useEffect(() => {
     if (tenant && formData === null) {
@@ -98,10 +84,7 @@ export default function HeroSectionPage() {
     }
   }, [tenant, formData]);
 
-  const updateFormData = <K extends keyof NonNullable<typeof formData>>(
-    key: K,
-    value: NonNullable<typeof formData>[K]
-  ) => {
+  const updateFormData = <K extends keyof HeroFormData>(key: K, value: HeroFormData[K]) => {
     if (formData) setFormData({ ...formData, [key]: value });
   };
 
@@ -148,7 +131,7 @@ export default function HeroSectionPage() {
     updateFormData('heroCtaText', value);
   };
 
-  // ─── Soft warning: kabari kalau ada field kosong ──────────────────────
+  // ─── Soft warning ──────────────────────────────────────────────────────
   const checkEmptyFields = () => {
     if (!formData) return;
     const missing: string[] = [];
@@ -226,7 +209,7 @@ export default function HeroSectionPage() {
         ) : (
           <div className="flex flex-col pb-20 lg:pb-0">
 
-            {/* ── Header ──────────────────────────────────────────── */}
+            {/* ── Header ── */}
             <div>
               <div className="flex items-center justify-center lg:justify-between mb-5">
                 <div className="hidden lg:flex">
@@ -235,9 +218,7 @@ export default function HeroSectionPage() {
                     Sebelumnya
                   </Button>
                 </div>
-
                 <StepIndicator currentStep={currentStep} />
-
                 <div className="hidden lg:flex">
                   <Button variant="ghost" size="sm" onClick={handleNext}>
                     Selanjutnya
@@ -245,186 +226,43 @@ export default function HeroSectionPage() {
                   </Button>
                 </div>
               </div>
-
               <div className="text-center mb-6">
                 <h3 className="text-sm font-semibold">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground mt-0.5">{STEPS[currentStep].desc}</p>
               </div>
             </div>
 
-            {/* ── Body ────────────────────────────────────────────── */}
+            {/* ── Body ── */}
             <div className="min-h-[280px]">
-
-              {/* ── STEP 0: Identitas Toko ── */}
               {currentStep === 0 && (
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="store-name" className="block text-center">Nama Toko</Label>
-                    <Input
-                      id="store-name"
-                      placeholder="Burger China"
-                      value={formData.name}
-                      onChange={(e) => updateFormData('name', e.target.value)}
-                      className="text-center"
-                    />
-                  </div>
-
-                  <div className="space-y-2 flex flex-col items-center">
-                    <Label className="block text-center w-full">Logo Toko</Label>
-                    <div className="w-[140px]">
-                      <ImageUpload
-                        value={formData.logo}
-                        onChange={(url) => updateFormData('logo', url)}
-                        onRemove={handleRemoveLogo}
-                        disabled={isRemovingLogo}
-                        folder="fibidy/logos"
-                        aspectRatio={1}
-                        placeholder="Upload logo"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground text-center">200x200px, PNG/JPG</p>
-                  </div>
-
-                  <div className="space-y-1 flex flex-col items-center">
-                    <span className="text-xs text-muted-foreground text-center block">Kategori Toko</span>
-                    <div>
-                      <span className="inline-flex items-center text-xs bg-muted px-2.5 py-0.5 rounded-full">
-                        {formData.category || 'Belum dipilih'}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground text-center">
-                      Kategori tidak dapat diubah setelah pendaftaran
-                    </p>
-                  </div>
-                </div>
+                <StepIdentitas
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onRemoveLogo={handleRemoveLogo}
+                  isRemovingLogo={isRemovingLogo}
+                />
               )}
-
-              {/* ── STEP 1: Cerita Toko ── */}
               {currentStep === 1 && (
-                <div className="space-y-6">
-
-                  <Field>
-                    <FieldLabel htmlFor="heroTitle" className="block text-center">
-                      Hero Title
-                    </FieldLabel>
-                    <FieldDescription className="text-center">
-                      Headline utama yang pertama dilihat pengunjung. Buat semenarik dan sesingkat mungkin — maksimal 6 kata.
-                    </FieldDescription>
-                    <Textarea
-                      id="heroTitle"
-                      placeholder="Burger Premium dengan Cita Rasa Asia Fusion"
-                      value={formData.heroTitle}
-                      onChange={(e) => updateFormData('heroTitle', e.target.value)}
-                      className="text-center resize-none"
-                      rows={2}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="heroSubtitle" className="block text-center">
-                      Subtitle
-                    </FieldLabel>
-                    <FieldDescription className="text-center">
-                      Satu kalimat pendek yang menjelaskan value toko kamu. Contoh: &quot;Diantar dalam 30 menit, dijamin segar.&quot;
-                    </FieldDescription>
-                    <Textarea
-                      id="heroSubtitle"
-                      placeholder="Rasakan sensasi burger berkualitas, diantar langsung ke pintumu"
-                      value={formData.heroSubtitle}
-                      onChange={(e) => updateFormData('heroSubtitle', e.target.value)}
-                      className="text-center resize-none"
-                      rows={2}
-                    />
-                  </Field>
-
-                  <Field>
-                    <FieldLabel htmlFor="store-description" className="block text-center">
-                      Deskripsi Singkat
-                    </FieldLabel>
-                    <FieldDescription className="text-center">
-                      Tagline toko yang muncul di profil dan hasil pencarian. Ceritakan keunikan tokomu dalam 1–2 kalimat.
-                    </FieldDescription>
-                    <Textarea
-                      id="store-description"
-                      placeholder="Kami menghadirkan burger premium dengan bahan lokal pilihan dan cita rasa Asia fusion yang autentik"
-                      value={formData.description}
-                      onChange={(e) => updateFormData('description', e.target.value)}
-                      className="text-center resize-none"
-                      rows={3}
-                    />
-                  </Field>
-
-                </div>
+                <StepCerita
+                  formData={formData}
+                  updateFormData={updateFormData}
+                />
               )}
-
-              {/* ── STEP 2: Tampilan & CTA ── */}
               {currentStep === 2 && (
-                <div className="space-y-6">
-                  <div className="space-y-3">
-                    <Label className="block text-center">Warna Tema</Label>
-                    <div className="grid grid-cols-6 gap-2">
-                      {THEME_COLORS.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          onClick={() => updateFormData('primaryColor', color.value)}
-                          className={cn(
-                            'flex flex-col items-center gap-1 p-1.5 rounded-lg border-2 transition-all',
-                            formData.primaryColor === color.value
-                              ? 'border-primary bg-primary/5'
-                              : 'border-transparent hover:border-muted-foreground/20'
-                          )}
-                        >
-                          <div className={cn('w-7 h-7 rounded-full flex items-center justify-center', color.class)}>
-                            {formData.primaryColor === color.value && (
-                              <span className="text-white text-xs font-bold">&#10003;</span>
-                            )}
-                          </div>
-                          <span className="text-xs leading-none">{color.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 flex flex-col items-center">
-                    <Label className="block text-center w-full">Hero Background</Label>
-                    <div className="w-full max-w-[200px]">
-                      <ImageUpload
-                        value={formData.heroBackgroundImage}
-                        onChange={(url) => updateFormData('heroBackgroundImage', url)}
-                        onRemove={handleRemoveHeroBg}
-                        disabled={isRemovingHeroBg}
-                        folder="fibidy/hero-backgrounds"
-                        aspectRatio={3 / 4}
-                        placeholder="Upload background"
-                      />
-                    </div>
-                    <p className="text-xs text-muted-foreground text-center">Portrait 3:4 · 1080x1440px, JPG/PNG</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="heroCtaText" className="block text-center">Teks Tombol CTA</Label>
-                    <Input
-                      id="heroCtaText"
-                      placeholder="Pesan Sekarang"
-                      value={formData.heroCtaText}
-                      onChange={(e) => handleCtaTextChange(e.target.value)}
-                      className="text-center"
-                    />
-                    <p className="text-xs text-muted-foreground text-center">
-                      Max 2 kata / 15 karakter &middot; Link:{' '}
-                      <code className="font-mono text-primary">/products</code>
-                    </p>
-                  </div>
-                </div>
+                <StepTampilan
+                  formData={formData}
+                  updateFormData={updateFormData}
+                  onRemoveHeroBg={handleRemoveHeroBg}
+                  isRemovingHeroBg={isRemovingHeroBg}
+                  onCtaTextChange={handleCtaTextChange}
+                />
               )}
-
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Mobile Nav ───────────────────────────────────────────── */}
+      {/* ── Mobile Nav ── */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center justify-between z-40">
         <Button variant="ghost" size="sm" onClick={handlePrev} className={currentStep > 0 ? '' : 'invisible'}>
           <ChevronLeft className="h-4 w-4 mr-1" />
@@ -436,7 +274,7 @@ export default function HeroSectionPage() {
         </Button>
       </div>
 
-      {/* ── Preview ──────────────────────────────────────────────── */}
+      {/* ── Preview ── */}
       <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} onSave={handleSave} isSaving={isSaving} title="Preview Hero Section">
         {formData && (
           <>
