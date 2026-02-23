@@ -10,9 +10,10 @@ import { Globe, AlertTriangle, Info, Trash2, RefreshCw } from 'lucide-react';
 
 interface DomainInputFormProps {
   onSubmit: (domain: string) => Promise<boolean>;
+  onCancel?: () => void; // ✅ Tombol batal — tutup form
 }
 
-export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
+export function DomainInputForm({ onSubmit, onCancel }: DomainInputFormProps) {
   const tenant = useAuthStore((s) => s.tenant);
 
   const [domain, setDomain] = useState('');
@@ -23,15 +24,12 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
   // CEK KONDISI DARI TENANT DATA (FE ONLY)
   // ==========================================
 
-  // Apakah tenant pernah punya domain sebelumnya (sudah dihapus)?
+  // Pernah punya domain sebelumnya (sudah dihapus)?
   const hadDomainBefore = !!tenant?.customDomainRemovedAt;
 
-  // Apakah tenant saat ini sedang punya domain aktif/pending?
-  // (harusnya ga sampai sini kalau ada domain, tapi safety check)
+  // Safety check — harusnya ga sampai sini kalau ada domain aktif
   const hasActiveDomain = !!tenant?.customDomain;
 
-  // Hitung berapa kali sudah request (dari customDomainRemovedAt sebagai sinyal)
-  // Kalau mau lebih strict bisa tambah field domainRequestCount di tenant
   const isReRequest = hadDomainBefore;
 
   // ==========================================
@@ -55,7 +53,7 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
       return;
     }
 
-    // Kalau ini re-request (pernah hapus), minta konfirmasi dulu
+    // Re-request → minta konfirmasi dulu
     if (isReRequest && !confirmDelete) {
       setConfirmDelete(true);
       return;
@@ -71,7 +69,7 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
   };
 
   // ==========================================
-  // RENDER: Kalau ada domain aktif (safety guard)
+  // SAFETY GUARD: Ada domain aktif
   // ==========================================
   if (hasActiveDomain) {
     return (
@@ -86,37 +84,36 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
   }
 
   // ==========================================
-  // RENDER: Form utama
+  // RENDER
   // ==========================================
   return (
     <div className="space-y-4">
 
-      {/* ⚠️ WARNING: Kalau ini re-request setelah hapus domain */}
+      {/* WARNING: Re-request setelah hapus domain */}
       {isReRequest && (
         <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertDescription className="text-amber-800 dark:text-amber-200 space-y-1">
             <p className="font-semibold">⚠️ Perhatian — Domain Tidak Bisa Di-rename</p>
             <p className="text-sm">
-              Kamu sebelumnya sudah pernah mendaftarkan domain. Mendaftarkan domain baru
-              berarti kamu harus <strong>setup DNS dari awal</strong> di registrar domain kamu.
+              Mendaftarkan domain baru berarti kamu harus{' '}
+              <strong>setup DNS dari awal</strong> di registrar domain kamu.
             </p>
             <p className="text-sm">
-              Domain lama:{' '}
+              Domain lama dihapus pada:{' '}
               <code className="bg-amber-100 dark:bg-amber-900 px-1.5 py-0.5 rounded text-xs">
-                dihapus pada {tenant?.customDomainRemovedAt
+                {tenant?.customDomainRemovedAt
                   ? new Date(tenant.customDomainRemovedAt).toLocaleDateString('id-ID', {
-                    day: 'numeric', month: 'long', year: 'numeric'
+                    day: 'numeric', month: 'long', year: 'numeric',
                   })
-                  : '-'
-                }
+                  : '-'}
               </code>
             </p>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Form Input */}
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="domain">
@@ -132,14 +129,14 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
                 value={domain}
                 onChange={(e) => {
                   setDomain(e.target.value);
-                  setConfirmDelete(false); // Reset konfirmasi kalau user edit domain
+                  setConfirmDelete(false);
                 }}
                 className="pl-10"
                 disabled={isSubmitting}
               />
             </div>
 
-            {/* Tombol berubah jadi konfirmasi kalau re-request */}
+            {/* Tombol submit — berubah jadi konfirmasi kalau re-request */}
             {confirmDelete ? (
               <Button
                 type="submit"
@@ -161,15 +158,14 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
               </Button>
             ) : (
               <Button type="submit" disabled={isSubmitting || !domain}>
-                {isSubmitting ? 'Memproses...' : 'Lanjutkan'}
+                {isSubmitting ? 'Memproses...' : 'Simpan'}
               </Button>
             )}
           </div>
 
-          {/* Hint teks di bawah input */}
           {confirmDelete ? (
             <p className="text-xs text-destructive font-medium">
-              ⚠️ Klik &#34;Ya, Daftar Domain Baru&#34; untuk konfirmasi. Kamu perlu setup DNS baru dari awal.
+              ⚠️ Kamu perlu setup DNS baru dari awal di registrar domain kamu.
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
@@ -178,7 +174,7 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
           )}
         </div>
 
-        {/* Cancel konfirmasi */}
+        {/* Cancel konfirmasi re-request */}
         {confirmDelete && (
           <Button
             type="button"
@@ -190,20 +186,32 @@ export function DomainInputForm({ onSubmit }: DomainInputFormProps) {
             Batal
           </Button>
         )}
+
+        {/* Tombol Batal form (kembali ke empty state) */}
+        {!confirmDelete && onCancel && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={onCancel}
+            className="w-full"
+            disabled={isSubmitting}
+          >
+            Batal
+          </Button>
+        )}
       </form>
 
       {/* Info box */}
       <div className="bg-muted/50 rounded-lg p-4 space-y-2">
         <div className="flex items-center gap-2">
           <Info className="h-4 w-4 text-muted-foreground shrink-0" />
-          <h4 className="text-sm font-medium">
-            {isReRequest ? 'Yang perlu kamu siapkan:' : 'Persyaratan:'}
-          </h4>
+          <h4 className="text-sm font-medium">Persyaratan:</h4>
         </div>
         <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside ml-6">
           <li>Kamu sudah membeli domain dari registrar (Niagahoster, GoDaddy, dll)</li>
           <li>Kamu punya akses ke pengaturan DNS domain tersebut</li>
-          <li>Proses setup memakan waktu 10–30 menit</li>
+          <li>Setelah disimpan, kamu akan mendapat DNS records untuk dipasang di registrar</li>
           {isReRequest && (
             <li className="text-amber-600 dark:text-amber-400 font-medium">
               Domain tidak bisa di-rename — harus hapus lalu daftar ulang

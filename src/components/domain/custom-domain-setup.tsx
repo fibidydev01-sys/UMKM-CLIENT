@@ -4,10 +4,10 @@ import { useCallback, useState } from 'react';
 import { useDomainSetup } from '@/hooks';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Loader2, CheckCircle2, Eye } from 'lucide-react';
+import { AlertCircle, Loader2, CheckCircle2, Plus, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DomainInputForm } from './domain-input-form';
-import { DnsSetupModal } from './dns-setup-modal';
+import { DnsInstructionsCard } from './dns-instructions-card';
 import { DomainStatusCard } from './domain-status-card';
 
 export function CustomDomainSetup() {
@@ -15,15 +15,15 @@ export function CustomDomainSetup() {
     step,
     error,
     dnsInstructions,
-    sslStatus,
     dnsStatus,
+    sslStatus,
     requestDomain,
     removeDomain,
     resetError,
   } = useDomainSetup();
 
-  // ✅ State terpisah untuk modal — tidak terikat ke step
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  // Kontrol form input muncul/tidak
+  const [showForm, setShowForm] = useState(false);
 
   // ==========================================
   // HANDLERS
@@ -33,8 +33,7 @@ export function CustomDomainSetup() {
     async (domain: string) => {
       const success = await requestDomain(domain);
       if (success) {
-        // Otomatis buka modal saat domain baru berhasil didaftarkan
-        setIsModalOpen(true);
+        setShowForm(false); // Tutup form setelah berhasil masuk DB
       }
       return success;
     },
@@ -43,17 +42,11 @@ export function CustomDomainSetup() {
 
   const handleRemove = useCallback(async () => {
     await removeDomain();
-    setIsModalOpen(false);
+    setShowForm(false);
   }, [removeDomain]);
 
-  // ✅ Tutup modal TANPA hapus domain — polling tetap jalan di background!
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-  }, []);
-
-  // ✅ Buka modal lagi dari banner
-  const handleOpenModal = useCallback(() => {
-    setIsModalOpen(true);
+  const handleCancelForm = useCallback(() => {
+    setShowForm(false);
   }, []);
 
   // ==========================================
@@ -63,63 +56,13 @@ export function CustomDomainSetup() {
   return (
     <div className="space-y-6">
 
-      {/* ============================================
-          BANNER: Muncul saat step=instructions
-          DAN modal sedang ditutup
-          ============================================ */}
-      {step === 'instructions' && !isModalOpen && (
-        <Alert className="border-amber-200 bg-amber-50 dark:bg-amber-950">
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-          <AlertDescription className="text-amber-800 dark:text-amber-200">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-semibold">🔄 Setup DNS Sedang Berlangsung</p>
-                <p className="text-sm mt-0.5">
-                  Auto-polling aktif setiap 10 detik. Halaman akan otomatis update saat DNS terverifikasi.
-                </p>
-              </div>
-              {/* ✅ TOMBOL BUKA MODAL LAGI */}
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleOpenModal}
-                className="shrink-0 border-amber-400 text-amber-800 hover:bg-amber-100 dark:text-amber-200 dark:hover:bg-amber-900"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Lihat Status DNS
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* ============================================
-          DNS SETUP MODAL
-          isOpen dikontrol state — BUKAN hardcoded true
-          ============================================ */}
-      {step === 'instructions' && dnsInstructions && (
-        <DnsSetupModal
-          isOpen={isModalOpen}
-          domain={dnsInstructions.cname.value.replace('cname.vercel-dns.com', '')}
-          instructions={dnsInstructions}
-          dnsStatus={dnsStatus}
-          onClose={handleCloseModal}  // ← Tutup modal saja, polling tetap jalan
-          onCancel={handleRemove}     // ← Hapus domain, keluar dari flow
-        />
-      )}
-
-      {/* ============================================
-          ERROR ALERT (di luar modal)
-          ============================================ */}
-      {error && step !== 'instructions' && (
+      {/* ERROR ALERT */}
+      {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription className="flex items-center justify-between">
             <span>{error}</span>
-            <button
-              onClick={resetError}
-              className="text-sm underline hover:no-underline ml-4"
-            >
+            <button onClick={resetError} className="text-sm underline hover:no-underline ml-4">
               Tutup
             </button>
           </AlertDescription>
@@ -127,29 +70,69 @@ export function CustomDomainSetup() {
       )}
 
       {/* ============================================
-          STATE 1: IDLE / INPUT
-          Belum ada domain → tampil form
+          STATE 1: IDLE
+          Belum ada domain → Tombol "Tambah Domain"
+          Klik → Form muncul → Submit → Langsung ke DB
           ============================================ */}
       {(step === 'idle' || step === 'input') && (
         <Card>
           <CardHeader>
-            <CardTitle>Tambah Custom Domain</CardTitle>
-            <CardDescription>
-              Gunakan domain sendiri (contoh: tokoku.com) untuk toko online Anda
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe className="h-5 w-5" />
+                  Custom Domain
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  Hubungkan domain sendiri ke toko online Anda
+                </CardDescription>
+              </div>
+
+              {/* Tombol Tambah — hanya muncul kalau form belum terbuka */}
+              {!showForm && (
+                <Button onClick={() => setShowForm(true)}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Tambah Domain
+                </Button>
+              )}
+            </div>
           </CardHeader>
+
           <CardContent>
-            {/* DomainInputForm handle cek re-request dari tenant store */}
-            <DomainInputForm onSubmit={handleDomainSubmit} />
+            {/* Form input — muncul saat tombol diklik */}
+            {showForm ? (
+              <DomainInputForm
+                onSubmit={handleDomainSubmit}
+                onCancel={handleCancelForm}
+              />
+            ) : (
+              /* Empty state */
+              <div className="text-center py-8 text-muted-foreground">
+                <Globe className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">Belum ada custom domain</p>
+                <p className="text-xs mt-1">
+                  Klik &ldquo;Tambah Domain&rdquo; untuk menghubungkan domain kamu
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
 
       {/* ============================================
           STATE 2: INSTRUCTIONS
-          Domain tersimpan di DB, menunggu DNS
-          → Ditangani DnsSetupModal + Banner di atas
+          ✅ Domain SUDAH tersimpan di DB
+          User tinggal copy DNS records & pasang di registrar
+          Auto-polling jalan di background
+          Bisa langsung hapus kalau mau ganti
           ============================================ */}
+      {step === 'instructions' && dnsInstructions && (
+        <DnsInstructionsCard
+          dnsInstructions={dnsInstructions}
+          dnsStatus={dnsStatus}
+          onRemove={handleRemove}
+        />
+      )}
 
       {/* ============================================
           STATE: VERIFYING (manual fallback)
@@ -171,8 +154,7 @@ export function CustomDomainSetup() {
       )}
 
       {/* ============================================
-          STATE 3: VERIFIED
-          DNS ok, menunggu SSL certificate
+          STATE 3: VERIFIED — DNS ok, tunggu SSL
           ============================================ */}
       {step === 'verified' && (
         <Card>
@@ -216,7 +198,7 @@ export function CustomDomainSetup() {
 
             <Alert>
               <AlertDescription className="text-xs">
-                💡 <strong>Info:</strong> Halaman ini akan otomatis update ketika SSL certificate sudah aktif.
+                💡 Halaman ini akan otomatis update ketika SSL certificate sudah aktif.
               </AlertDescription>
             </Alert>
           </CardContent>
@@ -225,7 +207,6 @@ export function CustomDomainSetup() {
 
       {/* ============================================
           STATE 4: ACTIVE 🎉
-          Domain fully live dengan HTTPS
           ============================================ */}
       {step === 'active' && (
         <DomainStatusCard onRemove={handleRemove} />
