@@ -1,77 +1,39 @@
 // ==========================================
-// CUSTOM DOMAIN TYPES (AUTO-POLLING VERSION)
+// CUSTOM DOMAIN TYPES
+// Simple & Clean — No over-engineering
 // ==========================================
 
 /**
- * DNS Record instruction (single record)
+ * DNS Record dari Vercel
  */
 export interface DnsRecord {
   type: 'CNAME' | 'TXT' | 'A';
   name: string;
   value: string;
-  ttl: string;
-  note: string;
+  ttl?: string;
 }
 
 /**
- * DNS Instructions object (stored in tenant.dnsRecords)
+ * Response dari Vercel saat add/get domain
+ * Vercel yang tentukan DNS records apa yang dipasang
  */
-export interface DnsInstructions {
-  cname: DnsRecord;
-  cnameWWW: DnsRecord;
-  txtVerification: DnsRecord;
-}
-
-/**
- * Domain verification check results
- */
-export interface DomainChecks {
-  cname: boolean;
-  txt: boolean;
-}
-
-// ==========================================
-// 🆕 AUTO-POLLING TYPES
-// ==========================================
-
-/**
- * Individual DNS record status
- */
-export type DnsRecordStatus = 'pending' | 'checking' | 'verified' | 'failed';
-
-/**
- * DNS status response from /check-status endpoint
- */
-export interface DnsStatusResponse {
-  cname: DnsRecordStatus;
-  cnameWWW: DnsRecordStatus;
-  txt: DnsRecordStatus;
-  allVerified: boolean;
-  lastChecked?: string;
+export interface VercelDomainInfo {
+  name: string;
+  verified: boolean;
+  verification?: DnsRecord[];   // Records yang harus dipasang user
+  configured?: boolean;
+  sslStatus?: 'pending' | 'active' | 'failed';
 }
 
 // ==========================================
 // API REQUEST TYPES
 // ==========================================
 
-/**
- * POST /tenants/domain/request - body
- */
 export interface RequestDomainInput {
   tenantId: string;
   customDomain: string;
 }
 
-/**
- * POST /tenants/domain/verify - body
- */
-export interface VerifyDomainInput {
-  tenantId: string;
-}
-
-/**
- * DELETE /tenants/domain/remove - body
- */
 export interface RemoveDomainInput {
   tenantId: string;
 }
@@ -81,43 +43,30 @@ export interface RemoveDomainInput {
 // ==========================================
 
 /**
- * POST /tenants/domain/request - response
+ * POST /tenants/domain/request
+ * Backend add domain ke Vercel → return DNS records dari Vercel
  */
 export interface RequestDomainResponse {
   success: boolean;
   tenant: import('./tenant').Tenant;
-  instructions: DnsInstructions;
+  dnsRecords: DnsRecord[];       // Dari Vercel langsung!
+  verified: boolean;
 }
 
 /**
- * POST /tenants/domain/verify - response (success)
+ * GET /tenants/domain/status
+ * Backend tanya Vercel → return status terkini
  */
-export interface VerifyDomainResponse {
-  success: boolean;
-  message: string;
+export interface DomainStatusResponse {
+  verified: boolean;
+  configured: boolean;
+  sslStatus: 'pending' | 'active' | 'failed' | 'not_configured';
+  dnsRecords: DnsRecord[];       // Kalau belum verified, tampilkan lagi
   domain: string;
 }
 
 /**
- * POST /tenants/domain/verify - response (failed)
- */
-export interface VerifyDomainErrorResponse {
-  error: string;
-  checks: DomainChecks;
-}
-
-/**
- * GET /tenants/domain/ssl-status - response
- */
-export interface SslStatusResponse {
-  sslStatus: 'pending' | 'active' | 'failed' | 'not_configured' | 'unknown';
-  domain?: string;
-  issuedAt?: string | null;
-  message?: string;
-}
-
-/**
- * DELETE /tenants/domain/remove - response
+ * DELETE /tenants/domain/remove
  */
 export interface RemoveDomainResponse {
   success: boolean;
@@ -126,27 +75,18 @@ export interface RemoveDomainResponse {
 
 // ==========================================
 // UI STATE TYPES
+// Simple — derived dari tenant data langsung
 // ==========================================
 
 /**
- * Multi-step wizard state
- */
-export type DomainSetupStep =
-  | 'idle'          // Belum mulai / belum ada domain
-  | 'input'         // User input domain
-  | 'instructions'  // Tampilkan DNS instructions (AUTO-POLLING!)
-  | 'verifying'     // Sedang verifikasi (not used in auto-polling)
-  | 'verified'      // DNS verified, SSL pending
-  | 'active'        // SSL active, domain live!
-  | 'error';        // Error state
-
-/**
- * Domain status summary
+ * Status domain tenant — derived dari Tenant object
+ * Tidak perlu state management berlapis
  */
 export interface DomainStatus {
   hasDomain: boolean;
   domain: string | null;
   isVerified: boolean;
-  sslStatus: string | null;
-  isFullyActive: boolean; // verified + SSL active
+  sslStatus: 'pending' | 'active' | 'failed' | 'not_configured' | null;
+  isFullyActive: boolean;        // verified + SSL active
+  dnsRecords: DnsRecord[];       // Records yang harus dipasang
 }

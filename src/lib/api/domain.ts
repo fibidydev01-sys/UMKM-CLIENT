@@ -2,72 +2,56 @@ import { api } from './client';
 import type {
   RequestDomainInput,
   RequestDomainResponse,
-  VerifyDomainInput,
-  VerifyDomainResponse,
-  SslStatusResponse,
+  DomainStatusResponse,
   RemoveDomainInput,
   RemoveDomainResponse,
-  DnsStatusResponse, // 🆕 ADD THIS
 } from '@/types';
 
 // ==========================================
-// DOMAIN API SERVICE (AUTO-POLLING VERSION)
+// DOMAIN API SERVICE
+// Simple — No polling, no magic
 // ==========================================
 
 export const domainApi = {
   /**
-   * 🆕 Check DNS status (for auto-polling)
-   * GET /tenants/domain/check-status?domain=example.com
-   *
-   * Returns individual status for each DNS record.
-   * Called every 10 seconds by frontend auto-polling.
-   */
-  checkDnsStatus: async (domain: string): Promise<DnsStatusResponse> => {
-    return api.get<DnsStatusResponse>('/tenants/domain/check-status', {
-      params: { domain },
-    });
-  },
-
-  /**
-   * Request a custom domain
+   * Request custom domain
    * POST /tenants/domain/request
    *
-   * Generates verification token + DNS instructions.
-   * User must then add DNS records at their registrar.
+   * Backend akan:
+   * 1. Add domain ke Vercel API
+   * 2. Vercel return DNS records yang harus dipasang
+   * 3. Simpan ke DB
+   * 4. Return DNS records ke frontend
    */
   request: async (data: RequestDomainInput): Promise<RequestDomainResponse> => {
     return api.post<RequestDomainResponse>('/tenants/domain/request', data);
   },
 
   /**
-   * Verify DNS records (manual fallback)
-   * POST /tenants/domain/verify
+   * Cek status domain (manual — user yang klik)
+   * GET /tenants/domain/status?tenantId=xxx
    *
-   * Note: With auto-polling, this is rarely needed.
-   * Frontend auto-polling handles verification automatically.
-   */
-  verify: async (data: VerifyDomainInput): Promise<VerifyDomainResponse> => {
-    return api.post<VerifyDomainResponse>('/tenants/domain/verify', data);
-  },
-
-  /**
-   * Check SSL certificate status
-   * GET /tenants/domain/ssl-status?tenantId=xxx
+   * Backend akan:
+   * 1. Tanya Vercel: sudah verified? SSL status?
+   * 2. Update DB kalau ada perubahan
+   * 3. Return status terkini
    *
-   * Polls Vercel API for SSL status.
-   * Auto-updates tenant when SSL becomes active.
+   * Dipanggil HANYA saat user klik "Cek Status"
+   * Tidak ada auto-polling!
    */
-  sslStatus: async (tenantId: string): Promise<SslStatusResponse> => {
-    return api.get<SslStatusResponse>('/tenants/domain/ssl-status', {
+  checkStatus: async (tenantId: string): Promise<DomainStatusResponse> => {
+    return api.get<DomainStatusResponse>('/tenants/domain/status', {
       params: { tenantId },
     });
   },
 
   /**
-   * Remove custom domain
+   * Hapus custom domain
    * DELETE /tenants/domain/remove
    *
-   * Removes from Vercel + resets all domain fields in DB.
+   * Backend akan:
+   * 1. Remove dari Vercel
+   * 2. Reset semua domain fields di DB
    */
   remove: async (data: RemoveDomainInput): Promise<RemoveDomainResponse> => {
     return api.deleteWithBody<RemoveDomainResponse>(

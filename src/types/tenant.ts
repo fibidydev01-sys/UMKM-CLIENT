@@ -166,7 +166,7 @@ export interface Tenant {
   customDomainToken?: string | null;
   sslStatus?: string | null; // 'pending' | 'active' | 'failed'
   sslIssuedAt?: string | null;
-  dnsRecords?: import('./domain').DnsInstructions | null;
+  dnsRecords?: import('./domain').DnsRecord[] | null;
   customDomainAddedAt?: string | null;
   customDomainVerifiedAt?: string | null;
   customDomainRemovedAt?: string | null;
