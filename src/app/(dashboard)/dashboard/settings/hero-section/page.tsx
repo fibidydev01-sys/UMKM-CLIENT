@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PreviewModal } from '@/components/settings';
@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 import type { HeroFormData } from '@/types';
 import { StepIdentitas, StepCerita, StepTampilan } from '@/components/settings/hero-section';
 
-// ─── Theme colors ──────────────────────────────────────────────────────────
+// ─── Constants ─────────────────────────────────────────────────────────────
 const THEME_COLORS = [
   { name: 'Sky', value: '#0ea5e9', class: 'bg-sky-500' },
   { name: 'Emerald', value: '#10b981', class: 'bg-emerald-500' },
@@ -24,30 +24,70 @@ const THEME_COLORS = [
   { name: 'Orange', value: '#f97316', class: 'bg-orange-500' },
 ] as const;
 
-// ─── Wizard steps ──────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Identitas Toko', desc: 'Nama, logo, dan kategori toko Anda' },
-  { title: 'Cerita Toko', desc: 'Judul dan deskripsi di hero banner' },
-  { title: 'Tampilan & CTA', desc: 'Warna tema, background, dan tombol aksi' },
+  { title: 'Identitas Toko', desc: 'Nama, logo, dan kategori' },
+  { title: 'Cerita Toko', desc: 'Judul dan deskripsi hero' },
+  { title: 'Tampilan', desc: 'Warna tema, background, CTA' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
-function StepIndicator({ currentStep }: { currentStep: number }) {
+function StepIndicator({
+  currentStep,
+  onStepClick,
+  size = 'sm',
+}: {
+  currentStep: number;
+  onStepClick?: (i: number) => void;
+  size?: 'sm' | 'lg';
+}) {
   return (
     <div className="flex items-center">
-      {STEPS.map((_, i) => (
+      {STEPS.map((step, i) => (
         <div key={i} className="flex items-center">
-          <div
-            className={cn(
-              'w-2 h-2 rounded-full transition-colors duration-200',
-              i <= currentStep ? 'bg-primary' : 'bg-muted'
+          <div className="flex flex-col items-center gap-2">
+            {/* Dot / number */}
+            <button
+              type="button"
+              onClick={() => i < currentStep && onStepClick?.(i)}
+              className={cn(
+                'flex items-center justify-center rounded-full font-semibold transition-all duration-300 focus-visible:outline-none',
+                size === 'lg' ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]',
+                i < currentStep
+                  ? 'bg-primary text-primary-foreground cursor-pointer hover:opacity-75'
+                  : i === currentStep
+                    ? 'bg-primary text-primary-foreground ring-[3px] ring-primary/25 cursor-default'
+                    : 'bg-muted text-muted-foreground/60 cursor-default'
+              )}
+            >
+              {i < currentStep ? (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                i + 1
+              )}
+            </button>
+
+            {/* Label — desktop lg only */}
+            {size === 'lg' && (
+              <span
+                className={cn(
+                  'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
+                  i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
+                )}
+              >
+                {step.title}
+              </span>
             )}
-          />
+          </div>
+
+          {/* Connector */}
           {i < STEPS.length - 1 && (
             <div
               className={cn(
-                'w-8 h-px transition-colors duration-200',
-                i < currentStep ? 'bg-primary' : 'bg-muted'
+                'h-px mx-2 transition-colors duration-500',
+                size === 'lg' ? 'w-14 mb-[22px]' : 'w-8',
+                i < currentStep ? 'bg-primary' : 'bg-border'
               )}
             />
           )}
@@ -88,7 +128,6 @@ export default function HeroSectionPage() {
     if (formData) setFormData({ ...formData, [key]: value });
   };
 
-  // ─── Remove handlers ───────────────────────────────────────────────────
   const handleRemoveLogo = async () => {
     if (!tenant || !formData) return;
     setIsRemovingLogo(true);
@@ -97,8 +136,7 @@ export default function HeroSectionPage() {
       await tenantsApi.update({ logo: '' });
       await refresh();
       toast.success('Logo berhasil dihapus');
-    } catch (error) {
-      console.error('Failed to remove logo:', error);
+    } catch {
       toast.error('Gagal menghapus logo');
       setFormData({ ...formData, logo: tenant.logo || '' });
     } finally {
@@ -114,8 +152,7 @@ export default function HeroSectionPage() {
       await tenantsApi.update({ heroBackgroundImage: '' });
       await refresh();
       toast.success('Hero background berhasil dihapus');
-    } catch (error) {
-      console.error('Failed to remove hero background:', error);
+    } catch {
       toast.error('Gagal menghapus hero background');
       setFormData({ ...formData, heroBackgroundImage: tenant.heroBackgroundImage || '' });
     } finally {
@@ -123,49 +160,33 @@ export default function HeroSectionPage() {
     }
   };
 
-  // ─── CTA text: max 2 kata, max 15 char ─────────────────────────────────
   const handleCtaTextChange = (value: string) => {
     if (value.length > 15) return;
-    const words = value.split(/\s+/).filter(Boolean);
-    if (words.length > 2) return;
+    if (value.split(/\s+/).filter(Boolean).length > 2) return;
     updateFormData('heroCtaText', value);
   };
 
-  // ─── Soft warning ──────────────────────────────────────────────────────
   const checkEmptyFields = () => {
     if (!formData) return;
-    const missing: string[] = [];
-    if (currentStep === 0) {
-      if (!formData.name) missing.push('Nama Toko');
-      if (!formData.logo) missing.push('Logo');
-    } else if (currentStep === 1) {
-      if (!formData.heroTitle) missing.push('Hero Title');
-      if (!formData.heroSubtitle) missing.push('Subtitle');
-      if (!formData.description) missing.push('Deskripsi');
-    } else if (currentStep === 2) {
-      if (!formData.heroBackgroundImage) missing.push('Background');
-      if (!formData.heroCtaText) missing.push('Teks CTA');
-    }
-    if (missing.length > 0) {
-      toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
-    }
+    const map: Record<number, { key: keyof HeroFormData; label: string }[]> = {
+      0: [{ key: 'name', label: 'Nama Toko' }, { key: 'logo', label: 'Logo' }],
+      1: [{ key: 'heroTitle', label: 'Hero Title' }, { key: 'heroSubtitle', label: 'Subtitle' }, { key: 'description', label: 'Deskripsi' }],
+      2: [{ key: 'heroBackgroundImage', label: 'Background' }, { key: 'heroCtaText', label: 'Teks CTA' }],
+    };
+    const missing = (map[currentStep] || []).filter(({ key }) => !formData[key]).map(({ label }) => label);
+    if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
   };
 
-  // ─── Navigation ────────────────────────────────────────────────────────
   const handleNext = () => {
     checkEmptyFields();
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
-    } else {
-      setShowPreview(true);
-    }
+    if (currentStep < STEPS.length - 1) setCurrentStep((p) => p + 1);
+    else setShowPreview(true);
   };
 
   const handlePrev = () => {
-    if (currentStep > 0) setCurrentStep((prev) => prev - 1);
+    if (currentStep > 0) setCurrentStep((p) => p - 1);
   };
 
-  // ─── Save ──────────────────────────────────────────────────────────────
   const handleSave = async () => {
     if (!tenant || !formData) return;
     setIsSaving(true);
@@ -184,74 +205,176 @@ export default function HeroSectionPage() {
       await refresh();
       toast.success('Hero Section berhasil disimpan');
       setShowPreview(false);
-    } catch (error) {
-      console.error('Failed to save hero section:', error);
+    } catch {
       toast.error('Gagal menyimpan hero section');
     } finally {
       setIsSaving(false);
     }
   };
 
-  // ─── Render ────────────────────────────────────────────────────────────
   const isLoading = tenant === null || formData === null;
+  const isLastStep = currentStep === STEPS.length - 1;
+
+  const stepProps = {
+    formData: formData!,
+    updateFormData,
+  };
 
   return (
-    <div>
-      <div>
-        {isLoading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-2 w-24 mx-auto" />
-            <Skeleton className="h-4 w-40 mx-auto" />
-            <Skeleton className="h-10 w-full max-w-sm mx-auto" />
-            <Skeleton className="h-10 w-full max-w-sm mx-auto" />
-            <Skeleton className="h-10 w-full max-w-sm mx-auto" />
+    <div className="h-full flex flex-col">
+
+      {/* ══════════════════════════ LOADING ══════════════════════════ */}
+      {isLoading ? (
+        <div className="flex-1 space-y-6 py-6">
+          <div className="hidden lg:flex items-center justify-between pb-6 border-b">
+            <div className="space-y-2"><Skeleton className="h-7 w-44" /><Skeleton className="h-4 w-56" /></div>
+            <div className="flex items-center gap-3">
+              {[0, 1, 2].map(i => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="w-8 h-8 rounded-full" />
+                  {i < 2 && <Skeleton className="w-14 h-px" />}
+                </div>
+              ))}
+            </div>
           </div>
-        ) : (
-          <div className="flex flex-col pb-20 lg:pb-0">
+          <Skeleton className="hidden lg:block h-[360px] w-full rounded-lg" />
+          <div className="lg:hidden space-y-4">
+            <div className="flex justify-center gap-3">{[0, 1, 2].map(i => <Skeleton key={i} className="w-6 h-6 rounded-full" />)}</div>
+            <Skeleton className="h-[300px] w-full max-w-sm mx-auto rounded-lg" />
+          </div>
+        </div>
+
+      ) : (
+        <>
+          {/* ══════════════════════ DESKTOP ══════════════════════════ */}
+          <div className="hidden lg:flex lg:flex-col lg:h-full">
+
+            {/* ── Header ─────────────────────────────────────────── */}
+            <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
+              <div className="space-y-1">
+                {/* Micro label */}
+                <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+                  Langkah {currentStep + 1} / {STEPS.length}
+                </p>
+                {/* Display heading */}
+                <h2 className="text-2xl font-bold tracking-tight leading-none">
+                  {STEPS[currentStep].title}
+                </h2>
+                {/* Subhead */}
+                <p className="text-sm text-muted-foreground pt-0.5">
+                  {STEPS[currentStep].desc}
+                </p>
+              </div>
+
+              <div className="shrink-0 pt-0.5">
+                <StepIndicator
+                  currentStep={currentStep}
+                  onStepClick={(i) => i < currentStep && setCurrentStep(i)}
+                  size="lg"
+                />
+              </div>
+            </div>
+
+            {/* ── Body ──────────────────────────────────────────── */}
+            <div className="flex-1 min-h-[340px]">
+              {currentStep === 0 && (
+                <StepIdentitas
+                  {...stepProps}
+                  onRemoveLogo={handleRemoveLogo}
+                  isRemovingLogo={isRemovingLogo}
+                  isDesktop
+                />
+              )}
+              {currentStep === 1 && (
+                <StepCerita {...stepProps} isDesktop />
+              )}
+              {currentStep === 2 && (
+                <StepTampilan
+                  {...stepProps}
+                  onRemoveHeroBg={handleRemoveHeroBg}
+                  isRemovingHeroBg={isRemovingHeroBg}
+                  onCtaTextChange={handleCtaTextChange}
+                  isDesktop
+                />
+              )}
+            </div>
+
+            {/* ── Footer nav ────────────────────────────────────── */}
+            <div className="flex items-center justify-between pt-6 border-t mt-8">
+              <Button
+                variant="outline"
+                onClick={handlePrev}
+                className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Sebelumnya
+              </Button>
+
+              {/* Progress pills */}
+              <div className="flex items-center gap-1.5">
+                {STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'rounded-full transition-all duration-300',
+                      i === currentStep ? 'w-5 h-1.5 bg-primary' : i < currentStep ? 'w-1.5 h-1.5 bg-primary/40' : 'w-1.5 h-1.5 bg-border'
+                    )}
+                  />
+                ))}
+              </div>
+
+              <Button
+                onClick={handleNext}
+                className="gap-1.5 min-w-[130px] h-9 text-sm"
+              >
+                {isLastStep
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
+                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                }
+              </Button>
+            </div>
+          </div>
+
+          {/* ══════════════════════ MOBILE ═══════════════════════════ */}
+          <div className="lg:hidden flex flex-col pb-24">
 
             {/* ── Header ── */}
-            <div>
-              <div className="flex items-center justify-center lg:justify-between mb-5">
-                <div className="hidden lg:flex">
-                  <Button variant="ghost" size="sm" onClick={handlePrev} className={currentStep > 0 ? '' : 'invisible'}>
-                    <ChevronLeft className="h-4 w-4 mr-1" />
-                    Sebelumnya
-                  </Button>
-                </div>
-                <StepIndicator currentStep={currentStep} />
-                <div className="hidden lg:flex">
-                  <Button variant="ghost" size="sm" onClick={handleNext}>
-                    Selanjutnya
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
+            <div className="mb-6">
+              <div className="flex justify-center mb-4">
+                <StepIndicator
+                  currentStep={currentStep}
+                  onStepClick={(i) => i < currentStep && setCurrentStep(i)}
+                  size="sm"
+                />
               </div>
-              <div className="text-center mb-6">
-                <h3 className="text-sm font-semibold">{STEPS[currentStep].title}</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">{STEPS[currentStep].desc}</p>
+              <div className="text-center space-y-0.5">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
+                  Langkah {currentStep + 1} / {STEPS.length}
+                </p>
+                <h3 className="text-base font-bold tracking-tight">
+                  {STEPS[currentStep].title}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {STEPS[currentStep].desc}
+                </p>
               </div>
             </div>
 
             {/* ── Body ── */}
-            <div className="min-h-[280px]">
+            <div className="min-h-[300px]">
               {currentStep === 0 && (
                 <StepIdentitas
-                  formData={formData}
-                  updateFormData={updateFormData}
+                  {...stepProps}
                   onRemoveLogo={handleRemoveLogo}
                   isRemovingLogo={isRemovingLogo}
                 />
               )}
               {currentStep === 1 && (
-                <StepCerita
-                  formData={formData}
-                  updateFormData={updateFormData}
-                />
+                <StepCerita {...stepProps} />
               )}
               {currentStep === 2 && (
                 <StepTampilan
-                  formData={formData}
-                  updateFormData={updateFormData}
+                  {...stepProps}
                   onRemoveHeroBg={handleRemoveHeroBg}
                   isRemovingHeroBg={isRemovingHeroBg}
                   onCtaTextChange={handleCtaTextChange}
@@ -259,23 +382,42 @@ export default function HeroSectionPage() {
               )}
             </div>
           </div>
-        )}
+        </>
+      )}
+
+      {/* ── Mobile bottom nav ──────────────────────────────────────── */}
+      <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
+        <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrev}
+            className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Sebelumnya
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleNext}
+            className="gap-1 flex-1 h-9 text-xs font-medium"
+          >
+            {isLastStep
+              ? <><Eye className="h-3.5 w-3.5" />Preview</>
+              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+            }
+          </Button>
+        </div>
       </div>
 
-      {/* ── Mobile Nav ── */}
-      <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 bg-background border-t p-3 flex items-center justify-between z-40">
-        <Button variant="ghost" size="sm" onClick={handlePrev} className={currentStep > 0 ? '' : 'invisible'}>
-          <ChevronLeft className="h-4 w-4 mr-1" />
-          Sebelumnya
-        </Button>
-        <Button variant="ghost" size="sm" onClick={handleNext}>
-          Selanjutnya
-          <ChevronRight className="h-4 w-4 ml-1" />
-        </Button>
-      </div>
-
-      {/* ── Preview ── */}
-      <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} onSave={handleSave} isSaving={isSaving} title="Preview Hero Section">
+      {/* ── Preview Modal ──────────────────────────────────────────── */}
+      <PreviewModal
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        onSave={handleSave}
+        isSaving={isSaving}
+        title="Preview Hero Section"
+      >
         {formData && (
           <>
             <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(formData.primaryColor) }} />
