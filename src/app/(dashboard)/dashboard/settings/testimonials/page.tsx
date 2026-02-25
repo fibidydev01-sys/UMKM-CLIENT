@@ -12,12 +12,12 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { TestimonialsFormData, Testimonial } from '@/types';
-import { StepHeader, StepTestimoni } from '@/components/settings/testimonials-section';
+import { StepHeading, StepTestimonials } from '@/components/settings/testimonials-section';
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Header Section', desc: 'Judul dan subtitle Testimonials' },
-  { title: 'Daftar Testimoni', desc: 'Testimoni dari pelanggan puas Anda' },
+  { title: 'Section Heading', desc: 'Title & subheading' },
+  { title: 'Testimonials', desc: 'Add & manage customer quotes' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -104,12 +104,12 @@ export default function TestimonialsPage() {
     if (!formData) return;
     if (currentStep === 0) {
       const missing = [
-        !formData.testimonialsTitle && 'Judul Section',
-        !formData.testimonialsSubtitle && 'Subtitle',
+        !formData.testimonialsTitle && 'Section Title',
+        !formData.testimonialsSubtitle && 'Section Subheading',
       ].filter(Boolean) as string[];
-      if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+      if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     } else if (currentStep === 1 && formData.testimonials.length === 0) {
-      toast.info('Tambah minimal 1 testimonial untuk hasil lebih baik');
+      toast.info('Add at least 1 testimonial for best results');
     }
   };
 
@@ -133,10 +133,10 @@ export default function TestimonialsPage() {
         testimonials: formData.testimonials,
       });
       await refresh();
-      toast.success('Testimonials berhasil disimpan');
+      toast.success('Testimonials saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan testimonials');
+      toast.error('Failed to save testimonials');
     } finally {
       setIsSaving(false);
     }
@@ -179,7 +179,7 @@ export default function TestimonialsPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -199,8 +199,8 @@ export default function TestimonialsPage() {
 
             {/* Body */}
             <div className="flex-1 min-h-[340px]">
-              {currentStep === 0 && <StepHeader {...stepProps} isDesktop />}
-              {currentStep === 1 && <StepTestimoni {...stepProps} isDesktop />}
+              {currentStep === 0 && <StepHeading {...stepProps} isDesktop />}
+              {currentStep === 1 && <StepTestimonials {...stepProps} isDesktop />}
             </div>
 
             {/* Footer nav */}
@@ -211,7 +211,7 @@ export default function TestimonialsPage() {
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
-                Sebelumnya
+                Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -225,8 +225,8 @@ export default function TestimonialsPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -244,7 +244,7 @@ export default function TestimonialsPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">
                   {STEPS[currentStep].title}
@@ -255,8 +255,8 @@ export default function TestimonialsPage() {
               </div>
             </div>
             <div className="min-h-[300px]">
-              {currentStep === 0 && <StepHeader {...stepProps} />}
-              {currentStep === 1 && <StepTestimoni {...stepProps} />}
+              {currentStep === 0 && <StepHeading {...stepProps} />}
+              {currentStep === 1 && <StepTestimonials {...stepProps} />}
             </div>
           </div>
         </>
@@ -269,12 +269,12 @@ export default function TestimonialsPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -286,7 +286,7 @@ export default function TestimonialsPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview Testimonials Section"
+        title="Testimonials Section Preview"
       >
         {formData && (
           <>
@@ -294,13 +294,13 @@ export default function TestimonialsPage() {
             {formData.testimonials.length === 0 ? (
               <div className="border rounded-lg p-8 bg-muted/20 text-center mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Tambahkan minimal 1 testimonial untuk melihat preview
+                  Add at least 1 testimonial to see the preview
                 </p>
               </div>
             ) : (
               <div className="tenant-theme border rounded-lg overflow-hidden mt-4">
                 <Testimonials1
-                  title={formData.testimonialsTitle || 'Testimoni'}
+                  title={formData.testimonialsTitle || 'What Our Customers Say'}
                   subtitle={formData.testimonialsSubtitle}
                   items={formData.testimonials}
                 />

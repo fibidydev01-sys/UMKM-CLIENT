@@ -20,7 +20,7 @@ const DEFAULT_PAYMENT_METHODS: PaymentMethods = {
 };
 
 const CURRENCY_OPTIONS = [
-  { value: 'IDR', label: 'IDR - Rupiah Indonesia' },
+  { value: 'IDR', label: 'IDR - Indonesian Rupiah' },
   { value: 'USD', label: 'USD - US Dollar' },
   { value: 'SGD', label: 'SGD - Singapore Dollar' },
   { value: 'MYR', label: 'MYR - Malaysian Ringgit' },
@@ -30,10 +30,10 @@ const generateId = () => Math.random().toString(36).substring(2, 9);
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Mata Uang & Pajak', desc: 'Konfigurasi mata uang dan tarif pajak' },
-  { title: 'Rekening Bank', desc: 'Daftar rekening untuk transfer pembayaran' },
-  { title: 'E-Wallet', desc: 'Daftar e-wallet untuk pembayaran digital' },
-  { title: 'COD', desc: 'Pengaturan pembayaran tunai di tempat' },
+  { title: 'Currency & Tax', desc: 'Store currency and tax rate' },
+  { title: 'Bank Accounts', desc: 'Accounts for bank transfer payments' },
+  { title: 'E-Wallets', desc: 'Digital wallet payment options' },
+  { title: 'Cash on Delivery', desc: 'Pay on delivery settings' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -205,9 +205,9 @@ export default function PembayaranPage() {
   const checkEmptyFields = () => {
     if (!formData) return;
     if (currentStep === 1 && formData.paymentMethods.bankAccounts.length === 0)
-      toast.info('Tambahkan minimal 1 rekening bank untuk hasil lebih baik');
+      toast.info('Add at least 1 bank account for best results');
     if (currentStep === 2 && formData.paymentMethods.eWallets.length === 0)
-      toast.info('Tambahkan minimal 1 e-wallet untuk hasil lebih baik');
+      toast.info('Add at least 1 e-wallet for best results');
   };
 
   const handleNext = () => {
@@ -231,10 +231,10 @@ export default function PembayaranPage() {
         paymentMethods: formData.paymentMethods,
       });
       await refresh();
-      toast.success('Pengaturan pembayaran berhasil disimpan');
+      toast.success('Payment settings saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan pengaturan pembayaran');
+      toast.error('Failed to save payment settings');
     } finally {
       setIsSaving(false);
     }
@@ -306,7 +306,7 @@ export default function PembayaranPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -352,7 +352,7 @@ export default function PembayaranPage() {
                 variant="outline" onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+                <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -366,8 +366,8 @@ export default function PembayaranPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -385,7 +385,7 @@ export default function PembayaranPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
@@ -420,12 +420,12 @@ export default function PembayaranPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -437,40 +437,40 @@ export default function PembayaranPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview Pengaturan Pembayaran"
+        title="Payment Settings Preview"
       >
         {formData && (
           <div className="space-y-5 mt-4">
 
-            {/* Mata Uang & Pajak */}
+            {/* Currency & Tax */}
             <div className="space-y-2">
               <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Mata Uang &amp; Pajak
+                Currency &amp; Tax
               </p>
               <div className="rounded-lg border p-4 bg-muted/20 grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Mata Uang</p>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">Currency</p>
                   <p className="text-sm font-semibold">
                     {CURRENCY_OPTIONS.find((c) => c.value === formData.currency)?.label || formData.currency}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Tarif Pajak</p>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">Tax Rate</p>
                   <p className="text-sm font-semibold">
-                    {formData.taxRate > 0 ? `${formData.taxRate}%` : 'Tidak ada'}
+                    {formData.taxRate > 0 ? `${formData.taxRate}%` : 'None'}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Bank */}
+            {/* Bank Accounts */}
             <div className="space-y-2">
               <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Rekening Bank ({formData.paymentMethods.bankAccounts.length})
+                Bank Accounts ({formData.paymentMethods.bankAccounts.length})
               </p>
               <div className="rounded-lg border p-4 bg-muted/20 space-y-2">
                 {formData.paymentMethods.bankAccounts.length === 0
-                  ? <p className="text-sm text-muted-foreground">Belum ada rekening bank</p>
+                  ? <p className="text-sm text-muted-foreground">No bank accounts added</p>
                   : formData.paymentMethods.bankAccounts.map((bank) => (
                     <div key={bank.id} className="flex items-center gap-2.5">
                       <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', bank.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
@@ -482,14 +482,14 @@ export default function PembayaranPage() {
               </div>
             </div>
 
-            {/* E-Wallet */}
+            {/* E-Wallets */}
             <div className="space-y-2">
               <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                E-Wallet ({formData.paymentMethods.eWallets.length})
+                E-Wallets ({formData.paymentMethods.eWallets.length})
               </p>
               <div className="rounded-lg border p-4 bg-muted/20 space-y-2">
                 {formData.paymentMethods.eWallets.length === 0
-                  ? <p className="text-sm text-muted-foreground">Belum ada e-wallet</p>
+                  ? <p className="text-sm text-muted-foreground">No e-wallets added</p>
                   : formData.paymentMethods.eWallets.map((ew) => (
                     <div key={ew.id} className="flex items-center gap-2.5">
                       <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', ew.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
@@ -503,12 +503,12 @@ export default function PembayaranPage() {
 
             {/* COD */}
             <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">COD</p>
+              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">Cash on Delivery</p>
               <div className="rounded-lg border p-4 bg-muted/20">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={cn('w-1.5 h-1.5 rounded-full', formData.paymentMethods.cod.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
                   <p className="text-sm font-medium">
-                    {formData.paymentMethods.cod.enabled ? 'Aktif' : 'Nonaktif'}
+                    {formData.paymentMethods.cod.enabled ? 'Enabled' : 'Disabled'}
                   </p>
                 </div>
                 {formData.paymentMethods.cod.enabled && formData.paymentMethods.cod.note && (

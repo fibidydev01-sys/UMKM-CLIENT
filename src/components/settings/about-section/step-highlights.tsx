@@ -9,13 +9,13 @@ import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { AboutFormData, FeatureItem } from '@/types';
 
-interface StepFiturProps {
+interface StepHighlightsProps {
   formData: AboutFormData;
   updateFormData: <K extends keyof AboutFormData>(key: K, value: AboutFormData[K]) => void;
   isDesktop?: boolean;
 }
 
-export function StepFitur({ formData, updateFormData, isDesktop = false }: StepFiturProps) {
+export function StepHighlights({ formData, updateFormData, isDesktop = false }: StepHighlightsProps) {
 
   const handleAdd = () => {
     updateFormData('aboutFeatures', [...formData.aboutFeatures, { title: '', description: '' }]);
@@ -40,12 +40,12 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Fitur Unggulan
+              Key Highlights
             </p>
             <p className="text-xs text-muted-foreground">
               {formData.aboutFeatures.length === 0
-                ? 'Belum ada fitur — tambahkan keunggulan toko kamu'
-                : `${formData.aboutFeatures.length} fitur ditambahkan`
+                ? 'No highlights yet — add your store\'s selling points'
+                : `${formData.aboutFeatures.length} highlight${formData.aboutFeatures.length === 1 ? '' : 's'} added`
               }
             </p>
           </div>
@@ -57,14 +57,14 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
             className="gap-1.5 h-8 text-xs font-medium"
           >
             <Plus className="h-3.5 w-3.5" />
-            Tambah Fitur
+            Add Highlight
           </Button>
         </div>
 
         {/* Empty state */}
         {formData.aboutFeatures.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[220px] border-2 border-dashed rounded-lg gap-3">
-            <p className="text-sm text-muted-foreground">Belum ada fitur unggulan</p>
+            <p className="text-sm text-muted-foreground">No highlights yet</p>
             <Button
               type="button"
               size="sm"
@@ -73,11 +73,11 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
               className="gap-1.5 h-8 text-xs"
             >
               <Plus className="h-3.5 w-3.5" />
-              Tambah Fitur Pertama
+              Add Your First Highlight
             </Button>
           </div>
         ) : (
-          /* Feature grid — max 3 cols */
+          /* Highlight grid — max 3 cols */
           <div className={cn(
             'grid gap-4',
             formData.aboutFeatures.length === 1 ? 'grid-cols-1 max-w-sm' :
@@ -87,16 +87,16 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
             {formData.aboutFeatures.map((feature, i) => (
               <div key={i} className="border rounded-lg p-4 space-y-4 relative group">
 
-                {/* Fitur badge + remove */}
+                {/* Badge + remove */}
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Fitur #{i + 1}
+                    Highlight #{i + 1}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleRemove(i)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-                    aria-label="Hapus fitur"
+                    aria-label="Remove highlight"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -114,31 +114,31 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
                       placeholder="Icon"
                     />
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Opsional</p>
+                  <p className="text-[11px] text-muted-foreground">Optional</p>
                 </div>
 
                 <div className="border-t" />
 
-                {/* Judul */}
+                {/* Title */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Judul
+                    Title
                   </Label>
                   <Input
-                    placeholder="Kualitas Terjamin"
+                    placeholder="Premium Quality"
                     value={feature.title}
                     onChange={(e) => handleUpdate(i, 'title', e.target.value)}
                     className="h-9 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
                   />
                 </div>
 
-                {/* Deskripsi */}
+                {/* Description */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Deskripsi
+                    Description
                   </Label>
                   <Input
-                    placeholder="Produk berkualitas tinggi"
+                    placeholder="High quality products guaranteed"
                     value={feature.description}
                     onChange={(e) => handleUpdate(i, 'description', e.target.value)}
                     className="h-9 text-sm placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -152,7 +152,7 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
 
         {formData.aboutFeatures.length > 0 && (
           <p className="text-[11px] text-muted-foreground">
-            Rekomendasi: <span className="font-medium text-foreground">3 fitur</span> untuk tampilan yang seimbang
+            Recommended: <span className="font-medium text-foreground">3 highlights</span> for a balanced layout
           </p>
         )}
       </div>
@@ -171,14 +171,14 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
         className="gap-1.5 h-8 text-xs font-medium"
       >
         <Plus className="h-3.5 w-3.5" />
-        Tambah Fitur
+        Add Highlight
       </Button>
 
       {formData.aboutFeatures.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[200px] w-full max-w-sm border-2 border-dashed rounded-lg gap-2 px-6 text-center">
-          <p className="text-sm text-muted-foreground">Belum ada fitur unggulan</p>
+          <p className="text-sm text-muted-foreground">No highlights yet</p>
           <p className="text-[11px] text-muted-foreground">
-            Klik &quot;Tambah Fitur&quot; di atas untuk menambahkan
+            Click &quot;Add Highlight&quot; above to get started
           </p>
         </div>
       ) : (
@@ -190,13 +190,13 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
                 {/* Header */}
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Fitur #{i + 1}
+                    Highlight #{i + 1}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleRemove(i)}
                     className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-                    aria-label="Hapus fitur"
+                    aria-label="Remove highlight"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -214,31 +214,31 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
                       placeholder="Icon"
                     />
                   </div>
-                  <p className="text-[11px] text-muted-foreground">Icon (Opsional)</p>
+                  <p className="text-[11px] text-muted-foreground">Icon (Optional)</p>
                 </div>
 
                 <div className="w-full border-t" />
 
-                {/* Judul */}
+                {/* Title */}
                 <div className="space-y-1.5">
                   <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Judul Fitur
+                    Feature Title
                   </Label>
                   <Input
-                    placeholder="Kualitas Terjamin"
+                    placeholder="Premium Quality"
                     value={feature.title}
                     onChange={(e) => handleUpdate(i, 'title', e.target.value)}
                     className="text-center h-9 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
                   />
                 </div>
 
-                {/* Deskripsi */}
+                {/* Description */}
                 <div className="space-y-1.5">
                   <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                    Deskripsi
+                    Description
                   </Label>
                   <Input
-                    placeholder="Produk berkualitas tinggi"
+                    placeholder="High quality products guaranteed"
                     value={feature.description}
                     onChange={(e) => handleUpdate(i, 'description', e.target.value)}
                     className="text-center h-9 text-sm placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -253,7 +253,7 @@ export function StepFitur({ formData, updateFormData, isDesktop = false }: StepF
 
       {formData.aboutFeatures.length > 0 && (
         <p className="text-[11px] text-muted-foreground text-center">
-          Rekomendasi: <span className="font-medium text-foreground">3 fitur</span> untuk tampilan seimbang
+          Recommended: <span className="font-medium text-foreground">3 highlights</span> for a balanced layout
         </p>
       )}
     </div>

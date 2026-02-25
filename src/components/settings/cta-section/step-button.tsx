@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { CtaFormData } from '@/types';
 
-interface StepTombolProps {
+interface StepButtonProps {
   formData: CtaFormData;
   updateFormData: <K extends keyof CtaFormData>(key: K, value: CtaFormData[K]) => void;
   primaryColor?: string;
@@ -16,9 +16,9 @@ interface StepTombolProps {
 
 // ─── Button Style Picker ───────────────────────────────────────────────────
 const BUTTON_STYLES: { value: CtaFormData['ctaButtonStyle']; label: string; desc: string }[] = [
-  { value: 'primary', label: 'Primary', desc: 'Warna tema' },
-  { value: 'secondary', label: 'Secondary', desc: 'Abu-abu netral' },
-  { value: 'outline', label: 'Outline', desc: 'Hanya border' },
+  { value: 'primary', label: 'Primary', desc: 'Brand color' },
+  { value: 'secondary', label: 'Secondary', desc: 'Neutral gray' },
+  { value: 'outline', label: 'Outline', desc: 'Border only' },
 ];
 
 function StylePicker({
@@ -55,17 +55,17 @@ function StylePicker({
                   className="inline-flex items-center justify-center px-3 py-1 rounded text-[11px] font-semibold text-white transition-none"
                   style={{ backgroundColor: primaryColor || 'hsl(var(--primary))' }}
                 >
-                  {buttonText || 'Tombol'}
+                  {buttonText || 'Button'}
                 </span>
               )}
               {style.value === 'secondary' && (
                 <span className="inline-flex items-center justify-center px-3 py-1 rounded text-[11px] font-semibold bg-secondary text-secondary-foreground">
-                  {buttonText || 'Tombol'}
+                  {buttonText || 'Button'}
                 </span>
               )}
               {style.value === 'outline' && (
                 <span className="inline-flex items-center justify-center px-3 py-1 rounded text-[11px] font-semibold border border-border bg-transparent text-foreground">
-                  {buttonText || 'Tombol'}
+                  {buttonText || 'Button'}
                 </span>
               )}
             </div>
@@ -83,7 +83,7 @@ function StylePicker({
   );
 }
 
-export function StepTombol({ formData, updateFormData, primaryColor, isDesktop = false }: StepTombolProps) {
+export function StepButton({ formData, updateFormData, primaryColor, isDesktop = false }: StepButtonProps) {
 
   const previewVariant =
     formData.ctaButtonStyle === 'outline' ? 'outline' :
@@ -98,25 +98,25 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
         {/* Left — fields */}
         <div className="space-y-6">
 
-          {/* Teks tombol */}
+          {/* Button Label */}
           <div className="space-y-1.5">
             <Label htmlFor="ctaButtonText-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Teks Tombol
+              Button Label
             </Label>
             <Input
               id="ctaButtonText-d"
-              placeholder="Mulai Sekarang"
+              placeholder="Get Started"
               value={formData.ctaButtonText}
               onChange={(e) => updateFormData('ctaButtonText', e.target.value)}
               className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
             />
-            <p className="text-xs text-muted-foreground">Singkat dan mengandung kata kerja aktif</p>
+            <p className="text-xs text-muted-foreground">Short, verb-first — keep it action-oriented</p>
           </div>
 
-          {/* Link tombol */}
+          {/* Button URL */}
           <div className="space-y-1.5">
             <Label htmlFor="ctaButtonLink-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Link Tombol
+              Button URL
             </Label>
             <Input
               id="ctaButtonLink-d"
@@ -132,10 +132,10 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
             </div>
           </div>
 
-          {/* Gaya tombol */}
+          {/* Button Style */}
           <div className="space-y-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Gaya Tombol
+              Button Style
             </p>
             <StylePicker
               value={formData.ctaButtonStyle}
@@ -148,13 +148,13 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
 
         {/* Right — live preview card */}
         <div className="sticky top-0 space-y-2">
-          <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
             Preview
           </p>
           <div className="border rounded-lg bg-muted/20 px-6 py-8 flex flex-col items-center gap-4 text-center">
             <div className="space-y-1.5">
               <p className="text-base font-bold tracking-tight leading-tight">
-                {formData.ctaTitle || 'Judul CTA'}
+                {formData.ctaTitle || 'CTA Headline'}
               </p>
               {formData.ctaSubtitle && (
                 <p className="text-xs text-muted-foreground leading-relaxed">
@@ -170,7 +170,7 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
                 style={{ backgroundColor: primaryColor || 'hsl(var(--primary))' }}
                 tabIndex={-1}
               >
-                {formData.ctaButtonText || 'Mulai Sekarang'}
+                {formData.ctaButtonText || 'Get Started'}
               </button>
             ) : (
               <Button
@@ -179,7 +179,7 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
                 tabIndex={-1}
                 className="pointer-events-none"
               >
-                {formData.ctaButtonText || 'Mulai Sekarang'}
+                {formData.ctaButtonText || 'Get Started'}
               </Button>
             )}
 
@@ -201,14 +201,14 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
       <Card className="w-full max-w-sm border shadow-none">
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
-          {/* Teks tombol */}
+          {/* Button Label */}
           <div className="space-y-1.5">
             <Label htmlFor="ctaButtonText-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Teks Tombol
+              Button Label
             </Label>
             <Input
               id="ctaButtonText-m"
-              placeholder="Mulai Sekarang"
+              placeholder="Get Started"
               value={formData.ctaButtonText}
               onChange={(e) => updateFormData('ctaButtonText', e.target.value)}
               className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -217,10 +217,10 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
 
           <div className="w-full border-t" />
 
-          {/* Link tombol */}
+          {/* Button URL */}
           <div className="space-y-1.5">
             <Label htmlFor="ctaButtonLink-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Link Tombol
+              Button URL
             </Label>
             <Input
               id="ctaButtonLink-m"
@@ -237,10 +237,10 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
 
           <div className="w-full border-t" />
 
-          {/* Gaya tombol */}
+          {/* Button Style */}
           <div className="space-y-2">
             <p className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Gaya Tombol
+              Button Style
             </p>
             <StylePicker
               value={formData.ctaButtonStyle}
@@ -265,7 +265,7 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
                   style={{ backgroundColor: primaryColor || 'hsl(var(--primary))' }}
                   tabIndex={-1}
                 >
-                  {formData.ctaButtonText || 'Mulai Sekarang'}
+                  {formData.ctaButtonText || 'Get Started'}
                 </button>
               ) : (
                 <Button
@@ -274,7 +274,7 @@ export function StepTombol({ formData, updateFormData, primaryColor, isDesktop =
                   tabIndex={-1}
                   className="pointer-events-none"
                 >
-                  {formData.ctaButtonText || 'Mulai Sekarang'}
+                  {formData.ctaButtonText || 'Get Started'}
                 </Button>
               )}
             </div>

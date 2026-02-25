@@ -1,3 +1,3 @@
-export { StepIdentitas } from './step-identitas';
-export { StepKonten } from './step-konten';
-export { StepFitur } from './step-fitur';
+export { StepHeading } from './step-heading';
+export { StepContent } from './step-content';
+export { StepHighlights } from './step-highlights';

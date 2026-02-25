@@ -5,15 +5,15 @@ import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import type { Courier, PengirimanFormData } from '@/types';
 
-interface StepKurirProps {
+interface StepCarriersProps {
   formData: PengirimanFormData;
   onToggle: (id: string) => void;
   onNoteChange: (id: string, note: string) => void;
   isDesktop?: boolean;
 }
 
-// ─── Single courier row ────────────────────────────────────────────────────
-function CourierRow({
+// ─── Single carrier row ────────────────────────────────────────────────────
+function CarrierRow({
   courier,
   onToggle,
   onNoteChange,
@@ -48,7 +48,7 @@ function CourierRow({
         </div>
         {courier.enabled && (
           <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary shrink-0">
-            Aktif
+            Active
           </span>
         )}
       </div>
@@ -57,7 +57,7 @@ function CourierRow({
       {courier.enabled && (
         <div className={cn('mt-2', compact ? 'ml-9' : 'ml-10')}>
           <Input
-            placeholder="Catatan opsional (REG, YES, OKE...)"
+            placeholder="Optional note (REG, YES, OKE...)"
             value={courier.note || ''}
             onChange={(e) => onNoteChange(e.target.value)}
             className="h-8 text-xs placeholder:text-muted-foreground/40 border-dashed"
@@ -68,7 +68,7 @@ function CourierRow({
   );
 }
 
-export function StepKurir({ formData, onToggle, onNoteChange, isDesktop = false }: StepKurirProps) {
+export function StepCarriers({ formData, onToggle, onNoteChange, isDesktop = false }: StepCarriersProps) {
   const couriers = formData.shippingMethods.couriers;
   const activeCount = couriers.filter((c) => c.enabled).length;
 
@@ -79,21 +79,21 @@ export function StepKurir({ formData, onToggle, onNoteChange, isDesktop = false 
 
         {/* Header */}
         <div className="flex items-center gap-2">
-          <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Kurir Tersedia
+          <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            Shipping Carriers
           </p>
           <span className={cn(
             'text-[10px] font-semibold px-2 py-0.5 rounded-full tabular-nums',
             activeCount > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
           )}>
-            {activeCount} aktif / {couriers.length}
+            {activeCount} active / {couriers.length}
           </span>
         </div>
 
         {/* Grid */}
         <div className="grid grid-cols-2 gap-2.5">
           {couriers.map((courier) => (
-            <CourierRow
+            <CarrierRow
               key={courier.id}
               courier={courier}
               onToggle={() => onToggle(courier.id)}
@@ -104,8 +104,8 @@ export function StepKurir({ formData, onToggle, onNoteChange, isDesktop = false 
 
         <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-medium text-foreground">Tips:</span>{' '}
-            Aktifkan kurir yang kamu benar-benar gunakan — kurir aktif ditampilkan saat pelanggan checkout. Catatan opsional untuk menjelaskan layanan (REG, YES, OKE, dll).
+            <span className="font-medium text-foreground">Tip:</span>{' '}
+            Only enable carriers you actually use — active carriers are shown to customers at checkout. Add optional notes to describe available services (REG, YES, OKE, etc.).
           </p>
         </div>
       </div>
@@ -118,20 +118,20 @@ export function StepKurir({ formData, onToggle, onNoteChange, isDesktop = false 
 
       {/* Counter */}
       <div className="flex items-center gap-2 self-center">
-        <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-          Kurir
+        <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+          Carriers
         </p>
         <span className={cn(
           'text-[10px] font-semibold px-2 py-0.5 rounded-full tabular-nums',
           activeCount > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
         )}>
-          {activeCount}/{couriers.length} aktif
+          {activeCount}/{couriers.length} active
         </span>
       </div>
 
       <div className="w-full max-w-sm space-y-2">
         {couriers.map((courier) => (
-          <CourierRow
+          <CarrierRow
             key={courier.id}
             courier={courier}
             onToggle={() => onToggle(courier.id)}

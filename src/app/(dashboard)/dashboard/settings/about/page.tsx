@@ -12,13 +12,13 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { AboutFormData, FeatureItem } from '@/types';
-import { StepIdentitas, StepKonten, StepFitur } from '@/components/settings/about-section';
+import { StepHeading, StepContent, StepHighlights } from '@/components/settings/about-section';
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Identitas Section', desc: 'Judul dan subtitle About Section' },
-  { title: 'Konten & Visual', desc: 'Deskripsi lengkap dan gambar' },
-  { title: 'Fitur Unggulan', desc: 'Highlight keunggulan toko Anda' },
+  { title: 'Section Heading', desc: 'Title & subheading' },
+  { title: 'Content & Media', desc: 'Story copy & image' },
+  { title: 'Key Highlights', desc: 'Features & selling points' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -111,9 +111,9 @@ export default function AboutPage() {
       setFormData({ ...formData, aboutImage: '' });
       await tenantsApi.update({ aboutImage: '' });
       await refresh();
-      toast.success('About image berhasil dihapus');
+      toast.success('About image removed successfully');
     } catch {
-      toast.error('Gagal menghapus about image');
+      toast.error('Failed to remove about image');
       setFormData({ ...formData, aboutImage: tenant.aboutImage || '' });
     } finally {
       setIsRemovingAboutImage(false);
@@ -123,17 +123,17 @@ export default function AboutPage() {
   const checkEmptyFields = () => {
     if (!formData) return;
     const map: Record<number, { key: keyof AboutFormData; label: string }[]> = {
-      0: [{ key: 'aboutTitle', label: 'Judul Section' }, { key: 'aboutSubtitle', label: 'Subtitle' }],
-      1: [{ key: 'aboutContent', label: 'Deskripsi' }, { key: 'aboutImage', label: 'About Image' }],
+      0: [{ key: 'aboutTitle', label: 'Section Title' }, { key: 'aboutSubtitle', label: 'Section Subheading' }],
+      1: [{ key: 'aboutContent', label: 'Store Story' }, { key: 'aboutImage', label: 'About Image' }],
       2: [],
     };
     const missing = (map[currentStep] || []).filter(({ key }) => {
       const v = formData[key];
       return Array.isArray(v) ? v.length === 0 : !v;
     }).map(({ label }) => label);
-    if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+    if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     if (currentStep === 2 && formData.aboutFeatures.length === 0) {
-      toast.info('Tambah minimal 1 fitur unggulan untuk hasil lebih baik');
+      toast.info('Add at least 1 highlight for best results');
     }
   };
 
@@ -159,10 +159,10 @@ export default function AboutPage() {
         aboutFeatures: formData.aboutFeatures,
       });
       await refresh();
-      toast.success('About Section berhasil disimpan');
+      toast.success('About section saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan about section');
+      toast.error('Failed to save about section');
     } finally {
       setIsSaving(false);
     }
@@ -206,7 +206,7 @@ export default function AboutPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -226,16 +226,16 @@ export default function AboutPage() {
 
             {/* Body */}
             <div className="flex-1 min-h-[340px]">
-              {currentStep === 0 && <StepIdentitas {...stepProps} isDesktop />}
+              {currentStep === 0 && <StepHeading {...stepProps} isDesktop />}
               {currentStep === 1 && (
-                <StepKonten
+                <StepContent
                   {...stepProps}
                   onRemoveAboutImage={handleRemoveAboutImage}
                   isRemovingAboutImage={isRemovingAboutImage}
                   isDesktop
                 />
               )}
-              {currentStep === 2 && <StepFitur {...stepProps} isDesktop />}
+              {currentStep === 2 && <StepHighlights {...stepProps} isDesktop />}
             </div>
 
             {/* Footer nav */}
@@ -246,10 +246,9 @@ export default function AboutPage() {
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
-                Sebelumnya
+                Previous
               </Button>
 
-              {/* Progress pills */}
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, i) => (
                   <div key={i} className={cn(
@@ -264,8 +263,8 @@ export default function AboutPage() {
                 className="gap-1.5 min-w-[130px] h-9 text-sm"
               >
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -285,7 +284,7 @@ export default function AboutPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">
                   {STEPS[currentStep].title}
@@ -298,15 +297,15 @@ export default function AboutPage() {
 
             {/* Body */}
             <div className="min-h-[300px]">
-              {currentStep === 0 && <StepIdentitas {...stepProps} />}
+              {currentStep === 0 && <StepHeading {...stepProps} />}
               {currentStep === 1 && (
-                <StepKonten
+                <StepContent
                   {...stepProps}
                   onRemoveAboutImage={handleRemoveAboutImage}
                   isRemovingAboutImage={isRemovingAboutImage}
                 />
               )}
-              {currentStep === 2 && <StepFitur {...stepProps} />}
+              {currentStep === 2 && <StepHighlights {...stepProps} />}
             </div>
           </div>
         </>
@@ -322,7 +321,7 @@ export default function AboutPage() {
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Sebelumnya
+            Previous
           </Button>
           <Button
             size="sm"
@@ -331,7 +330,7 @@ export default function AboutPage() {
           >
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -343,14 +342,14 @@ export default function AboutPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview About Section"
+        title="About Section Preview"
       >
         {formData && (
           <>
             <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(tenant?.theme?.primaryColor) }} />
             <div className="tenant-theme border rounded-lg overflow-hidden mt-4">
               <About1
-                title={formData.aboutTitle || 'Tentang Kami'}
+                title={formData.aboutTitle || 'About Us'}
                 subtitle={formData.aboutSubtitle}
                 content={formData.aboutContent}
                 image={formData.aboutImage}

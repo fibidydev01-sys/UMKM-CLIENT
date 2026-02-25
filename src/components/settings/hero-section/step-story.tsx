@@ -13,41 +13,41 @@ import type { HeroFormData } from '@/types';
 
 const HINTS = {
   heroTitle: {
-    title: 'Tips Hero Title',
-    desc: 'Headline pertama yang dilihat pengunjung. Maks. 6 kata. Contoh: "Burger Premium Cita Rasa Asia Fusion"',
+    title: 'Headline Tips',
+    desc: 'The first thing visitors see. Max 6 words. e.g. "Premium Burgers with Asian Fusion Flavors"',
   },
   heroSubtitle: {
-    title: 'Tips Subtitle',
-    desc: 'Satu kalimat value utama toko. Contoh: "Diantar dalam 30 menit, dijamin segar."',
+    title: 'Subheading Tips',
+    desc: 'One sentence capturing your store\'s main value. e.g. "Delivered in 30 minutes, guaranteed fresh."',
   },
   description: {
-    title: 'Tips Deskripsi',
-    desc: 'Tagline toko di profil & pencarian. 1–2 kalimat. Contoh: "Burger premium bahan lokal pilihan, cita rasa Asia fusion yang autentik."',
+    title: 'Store Tagline Tips',
+    desc: 'Your store tagline shown in profile & search. 1–2 sentences. e.g. "Premium burgers with authentic Asian fusion flavors."',
   },
 } as const;
 
 const FIELDS = [
   {
     key: 'heroTitle' as const,
-    label: 'Hero Title',
-    placeholder: 'Tulis judul utama toko kamu...',
-    hint: 'Singkat & menarik — maks. 6 kata',
+    label: 'Headline',
+    placeholder: 'Write your main store headline...',
+    hint: 'Short & punchy · max 6 words',
   },
   {
     key: 'heroSubtitle' as const,
-    label: 'Subtitle',
-    placeholder: 'Satu kalimat nilai utama toko kamu...',
-    hint: '1 kalimat · langsung ke poin',
+    label: 'Subheading',
+    placeholder: 'One sentence capturing your store\'s main value...',
+    hint: '1 sentence · straight to the point',
   },
   {
     key: 'description' as const,
-    label: 'Deskripsi',
-    placeholder: 'Tagline unik toko kamu...',
-    hint: 'Muncul di profil & hasil pencarian',
+    label: 'Store Tagline',
+    placeholder: 'Your store\'s unique tagline...',
+    hint: 'Shown in your store profile & search results',
   },
 ] as const;
 
-interface StepCeritaProps {
+interface StepStoryProps {
   formData: HeroFormData;
   updateFormData: <K extends keyof HeroFormData>(key: K, value: HeroFormData[K]) => void;
   isDesktop?: boolean;
@@ -65,13 +65,13 @@ function FillCount({ formData }: { formData: HeroFormData }) {
         />
       </div>
       <span className="text-[11px] text-muted-foreground tabular-nums shrink-0">
-        {filled}/3 diisi
+        {filled}/3 filled
       </span>
     </div>
   );
 }
 
-export function StepCerita({ formData, updateFormData, isDesktop = false }: StepCeritaProps) {
+export function StepStory({ formData, updateFormData, isDesktop = false }: StepStoryProps) {
   const [activeHint, setActiveHint] = useState<keyof typeof HINTS | null>(null);
 
   // ── DESKTOP: 3-column grid ────────────────────────────────────────────────
@@ -154,7 +154,7 @@ export function StepCerita({ formData, updateFormData, isDesktop = false }: Step
 
       {/* Swipe hint */}
       <p className="text-center text-[11px] text-muted-foreground mb-3 tracking-wide">
-        Geser kartu untuk mengisi semua field
+        Swipe to fill all fields
       </p>
 
       <div className="flex justify-center px-8">
@@ -210,12 +210,11 @@ export function StepCerita({ formData, updateFormData, isDesktop = false }: Step
         {FIELDS.map((f) => (
           <div
             key={f.key}
-            className={`w-1.5 h-1.5 rounded-full transition-colors ${formData[f.key] ? 'bg-primary' : 'bg-border'
-              }`}
+            className={`w-1.5 h-1.5 rounded-full transition-colors ${formData[f.key] ? 'bg-primary' : 'bg-border'}`}
           />
         ))}
         <span className="text-[11px] text-muted-foreground ml-1">
-          {[formData.heroTitle, formData.heroSubtitle, formData.description].filter(Boolean).length}/3 diisi
+          {[formData.heroTitle, formData.heroSubtitle, formData.description].filter(Boolean).length}/3 filled
         </span>
       </div>
     </>

@@ -10,7 +10,7 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { CourierName, PengirimanFormData, ShippingMethods } from '@/types';
-import { StepBiaya, StepKurir } from '@/components/settings/pengiriman-section';
+import { StepRates, StepCarriers } from '@/components/settings/pengiriman-section';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const COURIER_OPTIONS: CourierName[] = [
@@ -36,8 +36,8 @@ const formatRupiah = (value: number | null) => {
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Biaya Pengiriman', desc: 'Ongkos kirim dan batas gratis ongkir' },
-  { title: 'Kurir Pengiriman', desc: 'Pilih kurir yang tersedia untuk pengiriman' },
+  { title: 'Shipping Rates', desc: 'Flat rate and free shipping threshold' },
+  { title: 'Shipping Carriers', desc: 'Select carriers available for delivery' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -145,7 +145,7 @@ export default function PengirimanPage() {
   const checkEmptyFields = () => {
     if (!formData) return;
     if (currentStep === 1 && !formData.shippingMethods.couriers.some((c) => c.enabled)) {
-      toast.info('Aktifkan minimal 1 kurir untuk hasil lebih baik');
+      toast.info('Enable at least 1 carrier for best results');
     }
   };
 
@@ -169,10 +169,10 @@ export default function PengirimanPage() {
         shippingMethods: formData.shippingMethods,
       });
       await refresh();
-      toast.success('Pengaturan pengiriman berhasil disimpan');
+      toast.success('Shipping settings saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan pengaturan pengiriman');
+      toast.error('Failed to save shipping settings');
     } finally {
       setIsSaving(false);
     }
@@ -215,8 +215,8 @@ export default function PengirimanPage() {
             {/* Header */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
-                <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -237,7 +237,7 @@ export default function PengirimanPage() {
             {/* Body */}
             <div className="flex-1 min-h-[280px]">
               {currentStep === 0 && (
-                <StepBiaya
+                <StepRates
                   formData={formData!}
                   onFreeShippingChange={handleFreeShippingChange}
                   onDefaultCostChange={handleDefaultCostChange}
@@ -245,7 +245,7 @@ export default function PengirimanPage() {
                 />
               )}
               {currentStep === 1 && (
-                <StepKurir
+                <StepCarriers
                   formData={formData!}
                   onToggle={handleToggleCourier}
                   onNoteChange={handleCourierNoteChange}
@@ -260,7 +260,7 @@ export default function PengirimanPage() {
                 variant="outline" onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+                <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -274,8 +274,8 @@ export default function PengirimanPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -292,8 +292,8 @@ export default function PengirimanPage() {
                 />
               </div>
               <div className="text-center space-y-0.5">
-                <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                <p className="text-[10px] font-medium tracking-widests uppercase text-muted-foreground">
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
@@ -301,14 +301,14 @@ export default function PengirimanPage() {
             </div>
             <div className="min-h-[260px]">
               {currentStep === 0 && (
-                <StepBiaya
+                <StepRates
                   formData={formData!}
                   onFreeShippingChange={handleFreeShippingChange}
                   onDefaultCostChange={handleDefaultCostChange}
                 />
               )}
               {currentStep === 1 && (
-                <StepKurir
+                <StepCarriers
                   formData={formData!}
                   onToggle={handleToggleCourier}
                   onNoteChange={handleCourierNoteChange}
@@ -326,12 +326,12 @@ export default function PengirimanPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -343,40 +343,40 @@ export default function PengirimanPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview Pengaturan Pengiriman"
+        title="Shipping Settings Preview"
       >
         {formData && (
           <div className="space-y-5 mt-4">
 
-            {/* Biaya */}
+            {/* Shipping Rates */}
             <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Biaya Pengiriman
+              <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+                Shipping Rates
               </p>
               <div className="rounded-lg border p-4 bg-muted/20 grid grid-cols-2 gap-3">
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Gratis Ongkir Min.</p>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">Free Shipping From</p>
                   <p className="text-sm font-semibold">
                     {formData.freeShippingThreshold
                       ? formatRupiah(formData.freeShippingThreshold)
-                      : 'Tidak ada'}
+                      : 'Disabled'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Ongkir Default</p>
+                  <p className="text-[11px] text-muted-foreground mb-0.5">Flat Rate</p>
                   <p className="text-sm font-semibold">{formatRupiah(formData.defaultShippingCost)}</p>
                 </div>
               </div>
             </div>
 
-            {/* Kurir aktif */}
+            {/* Active Carriers */}
             <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Kurir Aktif ({activeCouriers.length})
+              <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+                Active Carriers ({activeCouriers.length})
               </p>
               <div className="rounded-lg border p-4 bg-muted/20">
                 {activeCouriers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada kurir yang aktif</p>
+                  <p className="text-sm text-muted-foreground">No carriers enabled</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                     {activeCouriers.map((c) => (

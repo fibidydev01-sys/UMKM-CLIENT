@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ImageUpload } from '@/components/upload';
 import type { HeroFormData } from '@/types';
 
-interface StepIdentitasProps {
+interface StepIdentityProps {
   formData: HeroFormData;
   updateFormData: <K extends keyof HeroFormData>(key: K, value: HeroFormData[K]) => void;
   onRemoveLogo: () => void;
@@ -15,13 +15,13 @@ interface StepIdentitasProps {
   isDesktop?: boolean;
 }
 
-export function StepIdentitas({
+export function StepIdentity({
   formData,
   updateFormData,
   onRemoveLogo,
   isRemovingLogo,
   isDesktop = false,
-}: StepIdentitasProps) {
+}: StepIdentityProps) {
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
@@ -41,7 +41,6 @@ export function StepIdentitas({
               placeholder="Upload logo"
             />
           </div>
-          {/* Caption */}
           <p className="text-[11px] text-muted-foreground text-center leading-snug">
             PNG/JPG · 200×200px
           </p>
@@ -50,48 +49,46 @@ export function StepIdentitas({
         {/* Right — Fields */}
         <div className="space-y-6">
 
-          {/* Nama Toko */}
+          {/* Store Name */}
           <div className="space-y-1.5 max-w-md">
-            {/* Label: text-xs uppercase tracking */}
             <Label htmlFor="name-desktop" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Nama Toko
+              Store Name
             </Label>
-            {/* Input: text-base font-semibold */}
             <Input
               id="name-desktop"
-              placeholder="Contoh: Burger China"
+              placeholder="e.g. Burger House"
               value={formData.name}
               onChange={(e) => updateFormData('name', e.target.value)}
               className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
             />
             <p className="text-xs text-muted-foreground">
-              Tampil di hero banner dan halaman toko
+              Shown on your store homepage and listings
             </p>
           </div>
 
           {/* Divider */}
           <div className="border-t max-w-md" />
 
-          {/* Kategori */}
+          {/* Category */}
           <div className="space-y-1.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Kategori
+              Category
             </p>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs px-3 py-1 rounded-full font-medium tracking-wide">
-                {formData.category || 'Belum dipilih'}
+                {formData.category || 'Not set'}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">
-              Tidak dapat diubah setelah pendaftaran
+              Set during registration · cannot be changed
             </p>
           </div>
 
           {/* Tip box */}
           <div className="max-w-md border-l-2 border-muted-foreground/20 pl-4 py-0.5">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-medium text-foreground">Tips logo:</span>{' '}
-              Gunakan PNG berlatar transparan agar tampil tajam di semua latar belakang.
+              <span className="font-medium text-foreground">Logo tip:</span>{' '}
+              Use a transparent PNG for best results across all backgrounds.
             </p>
           </div>
 
@@ -126,14 +123,14 @@ export function StepIdentitas({
 
           <div className="w-full border-t" />
 
-          {/* Nama Toko */}
+          {/* Store Name */}
           <div className="w-full space-y-1.5">
             <Label htmlFor="name-mobile" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Nama Toko
+              Store Name
             </Label>
             <Input
               id="name-mobile"
-              placeholder="Contoh: Burger China"
+              placeholder="e.g. Burger House"
               value={formData.name}
               onChange={(e) => updateFormData('name', e.target.value)}
               className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -142,16 +139,16 @@ export function StepIdentitas({
 
           <div className="w-full border-t" />
 
-          {/* Kategori */}
+          {/* Category */}
           <div className="w-full flex flex-col items-center gap-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Kategori
+              Category
             </p>
             <Badge variant="secondary" className="text-xs px-3 py-1 rounded-full font-medium tracking-wide">
-              {formData.category || 'Belum dipilih'}
+              {formData.category || 'Not set'}
             </Badge>
             <p className="text-[11px] text-muted-foreground text-center">
-              Tidak dapat diubah setelah pendaftaran
+              Set during registration · cannot be changed
             </p>
           </div>
 

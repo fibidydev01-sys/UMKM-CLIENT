@@ -33,10 +33,10 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
     return (
       <div className="grid grid-cols-2 gap-8 max-w-2xl">
 
-        {/* Mata Uang */}
+        {/* Store Currency */}
         <div className="space-y-2">
           <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Mata Uang
+            Store Currency
           </Label>
 
           {/* Currency card picker */}
@@ -62,14 +62,14 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
             })}
           </div>
           <p className="text-xs text-muted-foreground">
-            Mata uang yang digunakan di seluruh toko
+            Currency used across your entire store
           </p>
         </div>
 
-        {/* Tarif Pajak */}
+        {/* Tax Rate */}
         <div className="space-y-2">
           <Label htmlFor="tax-rate-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Tarif Pajak (%)
+            Tax Rate (%)
           </Label>
           <div className="flex items-center gap-3">
             <Input
@@ -86,9 +86,9 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
             <span className="text-sm text-muted-foreground font-medium">%</span>
           </div>
 
-          {/* Tax preview */}
+          {/* Tax simulation */}
           <div className="rounded-lg bg-muted/30 px-4 py-3 space-y-1.5 mt-2">
-            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Simulasi</p>
+            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Simulation</p>
             {[100_000, 250_000, 500_000].map((price) => {
               const tax = (price * (formData.taxRate || 0)) / 100;
               return (
@@ -97,7 +97,7 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
                     Rp {price.toLocaleString('id')} →
                   </span>
                   <span className="font-medium">
-                    + Rp {tax.toLocaleString('id')} pajak
+                    + Rp {tax.toLocaleString('id')} tax
                   </span>
                 </div>
               );
@@ -105,15 +105,15 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Isi <span className="font-medium text-foreground">0</span> jika tidak ada pajak — pajak ditampilkan di checkout
+            Enter <span className="font-medium text-foreground">0</span> if no tax applies — tax is shown at checkout
           </p>
         </div>
 
-        {/* Editorial tip */}
+        {/* Tip */}
         <div className="col-span-2 border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-medium text-foreground">Tips:</span>{' '}
-            PPN Indonesia 11% berlaku untuk produk digital. Pilih IDR untuk toko lokal Indonesia.
+            <span className="font-medium text-foreground">Tip:</span>{' '}
+            Indonesian VAT (PPN) is 11% for digital products. Choose IDR for local Indonesian stores.
           </p>
         </div>
 
@@ -127,10 +127,10 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
       <Card className="w-full max-w-sm border shadow-none">
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
-          {/* Mata Uang */}
+          {/* Store Currency */}
           <div className="space-y-2">
             <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Mata Uang
+              Store Currency
             </Label>
             <Select value={formData.currency} onValueChange={onCurrencyChange}>
               <SelectTrigger className="h-10 text-sm font-semibold">
@@ -148,10 +148,10 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
 
           <div className="w-full border-t" />
 
-          {/* Tarif Pajak */}
+          {/* Tax Rate */}
           <div className="space-y-2">
             <Label htmlFor="tax-rate-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Tarif Pajak (%)
+              Tax Rate (%)
             </Label>
             <Input
               id="tax-rate-m"
@@ -165,7 +165,7 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
               className="text-center h-10 text-sm font-semibold placeholder:font-normal placeholder:text-muted-foreground/50"
             />
             <p className="text-[11px] text-muted-foreground text-center">
-              Isi 0 jika tidak ada pajak
+              Enter 0 if no tax applies
             </p>
           </div>
 

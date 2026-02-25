@@ -6,13 +6,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { SeoFormData, SocialLinks } from '@/types';
 
-// ─── Platform config dengan kategori ──────────────────────────────────────
+// ─── Platform config with English group names ─────────────────────────────
 const SOCIAL_GROUPS: {
   group: string;
   fields: { key: keyof SocialLinks; label: string; placeholder: string }[];
 }[] = [
     {
-      group: 'Mainstream',
+      group: 'Social Media',
       fields: [
         { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/username' },
         { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/page' },
@@ -23,14 +23,14 @@ const SOCIAL_GROUPS: {
       ],
     },
     {
-      group: 'Pesan',
+      group: 'Messaging',
       fields: [
         { key: 'whatsapp', label: 'WhatsApp', placeholder: 'https://wa.me/628xxxxxxxxxx' },
         { key: 'telegram', label: 'Telegram', placeholder: 'https://t.me/username' },
       ],
     },
     {
-      group: 'Kreatif & Profesional',
+      group: 'Creative & Professional',
       fields: [
         { key: 'pinterest', label: 'Pinterest', placeholder: 'https://pinterest.com/username' },
         { key: 'behance', label: 'Behance', placeholder: 'https://behance.net/username' },
@@ -41,16 +41,16 @@ const SOCIAL_GROUPS: {
     },
   ];
 
-// Flat list untuk mobile
+// Flat list for mobile
 const ALL_FIELDS = SOCIAL_GROUPS.flatMap((g) => g.fields);
 
-interface StepSosmedProps {
+interface StepSocialLinksProps {
   formData: SeoFormData;
   onSocialLinkChange: (key: keyof SocialLinks, value: string) => void;
   isDesktop?: boolean;
 }
 
-export function StepSosmed({ formData, onSocialLinkChange, isDesktop = false }: StepSosmedProps) {
+export function StepSocialLinks({ formData, onSocialLinkChange, isDesktop = false }: StepSocialLinksProps) {
 
   const filledCount = ALL_FIELDS.filter(({ key }) => formData.socialLinks[key]).length;
 
@@ -62,7 +62,7 @@ export function StepSosmed({ formData, onSocialLinkChange, isDesktop = false }: 
         {/* Count pill */}
         <div className="flex items-center gap-2">
           <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Link Social Media
+            Social Links
           </p>
           <span className={cn(
             'text-[10px] font-semibold px-2 py-0.5 rounded-full tabular-nums',
@@ -79,7 +79,7 @@ export function StepSosmed({ formData, onSocialLinkChange, isDesktop = false }: 
           <div key={group.group} className="space-y-3">
 
             {/* Group label */}
-            <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground/60 border-b pb-1.5">
+            <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground/60 border-b pb-1.5">
               {group.group}
             </p>
 
@@ -117,8 +117,8 @@ export function StepSosmed({ formData, onSocialLinkChange, isDesktop = false }: 
 
         <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-medium text-foreground">Tips:</span>{' '}
-            Link sosial media akan tampil di footer toko kamu. Isi yang relevan saja — lebih sedikit tapi aktif lebih baik daripada banyak tapi tidak dikelola.
+            <span className="font-medium text-foreground">Tip:</span>{' '}
+            Social links appear in your store footer. Only add active accounts — fewer well-managed links are better than many inactive ones.
           </p>
         </div>
       </div>
@@ -134,7 +134,7 @@ export function StepSosmed({ formData, onSocialLinkChange, isDesktop = false }: 
           {/* Count */}
           <div className="flex items-center justify-center gap-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Social Media
+              Social Links
             </p>
             <span className={cn(
               'text-[10px] font-semibold px-2 py-0.5 rounded-full tabular-nums',

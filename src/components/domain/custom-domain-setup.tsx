@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
-  CheckCircle2,
   AlertTriangle,
   Copy,
   CheckCheck,
@@ -32,11 +31,11 @@ import { cn } from '@/lib/utils';
 // CUSTOM DOMAIN — Crisp Editorial SaaS
 //
 // Flow:
-// 1. List domain + tombol "+ Add Domain"
-// 2. Klik "Add Domain" → modal input
-// 3. Setelah save → row "Waiting for DNS · Show DNS Records"
-// 4. Klik "Show DNS Records" → modal DNS records
-// 5. Tombol delete per row (confirm modal)
+// 1. List domain + "+ Add Domain" button
+// 2. Click "Add Domain" → input modal
+// 3. After save → row "Pending Verification · Show DNS Records"
+// 4. Click "Show DNS Records" → DNS records modal
+// 5. Delete button per row (confirm modal)
 // ==========================================
 
 export function CustomDomainSetup() {
@@ -59,10 +58,10 @@ export function CustomDomainSetup() {
   const handleAddDomain = async () => {
     setInputError(null);
     const clean = inputDomain.toLowerCase().trim();
-    if (!clean) { setInputError('Masukkan domain Anda'); return; }
+    if (!clean) { setInputError('Please enter a domain name'); return; }
     const domainRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
     if (!domainRegex.test(clean)) {
-      setInputError('Format tidak valid. Contoh: tokoku.com atau shop.tokoku.com');
+      setInputError('Invalid format. Use: yourdomain.com or shop.yourdomain.com');
       return;
     }
     const success = await requestDomain(clean);
@@ -85,7 +84,7 @@ export function CustomDomainSetup() {
     return (
       <div className="flex items-center justify-center gap-2 py-12 text-muted-foreground">
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span className="text-sm">Memuat...</span>
+        <span className="text-sm">Loading...</span>
       </div>
     );
   }
@@ -105,7 +104,7 @@ export function CustomDomainSetup() {
             onClick={resetError}
             className="text-[11px] font-medium tracking-wide text-muted-foreground hover:text-foreground transition-colors shrink-0"
           >
-            TUTUP
+            DISMISS
           </button>
         </div>
       )}
@@ -118,7 +117,7 @@ export function CustomDomainSetup() {
           </p>
           <h2 className="text-2xl font-bold tracking-tight leading-none">Custom Domain</h2>
           <p className="text-sm text-muted-foreground pt-0.5">
-            Hubungkan domain milik Anda ke toko ini
+            Connect a domain you own to your store
           </p>
         </div>
         {!hasDomain && (
@@ -142,10 +141,10 @@ export function CustomDomainSetup() {
         >
           <Globe className="h-10 w-10 mb-3 text-muted-foreground/30 group-hover:text-primary/40 transition-colors" />
           <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-            Belum ada custom domain
+            No custom domain connected
           </p>
           <p className="text-xs text-muted-foreground/60 mt-0.5">
-            Klik untuk menambahkan domain
+            Click to connect a domain
           </p>
           <div className="mt-4 flex items-center gap-1 text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
             <Plus className="h-3.5 w-3.5" />Add Domain
@@ -170,8 +169,10 @@ export function CustomDomainSetup() {
       {hasDomain && !isActive && (
         <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            DNS propagasi bisa memakan waktu <span className="font-medium text-foreground">10 menit – 48 jam</span>.
-            Klik <span className="font-medium text-foreground">Cek Status</span> setelah DNS dipasang di registrar Anda.
+            DNS propagation typically takes{' '}
+            <span className="font-medium text-foreground">10 minutes to 48 hours</span>.
+            Click <span className="font-medium text-foreground">Verify DNS</span> once records
+            have been added at your domain registrar.
           </p>
         </div>
       )}
@@ -190,7 +191,7 @@ export function CustomDomainSetup() {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tight">Add Custom Domain</DialogTitle>
             <DialogDescription className="text-sm">
-              Masukkan domain yang sudah Anda miliki dari registrar.
+              Enter a domain you already own from a domain registrar.
             </DialogDescription>
           </DialogHeader>
 
@@ -200,7 +201,7 @@ export function CustomDomainSetup() {
                 Domain
               </p>
               <Input
-                placeholder="tokoku.com"
+                placeholder="yourdomain.com"
                 value={inputDomain}
                 onChange={(e) => { setInputDomain(e.target.value); setInputError(null); }}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddDomain()}
@@ -212,11 +213,11 @@ export function CustomDomainSetup() {
                 <p className="text-xs text-destructive">{inputError}</p>
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span>Contoh:</span>
-              <code className="bg-muted px-2 py-0.5 rounded text-xs font-mono">tokoku.com</code>
-              <span>atau</span>
-              <code className="bg-muted px-2 py-0.5 rounded text-xs font-mono">shop.tokoku.com</code>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
+              <span>Examples:</span>
+              <code className="bg-muted px-2 py-0.5 rounded text-xs font-mono">yourdomain.com</code>
+              <span>or</span>
+              <code className="bg-muted px-2 py-0.5 rounded text-xs font-mono">shop.yourdomain.com</code>
             </div>
           </div>
 
@@ -227,7 +228,7 @@ export function CustomDomainSetup() {
               disabled={isLoading}
               className="h-9 text-sm"
             >
-              Batal
+              Cancel
             </Button>
             <Button
               onClick={handleAddDomain}
@@ -235,7 +236,7 @@ export function CustomDomainSetup() {
               className="h-9 text-sm gap-1.5"
             >
               {isLoading
-                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Menyimpan...</>
+                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Saving...</>
                 : <>Add Domain<ArrowRight className="h-3.5 w-3.5" /></>
               }
             </Button>
@@ -251,7 +252,7 @@ export function CustomDomainSetup() {
           <DialogHeader>
             <DialogTitle className="text-lg font-bold tracking-tight">Configure DNS Records</DialogTitle>
             <DialogDescription className="text-sm">
-              Tambahkan records berikut di panel registrar domain Anda
+              Add the following records in your domain registrar&#39;s DNS settings
             </DialogDescription>
           </DialogHeader>
 
@@ -261,15 +262,15 @@ export function CustomDomainSetup() {
             <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 {isSubdomainDomain
-                  ? <>Subdomain terdeteksi — cukup tambah <span className="font-medium text-foreground">1 CNAME record</span> saja.</>
-                  : <>Root domain terdeteksi — tambah <span className="font-medium text-foreground">A record</span> dan <span className="font-medium text-foreground">CNAME www</span>.</>
+                  ? <>Subdomain detected — add <span className="font-medium text-foreground">1 CNAME record</span> to your DNS settings.</>
+                  : <>Root domain detected — add an <span className="font-medium text-foreground">A record</span> and a <span className="font-medium text-foreground">CNAME for www</span>.</>
                 }
               </p>
             </div>
 
             {/* Target domain */}
-            <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Records untuk{' '}
+            <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+              DNS Records for{' '}
               <span className="normal-case font-semibold text-foreground tracking-normal">{domain}</span>
             </p>
 
@@ -278,9 +279,9 @@ export function CustomDomainSetup() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/40 border-b">
-                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widest uppercase text-muted-foreground w-20">Type</th>
-                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widest uppercase text-muted-foreground w-20">Name</th>
-                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widest uppercase text-muted-foreground">Value</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widests uppercase text-muted-foreground w-20">Type</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widests uppercase text-muted-foreground w-20">Name</th>
+                    <th className="text-left px-4 py-2.5 text-[11px] font-medium tracking-widests uppercase text-muted-foreground">Value</th>
                     <th className="w-10" />
                   </tr>
                 </thead>
@@ -288,7 +289,7 @@ export function CustomDomainSetup() {
                   {dnsRecords.length === 0 ? (
                     <tr>
                       <td colSpan={4} className="px-4 py-8 text-center text-xs text-muted-foreground">
-                        Tidak ada records. Coba hapus dan daftarkan ulang domain.
+                        No records found. Try removing and re-adding your domain.
                       </td>
                     </tr>
                   ) : (
@@ -329,10 +330,10 @@ export function CustomDomainSetup() {
             {/* Steps */}
             <div className="space-y-1.5">
               {[
-                'Login ke panel domain (Niagahoster, GoDaddy, Cloudflare, dll)',
-                <>Cari menu <span className="font-medium text-foreground">DNS Management</span></>,
-                'Tambahkan records di atas, lalu simpan perubahan',
-                <>Kembali ke sini dan klik <span className="font-medium text-foreground">Cek Status</span></>,
+                'Log in to your domain registrar (Niagahoster, GoDaddy, Cloudflare, etc.)',
+                <>Find the <span className="font-medium text-foreground">DNS Management</span> or <span className="font-medium text-foreground">DNS Settings</span> section</>,
+                'Add the records above and save your changes',
+                <>Return here and click <span className="font-medium text-foreground">Verify DNS</span></>,
               ].map((step, i) => (
                 <div key={i} className="flex items-start gap-2.5">
                   <span className="w-5 h-5 rounded-full bg-muted text-[11px] font-bold flex items-center justify-center shrink-0 text-muted-foreground mt-0.5">
@@ -347,11 +348,11 @@ export function CustomDomainSetup() {
           <DialogFooter className="gap-2">
             <Button asChild variant="outline" size="sm" className="h-8 text-xs gap-1">
               <a
-                href="https://www.youtube.com/results?search_query=cara+setting+dns+record+custom+domain"
+                href="https://www.youtube.com/results?search_query=how+to+set+custom+domain+DNS+records"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <ExternalLink className="h-3 w-3" />Dokumentasi
+                <ExternalLink className="h-3 w-3" />Documentation
               </a>
             </Button>
             <Button size="sm" onClick={() => setShowDnsModal(false)} className="h-8 text-xs">
@@ -367,10 +368,10 @@ export function CustomDomainSetup() {
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold tracking-tight">Hapus Domain?</DialogTitle>
+            <DialogTitle className="text-lg font-bold tracking-tight">Remove Domain?</DialogTitle>
             <DialogDescription className="text-sm leading-relaxed">
-              Domain <span className="font-semibold text-foreground">{domain}</span> akan dilepas.
-              Toko akan kembali ke subdomain default.
+              Domain <span className="font-semibold text-foreground">{domain}</span> will be
+              disconnected. Your store will revert to its default subdomain.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -380,7 +381,7 @@ export function CustomDomainSetup() {
               disabled={isLoading}
               className="h-9 text-sm"
             >
-              Batal
+              Cancel
             </Button>
             <Button
               variant="destructive"
@@ -389,8 +390,8 @@ export function CustomDomainSetup() {
               className="h-9 text-sm gap-1.5"
             >
               {isLoading
-                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Menghapus...</>
-                : <><Trash2 className="h-3.5 w-3.5" />Hapus Domain</>
+                ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />Removing...</>
+                : <><Trash2 className="h-3.5 w-3.5" />Remove Domain</>
               }
             </Button>
           </DialogFooter>
@@ -431,10 +432,10 @@ function DomainRow({
 
   // ─── Status config ────────────────────────────────────────────────────
   const status = isActive
-    ? { color: 'text-primary', dot: 'bg-primary', label: 'Aktif' }
+    ? { color: 'text-primary', dot: 'bg-primary', label: 'Active' }
     : isVerified
-      ? { color: 'text-amber-500', dot: 'bg-amber-400', label: 'Menunggu SSL' }
-      : { color: 'text-muted-foreground', dot: 'bg-muted-foreground/50', label: 'Menunggu DNS' };
+      ? { color: 'text-amber-500', dot: 'bg-amber-400', label: 'SSL Provisioning' }
+      : { color: 'text-muted-foreground', dot: 'bg-muted-foreground/50', label: 'Pending Verification' };
 
   return (
     <div className="rounded-lg border overflow-hidden">
@@ -485,7 +486,7 @@ function DomainRow({
                   >
                     {isChecking
                       ? <><Loader2 className="h-3 w-3 animate-spin" />Checking...</>
-                      : 'Cek Status'
+                      : 'Verify DNS'
                     }
                   </button>
                 </>
@@ -497,7 +498,7 @@ function DomainRow({
                   rel="noopener noreferrer"
                   className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                 >
-                  Buka Toko
+                  Open Store
                   <ExternalLink className="h-3 w-3" />
                 </a>
               )}
@@ -520,7 +521,7 @@ function DomainRow({
             onClick={onDelete}
             disabled={isLoading}
             className="p-1.5 rounded hover:bg-destructive/10 transition-colors text-muted-foreground hover:text-destructive disabled:opacity-50"
-            title="Hapus Domain"
+            title="Remove Domain"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -533,8 +534,8 @@ function DomainRow({
           <Info className="h-3 w-3 text-muted-foreground/60 shrink-0" />
           <p className="text-[11px] text-muted-foreground">
             {isVerified
-              ? 'DNS terverifikasi — SSL sedang diterbitkan, tunggu beberapa menit'
-              : 'Pasang DNS records di registrar Anda, lalu klik Cek Status'
+              ? 'DNS verified — SSL certificate is being provisioned. This usually takes a few minutes.'
+              : 'Add the DNS records at your domain registrar, then click Verify DNS.'
             }
           </p>
         </div>

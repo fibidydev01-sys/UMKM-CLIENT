@@ -9,28 +9,28 @@ import type { DomainStatus, DomainStatusResponse, DnsRecord } from '@/types';
 // ==========================================
 // HYDRATION DETECTION
 // useSyncExternalStore: server snapshot = false, client snapshot = true
-// Tidak pakai useEffect + setState → tidak ada cascading render
+// No useEffect + setState → no cascading renders
 // ==========================================
 function useIsClient(): boolean {
   return useSyncExternalStore(
-    () => () => { },           // subscribe — tidak perlu listen apa-apa
+    () => () => { },           // subscribe — nothing to listen to
     () => true,               // getSnapshot  (client)
-    () => false,              // getServerSnapshot (SSR / sebelum hydrate)
+    () => false,              // getServerSnapshot (SSR / before hydration)
   );
 }
 
 // ==========================================
 // USE DOMAIN STATUS HOOK
-// Derived langsung dari tenant — no extra state
-// + isHydrating: true sampai komponen mount di client
+// Derived directly from tenant — no extra state
+// + isHydrating: true until component mounts on client
 // ==========================================
 
 export function useDomainStatus(): DomainStatus & { isHydrating: boolean } {
   const tenant = useAuthStore((s) => s.tenant);
   const isClient = useIsClient();
 
-  // isHydrating = true selama belum mount di client
-  // Setelah mount, isClient = true → isHydrating = false
+  // isHydrating = true until mounted on client
+  // After mount, isClient = true → isHydrating = false
   const isHydrating = !isClient;
 
   return useMemo(
@@ -50,8 +50,8 @@ export function useDomainStatus(): DomainStatus & { isHydrating: boolean } {
 
 // ==========================================
 // USE DOMAIN SETUP HOOK
-// Simple — hanya 3 aksi: request, checkStatus, remove
-// Tidak ada polling, tidak ada wizard state berlapis
+// Simple — only 3 actions: request, checkStatus, remove
+// No polling, no layered wizard state
 // ==========================================
 
 interface UseDomainSetupReturn {
@@ -74,8 +74,8 @@ export function useDomainSetup(): UseDomainSetupReturn {
 
   // ========================================
   // REQUEST DOMAIN
-  // User input domain → simpan ke DB + add ke Vercel
-  // → Vercel return DNS records (apex/subdomain-aware) → tampilkan ke user
+  // User inputs domain → save to DB + add to Vercel
+  // → Vercel returns DNS records (apex/subdomain-aware) → show to user
   // ========================================
 
   const requestDomain = useCallback(
@@ -91,18 +91,18 @@ export function useDomainSetup(): UseDomainSetupReturn {
           customDomain: domain.toLowerCase().trim(),
         });
 
-        // Update tenant store dengan data terbaru dari backend
+        // Update tenant store with latest data from backend
         setTenant(response.tenant);
 
         toast.success(
-          'Domain terdaftar!',
-          'Pasang DNS records di registrar Anda, lalu klik "Cek Status"',
+          'Domain added!',
+          'Add DNS records at your registrar, then click "Verify DNS"',
         );
         return true;
       } catch (err) {
         const message = getErrorMessage(err);
         setError(message);
-        toast.error('Gagal mendaftarkan domain', message);
+        toast.error('Failed to add domain', message);
         return false;
       } finally {
         setIsLoading(false);
@@ -112,8 +112,8 @@ export function useDomainSetup(): UseDomainSetupReturn {
   );
 
   // ========================================
-  // CHECK STATUS (Manual — user yang klik)
-  // Tanya Vercel: sudah verified? SSL active?
+  // CHECK STATUS (Manual — user-triggered)
+  // Ask Vercel: verified? SSL active?
   // ========================================
 
   const checkStatus = useCallback(async (): Promise<void> => {
@@ -129,41 +129,41 @@ export function useDomainSetup(): UseDomainSetupReturn {
 
       const now = new Date().toISOString();
 
-      // Update tenant store dengan status terbaru
+      // Update tenant store with latest status
       setTenant({
         ...tenant,
         customDomainVerified: result.verified,
         sslStatus:
           result.sslStatus === 'not_configured' ? null : result.sslStatus,
         dnsRecords: result.dnsRecords as never,
-        // ✅ Sync verifiedAt kalau baru verified
+        // Sync verifiedAt if newly verified
         ...(result.verified && !tenant.customDomainVerified
           ? { customDomainVerifiedAt: now }
           : {}),
-        // ✅ Sync sslIssuedAt kalau SSL baru active
+        // Sync sslIssuedAt if SSL newly active
         ...(result.sslStatus === 'active' && tenant.sslStatus !== 'active'
           ? { sslIssuedAt: now }
           : {}),
       });
 
-      // Feedback ke user
+      // User feedback
       if (result.verified && result.sslStatus === 'active') {
-        toast.success('Domain aktif! 🎉', 'Domain Anda sudah live dengan HTTPS');
+        toast.success('Domain is live! 🎉', 'Your domain is active with HTTPS');
       } else if (result.verified) {
         toast.success(
-          'DNS terverifikasi! ✅',
-          'Menunggu SSL certificate dari Vercel...',
+          'DNS verified! ✅',
+          'SSL certificate is being provisioned by Vercel...',
         );
       } else {
         toast.info(
-          'Belum terverifikasi',
-          'Pastikan DNS records sudah terpasang di registrar Anda',
+          'Not yet verified',
+          'Make sure your DNS records are configured at your domain registrar',
         );
       }
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);
-      toast.error('Gagal cek status', message);
+      toast.error('Verification failed', message);
     } finally {
       setIsChecking(false);
     }
@@ -171,7 +171,7 @@ export function useDomainSetup(): UseDomainSetupReturn {
 
   // ========================================
   // REMOVE DOMAIN
-  // Hapus dari Vercel + reset DB
+  // Remove from Vercel + reset DB fields
   // ========================================
 
   const removeDomain = useCallback(async (): Promise<boolean> => {
@@ -198,12 +198,12 @@ export function useDomainSetup(): UseDomainSetupReturn {
         });
       }
 
-      toast.success('Domain dihapus', 'Kamu bisa mendaftarkan domain baru');
+      toast.success('Domain removed', 'You can connect a new domain anytime');
       return true;
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);
-      toast.error('Gagal menghapus domain', message);
+      toast.error('Failed to remove domain', message);
       return false;
     } finally {
       setIsLoading(false);

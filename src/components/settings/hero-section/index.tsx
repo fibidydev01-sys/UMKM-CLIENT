@@ -1,3 +1,3 @@
-export { StepIdentitas } from './step-identitas';
-export { StepCerita } from './step-cerita';
-export { StepTampilan } from './step-tampilan';
+export { StepIdentity } from './step-identity';
+export { StepStory } from './step-story';
+export { StepAppearance } from './step-appearance';

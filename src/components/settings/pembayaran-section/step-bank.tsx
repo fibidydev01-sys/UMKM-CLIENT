@@ -88,16 +88,16 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Rekening Bank
+              Bank Accounts
             </p>
             {!isEmpty && (
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary tabular-nums">
-                {enabled} aktif / {banks.length}
+                {enabled} active / {banks.length}
               </span>
             )}
           </div>
           <Button size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
-            <Plus className="h-3.5 w-3.5" />Tambah Bank
+            <Plus className="h-3.5 w-3.5" />Add Bank Account
           </Button>
         </div>
 
@@ -109,10 +109,10 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
           >
             <Building2 className="h-10 w-10 mb-3 text-muted-foreground/40 group-hover:text-primary/40 transition-colors" />
             <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-              Belum ada rekening bank
+              No bank accounts yet
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Klik untuk menambahkan rekening
+              Click to add a bank account
             </p>
           </div>
         ) : (
@@ -132,7 +132,7 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
         {!isEmpty && (
           <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
             <p className="text-xs text-muted-foreground">
-              Toggle untuk mengaktifkan/nonaktifkan rekening tanpa menghapusnya
+              Toggle to enable or disable an account without deleting it
             </p>
           </div>
         )}
@@ -144,14 +144,14 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
   return (
     <div className="flex flex-col items-center gap-4">
       <Button size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
-        <Plus className="h-3.5 w-3.5" />Tambah Bank
+        <Plus className="h-3.5 w-3.5" />Add Bank Account
       </Button>
 
       {isEmpty ? (
         <div className="text-center py-10 text-muted-foreground w-full max-w-sm border-2 border-dashed rounded-lg">
           <Building2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
-          <p className="text-sm">Belum ada rekening bank</p>
-          <p className="text-xs mt-1">Tambahkan untuk menerima transfer</p>
+          <p className="text-sm">No bank accounts yet</p>
+          <p className="text-xs mt-1">Add one to accept bank transfers</p>
         </div>
       ) : (
         <div className="w-full max-w-sm space-y-2.5">

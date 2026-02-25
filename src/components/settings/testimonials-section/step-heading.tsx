@@ -5,58 +5,58 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import type { TestimonialsFormData } from '@/types';
 
-interface StepHeaderProps {
+interface StepHeadingProps {
   formData: TestimonialsFormData;
   updateFormData: <K extends keyof TestimonialsFormData>(key: K, value: TestimonialsFormData[K]) => void;
   isDesktop?: boolean;
 }
 
-export function StepHeader({ formData, updateFormData, isDesktop = false }: StepHeaderProps) {
+export function StepHeading({ formData, updateFormData, isDesktop = false }: StepHeadingProps) {
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
     return (
       <div className="grid grid-cols-2 gap-8 max-w-2xl">
 
-        {/* Judul */}
+        {/* Section Title */}
         <div className="space-y-1.5">
           <Label htmlFor="testimonialsTitle-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Judul Section
+            Section Title
           </Label>
           <Input
             id="testimonialsTitle-d"
-            placeholder="Kata Mereka"
+            placeholder="What Our Customers Say"
             value={formData.testimonialsTitle}
             onChange={(e) => updateFormData('testimonialsTitle', e.target.value)}
             className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
           />
           <p className="text-xs text-muted-foreground">
-            Heading utama di bagian testimonials
+            Main heading shown in your Testimonials section
           </p>
         </div>
 
-        {/* Subtitle */}
+        {/* Section Subheading */}
         <div className="space-y-1.5">
           <Label htmlFor="testimonialsSubtitle-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Subtitle
+            Section Subheading
           </Label>
           <Input
             id="testimonialsSubtitle-d"
-            placeholder="Apa kata pelanggan tentang kami"
+            placeholder="Real stories from happy customers"
             value={formData.testimonialsSubtitle}
             onChange={(e) => updateFormData('testimonialsSubtitle', e.target.value)}
             className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
           />
           <p className="text-xs text-muted-foreground">
-            Kalimat pendukung di bawah judul
+            Supporting line shown below the title
           </p>
         </div>
 
         {/* Tip */}
         <div className="col-span-2 border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
-            <span className="font-medium text-foreground">Tips:</span>{' '}
-            Judul singkat yang emosional lebih efektif — contoh: &quot;Mereka Sudah Merasakannya&quot; atau &quot;Ribuan Pelanggan Puas&quot;.
+            <span className="font-medium text-foreground">Tip:</span>{' '}
+            Short emotional titles work best — e.g. &quot;Thousands of Happy Customers&quot;.
           </p>
         </div>
 
@@ -72,11 +72,11 @@ export function StepHeader({ formData, updateFormData, isDesktop = false }: Step
 
           <div className="space-y-1.5">
             <Label htmlFor="testimonialsTitle-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Judul Section
+              Section Title
             </Label>
             <Input
               id="testimonialsTitle-m"
-              placeholder="Kata Mereka"
+              placeholder="What Our Customers Say"
               value={formData.testimonialsTitle}
               onChange={(e) => updateFormData('testimonialsTitle', e.target.value)}
               className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -87,11 +87,11 @@ export function StepHeader({ formData, updateFormData, isDesktop = false }: Step
 
           <div className="space-y-1.5">
             <Label htmlFor="testimonialsSubtitle-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Subtitle
+              Section Subheading
             </Label>
             <Input
               id="testimonialsSubtitle-m"
-              placeholder="Apa kata pelanggan tentang kami"
+              placeholder="Real stories from happy customers"
               value={formData.testimonialsSubtitle}
               onChange={(e) => updateFormData('testimonialsSubtitle', e.target.value)}
               className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"

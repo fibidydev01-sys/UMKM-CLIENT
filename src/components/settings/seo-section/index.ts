@@ -1,2 +1,2 @@
-export { StepMeta } from './step-meta';
-export { StepSosmed } from './step-sosmed';
+export { StepSearch } from './step-search';
+export { StepSocialLinks } from './step-social-links';

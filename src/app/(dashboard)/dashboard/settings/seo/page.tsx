@@ -10,12 +10,12 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { SeoFormData, SocialLinks } from '@/types';
-import { StepMeta, StepSosmed } from '@/components/settings/seo-section';
+import { StepSearch, StepSocialLinks } from '@/components/settings/seo-section';
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Meta SEO', desc: 'Optimasi untuk mesin pencari Google' },
-  { title: 'Social Media', desc: 'Link ke akun media sosial toko' },
+  { title: 'Search Engine', desc: 'Title & description for Google' },
+  { title: 'Social Links', desc: "Links to your store's social accounts" },
 ] as const;
 
 const SOCIAL_FIELDS: { key: keyof SocialLinks; label: string }[] = [
@@ -128,10 +128,10 @@ export default function SeoPage() {
         !formData.metaTitle && 'Meta Title',
         !formData.metaDescription && 'Meta Description',
       ].filter(Boolean) as string[];
-      if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+      if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     } else if (currentStep === 1) {
       if (!Object.values(formData.socialLinks).some(Boolean)) {
-        toast.info('Isi minimal 1 link social media untuk hasil lebih baik');
+        toast.info('Add at least 1 social link for best results');
       }
     }
   };
@@ -156,10 +156,10 @@ export default function SeoPage() {
         socialLinks: formData.socialLinks,
       });
       await refresh();
-      toast.success('Pengaturan SEO berhasil disimpan');
+      toast.success('SEO settings saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan pengaturan SEO');
+      toast.error('Failed to save SEO settings');
     } finally {
       setIsSaving(false);
     }
@@ -205,7 +205,7 @@ export default function SeoPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -226,7 +226,7 @@ export default function SeoPage() {
             {/* Body */}
             <div className="flex-1 min-h-[340px]">
               {currentStep === 0 && (
-                <StepMeta
+                <StepSearch
                   formData={formData!}
                   updateFormData={updateFormData}
                   tenantName={tenant?.name}
@@ -236,7 +236,7 @@ export default function SeoPage() {
                 />
               )}
               {currentStep === 1 && (
-                <StepSosmed
+                <StepSocialLinks
                   formData={formData!}
                   onSocialLinkChange={handleSocialLinkChange}
                   isDesktop
@@ -250,7 +250,7 @@ export default function SeoPage() {
                 variant="outline" onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+                <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -264,8 +264,8 @@ export default function SeoPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -283,7 +283,7 @@ export default function SeoPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
@@ -291,7 +291,7 @@ export default function SeoPage() {
             </div>
             <div className="min-h-[300px]">
               {currentStep === 0 && (
-                <StepMeta
+                <StepSearch
                   formData={formData!}
                   updateFormData={updateFormData}
                   tenantName={tenant?.name}
@@ -300,7 +300,7 @@ export default function SeoPage() {
                 />
               )}
               {currentStep === 1 && (
-                <StepSosmed
+                <StepSocialLinks
                   formData={formData!}
                   onSocialLinkChange={handleSocialLinkChange}
                 />
@@ -317,12 +317,12 @@ export default function SeoPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -334,7 +334,7 @@ export default function SeoPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview SEO Settings"
+        title="SEO Settings Preview"
       >
         {formData && (
           <div className="space-y-6 mt-4">
@@ -342,15 +342,15 @@ export default function SeoPage() {
             {/* Google preview */}
             <div className="space-y-2">
               <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Preview di Google
+                Google Preview
               </p>
               <div className="rounded-lg border p-4 bg-muted/20 space-y-0.5">
                 <p className="text-blue-600 text-base font-medium hover:underline cursor-pointer leading-snug">
-                  {formData.metaTitle || tenant?.name || 'Nama Toko'}
+                  {formData.metaTitle || tenant?.name || 'Store Name'}
                 </p>
                 <p className="text-[13px] text-emerald-700">{tenant?.slug}.fibidy.com</p>
                 <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
-                  {formData.metaDescription || tenant?.description || 'Deskripsi toko akan muncul di sini...'}
+                  {formData.metaDescription || tenant?.description || 'Your store description will appear here...'}
                 </p>
               </div>
             </div>
@@ -358,11 +358,11 @@ export default function SeoPage() {
             {/* Social links summary */}
             <div className="space-y-2">
               <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Social Media ({filledSocials.length} diisi)
+                Social Links ({filledSocials.length} filled)
               </p>
               <div className="rounded-lg border p-4 bg-muted/20">
                 {filledSocials.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Belum ada social media yang diisi</p>
+                  <p className="text-sm text-muted-foreground">No social links added yet</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-x-6 gap-y-1.5">
                     {filledSocials.map(({ key, label }) => (

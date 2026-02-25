@@ -16,7 +16,7 @@ const THEME_COLORS = [
   { name: 'Orange', value: '#f97316', class: 'bg-orange-500' },
 ] as const;
 
-interface StepTampilanProps {
+interface StepAppearanceProps {
   formData: HeroFormData;
   updateFormData: <K extends keyof HeroFormData>(key: K, value: HeroFormData[K]) => void;
   onRemoveHeroBg: () => void;
@@ -73,35 +73,35 @@ function ColorPicker({
         })}
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Terpilih:{' '}
+        Selected:{' '}
         <span className="font-medium text-foreground">{selected?.name ?? '—'}</span>
       </p>
     </div>
   );
 }
 
-export function StepTampilan({
+export function StepAppearance({
   formData,
   updateFormData,
   onRemoveHeroBg,
   isRemovingHeroBg,
   onCtaTextChange,
   isDesktop = false,
-}: StepTampilanProps) {
+}: StepAppearanceProps) {
 
   // ── DESKTOP: 3-column ─────────────────────────────────────────────────────
   if (isDesktop) {
     return (
       <div className="grid grid-cols-3 gap-8 items-start">
 
-        {/* Col 1 — Warna Tema */}
+        {/* Col 1 — Brand Color */}
         <div className="space-y-3">
           <div className="space-y-0.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Warna Tema
+              Brand Color
             </p>
             <p className="text-xs text-muted-foreground">
-              Warna utama tombol &amp; aksen toko
+              Primary color for buttons &amp; accents
             </p>
           </div>
 
@@ -118,14 +118,14 @@ export function StepTampilan({
           />
         </div>
 
-        {/* Col 2 — Hero Background */}
+        {/* Col 2 — Background Image */}
         <div className="space-y-3">
           <div className="space-y-0.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Hero Background
+              Background Image
             </p>
             <p className="text-xs text-muted-foreground">
-              Gambar latar hero banner toko
+              Cover image for your store&#39;s hero banner
             </p>
           </div>
 
@@ -146,20 +146,20 @@ export function StepTampilan({
           </p>
         </div>
 
-        {/* Col 3 — Teks CTA */}
+        {/* Col 3 — Button Label */}
         <div className="space-y-3">
           <div className="space-y-0.5">
             <Label htmlFor="cta-desktop" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Teks Tombol CTA
+              Button Label
             </Label>
             <p className="text-xs text-muted-foreground">
-              Teks tombol call-to-action di hero
+              Call-to-action button text on your hero
             </p>
           </div>
 
           <Input
             id="cta-desktop"
-            placeholder="Pesan Sekarang"
+            placeholder="Order Now"
             value={formData.heroCtaText}
             onChange={(e) => onCtaTextChange(e.target.value)}
             className="h-11 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -168,7 +168,7 @@ export function StepTampilan({
 
           {/* Char counter */}
           <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Maks. 2 kata / 15 karakter</span>
+            <span>Up to 2 words · 15 characters max</span>
             <span className={cn(
               'font-mono tabular-nums',
               formData.heroCtaText.length >= 14 && 'text-amber-500 font-semibold'
@@ -210,10 +210,10 @@ export function StepTampilan({
       <Card className="w-full max-w-sm border shadow-none">
         <CardContent className="pt-6 pb-6 flex flex-col items-center gap-5">
 
-          {/* Warna Tema */}
+          {/* Brand Color */}
           <div className="w-full space-y-2.5">
             <p className="text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Warna Tema
+              Brand Color
             </p>
             <div className="flex justify-center">
               <ColorPicker
@@ -226,10 +226,10 @@ export function StepTampilan({
 
           <div className="w-full border-t" />
 
-          {/* Hero Background */}
+          {/* Background Image */}
           <div className="w-full flex flex-col items-center gap-2.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Hero Background
+              Background Image
             </p>
             <div className="w-[140px]">
               <ImageUpload
@@ -249,21 +249,21 @@ export function StepTampilan({
 
           <div className="w-full border-t" />
 
-          {/* Teks CTA */}
+          {/* Button Label */}
           <div className="w-full space-y-2">
             <Label htmlFor="cta-mobile" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Teks Tombol CTA
+              Button Label
             </Label>
             <Input
               id="cta-mobile"
-              placeholder="Pesan Sekarang"
+              placeholder="Order Now"
               value={formData.heroCtaText}
               onChange={(e) => onCtaTextChange(e.target.value)}
               className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
               maxLength={15}
             />
             <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
-              <span>Maks. 2 kata / 15 karakter</span>
+              <span>Up to 2 words · 15 characters max</span>
               <span className={cn(
                 'font-mono tabular-nums',
                 formData.heroCtaText.length >= 14 && 'text-amber-500 font-semibold'

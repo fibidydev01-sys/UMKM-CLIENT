@@ -7,7 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Lock } from 'lucide-react';
 import type { ContactFormData } from '@/types';
 
-interface StepSettingsProps {
+interface StepDisplaySettingsProps {
   formData: ContactFormData;
   updateFormData: <K extends keyof ContactFormData>(key: K, value: ContactFormData[K]) => void;
   tenantEmail: string;
@@ -15,27 +15,27 @@ interface StepSettingsProps {
   isDesktop?: boolean;
 }
 
-export function StepSettings({
+export function StepDisplaySettings({
   formData,
   updateFormData,
   tenantEmail,
   tenantSlug,
   isDesktop = false,
-}: StepSettingsProps) {
+}: StepDisplaySettingsProps) {
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
     return (
       <div className="grid grid-cols-2 gap-8 max-w-2xl">
 
-        {/* Col 1 — Readonly info akun */}
+        {/* Col 1 — Readonly account info */}
         <div className="space-y-5">
           <div className="space-y-0.5 mb-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Informasi Akun
+              Account Info
             </p>
             <p className="text-xs text-muted-foreground">
-              Data ini tidak dapat diubah dari sini
+              These details cannot be changed here
             </p>
           </div>
 
@@ -53,10 +53,10 @@ export function StepSettings({
             />
           </div>
 
-          {/* Domain */}
+          {/* Store Domain */}
           <div className="space-y-1.5">
             <Label htmlFor="tenantDomain-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
-              Domain Toko
+              Store Domain
               <Lock className="h-3 w-3 text-muted-foreground/50" />
             </Label>
             <Input
@@ -69,29 +69,29 @@ export function StepSettings({
 
           <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Untuk mengubah email atau domain custom, kunjungi halaman{' '}
-              <span className="font-medium text-foreground">Pengaturan Akun</span>.
+              To update your email or custom domain, visit{' '}
+              <span className="font-medium text-foreground">Account Settings</span>.
             </p>
           </div>
         </div>
 
-        {/* Col 2 — Pengaturan form kontak */}
+        {/* Col 2 — Form settings */}
         <div className="space-y-5">
           <div className="space-y-0.5 mb-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Pengaturan Form
+              Form Settings
             </p>
             <p className="text-xs text-muted-foreground">
-              Atur visibilitas form kontak
+              Control contact form visibility
             </p>
           </div>
 
-          {/* Toggle form */}
+          {/* Show Contact Form toggle */}
           <div className="flex items-center justify-between border rounded-lg px-4 py-3">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Tampilkan Form Kontak</p>
+              <p className="text-sm font-medium">Show Contact Form</p>
               <p className="text-xs text-muted-foreground">
-                Pengunjung bisa mengirim pesan lewat form
+                Visitors can send messages through the contact form
               </p>
             </div>
             <Switch
@@ -107,8 +107,8 @@ export function StepSettings({
             : 'bg-muted/50 border-border text-muted-foreground'
             }`}>
             {formData.contactShowForm
-              ? '✓ Form kontak aktif — pelanggan dapat menghubungi kamu'
-              : '○ Form kontak nonaktif — halaman kontak hanya menampilkan info'
+              ? '✓ Contact form active — customers can reach you'
+              : '○ Contact form hidden — page shows contact info only'
             }
           </div>
         </div>
@@ -133,13 +133,13 @@ export function StepSettings({
               disabled
               className="text-center h-10 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed"
             />
-            <p className="text-[11px] text-muted-foreground text-center">Email tidak dapat diubah</p>
+            <p className="text-[11px] text-muted-foreground text-center">Email cannot be changed</p>
           </div>
 
-          {/* Domain */}
+          {/* Store Domain */}
           <div className="space-y-1.5">
             <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Domain Toko
+              Store Domain
             </Label>
             <Input
               value={`${tenantSlug}.fibidy.com`}
@@ -150,11 +150,11 @@ export function StepSettings({
 
           <div className="w-full border-t" />
 
-          {/* Toggle form */}
+          {/* Show Contact Form toggle */}
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Tampilkan Form Kontak</p>
-              <p className="text-xs text-muted-foreground">Form kontak di halaman kontak</p>
+              <p className="text-sm font-medium">Show Contact Form</p>
+              <p className="text-xs text-muted-foreground">Contact form on your contact page</p>
             </div>
             <Switch
               id="contactShowForm-m"
@@ -169,8 +169,8 @@ export function StepSettings({
             : 'bg-muted/50 border-border text-muted-foreground'
             }`}>
             {formData.contactShowForm
-              ? '✓ Form kontak aktif'
-              : '○ Form kontak nonaktif'
+              ? '✓ Contact form active'
+              : '○ Contact form hidden'
             }
           </div>
 

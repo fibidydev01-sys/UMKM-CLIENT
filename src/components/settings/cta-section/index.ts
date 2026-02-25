@@ -1,2 +1,2 @@
-export { StepKonten } from './step-konten';
-export { StepTombol } from './step-tombol';
+export { StepContent } from './step-content';
+export { StepButton } from './step-button';

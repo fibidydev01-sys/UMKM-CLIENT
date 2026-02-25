@@ -1,2 +1,2 @@
-export { StepBiaya } from './step-biaya';
-export { StepKurir } from './step-kurir';
+export { StepRates } from './step-rates';
+export { StepCarriers } from './step-carriers';

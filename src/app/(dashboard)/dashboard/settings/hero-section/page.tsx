@@ -12,7 +12,7 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { HeroFormData } from '@/types';
-import { StepIdentitas, StepCerita, StepTampilan } from '@/components/settings/hero-section';
+import { StepIdentity, StepStory, StepAppearance } from '@/components/settings/hero-section';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const THEME_COLORS = [
@@ -25,9 +25,9 @@ const THEME_COLORS = [
 ] as const;
 
 const STEPS = [
-  { title: 'Identitas Toko', desc: 'Nama, logo, dan kategori' },
-  { title: 'Cerita Toko', desc: 'Judul dan deskripsi hero' },
-  { title: 'Tampilan', desc: 'Warna tema, background, CTA' },
+  { title: 'Brand Identity', desc: 'Name, logo & category' },
+  { title: 'Brand Story', desc: 'Headline & description' },
+  { title: 'Appearance', desc: 'Colors, background & CTA' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -135,9 +135,9 @@ export default function HeroSectionPage() {
       setFormData({ ...formData, logo: '' });
       await tenantsApi.update({ logo: '' });
       await refresh();
-      toast.success('Logo berhasil dihapus');
+      toast.success('Logo removed successfully');
     } catch {
-      toast.error('Gagal menghapus logo');
+      toast.error('Failed to remove logo');
       setFormData({ ...formData, logo: tenant.logo || '' });
     } finally {
       setIsRemovingLogo(false);
@@ -151,9 +151,9 @@ export default function HeroSectionPage() {
       setFormData({ ...formData, heroBackgroundImage: '' });
       await tenantsApi.update({ heroBackgroundImage: '' });
       await refresh();
-      toast.success('Hero background berhasil dihapus');
+      toast.success('Background image removed successfully');
     } catch {
-      toast.error('Gagal menghapus hero background');
+      toast.error('Failed to remove background image');
       setFormData({ ...formData, heroBackgroundImage: tenant.heroBackgroundImage || '' });
     } finally {
       setIsRemovingHeroBg(false);
@@ -169,12 +169,12 @@ export default function HeroSectionPage() {
   const checkEmptyFields = () => {
     if (!formData) return;
     const map: Record<number, { key: keyof HeroFormData; label: string }[]> = {
-      0: [{ key: 'name', label: 'Nama Toko' }, { key: 'logo', label: 'Logo' }],
-      1: [{ key: 'heroTitle', label: 'Hero Title' }, { key: 'heroSubtitle', label: 'Subtitle' }, { key: 'description', label: 'Deskripsi' }],
-      2: [{ key: 'heroBackgroundImage', label: 'Background' }, { key: 'heroCtaText', label: 'Teks CTA' }],
+      0: [{ key: 'name', label: 'Store Name' }, { key: 'logo', label: 'Logo' }],
+      1: [{ key: 'heroTitle', label: 'Headline' }, { key: 'heroSubtitle', label: 'Subheading' }, { key: 'description', label: 'Store Tagline' }],
+      2: [{ key: 'heroBackgroundImage', label: 'Background Image' }, { key: 'heroCtaText', label: 'Button Label' }],
     };
     const missing = (map[currentStep] || []).filter(({ key }) => !formData[key]).map(({ label }) => label);
-    if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+    if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
   };
 
   const handleNext = () => {
@@ -203,10 +203,10 @@ export default function HeroSectionPage() {
         theme: { primaryColor: formData.primaryColor },
       });
       await refresh();
-      toast.success('Hero Section berhasil disimpan');
+      toast.success('Hero section saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan hero section');
+      toast.error('Failed to save hero section');
     } finally {
       setIsSaving(false);
     }
@@ -252,15 +252,12 @@ export default function HeroSectionPage() {
             {/* ── Header ─────────────────────────────────────────── */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
-                {/* Micro label */}
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
-                {/* Display heading */}
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
                 </h2>
-                {/* Subhead */}
                 <p className="text-sm text-muted-foreground pt-0.5">
                   {STEPS[currentStep].desc}
                 </p>
@@ -278,7 +275,7 @@ export default function HeroSectionPage() {
             {/* ── Body ──────────────────────────────────────────── */}
             <div className="flex-1 min-h-[340px]">
               {currentStep === 0 && (
-                <StepIdentitas
+                <StepIdentity
                   {...stepProps}
                   onRemoveLogo={handleRemoveLogo}
                   isRemovingLogo={isRemovingLogo}
@@ -286,10 +283,10 @@ export default function HeroSectionPage() {
                 />
               )}
               {currentStep === 1 && (
-                <StepCerita {...stepProps} isDesktop />
+                <StepStory {...stepProps} isDesktop />
               )}
               {currentStep === 2 && (
-                <StepTampilan
+                <StepAppearance
                   {...stepProps}
                   onRemoveHeroBg={handleRemoveHeroBg}
                   isRemovingHeroBg={isRemovingHeroBg}
@@ -307,7 +304,7 @@ export default function HeroSectionPage() {
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />
-                Sebelumnya
+                Previous
               </Button>
 
               {/* Progress pills */}
@@ -328,8 +325,8 @@ export default function HeroSectionPage() {
                 className="gap-1.5 min-w-[130px] h-9 text-sm"
               >
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -349,7 +346,7 @@ export default function HeroSectionPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">
                   {STEPS[currentStep].title}
@@ -363,17 +360,17 @@ export default function HeroSectionPage() {
             {/* ── Body ── */}
             <div className="min-h-[300px]">
               {currentStep === 0 && (
-                <StepIdentitas
+                <StepIdentity
                   {...stepProps}
                   onRemoveLogo={handleRemoveLogo}
                   isRemovingLogo={isRemovingLogo}
                 />
               )}
               {currentStep === 1 && (
-                <StepCerita {...stepProps} />
+                <StepStory {...stepProps} />
               )}
               {currentStep === 2 && (
-                <StepTampilan
+                <StepAppearance
                   {...stepProps}
                   onRemoveHeroBg={handleRemoveHeroBg}
                   isRemovingHeroBg={isRemovingHeroBg}
@@ -395,7 +392,7 @@ export default function HeroSectionPage() {
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
-            Sebelumnya
+            Previous
           </Button>
           <Button
             size="sm"
@@ -404,7 +401,7 @@ export default function HeroSectionPage() {
           >
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -416,7 +413,7 @@ export default function HeroSectionPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview Hero Section"
+        title="Hero Section Preview"
       >
         {formData && (
           <>
@@ -425,7 +422,7 @@ export default function HeroSectionPage() {
               <Hero1
                 title={formData.heroTitle || formData.name || ''}
                 subtitle={formData.heroSubtitle || formData.description}
-                ctaText={formData.heroCtaText || 'Lihat Produk'}
+                ctaText={formData.heroCtaText || 'Shop Now'}
                 ctaLink="/products"
                 showCta={true}
                 backgroundImage={formData.heroBackgroundImage}

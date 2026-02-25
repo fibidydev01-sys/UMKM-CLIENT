@@ -12,13 +12,13 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ContactFormData } from '@/types';
-import { StepHeader, StepMaps, StepSettings } from '@/components/settings/contact-section';
+import { StepContactInfo, StepLocation, StepDisplaySettings } from '@/components/settings/contact-section';
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Header & Info Kontak', desc: 'Judul, subtitle, dan informasi kontak' },
-  { title: 'Integrasi Maps', desc: 'Google Maps embed untuk lokasi toko' },
-  { title: 'Pengaturan Tampilan', desc: 'Form kontak dan info akun' },
+  { title: 'Contact Info', desc: 'Title, subheading & contact details' },
+  { title: 'Location & Map', desc: 'Google Maps embed for your store' },
+  { title: 'Display Settings', desc: 'Contact form & account info' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -110,12 +110,12 @@ export default function ContactPage() {
     if (!formData) return;
     if (currentStep === 0) {
       const missing = [
-        !formData.contactTitle && 'Judul Section',
+        !formData.contactTitle && 'Section Title',
         !formData.whatsapp && 'WhatsApp',
       ].filter(Boolean) as string[];
-      if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+      if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     } else if (currentStep === 1 && !formData.contactMapUrl) {
-      toast.info('Isi URL Google Maps untuk hasil lebih baik');
+      toast.info('Fill in the Google Maps URL for best results');
     }
   };
 
@@ -144,10 +144,10 @@ export default function ContactPage() {
         address: formData.address || undefined,
       });
       await refresh();
-      toast.success('Contact Section berhasil disimpan');
+      toast.success('Contact section saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan contact section');
+      toast.error('Failed to save contact section');
     } finally {
       setIsSaving(false);
     }
@@ -190,7 +190,7 @@ export default function ContactPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -210,10 +210,10 @@ export default function ContactPage() {
 
             {/* Body */}
             <div className="flex-1 min-h-[340px]">
-              {currentStep === 0 && <StepHeader {...stepProps} isDesktop />}
-              {currentStep === 1 && <StepMaps   {...stepProps} isDesktop />}
+              {currentStep === 0 && <StepContactInfo {...stepProps} isDesktop />}
+              {currentStep === 1 && <StepLocation {...stepProps} isDesktop />}
               {currentStep === 2 && (
-                <StepSettings
+                <StepDisplaySettings
                   {...stepProps}
                   tenantEmail={tenant?.email || ''}
                   tenantSlug={tenant?.slug || ''}
@@ -228,7 +228,7 @@ export default function ContactPage() {
                 variant="outline" onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+                <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -242,8 +242,8 @@ export default function ContactPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -261,17 +261,17 @@ export default function ContactPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
               </div>
             </div>
             <div className="min-h-[300px]">
-              {currentStep === 0 && <StepHeader {...stepProps} />}
-              {currentStep === 1 && <StepMaps   {...stepProps} />}
+              {currentStep === 0 && <StepContactInfo {...stepProps} />}
+              {currentStep === 1 && <StepLocation {...stepProps} />}
               {currentStep === 2 && (
-                <StepSettings
+                <StepDisplaySettings
                   {...stepProps}
                   tenantEmail={tenant?.email || ''}
                   tenantSlug={tenant?.slug || ''}
@@ -289,12 +289,12 @@ export default function ContactPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -306,14 +306,14 @@ export default function ContactPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview Contact Section"
+        title="Contact Section Preview"
       >
         {formData && (
           <>
             <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(tenant?.theme?.primaryColor) }} />
             <div className="tenant-theme border rounded-lg overflow-hidden mt-4">
               <Contact1
-                title={formData.contactTitle || 'Hubungi Kami'}
+                title={formData.contactTitle || 'Contact Us'}
                 subtitle={formData.contactSubtitle}
                 whatsapp={formData.whatsapp}
                 phone={formData.phone}

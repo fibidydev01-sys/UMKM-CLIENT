@@ -3,11 +3,11 @@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Truck, PackageCheck } from 'lucide-react';
+import { PackageCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { PengirimanFormData } from '@/types';
 
-interface StepBiayaProps {
+interface StepRatesProps {
   formData: PengirimanFormData;
   onFreeShippingChange: (value: string) => void;
   onDefaultCostChange: (value: string) => void;
@@ -29,20 +29,20 @@ function CheckoutSimulator({
   return (
     <div className="rounded-lg bg-muted/20 border px-4 py-3 space-y-2">
       <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mb-3">
-        Simulasi Checkout
+        Checkout Simulation
       </p>
       {scenarios.map((total) => {
         const isFree = threshold !== null && threshold > 0 && total >= threshold;
         const cost = isFree ? 0 : defaultCost;
         return (
           <div key={total} className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Belanja {formatRp(total)}</span>
+            <span className="text-muted-foreground">Order of {formatRp(total)}</span>
             <span className={cn(
               'font-semibold flex items-center gap-1',
               isFree ? 'text-primary' : 'text-foreground'
             )}>
               {isFree
-                ? <><PackageCheck className="h-3 w-3" /> Gratis Ongkir</>
+                ? <><PackageCheck className="h-3 w-3" /> Free Shipping</>
                 : `+ ${formatRp(cost)}`
               }
             </span>
@@ -53,7 +53,7 @@ function CheckoutSimulator({
   );
 }
 
-export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange, isDesktop = false }: StepBiayaProps) {
+export function StepRates({ formData, onFreeShippingChange, onDefaultCostChange, isDesktop = false }: StepRatesProps) {
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
@@ -63,10 +63,10 @@ export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange,
         {/* Left — fields */}
         <div className="space-y-6 max-w-lg">
 
-          {/* Gratis ongkir */}
+          {/* Free Shipping Threshold */}
           <div className="space-y-2">
             <Label htmlFor="free-ship-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Batas Gratis Ongkir (Rp)
+              Free Shipping Threshold (Rp)
             </Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground font-medium shrink-0">Rp</span>
@@ -89,16 +89,15 @@ export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange,
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Pesanan di atas nilai ini gratis ongkir —{' '}
-              <span className="font-medium text-foreground">kosongkan jika tidak ada</span>
+              Orders above this amount qualify for free shipping —{' '}
+              <span className="font-medium text-foreground">leave empty to disable</span>
             </p>
           </div>
 
-          {/* Ongkir default */}
+          {/* Flat Rate */}
           <div className="space-y-2">
-            <Label htmlFor="default-cost-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
-              <Truck className="h-3.5 w-3.5" />
-              Ongkos Kirim Default (Rp)
+            <Label htmlFor="default-cost-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+              Flat Rate (Rp)
             </Label>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground font-medium shrink-0">Rp</span>
@@ -119,29 +118,29 @@ export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange,
               </p>
             )}
             <p className="text-xs text-muted-foreground">
-              Ongkir untuk pesanan di bawah batas gratis ongkir
+              Shipping cost for orders below the free shipping threshold
             </p>
           </div>
 
           <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-medium text-foreground">Tips:</span>{' '}
-              Gratis ongkir di Rp 100.000–200.000 efektif meningkatkan average order value. Atur ongkir default sesuai biaya kurir rata-rata kamu.
+              <span className="font-medium text-foreground">Tip:</span>{' '}
+              A free shipping threshold of Rp 100,000–200,000 is effective at increasing average order value. Set the flat rate to match your average carrier cost.
             </p>
           </div>
         </div>
 
         {/* Right — live simulator */}
         <div className="space-y-2 sticky top-0">
-          <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Simulasi
+          <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            Live Preview
           </p>
           <CheckoutSimulator
             threshold={formData.freeShippingThreshold}
             defaultCost={formData.defaultShippingCost}
           />
           <p className="text-[11px] text-muted-foreground text-center">
-            Update otomatis sesuai input
+            Updates live as you type
           </p>
         </div>
 
@@ -155,10 +154,10 @@ export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange,
       <Card className="w-full max-w-sm border shadow-none">
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
-          {/* Gratis ongkir */}
+          {/* Free Shipping Threshold */}
           <div className="space-y-2">
-            <Label htmlFor="free-ship-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Batas Gratis Ongkir (Rp)
+            <Label htmlFor="free-ship-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+              Free Shipping Threshold (Rp)
             </Label>
             <Input
               id="free-ship-m"
@@ -176,16 +175,16 @@ export function StepBiaya({ formData, onFreeShippingChange, onDefaultCostChange,
               </p>
             )}
             <p className="text-[11px] text-muted-foreground text-center">
-              Kosongkan jika tidak ada gratis ongkir
+              Leave empty to disable free shipping
             </p>
           </div>
 
           <div className="w-full border-t" />
 
-          {/* Ongkir default */}
+          {/* Flat Rate */}
           <div className="space-y-2">
-            <Label htmlFor="default-cost-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Ongkos Kirim Default (Rp)
+            <Label htmlFor="default-cost-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+              Flat Rate (Rp)
             </Label>
             <Input
               id="default-cost-m"

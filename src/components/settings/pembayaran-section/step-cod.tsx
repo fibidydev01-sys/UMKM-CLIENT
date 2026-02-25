@@ -37,7 +37,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
                 <div>
                   <p className="text-sm font-semibold">Cash on Delivery</p>
                   <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                    Pelanggan membayar saat paket diterima
+                    Customer pays when the order is delivered
                   </p>
                 </div>
               </div>
@@ -55,40 +55,40 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
                 ? 'bg-primary/10 text-primary'
                 : 'bg-muted text-muted-foreground'
             )}>
-              {isEnabled ? '✓ COD aktif — tersedia di checkout' : '○ COD nonaktif'}
+              {isEnabled ? '✓ COD enabled — available at checkout' : '○ COD disabled'}
             </div>
           </div>
 
           <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-medium text-foreground">Tips:</span>{' '}
-              COD meningkatkan konversi tapi perlu diimbangi kebijakan retur yang jelas.
+              <span className="font-medium text-foreground">Tip:</span>{' '}
+              COD can increase conversions but should be paired with a clear return policy.
             </p>
           </div>
         </div>
 
-        {/* Col 2 — Catatan COD (conditional) */}
+        {/* Col 2 — COD Note (conditional) */}
         <div className={cn('space-y-2 transition-opacity duration-300', isEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
           <Label htmlFor="cod-note-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Catatan COD <span className="normal-case font-normal">(Opsional)</span>
+            COD Note <span className="normal-case font-normal">(Optional)</span>
           </Label>
           <Input
             id="cod-note-d"
-            placeholder="Contoh: Hanya untuk area Jabodetabek"
+            placeholder="e.g. Available for Jabodetabek area only"
             value={formData.paymentMethods.cod.note || ''}
             onChange={(e) => onCodNoteChange(e.target.value)}
             disabled={!isEnabled}
             className="h-11 text-sm font-medium placeholder:font-normal placeholder:text-muted-foreground/50"
           />
           <p className="text-xs text-muted-foreground">
-            Catatan ini ditampilkan di halaman checkout
+            This note is shown on the checkout page
           </p>
 
           {/* Live preview note */}
           {isEnabled && formData.paymentMethods.cod.note && (
             <div className="rounded-lg bg-muted/30 border px-4 py-3 mt-2">
               <p className="text-[11px] text-muted-foreground mb-1 uppercase tracking-wide font-medium">
-                Preview di checkout
+                Checkout preview
               </p>
               <p className="text-xs text-foreground italic">
                 &ldquo;{formData.paymentMethods.cod.note}&rdquo;
@@ -117,7 +117,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
                 <Banknote className={cn('h-5 w-5 shrink-0', isEnabled ? 'text-primary' : 'text-muted-foreground/40')} />
                 <div>
                   <p className="text-sm font-semibold">Cash on Delivery</p>
-                  <p className="text-xs text-muted-foreground">Bayar saat barang diterima</p>
+                  <p className="text-xs text-muted-foreground">Pay when order is delivered</p>
                 </div>
               </div>
               <Switch checked={isEnabled} onCheckedChange={onToggleCod} />
@@ -129,26 +129,26 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
             'text-[11px] font-medium px-3 py-2 rounded-md text-center',
             isEnabled ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
           )}>
-            {isEnabled ? '✓ COD aktif' : '○ COD nonaktif'}
+            {isEnabled ? '✓ COD enabled' : '○ COD disabled'}
           </div>
 
-          {/* Catatan - only show when enabled */}
+          {/* Note — only show when enabled */}
           {isEnabled && (
             <>
               <div className="w-full border-t" />
               <div className="space-y-1.5">
                 <Label htmlFor="cod-note-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Catatan COD <span className="normal-case font-normal">(Opsional)</span>
+                  COD Note <span className="normal-case font-normal">(Optional)</span>
                 </Label>
                 <Input
                   id="cod-note-m"
-                  placeholder="Contoh: Hanya untuk area Jabodetabek"
+                  placeholder="e.g. Available for Jabodetabek area only"
                   value={formData.paymentMethods.cod.note || ''}
                   onChange={(e) => onCodNoteChange(e.target.value)}
                   className="text-center h-10 text-sm font-medium placeholder:font-normal placeholder:text-muted-foreground/50"
                 />
                 <p className="text-[11px] text-muted-foreground text-center">
-                  Ditampilkan di halaman checkout
+                  Shown on the checkout page
                 </p>
               </div>
             </>

@@ -6,50 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { ImageUpload } from '@/components/upload';
-import { Plus, Trash2, Star } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { TestimonialsFormData, Testimonial } from '@/types';
 
-interface StepTestimoniProps {
+interface StepTestimonialsProps {
   formData: TestimonialsFormData;
   updateFormData: <K extends keyof TestimonialsFormData>(key: K, value: TestimonialsFormData[K]) => void;
   isDesktop?: boolean;
 }
 
-// ─── Star Rating ───────────────────────────────────────────────────────────
-function StarRating({
-  value,
-  onChange,
-}: {
-  value?: number;
-  onChange: (v: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          key={star}
-          type="button"
-          onClick={() => onChange(star)}
-          className="p-0.5 transition-transform hover:scale-110 focus-visible:outline-none"
-          aria-label={`${star} bintang`}
-        >
-          <Star
-            className={cn(
-              'h-4 w-4 transition-colors',
-              (value ?? 0) >= star
-                ? 'fill-amber-400 text-amber-400'
-                : 'fill-transparent text-muted-foreground/40'
-            )}
-          />
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─── Shared testimonial card fields ───────────────────────────────────────
-function TestimoniCard({
+// ─── Testimonial Card ──────────────────────────────────────────────────────
+function TestimonialCard({
   testimonial,
   index,
   onUpdate,
@@ -69,19 +37,19 @@ function TestimoniCard({
         {/* Header row */}
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Testimoni #{index + 1}
+            Testimonial #{index + 1}
           </span>
           <button
             type="button"
             onClick={onRemove}
             className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
-            aria-label="Hapus testimoni"
+            aria-label="Remove testimonial"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
 
-        {/* Identity row: avatar + nama + role */}
+        {/* Identity row: avatar + name + title */}
         <div className="flex items-start gap-4">
           <div className="shrink-0">
             <div className="w-[72px]">
@@ -94,44 +62,33 @@ function TestimoniCard({
                 placeholder="Avatar"
               />
             </div>
-            <p className="text-[11px] text-muted-foreground text-center mt-1">Opsional</p>
+            <p className="text-[11px] text-muted-foreground text-center mt-1">Optional</p>
           </div>
 
           <div className="flex-1 space-y-3">
-            {/* Nama */}
+            {/* Author Name */}
             <div className="space-y-1.5">
               <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Nama Pelanggan
+                Author Name
               </Label>
               <Input
-                placeholder="Nama pelanggan..."
+                placeholder="e.g. Sarah Johnson"
                 value={testimonial.name}
                 onChange={(e) => onUpdate('name', e.target.value)}
                 className="h-9 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
               />
             </div>
 
-            {/* Role */}
+            {/* Title */}
             <div className="space-y-1.5">
               <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Role <span className="normal-case font-normal">(Opsional)</span>
+                Title <span className="normal-case font-normal">(Optional)</span>
               </Label>
               <Input
-                placeholder="Food Blogger"
+                placeholder="e.g. Food Blogger"
                 value={testimonial.role ?? ''}
                 onChange={(e) => onUpdate('role', e.target.value)}
                 className="h-9 text-sm placeholder:font-normal placeholder:text-muted-foreground/50"
-              />
-            </div>
-
-            {/* Rating */}
-            <div className="space-y-1.5">
-              <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Rating <span className="normal-case font-normal">(Opsional)</span>
-              </Label>
-              <StarRating
-                value={testimonial.rating}
-                onChange={(v) => onUpdate('rating', v)}
               />
             </div>
           </div>
@@ -139,13 +96,13 @@ function TestimoniCard({
 
         <div className="border-t" />
 
-        {/* Isi testimoni */}
+        {/* Quote */}
         <div className="space-y-1.5">
           <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Isi Testimoni
+            Quote
           </Label>
           <Textarea
-            placeholder="Tulis testimoni pelanggan..."
+            placeholder="Write the customer's testimonial..."
             rows={3}
             value={testimonial.content}
             onChange={(e) => onUpdate('content', e.target.value)}
@@ -164,13 +121,13 @@ function TestimoniCard({
         {/* Header */}
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Testimoni #{index + 1}
+            Testimonial #{index + 1}
           </span>
           <button
             type="button"
             onClick={onRemove}
             className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-            aria-label="Hapus testimoni"
+            aria-label="Remove testimonial"
           >
             <Trash2 className="h-3.5 w-3.5" />
           </button>
@@ -188,57 +145,46 @@ function TestimoniCard({
               placeholder="Avatar"
             />
           </div>
-          <p className="text-[11px] text-muted-foreground">Avatar (Opsional)</p>
+          <p className="text-[11px] text-muted-foreground">Avatar (Optional)</p>
         </div>
 
         <div className="w-full border-t" />
 
-        {/* Nama */}
+        {/* Author Name */}
         <div className="space-y-1.5">
           <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Nama Pelanggan
+            Author Name
           </Label>
           <Input
-            placeholder="Nama pelanggan..."
+            placeholder="e.g. Sarah Johnson"
             value={testimonial.name}
             onChange={(e) => onUpdate('name', e.target.value)}
             className="text-center h-9 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
           />
         </div>
 
-        {/* Role */}
+        {/* Title */}
         <div className="space-y-1.5">
           <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Role <span className="normal-case font-normal">(Opsional)</span>
+            Title <span className="normal-case font-normal">(Optional)</span>
           </Label>
           <Input
-            placeholder="Food Blogger"
+            placeholder="e.g. Food Blogger"
             value={testimonial.role ?? ''}
             onChange={(e) => onUpdate('role', e.target.value)}
             className="text-center h-9 text-sm placeholder:font-normal placeholder:text-muted-foreground/50"
           />
         </div>
 
-        {/* Rating */}
-        <div className="space-y-1.5 flex flex-col items-center">
-          <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Rating <span className="normal-case font-normal">(Opsional)</span>
-          </Label>
-          <StarRating
-            value={testimonial.rating}
-            onChange={(v) => onUpdate('rating', v)}
-          />
-        </div>
-
         <div className="w-full border-t" />
 
-        {/* Isi */}
+        {/* Quote */}
         <div className="space-y-1.5">
           <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Isi Testimoni
+            Quote
           </Label>
           <Textarea
-            placeholder="Tulis testimoni pelanggan..."
+            placeholder="Write the customer's testimonial..."
             rows={3}
             value={testimonial.content}
             onChange={(e) => onUpdate('content', e.target.value)}
@@ -252,7 +198,7 @@ function TestimoniCard({
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────
-export function StepTestimoni({ formData, updateFormData, isDesktop = false }: StepTestimoniProps) {
+export function StepTestimonials({ formData, updateFormData, isDesktop = false }: StepTestimonialsProps) {
 
   const handleAdd = () => {
     updateFormData('testimonials', [
@@ -285,12 +231,12 @@ export function StepTestimoni({ formData, updateFormData, isDesktop = false }: S
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Daftar Testimoni
+              Testimonials
             </p>
             <p className="text-xs text-muted-foreground">
               {formData.testimonials.length === 0
-                ? 'Belum ada testimoni — tambahkan ulasan pelanggan kamu'
-                : `${formData.testimonials.length} testimoni ditambahkan`
+                ? 'No testimonials yet — add your first customer quote'
+                : `${formData.testimonials.length} testimonial${formData.testimonials.length === 1 ? '' : 's'} added`
               }
             </p>
           </div>
@@ -300,31 +246,30 @@ export function StepTestimoni({ formData, updateFormData, isDesktop = false }: S
             className="gap-1.5 h-8 text-xs font-medium"
           >
             <Plus className="h-3.5 w-3.5" />
-            Tambah Testimoni
+            Add Testimonial
           </Button>
         </div>
 
         {/* Empty state */}
         {formData.testimonials.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-[220px] border-2 border-dashed rounded-lg gap-3">
-            <p className="text-sm text-muted-foreground">Belum ada testimoni</p>
+            <p className="text-sm text-muted-foreground">No testimonials yet</p>
             <Button
               type="button" size="sm" variant="outline"
               onClick={handleAdd}
               className="gap-1.5 h-8 text-xs"
             >
               <Plus className="h-3.5 w-3.5" />
-              Tambah Testimoni Pertama
+              Add Your First Testimonial
             </Button>
           </div>
         ) : (
-          /* Grid — max 2 col di desktop karena setiap card cukup banyak field */
           <div className={cn(
             'grid gap-4',
             formData.testimonials.length === 1 ? 'grid-cols-1 max-w-lg' : 'grid-cols-2'
           )}>
             {formData.testimonials.map((t, i) => (
-              <TestimoniCard
+              <TestimonialCard
                 key={t.id || i}
                 testimonial={t}
                 index={i}
@@ -338,7 +283,7 @@ export function StepTestimoni({ formData, updateFormData, isDesktop = false }: S
 
         {formData.testimonials.length > 0 && (
           <p className="text-[11px] text-muted-foreground">
-            Rekomendasi: <span className="font-medium text-foreground">3–6 testimoni</span> untuk tampilan yang kredibel
+            Recommended: <span className="font-medium text-foreground">3–6 testimonials</span> for maximum credibility
           </p>
         )}
       </div>
@@ -355,20 +300,20 @@ export function StepTestimoni({ formData, updateFormData, isDesktop = false }: S
         className="gap-1.5 h-8 text-xs font-medium"
       >
         <Plus className="h-3.5 w-3.5" />
-        Tambah Testimoni
+        Add Testimonial
       </Button>
 
       {formData.testimonials.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[200px] w-full max-w-sm border-2 border-dashed rounded-lg gap-2 px-6 text-center">
-          <p className="text-sm text-muted-foreground">Belum ada testimoni</p>
+          <p className="text-sm text-muted-foreground">No testimonials yet</p>
           <p className="text-[11px] text-muted-foreground">
-            Klik &quot;Tambah Testimoni&quot; untuk menambahkan
+            Click &quot;Add Testimonial&quot; above to get started
           </p>
         </div>
       ) : (
         <div className="w-full max-w-sm space-y-3">
           {formData.testimonials.map((t, i) => (
-            <TestimoniCard
+            <TestimonialCard
               key={t.id || i}
               testimonial={t}
               index={i}
@@ -382,7 +327,7 @@ export function StepTestimoni({ formData, updateFormData, isDesktop = false }: S
 
       {formData.testimonials.length > 0 && (
         <p className="text-[11px] text-muted-foreground text-center">
-          Rekomendasi: <span className="font-medium text-foreground">3–6 testimoni</span> untuk tampilan kredibel
+          Recommended: <span className="font-medium text-foreground">3–6 testimonials</span> for maximum credibility
         </p>
       )}
     </div>

@@ -1,2 +1,2 @@
-export { StepHeader } from './step-header';
-export { StepTestimoni } from './step-testimoni';
+export { StepHeading } from './step-heading';
+export { StepTestimonials } from './step-testimonials';

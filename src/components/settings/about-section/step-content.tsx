@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ImageUpload } from '@/components/upload';
 import type { AboutFormData } from '@/types';
 
-interface StepKontenProps {
+interface StepContentProps {
   formData: AboutFormData;
   updateFormData: <K extends keyof AboutFormData>(key: K, value: AboutFormData[K]) => void;
   onRemoveAboutImage: () => void;
@@ -14,13 +14,13 @@ interface StepKontenProps {
   isDesktop?: boolean;
 }
 
-export function StepKonten({
+export function StepContent({
   formData,
   updateFormData,
   onRemoveAboutImage,
   isRemovingAboutImage,
   isDesktop = false,
-}: StepKontenProps) {
+}: StepContentProps) {
 
   const charCount = formData.aboutContent.length;
   const wordCount = formData.aboutContent.trim()
@@ -35,11 +35,11 @@ export function StepKonten({
         {/* Left — Textarea */}
         <div className="space-y-2">
           <Label htmlFor="aboutContent-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-            Deskripsi Lengkap
+            Store Story
           </Label>
           <Textarea
             id="aboutContent-d"
-            placeholder="Ceritakan tentang toko kamu — siapa kamu, apa yang kamu jual, dan apa yang membuat kamu spesial..."
+            placeholder="Tell your story — who you are, what you sell, and what makes you special..."
             rows={10}
             value={formData.aboutContent}
             onChange={(e) => updateFormData('aboutContent', e.target.value)}
@@ -50,17 +50,17 @@ export function StepKonten({
           <div className="flex items-center justify-between">
             <div className="border-l-2 border-muted-foreground/20 pl-3 py-0.5">
               <p className="text-xs text-muted-foreground">
-                Rekomendasi <span className="font-medium text-foreground">150–300 kata</span> untuk cerita yang kuat
+                Recommended <span className="font-medium text-foreground">150–300 words</span> for a strong story
               </p>
             </div>
             <div className="flex items-center gap-3 text-[11px] text-muted-foreground tabular-nums">
               <span>
                 <span className={wordCount >= 150 && wordCount <= 300 ? 'text-primary font-medium' : ''}>
                   {wordCount}
-                </span>{' '}kata
+                </span>{' '}words
               </span>
               <span className="text-border">·</span>
-              <span>{charCount} karakter</span>
+              <span>{charCount} characters</span>
             </div>
           </div>
         </div>
@@ -101,21 +101,20 @@ export function StepKonten({
           {/* Textarea */}
           <div className="space-y-1.5">
             <Label htmlFor="aboutContent-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Deskripsi Lengkap
+              Store Story
             </Label>
             <Textarea
               id="aboutContent-m"
-              placeholder="Ceritakan tentang toko kamu..."
+              placeholder="Tell your story..."
               rows={5}
               value={formData.aboutContent}
               onChange={(e) => updateFormData('aboutContent', e.target.value)}
               className="text-center resize-none text-sm font-medium leading-relaxed placeholder:font-normal placeholder:text-muted-foreground/50"
             />
-            {/* Inline counter */}
             <div className="flex items-center justify-between text-[11px] text-muted-foreground px-0.5">
-              <span>Rekomendasi 150–300 kata</span>
+              <span>Recommended 150–300 words</span>
               <span className={`tabular-nums font-mono ${wordCount >= 150 && wordCount <= 300 ? 'text-primary font-semibold' : ''}`}>
-                {wordCount} kata
+                {wordCount} words
               </span>
             </div>
           </div>

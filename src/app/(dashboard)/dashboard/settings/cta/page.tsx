@@ -12,12 +12,12 @@ import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { CtaFormData } from '@/types';
-import { StepKonten, StepTombol } from '@/components/settings/cta-section';
+import { StepContent, StepButton } from '@/components/settings/cta-section';
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
-  { title: 'Konten CTA', desc: 'Judul dan subtitle Call to Action' },
-  { title: 'Tombol CTA', desc: 'Teks, link, dan style tombol aksi' },
+  { title: 'CTA Content', desc: 'Headline & supporting text' },
+  { title: 'Button', desc: 'Label, link & button style' },
 ] as const;
 
 // ─── Step Indicator ────────────────────────────────────────────────────────
@@ -106,16 +106,16 @@ export default function CTAPage() {
     if (!formData) return;
     if (currentStep === 0) {
       const missing = [
-        !formData.ctaTitle && 'Judul CTA',
-        !formData.ctaSubtitle && 'Subtitle CTA',
+        !formData.ctaTitle && 'Headline',
+        !formData.ctaSubtitle && 'Supporting Text',
       ].filter(Boolean) as string[];
-      if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+      if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     } else if (currentStep === 1) {
       const missing = [
-        !formData.ctaButtonText && 'Teks Tombol',
-        !formData.ctaButtonLink && 'Link Tombol',
+        !formData.ctaButtonText && 'Button Label',
+        !formData.ctaButtonLink && 'Button URL',
       ].filter(Boolean) as string[];
-      if (missing.length) toast.info(`Isi ${missing.join(', ')} untuk hasil lebih baik`);
+      if (missing.length) toast.info(`Fill in ${missing.join(', ')} for best results`);
     }
   };
 
@@ -141,10 +141,10 @@ export default function CTAPage() {
         ctaButtonStyle: formData.ctaButtonStyle,
       });
       await refresh();
-      toast.success('CTA Section berhasil disimpan');
+      toast.success('CTA section saved successfully');
       setShowPreview(false);
     } catch {
-      toast.error('Gagal menyimpan CTA section');
+      toast.error('Failed to save CTA section');
     } finally {
       setIsSaving(false);
     }
@@ -187,7 +187,7 @@ export default function CTAPage() {
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
@@ -207,9 +207,9 @@ export default function CTAPage() {
 
             {/* Body */}
             <div className="flex-1 min-h-[300px]">
-              {currentStep === 0 && <StepKonten {...stepProps} isDesktop />}
+              {currentStep === 0 && <StepContent {...stepProps} isDesktop />}
               {currentStep === 1 && (
-                <StepTombol
+                <StepButton
                   {...stepProps}
                   primaryColor={tenant?.theme?.primaryColor}
                   isDesktop
@@ -223,7 +223,7 @@ export default function CTAPage() {
                 variant="outline" onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+                <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
 
               <div className="flex items-center gap-1.5">
@@ -237,8 +237,8 @@ export default function CTAPage() {
 
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
-                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Simpan</>
-                  : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+                  ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
+                  : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
                 }
               </Button>
             </div>
@@ -256,16 +256,16 @@ export default function CTAPage() {
               </div>
               <div className="text-center space-y-0.5">
                 <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-                  Langkah {currentStep + 1} / {STEPS.length}
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
                 <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
               </div>
             </div>
             <div className="min-h-[280px]">
-              {currentStep === 0 && <StepKonten {...stepProps} />}
+              {currentStep === 0 && <StepContent {...stepProps} />}
               {currentStep === 1 && (
-                <StepTombol
+                <StepButton
                   {...stepProps}
                   primaryColor={tenant?.theme?.primaryColor}
                 />
@@ -282,12 +282,12 @@ export default function CTAPage() {
             variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />Sebelumnya
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Selanjutnya<ChevronRight className="h-3.5 w-3.5" /></>
+              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
             }
           </Button>
         </div>
@@ -299,16 +299,16 @@ export default function CTAPage() {
         onClose={() => setShowPreview(false)}
         onSave={handleSave}
         isSaving={isSaving}
-        title="Preview CTA Section"
+        title="CTA Section Preview"
       >
         {formData && (
           <>
             <style dangerouslySetInnerHTML={{ __html: generateThemeCSS(tenant?.theme?.primaryColor) }} />
             <div className="tenant-theme border rounded-lg overflow-hidden mt-4">
               <Cta1
-                title={formData.ctaTitle || 'Siap Memulai?'}
+                title={formData.ctaTitle || 'Ready to get started?'}
                 subtitle={formData.ctaSubtitle}
-                buttonText={formData.ctaButtonText || 'Mulai Sekarang'}
+                buttonText={formData.ctaButtonText || 'Get Started'}
                 buttonLink={formData.ctaButtonLink || '/products'}
                 buttonVariant={
                   formData.ctaButtonStyle === 'outline'
