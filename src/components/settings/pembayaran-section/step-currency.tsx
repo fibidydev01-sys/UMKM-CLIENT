@@ -1,24 +1,116 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
+import { useState } from 'react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { cn } from '@/lib/utils';
+import {
+  ASEAN_CURRENCY_META,
+  ASEAN_CURRENCIES,
+  ASEAN_TAX_TIPS,
+  ASEAN_SIMULATION_PRICES,
+  formatAseanPrice,
+} from '@/types';
 import type { PembayaranFormData } from '@/types';
 
-const CURRENCY_OPTIONS = [
-  { value: 'IDR', label: 'IDR', desc: 'Rupiah Indonesia' },
-  { value: 'USD', label: 'USD', desc: 'US Dollar' },
-  { value: 'SGD', label: 'SGD', desc: 'Singapore Dollar' },
-  { value: 'MYR', label: 'MYR', desc: 'Malaysian Ringgit' },
-];
+// ─── Currency list dari ASEAN_CURRENCY_META (single source of truth) ──────
+const CURRENCY_LIST = ASEAN_CURRENCIES.map((code) => ASEAN_CURRENCY_META[code]);
 
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function getSimulationPrices(currency: string): number[] {
+  return ASEAN_SIMULATION_PRICES[currency as keyof typeof ASEAN_SIMULATION_PRICES]
+    ?? [10, 25, 100];
+}
+
+function getTaxTip(currency: string): string {
+  return ASEAN_TAX_TIPS[currency as keyof typeof ASEAN_TAX_TIPS]
+    ?? 'Check your local tax authority for the applicable VAT/GST rate.';
+}
+
+// ─── Currency Combobox ────────────────────────────────────────────────────
+function CurrencyCombobox({
+  value,
+  onValueChange,
+}: {
+  value: string;
+  onValueChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = ASEAN_CURRENCY_META[value as keyof typeof ASEAN_CURRENCY_META];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal h-10 px-3"
+        >
+          {selected ? (
+            <span className="flex items-center gap-2">
+              <span>{selected.flag}</span>
+              <span className="font-semibold">{selected.code}</span>
+              <span className="text-muted-foreground text-xs">{selected.name}</span>
+            </span>
+          ) : (
+            <span className="text-muted-foreground">Select currency...</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search currency..." />
+          <CommandList className="max-h-64">
+            <CommandEmpty>No currency found.</CommandEmpty>
+            <CommandGroup heading="ASEAN Currencies">
+              {CURRENCY_LIST.map((c) => (
+                <CommandItem
+                  key={c.code}
+                  value={`${c.code} ${c.name}`}
+                  onSelect={() => {
+                    onValueChange(c.code);
+                    setOpen(false);
+                  }}
+                  className="gap-2"
+                >
+                  <Check
+                    className={cn(
+                      'h-4 w-4 shrink-0',
+                      value === c.code ? 'opacity-100' : 'opacity-0'
+                    )}
+                  />
+                  <span>{c.flag}</span>
+                  <span className="font-semibold w-10 shrink-0 tabular-nums">{c.code}</span>
+                  <span className="text-muted-foreground text-xs truncate">{c.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Props ─────────────────────────────────────────────────────────────────
 interface StepCurrencyProps {
   formData: PembayaranFormData;
   onCurrencyChange: (value: string) => void;
@@ -26,7 +118,15 @@ interface StepCurrencyProps {
   isDesktop?: boolean;
 }
 
-export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDesktop = false }: StepCurrencyProps) {
+// ─── Main Component ────────────────────────────────────────────────────────
+export function StepCurrency({
+  formData,
+  onCurrencyChange,
+  onTaxRateChange,
+  isDesktop = false,
+}: StepCurrencyProps) {
+  const simulationPrices = getSimulationPrices(formData.currency);
+  const taxTip = getTaxTip(formData.currency);
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
@@ -38,29 +138,10 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
           <Label className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
             Store Currency
           </Label>
-
-          {/* Currency card picker */}
-          <div className="grid grid-cols-2 gap-2">
-            {CURRENCY_OPTIONS.map((opt) => {
-              const active = formData.currency === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => onCurrencyChange(opt.value)}
-                  className={`flex flex-col items-start px-4 py-3 rounded-lg border text-left transition-all focus-visible:outline-none ${active
-                    ? 'border-primary bg-primary/5 ring-1 ring-primary/20'
-                    : 'border-border hover:border-muted-foreground/40 hover:bg-muted/30'
-                    }`}
-                >
-                  <span className={`text-base font-bold tracking-tight ${active ? 'text-primary' : 'text-foreground'}`}>
-                    {opt.label}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">{opt.desc}</span>
-                </button>
-              );
-            })}
-          </div>
+          <CurrencyCombobox
+            value={formData.currency}
+            onValueChange={onCurrencyChange}
+          />
           <p className="text-xs text-muted-foreground">
             Currency used across your entire store
           </p>
@@ -78,7 +159,7 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
               min="0"
               max="100"
               step="0.5"
-              placeholder="11"
+              placeholder="0"
               value={formData.taxRate || ''}
               onChange={(e) => onTaxRateChange(e.target.value)}
               className="h-11 text-base font-semibold tracking-tight w-32 placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -88,16 +169,18 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
 
           {/* Tax simulation */}
           <div className="rounded-lg bg-muted/30 px-4 py-3 space-y-1.5 mt-2">
-            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Simulation</p>
-            {[100_000, 250_000, 500_000].map((price) => {
+            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">
+              Simulation
+            </p>
+            {simulationPrices.map((price) => {
               const tax = (price * (formData.taxRate || 0)) / 100;
               return (
                 <div key={price} className="flex justify-between text-xs">
                   <span className="text-muted-foreground">
-                    Rp {price.toLocaleString('id')} →
+                    {formatAseanPrice(price, formData.currency)} →
                   </span>
                   <span className="font-medium">
-                    + Rp {tax.toLocaleString('id')} tax
+                    + {formatAseanPrice(tax, formData.currency)} tax
                   </span>
                 </div>
               );
@@ -109,11 +192,11 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
           </p>
         </div>
 
-        {/* Tip */}
+        {/* Dynamic tip */}
         <div className="col-span-2 border-l-2 border-muted-foreground/20 pl-4 py-0.5">
           <p className="text-xs text-muted-foreground leading-relaxed">
             <span className="font-medium text-foreground">Tip:</span>{' '}
-            Indonesian VAT (PPN) is 11% for digital products. Choose IDR for local Indonesian stores.
+            {taxTip}
           </p>
         </div>
 
@@ -132,18 +215,10 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
             <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Store Currency
             </Label>
-            <Select value={formData.currency} onValueChange={onCurrencyChange}>
-              <SelectTrigger className="h-10 text-sm font-semibold">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCY_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label} — {opt.desc}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <CurrencyCombobox
+              value={formData.currency}
+              onValueChange={onCurrencyChange}
+            />
           </div>
 
           <div className="w-full border-t" />
@@ -159,7 +234,7 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
               min="0"
               max="100"
               step="0.5"
-              placeholder="11"
+              placeholder="0"
               value={formData.taxRate || ''}
               onChange={(e) => onTaxRateChange(e.target.value)}
               className="text-center h-10 text-sm font-semibold placeholder:font-normal placeholder:text-muted-foreground/50"
@@ -168,6 +243,28 @@ export function StepCurrency({ formData, onCurrencyChange, onTaxRateChange, isDe
               Enter 0 if no tax applies
             </p>
           </div>
+
+          {/* Mobile simulation — only when taxRate > 0 */}
+          {formData.taxRate > 0 && (
+            <div className="rounded-lg bg-muted/30 px-4 py-3 space-y-1.5">
+              <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide text-center">
+                Simulation
+              </p>
+              {simulationPrices.map((price) => {
+                const tax = (price * (formData.taxRate || 0)) / 100;
+                return (
+                  <div key={price} className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">
+                      {formatAseanPrice(price, formData.currency)}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      +{formatAseanPrice(tax, formData.currency)} tax
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
         </CardContent>
       </Card>

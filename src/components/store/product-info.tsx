@@ -1,21 +1,29 @@
+// ══════════════════════════════════════════════════════════════
+// PRODUCT INFO - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: currency diterima sebagai prop dari parent page
+// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
+// ══════════════════════════════════════════════════════════════
+
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { formatPrice } from '@/lib/format';
 import type { Product } from '@/types';
 
-// ==========================================
-// PRODUCT INFO COMPONENT
-// ==========================================
-
 interface ProductInfoProps {
   product: Product;
+  currency: string; // ✅ FIX: wajib dari parent (tenant.currency)
 }
 
-export function ProductInfo({ product }: ProductInfoProps) {
+export function ProductInfo({ product, currency }: ProductInfoProps) {
   const isCustomPrice = product.price === 0;
-  const hasDiscount = !isCustomPrice && product.comparePrice && product.comparePrice > product.price;
+  const hasDiscount =
+    !isCustomPrice &&
+    product.comparePrice &&
+    product.comparePrice > product.price;
   const discountPercent = hasDiscount
-    ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
+    ? Math.round(
+      ((product.comparePrice! - product.price) / product.comparePrice!) * 100
+    )
     : 0;
   const isOutOfStock = product.trackStock && (product.stock ?? 0) <= 0;
 
@@ -37,22 +45,25 @@ export function ProductInfo({ product }: ProductInfoProps) {
         {isOutOfStock && (
           <Badge variant="destructive">Stok Habis</Badge>
         )}
-        {product.trackStock && !isOutOfStock && (product.stock ?? 0) <= (product.minStock ?? 5) && (product.stock ?? 0) > 0 && (
-          <Badge variant="secondary">Stok Terbatas</Badge>
-        )}
+        {product.trackStock &&
+          !isOutOfStock &&
+          (product.stock ?? 0) <= (product.minStock ?? 5) &&
+          (product.stock ?? 0) > 0 && (
+            <Badge variant="secondary">Stok Terbatas</Badge>
+          )}
       </div>
 
-      {/* Price — sembunyikan jika 0 */}
+      {/* ✅ FIX: Semua formatPrice pakai currency dari prop */}
       {!isCustomPrice && (
         <>
           <div className="flex items-baseline gap-3">
             <span className="text-3xl font-bold text-primary">
-              {formatPrice(product.price)}
+              {formatPrice(product.price, currency)}
             </span>
             {hasDiscount && (
               <>
                 <span className="text-lg text-muted-foreground line-through">
-                  {formatPrice(product.comparePrice!)}
+                  {formatPrice(product.comparePrice!, currency)}
                 </span>
                 <Badge variant="destructive">-{discountPercent}%</Badge>
               </>

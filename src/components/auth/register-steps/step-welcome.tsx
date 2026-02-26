@@ -1,6 +1,6 @@
 'use client';
 
-import { Store, Sparkles, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // ==========================================
@@ -17,58 +17,49 @@ interface StepWelcomeProps {
 
 export function StepWelcome({ onNext }: StepWelcomeProps) {
   return (
-    <div className="space-y-8 py-8">
-      {/* Hero Icon */}
-      <div className="flex justify-center">
-        <div className="relative">
-          <div className="flex items-center justify-center w-24 h-24 rounded-full bg-primary/10">
-            <Store className="w-12 h-12 text-primary" />
-          </div>
-          <div className="absolute -top-2 -right-2 flex items-center justify-center w-10 h-10 rounded-full bg-yellow-400">
-            <Sparkles className="w-5 h-5 text-yellow-900" />
-          </div>
-        </div>
-      </div>
+    <div className="flex flex-col items-center text-center space-y-8 py-8">
 
       {/* Heading */}
-      <div className="text-center space-y-3">
+      <div className="space-y-3 max-w-sm">
         <h1 className="text-3xl font-bold tracking-tight">
-          Buat Toko Online Gratis
+          Set up your online store
         </h1>
-        <p className="text-lg text-muted-foreground max-w-md mx-auto">
-          Mulai jualan online dalam hitungan menit. Kelola produk, pesanan, dan pelanggan dengan mudah.
+        <p className="text-muted-foreground leading-relaxed">
+          Get your store up and running in minutes. Manage products, orders,
+          and customers — all in one place.
         </p>
       </div>
 
-      {/* Features List */}
-      <div className="grid gap-4 max-w-sm mx-auto">
+      {/* Steps preview */}
+      <div className="w-full max-w-xs space-y-2 text-left">
         {[
-          '✨ Toko online gratis selamanya',
-          '📦 Kelola produk & stok dengan mudah',
-          '📱 WhatsApp terintegrasi',
-          '📊 Dashboard lengkap untuk bisnis',
-        ].map((feature, index) => (
+          { step: '01', label: 'Choose your business type' },
+          { step: '02', label: 'Name your store' },
+          { step: '03', label: 'Create your account' },
+        ].map(({ step, label }) => (
           <div
-            key={index}
-            className="flex items-center gap-3 p-3 rounded-lg bg-muted/50"
+            key={step}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md bg-muted/50"
           >
-            <span className="text-sm">{feature}</span>
+            <span className="text-[11px] font-mono font-semibold text-muted-foreground tabular-nums">
+              {step}
+            </span>
+            <span className="text-sm text-foreground">{label}</span>
           </div>
         ))}
       </div>
 
-      {/* CTA Button */}
-      <div className="flex justify-center pt-4">
-        <Button
-          type="button"
-          size="lg"
-          onClick={onNext}
-          className="w-full max-w-xs group"
-        >
-          Mulai Sekarang
-          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-        </Button>
-      </div>
+      {/* CTA */}
+      <Button
+        type="button"
+        size="lg"
+        onClick={onNext}
+        className="w-full max-w-xs group"
+      >
+        Get started
+        <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </Button>
+
     </div>
   );
 }

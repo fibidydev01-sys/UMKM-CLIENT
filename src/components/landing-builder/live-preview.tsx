@@ -2,6 +2,8 @@
 
 // ==========================================
 // LIVE PREVIEW COMPONENT
+// ✅ FIX: Pass currency={tenant.currency} ke TenantProducts
+//         Sebelumnya tidak di-pass → fallback IDR → silent bug di preview
 // ==========================================
 // mode="isolated" → Renders ONLY activeSection (editing mode)
 // mode="full"     → Renders ALL sections (full preview drawer)
@@ -64,7 +66,6 @@ export function LivePreview({
   mode = 'isolated',
 }: LivePreviewProps) {
 
-
   // Section order
   const defaultOrder: SectionKey[] = [
     'hero', 'about', 'products', 'testimonials', 'cta', 'contact',
@@ -109,6 +110,7 @@ export function LivePreview({
           products={products}
           config={config.products}
           storeSlug={tenant.slug}
+          currency={tenant.currency}  // ✅ FIX: pass currency dari tenant
         />
       </div>
     ) : null,

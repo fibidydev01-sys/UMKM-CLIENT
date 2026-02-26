@@ -15,13 +15,49 @@ interface StepEwalletProps {
   isDesktop?: boolean;
 }
 
-// ─── Provider color accents ────────────────────────────────────────────────
+// ─── Provider color accents — full list ───────────────────────────────────
 const PROVIDER_COLORS: Record<string, string> = {
+  // Indonesia
   GoPay: 'text-emerald-600',
   OVO: 'text-purple-600',
   DANA: 'text-blue-600',
   ShopeePay: 'text-orange-600',
   LinkAja: 'text-red-600',
+  QRIS: 'text-gray-700',
+  // Malaysia
+  'Touch n Go': 'text-blue-700',
+  'GrabPay MY': 'text-green-500',
+  Boost: 'text-red-500',
+  MAE: 'text-yellow-600',
+  'ShopeePay MY': 'text-orange-600',
+  // Singapore
+  PayNow: 'text-red-500',
+  'GrabPay SG': 'text-green-500',
+  'DBS PayLah': 'text-red-600',
+  NETS: 'text-blue-800',
+  // Thailand
+  TrueMoney: 'text-yellow-600',
+  PromptPay: 'text-blue-600',
+  'Rabbit LINE Pay': 'text-green-600',
+  'ShopeePay TH': 'text-orange-600',
+  // Philippines
+  GCash: 'text-blue-500',
+  Maya: 'text-green-600',
+  'GrabPay PH': 'text-green-500',
+  'ShopeePay PH': 'text-orange-600',
+  // Vietnam
+  MoMo: 'text-pink-600',
+  ZaloPay: 'text-blue-500',
+  VNPay: 'text-red-600',
+  'ShopeePay VN': 'text-orange-600',
+  // Regional / Global
+  GrabPay: 'text-green-500',
+  'Apple Pay': 'text-foreground',
+  'Google Pay': 'text-blue-500',
+  PayPal: 'text-blue-700',
+  Alipay: 'text-blue-600',
+  'WeChat Pay': 'text-green-600',
+  // Fallback
   Other: 'text-muted-foreground',
 };
 
@@ -53,7 +89,11 @@ function EwalletCard({
           className="shrink-0"
         />
         <div className="min-w-0">
-          <p className={cn('font-semibold tracking-tight truncate', compact ? 'text-sm' : 'text-base', providerColor)}>
+          <p className={cn(
+            'font-semibold tracking-tight truncate',
+            compact ? 'text-sm' : 'text-base',
+            providerColor
+          )}>
             {ewallet.provider}
           </p>
           <p className="text-xs text-muted-foreground font-mono truncate">
@@ -86,7 +126,14 @@ function EwalletCard({
   );
 }
 
-export function StepEwallet({ formData, onAdd, onEdit, onDelete, onToggle, isDesktop = false }: StepEwalletProps) {
+export function StepEwallet({
+  formData,
+  onAdd,
+  onEdit,
+  onDelete,
+  onToggle,
+  isDesktop = false,
+}: StepEwalletProps) {
   const ewallets = formData.paymentMethods.eWallets;
   const isEmpty = ewallets.length === 0;
   const enabled = ewallets.filter((e) => e.enabled).length;

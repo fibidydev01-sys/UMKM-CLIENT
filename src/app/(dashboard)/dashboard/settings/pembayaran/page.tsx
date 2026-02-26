@@ -4,13 +4,20 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { BankAccountDialog, EwalletDialog, PreviewModal } from '@/components/settings';
 import { toast } from 'sonner';
 import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { BankAccount, EWallet, PaymentMethods, PembayaranFormData } from '@/types';
-import { StepCurrency, StepBank, StepEwallet, StepCod } from '@/components/settings/pembayaran-section';
+import {
+  StepCurrency,
+  StepBank,
+  StepEwallet,
+  StepCod,
+  BankAccountDialog,
+  EwalletDialog,
+  PaymentPreview,
+} from '@/components/settings/pembayaran-section';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const DEFAULT_PAYMENT_METHODS: PaymentMethods = {
@@ -18,13 +25,6 @@ const DEFAULT_PAYMENT_METHODS: PaymentMethods = {
   eWallets: [],
   cod: { enabled: false, note: '' },
 };
-
-const CURRENCY_OPTIONS = [
-  { value: 'IDR', label: 'IDR - Indonesian Rupiah' },
-  { value: 'USD', label: 'USD - US Dollar' },
-  { value: 'SGD', label: 'SGD - Singapore Dollar' },
-  { value: 'MYR', label: 'MYR - Malaysian Ringgit' },
-];
 
 const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -101,7 +101,6 @@ export default function PembayaranPage() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
   const [formData, setFormData] = useState<PembayaranFormData | null>(null);
-
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [ewalletDialogOpen, setEwalletDialogOpen] = useState(false);
   const [editingBank, setEditingBank] = useState<BankAccount | null>(null);
@@ -262,7 +261,7 @@ export default function PembayaranPage() {
   return (
     <div className="h-full flex flex-col">
 
-      {/* Dialogs */}
+      {/* ── Dialogs ───────────────────────────────────────────────── */}
       <BankAccountDialog
         open={bankDialogOpen}
         onOpenChange={setBankDialogOpen}
@@ -280,9 +279,12 @@ export default function PembayaranPage() {
       {isLoading ? (
         <div className="flex-1 space-y-6 py-6">
           <div className="hidden lg:flex items-center justify-between pb-6 border-b">
-            <div className="space-y-2"><Skeleton className="h-7 w-44" /><Skeleton className="h-4 w-56" /></div>
+            <div className="space-y-2">
+              <Skeleton className="h-7 w-44" />
+              <Skeleton className="h-4 w-56" />
+            </div>
             <div className="flex items-center gap-2">
-              {[0, 1, 2, 3].map(i => (
+              {[0, 1, 2, 3].map((i) => (
                 <div key={i} className="flex items-center gap-2">
                   <Skeleton className="w-8 h-8 rounded-full" />
                   {i < 3 && <Skeleton className="w-10 h-px" />}
@@ -292,7 +294,9 @@ export default function PembayaranPage() {
           </div>
           <Skeleton className="hidden lg:block h-[300px] w-full rounded-lg" />
           <div className="lg:hidden space-y-4">
-            <div className="flex justify-center gap-2">{[0, 1, 2, 3].map(i => <Skeleton key={i} className="w-6 h-6 rounded-full" />)}</div>
+            <div className="flex justify-center gap-2">
+              {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="w-6 h-6 rounded-full" />)}
+            </div>
             <Skeleton className="h-[260px] w-full max-w-sm mx-auto rounded-lg" />
           </div>
         </div>
@@ -349,12 +353,12 @@ export default function PembayaranPage() {
             {/* Footer nav */}
             <div className="flex items-center justify-between pt-6 border-t mt-8">
               <Button
-                variant="outline" onClick={handlePrev}
+                variant="outline"
+                onClick={handlePrev}
                 className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
               >
                 <ChevronLeft className="h-3.5 w-3.5" />Previous
               </Button>
-
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, i) => (
                   <div key={i} className={cn(
@@ -363,7 +367,6 @@ export default function PembayaranPage() {
                   )} />
                 ))}
               </div>
-
               <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
                   ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
@@ -413,7 +416,7 @@ export default function PembayaranPage() {
         </>
       )}
 
-      {/* Mobile bottom nav */}
+      {/* ── Mobile bottom nav ─────────────────────────────────────── */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
         <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
           <Button
@@ -431,95 +434,17 @@ export default function PembayaranPage() {
         </div>
       </div>
 
-      {/* Preview Modal */}
-      <PreviewModal
-        open={showPreview}
-        onClose={() => setShowPreview(false)}
-        onSave={handleSave}
-        isSaving={isSaving}
-        title="Payment Settings Preview"
-      >
-        {formData && (
-          <div className="space-y-5 mt-4">
+      {/* ── Payment Preview ───────────────────────────────────────── */}
+      {formData && (
+        <PaymentPreview
+          open={showPreview}
+          onClose={() => setShowPreview(false)}
+          onSave={handleSave}
+          isSaving={isSaving}
+          formData={formData}
+        />
+      )}
 
-            {/* Currency & Tax */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Currency &amp; Tax
-              </p>
-              <div className="rounded-lg border p-4 bg-muted/20 grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Currency</p>
-                  <p className="text-sm font-semibold">
-                    {CURRENCY_OPTIONS.find((c) => c.value === formData.currency)?.label || formData.currency}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Tax Rate</p>
-                  <p className="text-sm font-semibold">
-                    {formData.taxRate > 0 ? `${formData.taxRate}%` : 'None'}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Bank Accounts */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                Bank Accounts ({formData.paymentMethods.bankAccounts.length})
-              </p>
-              <div className="rounded-lg border p-4 bg-muted/20 space-y-2">
-                {formData.paymentMethods.bankAccounts.length === 0
-                  ? <p className="text-sm text-muted-foreground">No bank accounts added</p>
-                  : formData.paymentMethods.bankAccounts.map((bank) => (
-                    <div key={bank.id} className="flex items-center gap-2.5">
-                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', bank.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
-                      <p className="text-sm font-medium">{bank.bank}</p>
-                      <p className="text-xs text-muted-foreground">{bank.accountNumber} · {bank.accountName}</p>
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
-
-            {/* E-Wallets */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-                E-Wallets ({formData.paymentMethods.eWallets.length})
-              </p>
-              <div className="rounded-lg border p-4 bg-muted/20 space-y-2">
-                {formData.paymentMethods.eWallets.length === 0
-                  ? <p className="text-sm text-muted-foreground">No e-wallets added</p>
-                  : formData.paymentMethods.eWallets.map((ew) => (
-                    <div key={ew.id} className="flex items-center gap-2.5">
-                      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', ew.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
-                      <p className="text-sm font-medium">{ew.provider}</p>
-                      <p className="text-xs text-muted-foreground">{ew.number}{ew.name && ` · ${ew.name}`}</p>
-                    </div>
-                  ))
-                }
-              </div>
-            </div>
-
-            {/* COD */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">Cash on Delivery</p>
-              <div className="rounded-lg border p-4 bg-muted/20">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn('w-1.5 h-1.5 rounded-full', formData.paymentMethods.cod.enabled ? 'bg-primary' : 'bg-muted-foreground/30')} />
-                  <p className="text-sm font-medium">
-                    {formData.paymentMethods.cod.enabled ? 'Enabled' : 'Disabled'}
-                  </p>
-                </div>
-                {formData.paymentMethods.cod.enabled && formData.paymentMethods.cod.note && (
-                  <p className="text-xs text-muted-foreground pl-4">{formData.paymentMethods.cod.note}</p>
-                )}
-              </div>
-            </div>
-
-          </div>
-        )}
-      </PreviewModal>
     </div>
   );
 }

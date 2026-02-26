@@ -1,7 +1,8 @@
 'use client';
 
 // ============================================================
-// PRODUCT FORM - v2.1
+// PRODUCT FORM - v2.2 (MULTI-CURRENCY SUPPORT)
+// ✅ FIX: Dynamic currency from tenant settings
 // Supports Produk & Jasa with smart field show/hide logic
 // + showPrice toggle (Tampilkan Harga / Harga Atas Permintaan)
 // Zero backend changes — uses metadata to store preferences
@@ -63,7 +64,7 @@ import {
 } from '@/components/ui/command';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { useCreateProduct, useUpdateProduct } from '@/hooks';
+import { useCreateProduct, useUpdateProduct, useTenant } from '@/hooks';
 import { productSchema, type ProductFormData } from '@/lib/validations';
 import { UNIT_OPTIONS_PRODUK, UNIT_OPTIONS_JASA } from '@/config/constants';
 import { MultiImageUpload } from '@/components/upload';
@@ -92,7 +93,6 @@ function getProductType(product?: Product): ProductType {
 
 function getShowPrice(product?: Product): boolean {
   const meta = product?.metadata as Record<string, unknown> | null | undefined;
-  // Default true — harga ditampilkan
   if (meta?.showPrice === false) return false;
   return true;
 }
@@ -109,20 +109,19 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const { updateProduct, isLoading: isUpdating } = useUpdateProduct();
   const isLoading = isCreating || isUpdating;
 
-  // ── Type toggle state ──────────────────────────────────────
+  // ✅ FIX: Get currency from tenant
+  const { tenant } = useTenant();
+  const currency = tenant?.currency || 'IDR';
+
   const [productType, setProductType] = useState<ProductType>(
     getProductType(product)
   );
   const isJasa = productType === 'jasa';
 
-  // ── Show price toggle ──────────────────────────────────────
   const [showPrice, setShowPrice] = useState<boolean>(getShowPrice(product));
-
-  // ── Category combobox state ────────────────────────────────
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
 
-  // ── Form ──────────────────────────────────────────────────
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -146,17 +145,14 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const watchTrackStock = form.watch('trackStock');
   const watchCategory = form.watch('category');
 
-  // ── Field visibility logic ─────────────────────────────────
   const showSKU = !isJasa;
-  const showCostPrice = !isJasa && showPrice;   // modal hanya jika produk + harga ditampilkan
+  const showCostPrice = !isJasa && showPrice;
   const showTrackStock = !isJasa;
   const showStockFields = !isJasa && watchTrackStock;
   const showUnit = isJasa || watchTrackStock;
 
-  // ── Unit options berdasarkan tipe ──────────────────────────
   const unitOptions = isJasa ? UNIT_OPTIONS_JASA : UNIT_OPTIONS_PRODUK;
 
-  // ── Category filter ────────────────────────────────────────
   const filteredCategories = categories.filter((cat) =>
     cat.toLowerCase().includes(categorySearch.toLowerCase())
   );
@@ -167,14 +163,11 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
       (cat) => cat.toLowerCase() === categorySearch.toLowerCase()
     );
 
-  // ── Submit ────────────────────────────────────────────────
   const onSubmit = async (data: ProductFormData) => {
     try {
       const payload: ProductFormData = {
         ...data,
-        // Jika harga disembunyikan → kirim price = 0 agar schema valid (min: 0)
         price: showPrice ? data.price : 0,
-        // Jika harga disembunyikan → bersihkan field harga lainnya
         ...(!showPrice && {
           comparePrice: undefined,
           costPrice: undefined,
@@ -184,9 +177,8 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
             ? data.metadata
             : {}),
           type: productType,
-          showPrice,          // ← disimpan di metadata
+          showPrice,
         },
-        // Reset field yang tidak relevan untuk jasa
         ...(isJasa && {
           sku: undefined,
           trackStock: false,
@@ -208,7 +200,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     }
   };
 
-  // ── Category handlers ──────────────────────────────────────
   const handleSelectCategory = (value: string) => {
     form.setValue('category', value);
     setCategorySearch('');
@@ -224,7 +215,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     }
   };
 
-  // ── Handle type switch ─────────────────────────────────────
   const handleTypeChange = (type: ProductType) => {
     setProductType(type);
     if (type === 'jasa') {
@@ -240,25 +230,18 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     }
   };
 
-  // ── Handle showPrice toggle ────────────────────────────────
   const handleShowPriceChange = (checked: boolean) => {
     setShowPrice(checked);
     if (!checked) {
-      // Reset semua input harga saat dinonaktifkan
       form.setValue('price', 0);
       form.setValue('comparePrice', undefined);
       form.setValue('costPrice', undefined);
     }
   };
 
-  // ============================================================
-  // RENDER
-  // ============================================================
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-
-        {/* ── TYPE TOGGLE ─────────────────────────────────── */}
         <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
           <button
             type="button"
@@ -288,7 +271,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           </button>
         </div>
 
-        {/* ── HINT LABEL ──────────────────────────────────── */}
         <p className="text-sm text-muted-foreground -mt-4">
           {isJasa
             ? 'Mode Jasa: field stok & SKU disembunyikan otomatis.'
@@ -296,13 +278,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
         </p>
 
         <div className="grid gap-8 lg:grid-cols-3">
-
-          {/* ════════════════════════════════════════════════
-              MAIN CONTENT
-          ════════════════════════════════════════════════ */}
           <div className="lg:col-span-2 space-y-6">
-
-            {/* ── INFORMASI DASAR ─────────────────────────── */}
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -315,8 +291,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-
-                {/* Name */}
                 <FormField
                   control={form.control}
                   name="name"
@@ -340,7 +314,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                   )}
                 />
 
-                {/* Description */}
                 <FormField
                   control={form.control}
                   name="description"
@@ -363,13 +336,10 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                   )}
                 />
 
-                {/* Category + SKU */}
                 <div className={cn(
                   'grid gap-4',
                   showSKU ? 'sm:grid-cols-2' : 'sm:grid-cols-1'
                 )}>
-
-                  {/* Category */}
                   <FormField
                     control={form.control}
                     name="category"
@@ -458,7 +428,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                     )}
                   />
 
-                  {/* SKU — hanya produk */}
                   {showSKU && (
                     <FormField
                       control={form.control}
@@ -478,7 +447,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </CardContent>
             </Card>
 
-            {/* ── GAMBAR ──────────────────────────────────── */}
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -511,7 +479,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </CardContent>
             </Card>
 
-            {/* ── HARGA ───────────────────────────────────── */}
             <Card>
               <CardHeader>
                 <CardTitle>Harga</CardTitle>
@@ -522,8 +489,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-
-                {/* ── SHOW PRICE TOGGLE — persis seperti trackStock ── */}
                 <div className="flex items-center justify-between rounded-lg border p-4">
                   <div className="space-y-0.5">
                     <p className="text-base font-medium leading-none">
@@ -539,7 +504,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                   />
                 </div>
 
-                {/* ── PRICE OFF — info badge ─────────────────── */}
                 {!showPrice && (
                   <div className="flex items-center gap-3 rounded-lg border border-dashed bg-muted/40 p-4">
                     <MessageCircle className="h-5 w-5 text-muted-foreground shrink-0" />
@@ -552,14 +516,11 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                   </div>
                 )}
 
-                {/* ── PRICE INPUTS — hanya jika showPrice aktif ── */}
                 {showPrice && (
                   <div className={cn(
                     'grid gap-4',
                     showCostPrice ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
                   )}>
-
-                    {/* Price */}
                     <FormField
                       control={form.control}
                       name="price"
@@ -571,12 +532,12 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                Rp
+                                {currency}
                               </span>
                               <Input
                                 type="number"
                                 placeholder="0"
-                                className="pl-10"
+                                className="pl-14"
                                 {...field}
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
@@ -589,7 +550,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                       )}
                     />
 
-                    {/* Compare Price */}
                     <FormField
                       control={form.control}
                       name="comparePrice"
@@ -599,12 +559,12 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                           <FormControl>
                             <div className="relative">
                               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                Rp
+                                {currency}
                               </span>
                               <Input
                                 type="number"
                                 placeholder="0"
-                                className="pl-10"
+                                className="pl-14"
                                 {...field}
                                 value={field.value || ''}
                                 onChange={(e) =>
@@ -622,7 +582,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                       )}
                     />
 
-                    {/* Cost Price — hanya produk + showPrice aktif */}
                     {showCostPrice && (
                       <FormField
                         control={form.control}
@@ -633,12 +592,12 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                             <FormControl>
                               <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                  Rp
+                                  {currency}
                                 </span>
                                 <Input
                                   type="number"
                                   placeholder="0"
-                                  className="pl-10"
+                                  className="pl-14"
                                   {...field}
                                   value={field.value || ''}
                                   onChange={(e) =>
@@ -661,7 +620,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </CardContent>
             </Card>
 
-            {/* ── INVENTORI / SATUAN ───────────────────────── */}
             <Card>
               <CardHeader>
                 <CardTitle>
@@ -674,8 +632,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                 )}
               </CardHeader>
               <CardContent className="space-y-4">
-
-                {/* Track Stock Toggle — hanya produk */}
                 {showTrackStock && (
                   <FormField
                     control={form.control}
@@ -699,14 +655,11 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                   />
                 )}
 
-                {/* Unit & Stock fields */}
                 {showUnit && (
                   <div className={cn(
                     'grid gap-4',
                     showStockFields ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-[200px]'
                   )}>
-
-                    {/* Stock — hanya produk + trackStock */}
                     {showStockFields && (
                       <FormField
                         control={form.control}
@@ -735,7 +688,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                       />
                     )}
 
-                    {/* Min Stock — hanya produk + trackStock */}
                     {showStockFields && (
                       <FormField
                         control={form.control}
@@ -766,7 +718,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                       />
                     )}
 
-                    {/* Unit */}
                     <FormField
                       control={form.control}
                       name="unit"
@@ -800,12 +751,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
             </Card>
           </div>
 
-          {/* ════════════════════════════════════════════════
-              SIDEBAR
-          ════════════════════════════════════════════════ */}
           <div className="space-y-6">
-
-            {/* ── STATUS ──────────────────────────────────── */}
             <Card>
               <CardHeader>
                 <CardTitle>Status</CardTitle>
@@ -853,11 +799,8 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </CardContent>
             </Card>
 
-            {/* ── SUMMARY CARD ─────────────────────────────── */}
             <Card className="border-dashed">
               <CardContent className="pt-4 space-y-3">
-
-                {/* Tipe */}
                 <div>
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                     Tipe Postingan
@@ -879,7 +822,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
 
                 <Separator />
 
-                {/* Mode Harga */}
                 <div>
                   <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
                     Mode Harga
@@ -908,7 +850,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </CardContent>
             </Card>
 
-            {/* ── ACTIONS ─────────────────────────────────── */}
             <Card>
               <CardContent className="pt-6 space-y-2">
                 <Button type="submit" className="w-full" disabled={isLoading}>

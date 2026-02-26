@@ -1,3 +1,9 @@
+// ============================================================================
+// PRODUCTS GRID - V2.1 (MULTI-CURRENCY SUPPORT)
+// ✅ FIX: Pass currency to grid cards for dynamic display
+// Grid view for products with preview drawer
+// ============================================================================
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -8,6 +14,7 @@ import { ProductPreviewDrawer } from './product-preview-drawer';
 import { ProductDeleteDialog } from './product-delete-dialog';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
+import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
 // ============================================================================
@@ -27,6 +34,10 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // ✅ FIX: Get currency from tenant
+  const { tenant } = useTenant();
+  const currency = tenant?.currency || 'IDR';
 
   const refreshData = useCallback(async () => {
     if (onRefresh) {
@@ -105,6 +116,7 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
             key={product.id}
             product={product}
             onClick={handleProductClick}
+            currency={currency} // ✅ FIX: Pass currency
           />
         ))}
       </div>

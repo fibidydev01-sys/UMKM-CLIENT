@@ -1,5 +1,11 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS5 - HERO + BENTO GRID
+// ✅ FIX: Tambah currency prop, pass ke semua ProductCard
+//         (hero card + 4 side cards = 5 titik fix)
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
@@ -12,6 +18,7 @@ interface Products5Props {
   showViewAll?: boolean;
   productsLink?: string;
   storeSlug?: string;
+  currency?: string;     // ✅ FIX: tambah currency prop
   limit?: number;
 }
 
@@ -42,6 +49,7 @@ export function Products5({
   showViewAll = true,
   productsLink = '/products',
   storeSlug = '',
+  currency = 'IDR',      // ✅ FIX: default fallback IDR
   limit = 5,
 }: Products5Props) {
   const displayProducts = products.slice(0, limit);
@@ -91,12 +99,14 @@ export function Products5({
       <div className="grid grid-cols-2 gap-4 md:hidden">
         {hero && (
           <div className="col-span-2">
-            <ProductCard product={hero} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency ke ProductCard hero */}
+            <ProductCard product={hero} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
         {sideCards.map((product) => (
           <div key={product.id}>
-            <ProductCard product={product} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency ke ProductCard side cards mobile */}
+            <ProductCard product={product} storeSlug={storeSlug} currency={currency} />
           </div>
         ))}
       </div>
@@ -123,28 +133,33 @@ export function Products5({
                        [&_a]:h-full [&_a]:flex [&_a]:flex-col
                        [&_.aspect-square]:flex-1 [&_.aspect-square]:aspect-auto"
           >
-            <ProductCard product={hero} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency ke ProductCard hero desktop */}
+            <ProductCard product={hero} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
 
         {sideCards[0] && (
           <div style={{ gridArea: 'b' }} className="overflow-hidden rounded-xl">
-            <ProductCard product={sideCards[0]} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency */}
+            <ProductCard product={sideCards[0]} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
         {sideCards[1] && (
           <div style={{ gridArea: 'c' }} className="overflow-hidden rounded-xl">
-            <ProductCard product={sideCards[1]} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency */}
+            <ProductCard product={sideCards[1]} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
         {sideCards[2] && (
           <div style={{ gridArea: 'd' }} className="overflow-hidden rounded-xl">
-            <ProductCard product={sideCards[2]} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency */}
+            <ProductCard product={sideCards[2]} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
         {sideCards[3] && (
           <div style={{ gridArea: 'e' }} className="overflow-hidden rounded-xl">
-            <ProductCard product={sideCards[3]} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency */}
+            <ProductCard product={sideCards[3]} storeSlug={storeSlug} currency={currency} />
           </div>
         )}
       </div>

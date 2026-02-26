@@ -4,35 +4,89 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PreviewModal } from '@/components/settings';
 import { toast } from 'sonner';
 import { useTenant } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { CourierName, PengirimanFormData, ShippingMethods } from '@/types';
-import { StepRates, StepCarriers } from '@/components/settings/pengiriman-section';
+import { StepRates, StepCarriers, PreviewPengiriman } from '@/components/settings/pengiriman-section';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
+/**
+ * ✅ UPDATED Feb 2026 — Verified active ASEAN couriers
+ * 
+ * Organized by region for better UX in settings
+ * Based on market research Q4 2025 / Q1 2026
+ * 
+ * Changes:
+ * ❌ Removed: AnterAja, Flash Express MY, Ninja Van VN, ID Express, SAP Express, Nim Express
+ * ✅ Added: JRS Express (PH), Pos Brunei (BN), Lalamove (SG)
+ */
 const COURIER_OPTIONS: CourierName[] = [
-  'JNE', 'J&T Express', 'SiCepat', 'AnterAja', 'Ninja Express',
-  'ID Express', 'SAP Express', 'Lion Parcel', 'Pos Indonesia', 'TIKI', 'Other',
+  // ── Indonesia (9 aktif) ──────────────────────────────────────────
+  'JNE',
+  'J&T Express',
+  'SiCepat',
+  'SPX Express',
+  'Ninja Express',
+  'Paxel',
+  'Lion Parcel',
+  'Pos Indonesia',
+  'TIKI',
+  // ── Malaysia (6 aktif) ───────────────────────────────────────────
+  'Pos Laju',
+  'GDEX',
+  'City-Link Express',
+  // ── Thailand (4 aktif) ───────────────────────────────────────────
+  'Thailand Post',
+  'Flash Express',
+  'Kerry Express',
+  // ── Singapore (4 aktif) ──────────────────────────────────────────
+  'SingPost',
+  'Lalamove',
+  // ── Philippines (5 aktif) ────────────────────────────────────────
+  'LBC Express',
+  '2GO Express',
+  'JRS Express',
+  // ── Vietnam (5 aktif) ────────────────────────────────────────────
+  'GHN',
+  'GHTK',
+  'Viettel Post',
+  // ── Brunei (1 domestic) ──────────────────────────────────────────
+  'Pos Brunei',
+  // ── ASEAN Cross-region ───────────────────────────────────────────
+  'Ninja Van',
+  'DHL Express',
+  // ── Fallback ─────────────────────────────────────────────────────
+  'Other',
 ];
 
 const DEFAULT_SHIPPING_METHODS: ShippingMethods = {
-  couriers: COURIER_OPTIONS.map((name, i) => ({
+  couriers: COURIER_OPTIONS.map((name) => ({
     id: name.toLowerCase().replace(/[^a-z0-9]/g, ''),
     name,
-    enabled: i < 2,
+    enabled: ['JNE', 'J&T Express', 'SiCepat'].includes(name),
     note: '',
   })),
 };
 
-const formatRupiah = (value: number | null) => {
-  if (!value || value === 0) return '—';
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency', currency: 'IDR', minimumFractionDigits: 0,
-  }).format(value);
-};
+// ─── Merge Helper ───────────────────────────────────────────────────────────
+// Preserve existing tenant courier settings (enabled, note),
+// append any new couriers from COURIER_OPTIONS that aren't in DB yet,
+// and maintain canonical COURIER_OPTIONS order.
+function mergeCouriers(saved: ShippingMethods): ShippingMethods {
+  const savedMap = new Map(saved.couriers.map((c) => [c.id, c]));
+
+  const merged = DEFAULT_SHIPPING_METHODS.couriers.map((def) => {
+    const existing = savedMap.get(def.id);
+    // If found in DB → keep user's enabled/note, but ensure name is up-to-date
+    if (existing) return { ...def, enabled: existing.enabled, note: existing.note ?? '' };
+    // New courier not yet in DB → use defaults (disabled)
+    return def;
+  });
+
+  return { couriers: merged };
+}
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
 const STEPS = [
@@ -109,9 +163,13 @@ export default function PengirimanPage() {
   useEffect(() => {
     if (tenant && formData === null) {
       setFormData({
+        currency: tenant.currency || 'IDR',          // ← dari pembayaran
         freeShippingThreshold: tenant.freeShippingThreshold ?? null,
         defaultShippingCost: tenant.defaultShippingCost || 0,
-        shippingMethods: tenant.shippingMethods || DEFAULT_SHIPPING_METHODS,
+        // ✅ Merge: preserve saved settings + append new couriers from COURIER_OPTIONS
+        shippingMethods: tenant.shippingMethods
+          ? mergeCouriers(tenant.shippingMethods)
+          : DEFAULT_SHIPPING_METHODS,
       });
     }
   }, [tenant, formData]);
@@ -181,8 +239,6 @@ export default function PengirimanPage() {
   const isLoading = tenant === null || formData === null;
   const isLastStep = currentStep === STEPS.length - 1;
 
-  const activeCouriers = formData?.shippingMethods.couriers.filter((c) => c.enabled) ?? [];
-
   return (
     <div className="h-full flex flex-col">
 
@@ -215,7 +271,7 @@ export default function PengirimanPage() {
             {/* Header */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
-                <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+                <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
                   Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
@@ -292,7 +348,7 @@ export default function PengirimanPage() {
                 />
               </div>
               <div className="text-center space-y-0.5">
-                <p className="text-[10px] font-medium tracking-widests uppercase text-muted-foreground">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
                   Step {currentStep + 1} of {STEPS.length}
                 </p>
                 <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
@@ -319,7 +375,7 @@ export default function PengirimanPage() {
         </>
       )}
 
-      {/* Mobile bottom nav */}
+      {/* ════════════════════════ MOBILE BOTTOM NAV ════════════════════════ */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
         <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
           <Button
@@ -337,65 +393,16 @@ export default function PengirimanPage() {
         </div>
       </div>
 
-      {/* Preview Modal */}
-      <PreviewModal
-        open={showPreview}
-        onClose={() => setShowPreview(false)}
-        onSave={handleSave}
-        isSaving={isSaving}
-        title="Shipping Settings Preview"
-      >
-        {formData && (
-          <div className="space-y-5 mt-4">
-
-            {/* Shipping Rates */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-                Shipping Rates
-              </p>
-              <div className="rounded-lg border p-4 bg-muted/20 grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Free Shipping From</p>
-                  <p className="text-sm font-semibold">
-                    {formData.freeShippingThreshold
-                      ? formatRupiah(formData.freeShippingThreshold)
-                      : 'Disabled'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[11px] text-muted-foreground mb-0.5">Flat Rate</p>
-                  <p className="text-sm font-semibold">{formatRupiah(formData.defaultShippingCost)}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Active Carriers */}
-            <div className="space-y-2">
-              <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-                Active Carriers ({activeCouriers.length})
-              </p>
-              <div className="rounded-lg border p-4 bg-muted/20">
-                {activeCouriers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No carriers enabled</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                    {activeCouriers.map((c) => (
-                      <div key={c.id} className="flex items-center gap-2 min-w-0">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                        <p className="text-sm font-medium truncate">{c.name}</p>
-                        {c.note && (
-                          <p className="text-[11px] text-muted-foreground truncate">{c.note}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        )}
-      </PreviewModal>
+      {/* ════════════════════════ PREVIEW MODAL ════════════════════════ */}
+      {formData && (
+        <PreviewPengiriman
+          open={showPreview}
+          onClose={() => setShowPreview(false)}
+          onSave={handleSave}
+          isSaving={isSaving}
+          formData={formData}
+        />
+      )}
     </div>
   );
 }

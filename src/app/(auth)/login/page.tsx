@@ -42,6 +42,8 @@ export default function LoginPage() {
     <AuthLayout
       title="Selamat Datang Kembali"
       description="Masuk ke dashboard untuk mengelola toko Anda"
+      image="/auth-picture/auth-login.jpg"
+      imageAlt="Login illustration"
     >
       {/* ✅ FIXED: Wrap in Suspense because LoginForm uses useSearchParams via useLogin hook */}
       <Suspense fallback={<LoginFormSkeleton />}>

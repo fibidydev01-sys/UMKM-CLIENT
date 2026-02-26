@@ -1,5 +1,11 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCT CARD - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: currency diterima sebagai prop dari parent
+// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
+// ══════════════════════════════════════════════════════════════
+
 import { useState, useMemo, useCallback } from 'react';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import Link from 'next/link';
@@ -16,12 +22,14 @@ import type { Product } from '@/types';
 interface ProductCardProps {
   product: Product;
   storeSlug: string;
+  currency: string;          // ✅ FIX: wajib diterima dari parent
   showAddToCart?: boolean;
 }
 
 export function ProductCard({
   product,
   storeSlug,
+  currency,                  // ✅ FIX: pakai currency dari prop
   showAddToCart = true,
 }: ProductCardProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -30,37 +38,49 @@ export function ProductCard({
 
   const { hasDiscount, discountPercent, isOutOfStock, isCustomPrice } = useMemo(() => {
     const isCustomPrice = product.price === 0;
-    const hasDiscount = !isCustomPrice && product.comparePrice && product.comparePrice > product.price;
+    const hasDiscount =
+      !isCustomPrice &&
+      product.comparePrice &&
+      product.comparePrice > product.price;
     return {
       isCustomPrice,
       hasDiscount,
       discountPercent: hasDiscount
-        ? Math.round(((product.comparePrice! - product.price) / product.comparePrice!) * 100)
+        ? Math.round(
+          ((product.comparePrice! - product.price) / product.comparePrice!) *
+          100
+        )
         : 0,
       isOutOfStock: product.trackStock && (product.stock ?? 0) <= 0,
     };
   }, [product.comparePrice, product.price, product.trackStock, product.stock]);
 
   const imageUrl = product.images?.[0];
-  const url = useMemo(() => productUrl(storeSlug, product.id), [storeSlug, product.id]);
+  const url = useMemo(
+    () => productUrl(storeSlug, product.id),
+    [storeSlug, product.id]
+  );
 
-  const handleAddToCart = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (isOutOfStock) return;
+  const handleAddToCart = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isOutOfStock) return;
 
-    setIsAdding(true);
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.images?.[0],
-      unit: product.unit || undefined,
-      maxStock: product.trackStock ? product.stock ?? undefined : undefined,
-    });
+      setIsAdding(true);
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0],
+        unit: product.unit || undefined,
+        maxStock: product.trackStock ? (product.stock ?? undefined) : undefined,
+      });
 
-    setTimeout(() => setIsAdding(false), 500);
-  }, [isOutOfStock, addItem, product]);
+      setTimeout(() => setIsAdding(false), 500);
+    },
+    [isOutOfStock, addItem, product]
+  );
 
   return (
     <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card h-full flex flex-col">
@@ -97,7 +117,9 @@ export function ProductCard({
           {/* Out of Stock Overlay */}
           {isOutOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Badge variant="secondary" className="text-sm">Stok Habis</Badge>
+              <Badge variant="secondary" className="text-sm">
+                Stok Habis
+              </Badge>
             </div>
           )}
 
@@ -112,7 +134,11 @@ export function ProductCard({
                 )}
                 onClick={handleAddToCart}
               >
-                {isAdding ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
+                {isAdding ? (
+                  <Check className="h-3.5 w-3.5" />
+                ) : (
+                  <Plus className="h-3.5 w-3.5" />
+                )}
               </Button>
             </div>
           )}
@@ -129,16 +155,16 @@ export function ProductCard({
             {product.name}
           </h3>
 
-          {/* Harga — sembunyikan jika custom price */}
+          {/* ✅ FIX: Semua formatPrice pakai currency dari prop */}
           {!isCustomPrice && (
             <>
               <div className="mt-1.5 flex items-baseline gap-1.5">
                 <span className="font-semibold text-sm text-primary">
-                  {formatPrice(product.price)}
+                  {formatPrice(product.price, currency)}
                 </span>
                 {hasDiscount && (
                   <span className="text-xs text-muted-foreground line-through">
-                    {formatPrice(product.comparePrice!)}
+                    {formatPrice(product.comparePrice!, currency)}
                   </span>
                 )}
               </div>
@@ -162,11 +188,22 @@ export function ProductCard({
       {/* Mobile Add to Cart — sembunyikan jika custom price */}
       {showAddToCart && !isOutOfStock && !isCustomPrice && (
         <div className="px-3 pb-2.5 md:hidden">
-          <Button size="sm" variant="outline" className="w-full h-8 text-xs" onClick={handleAddToCart}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full h-8 text-xs"
+            onClick={handleAddToCart}
+          >
             {isAdding ? (
-              <><Check className="h-3.5 w-3.5 mr-1.5" />Ditambahkan</>
+              <>
+                <Check className="h-3.5 w-3.5 mr-1.5" />
+                Ditambahkan
+              </>
             ) : (
-              <><Plus className="h-3.5 w-3.5 mr-1.5" />Tambah</>
+              <>
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                Tambah
+              </>
             )}
           </Button>
         </div>

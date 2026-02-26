@@ -1,20 +1,44 @@
 // ==========================================
 // TENANT TYPES
+// ✅ UPDATED Feb 2026 — ASEAN Courier Research
 // ==========================================
 
 import type { TenantLandingConfig, Testimonial } from './landing';
 
 // ==========================================
+// ASEAN CURRENCY — Re-export from dedicated module
+// ==========================================
+// Import dari '@/types/asean-currency' untuk:
+//   - ASEAN_CURRENCIES const
+//   - AseanCurrencyCode type
+//   - ASEAN_CURRENCY_META
+//   - formatAseanPrice()
+//   - getAseanCurrencyMeta()
+// ==========================================
+export type {
+  AseanCurrencyCode,
+  AseanCurrencyMeta,
+} from './asean-currency';
+export {
+  ASEAN_CURRENCIES,
+  ASEAN_CURRENCY_META,
+  ZERO_DECIMAL_CURRENCIES,
+  ASEAN_TAX_TIPS,
+  ASEAN_SIMULATION_PRICES,
+  formatAseanPrice,
+  isAseanCurrency,
+  getAseanCurrencyMeta,
+} from './asean-currency';
+
+// ==========================================
 // SOCIAL LINKS TYPE
 // ==========================================
 export interface SocialLinks {
-  // Existing
   instagram?: string;
   facebook?: string;
   tiktok?: string;
   youtube?: string;
   twitter?: string;
-  // New
   whatsapp?: string;
   telegram?: string;
   pinterest?: string;
@@ -35,12 +59,189 @@ export interface FeatureItem {
 }
 
 // ==========================================
-// PAYMENT SETTINGS TYPES (NEW)
+// PAYMENT SETTINGS TYPES
 // ==========================================
 
-export type BankName = 'BCA' | 'Mandiri' | 'BNI' | 'BRI' | 'BSI' | 'CIMB' | 'Permata' | 'Danamon' | 'Other';
-export type EWalletProvider = 'GoPay' | 'OVO' | 'DANA' | 'ShopeePay' | 'LinkAja' | 'Other';
-export type CourierName = 'JNE' | 'J&T Express' | 'SiCepat' | 'AnterAja' | 'Ninja Express' | 'ID Express' | 'SAP Express' | 'Lion Parcel' | 'Pos Indonesia' | 'TIKI' | 'Other';
+export type BankName =
+  // ── Indonesia ──────────────────────────────────────────────────────────
+  | 'BCA'
+  | 'Mandiri'
+  | 'BRI'
+  | 'BNI'
+  | 'BSI'
+  | 'BTN'
+  | 'CIMB Niaga'
+  | 'Permata'
+  | 'Danamon'
+  | 'Maybank ID'
+  | 'Panin'
+  | 'Jenius'
+  | 'SeaBank'
+  | 'Blu by BCA'
+  | 'Bank Jago'
+  | 'Allo Bank'
+  | 'OCBC Indonesia'   // ✅ OCBC NISP rebrand efektif Nov 2023
+  // ── Malaysia ───────────────────────────────────────────────────────────
+  | 'Maybank'
+  | 'CIMB Malaysia'
+  | 'Public Bank'
+  | 'RHB Bank'
+  | 'Hong Leong Bank'
+  | 'AmBank'
+  | 'UOB Malaysia'
+  | 'OCBC Malaysia'
+  | 'HSBC Malaysia'
+  | 'Affin Bank'
+  // ── Singapore ──────────────────────────────────────────────────────────
+  | 'DBS'
+  | 'OCBC'
+  | 'UOB'
+  | 'Standard Chartered SG'
+  | 'HSBC SG'
+  | 'Citibank SG'
+  // ── Thailand ───────────────────────────────────────────────────────────
+  | 'Bangkok Bank'
+  | 'Kasikornbank'
+  | 'SCB Thailand'
+  | 'Krung Thai Bank'
+  | 'Bank of Ayudhya'
+  | 'TMBThanachart'
+  // ── Philippines ────────────────────────────────────────────────────────
+  | 'BDO Unibank'
+  | 'BPI'
+  | 'Metrobank'
+  | 'PNB'
+  | 'UnionBank PH'
+  | 'Security Bank'
+  // ── Vietnam ────────────────────────────────────────────────────────────
+  | 'Vietcombank'
+  | 'VietinBank'
+  | 'BIDV'
+  | 'Techcombank'
+  | 'MB Bank'
+  | 'ACB Vietnam'
+  // ── Brunei ─────────────────────────────────────────────────────────────
+  | 'Baiduri Bank'     // Market leader Brunei, retail & SME
+  | 'Bank Islam Brunei Darussalam' // BIBD — largest Islamic bank BN
+  // ── Regional / Global ──────────────────────────────────────────────────
+  | 'HSBC'
+  | 'Citibank'
+  | 'Standard Chartered'
+  // ── Fallback ───────────────────────────────────────────────────────────
+  | 'Other';
+
+export type EWalletProvider =
+  // ── Indonesia ──────────────────────────────────────────────────────────
+  | 'GoPay'
+  | 'OVO'
+  | 'DANA'
+  | 'ShopeePay'
+  | 'LinkAja'
+  | 'QRIS'
+  // ── Malaysia ───────────────────────────────────────────────────────────
+  | 'Touch n Go'
+  | 'GrabPay MY'
+  | 'Boost'
+  | 'MAE'
+  | 'ShopeePay MY'
+  // ── Singapore ──────────────────────────────────────────────────────────
+  | 'PayNow'
+  | 'GrabPay SG'
+  | 'DBS PayLah'
+  | 'NETS'
+  // ── Thailand ───────────────────────────────────────────────────────────
+  | 'TrueMoney'
+  | 'PromptPay'
+  | 'Rabbit LINE Pay'
+  | 'ShopeePay TH'
+  // ── Philippines ────────────────────────────────────────────────────────
+  | 'GCash'
+  | 'Maya'
+  | 'GrabPay PH'
+  | 'ShopeePay PH'
+  // ── Vietnam ────────────────────────────────────────────────────────────
+  | 'MoMo'
+  | 'ZaloPay'
+  | 'VNPay'
+  | 'ShopeePay VN'
+  // ── Brunei ─────────────────────────────────────────────────────────────
+  | 'Progresif Pay'    // Brunei e-wallet by Progresif (telco)
+  // ── Regional / Global ──────────────────────────────────────────────────
+  | 'GrabPay'
+  | 'Apple Pay'
+  | 'Google Pay'
+  | 'PayPal'
+  | 'Alipay'
+  | 'WeChat Pay'
+  // ── Fallback ───────────────────────────────────────────────────────────
+  | 'Other';
+
+// ==========================================
+// COURIER NAME TYPE
+// ==========================================
+/**
+ * ✅ UPDATED Feb 2026 — Verified active ASEAN couriers
+ * 
+ * Research sources:
+ * - Market share reports Q4 2025 / Q1 2026
+ * - Official courier websites & press releases
+ * - E-commerce platform integrations
+ * 
+ * Changes from previous version:
+ * ❌ REMOVED:
+ *   - AnterAja (Indonesia) → Unreliable service, poor ratings
+ *   - Flash Express (Malaysia) → Permanently closed 31 Jan 2026
+ *   - Ninja Van (Vietnam) → Suspended operations Sep 2024
+ *   - ID Express, SAP Express → Minor players, simplified list
+ *   - Nim Express (Thailand) → Consolidated to major players
+ * 
+ * ✅ ADDED:
+ *   - JRS Express (Philippines) → 65+ years, 450+ branches
+ *   - Pos Brunei → National postal service monopoly
+ *   - Lalamove (Singapore) → On-demand delivery leader
+ * 
+ * ⚠️ NOTES:
+ *   - Kerry Express renamed to KEX Express (Jul 2024), but keeping original name for compatibility
+ *   - Flash Express active in Thailand only (profitable market)
+ *   - SPX Express = Shopee Express (active: ID, MY, TH, PH, VN)
+ */
+export type CourierName =
+  // ─── Indonesia (9 aktif) ──────────────────────────────────────
+  | 'JNE'                // Market leader since 1990, 8000+ points
+  | 'J&T Express'        // Revenue +37% 2024, 3M parcels/day
+  | 'SiCepat'           // 500+ cities, profitable 2025
+  | 'SPX Express'       // Shopee in-house, market leader
+  | 'Ninja Express'     // 2M+ merchants, strong COD
+  | 'Paxel'            // Same-day specialist, COD
+  | 'Lion Parcel'      // Cold chain, Halim hub 2025
+  | 'Pos Indonesia'    // BUMN, widest coverage
+  | 'TIKI'             // Veteran since 1970
+  // ─── Malaysia (6 aktif) ───────────────────────────────────────
+  | 'Pos Laju'         // Only rural Sabah/Sarawak coverage
+  | 'GDEX'             // B2B strong, East Malaysia
+  | 'City-Link Express' // Since 1979, East specialist
+  // ─── Thailand (4 aktif) ───────────────────────────────────────
+  | 'Thailand Post'    // Market leader by volume
+  | 'Flash Express'    // #2 market share, profitable 2025
+  | 'Kerry Express'    // ⚠️ Rebranded to KEX, restructuring
+  // ─── Singapore (4 aktif) ──────────────────────────────────────
+  | 'SingPost'         // National post, SmartPac popular
+  | 'Lalamove'         // On-demand same-day, 24/7
+  // ─── Philippines (5 aktif) ────────────────────────────────────
+  | 'LBC Express'      // 36% market share, 6400+ outlets
+  | '2GO Express'      // FedEx retail partner, sea+air
+  | 'JRS Express'      // 65+ years, 450+ branches, budget
+  // ─── Vietnam (5 aktif) ────────────────────────────────────────
+  | 'GHN'              // Giao Hang Nhanh, AI suite 2025
+  | 'GHTK'             // E-commerce specialist, COD
+  | 'Viettel Post'     // Largest daily delivery count
+  // ─── Brunei (1 domestic + 2 international) ────────────────────
+  | 'Pos Brunei'       // National postal service monopoly
+  // ─── ASEAN Cross-region ───────────────────────────────────────
+  | 'Ninja Van'        // Active: MY, SG, PH, TH, ID (not VN!)
+  | 'DHL Express'      // All ASEAN countries
+  // ─── Fallback ─────────────────────────────────────────────────
+  | 'Other';
 
 export interface BankAccount {
   id: string;
@@ -70,7 +271,7 @@ export interface PaymentMethods {
 }
 
 // ==========================================
-// SHIPPING SETTINGS TYPES (NEW)
+// SHIPPING SETTINGS TYPES
 // ==========================================
 
 export interface Courier {
@@ -112,6 +313,7 @@ export interface Tenant {
   metaDescription?: string;
   socialLinks?: SocialLinks;
   // Payment Settings
+  // NOTE: currency is string (DB-level) — use AseanCurrencyCode for UI validation
   currency: string;
   taxRate: number;
   paymentMethods?: PaymentMethods;
@@ -119,58 +321,44 @@ export interface Tenant {
   freeShippingThreshold?: number | null;
   defaultShippingCost: number;
   shippingMethods?: ShippingMethods;
-  // ==========================================
-  // STORE INFORMATION - HERO SECTION
-  // ==========================================
+  // HERO SECTION
   heroTitle?: string;
   heroSubtitle?: string;
   heroCtaText?: string;
   heroCtaLink?: string;
   heroBackgroundImage?: string;
-  // ==========================================
-  // STORE INFORMATION - ABOUT SECTION
-  // ==========================================
+  // ABOUT SECTION
   aboutTitle?: string;
   aboutSubtitle?: string;
   aboutContent?: string;
   aboutImage?: string;
   aboutFeatures?: FeatureItem[];
-  // ==========================================
-  // STORE INFORMATION - TESTIMONIALS SECTION
-  // ==========================================
+  // TESTIMONIALS SECTION
   testimonialsTitle?: string;
   testimonialsSubtitle?: string;
   testimonials?: Testimonial[];
-  // ==========================================
-  // STORE INFORMATION - CONTACT SECTION
-  // ==========================================
+  // CONTACT SECTION
   contactTitle?: string;
   contactSubtitle?: string;
   contactMapUrl?: string;
   contactShowMap?: boolean;
   contactShowForm?: boolean;
-  // ==========================================
-  // STORE INFORMATION - CTA SECTION
-  // ==========================================
+  // CTA SECTION
   ctaTitle?: string;
   ctaSubtitle?: string;
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
-
-  // ==========================================
   // CUSTOM DOMAIN
-  // ==========================================
   customDomain?: string | null;
   customDomainVerified?: boolean;
   customDomainToken?: string | null;
-  sslStatus?: string | null; // 'pending' | 'active' | 'failed'
+  sslStatus?: string | null;
   sslIssuedAt?: string | null;
   dnsRecords?: import('./domain').DnsRecord[] | null;
   customDomainAddedAt?: string | null;
   customDomainVerifiedAt?: string | null;
   customDomainRemovedAt?: string | null;
-
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
@@ -201,52 +389,38 @@ export interface PublicTenant {
   freeShippingThreshold?: number | null;
   defaultShippingCost: number;
   shippingMethods?: ShippingMethods;
-  // ==========================================
-  // STORE INFORMATION - HERO SECTION
-  // ==========================================
+  // HERO SECTION
   heroTitle?: string;
   heroSubtitle?: string;
   heroCtaText?: string;
   heroCtaLink?: string;
   heroBackgroundImage?: string;
-  // ==========================================
-  // STORE INFORMATION - ABOUT SECTION
-  // ==========================================
+  // ABOUT SECTION
   aboutTitle?: string;
   aboutSubtitle?: string;
   aboutContent?: string;
   aboutImage?: string;
   aboutFeatures?: FeatureItem[];
-  // ==========================================
-  // STORE INFORMATION - TESTIMONIALS SECTION
-  // ==========================================
+  // TESTIMONIALS SECTION
   testimonialsTitle?: string;
   testimonialsSubtitle?: string;
   testimonials?: Testimonial[];
-  // ==========================================
-  // STORE INFORMATION - CONTACT SECTION
-  // ==========================================
+  // CONTACT SECTION
   contactTitle?: string;
   contactSubtitle?: string;
   contactMapUrl?: string;
   contactShowMap?: boolean;
   contactShowForm?: boolean;
-  // ==========================================
-  // STORE INFORMATION - CTA SECTION
-  // ==========================================
+  // CTA SECTION
   ctaTitle?: string;
   ctaSubtitle?: string;
   ctaButtonText?: string;
   ctaButtonLink?: string;
   ctaButtonStyle?: 'primary' | 'secondary' | 'outline';
-
-  // ==========================================
   // CUSTOM DOMAIN (public-safe fields only)
-  // ==========================================
   customDomain?: string | null;
   customDomainVerified?: boolean;
   sslStatus?: string | null;
-
   // Status
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
@@ -275,39 +449,29 @@ export interface UpdateTenantInput {
   freeShippingThreshold?: number | null;
   defaultShippingCost?: number;
   shippingMethods?: ShippingMethods;
-  // ==========================================
-  // STORE INFORMATION - HERO SECTION
-  // ==========================================
+  // HERO SECTION
   heroTitle?: string;
   heroSubtitle?: string;
   heroCtaText?: string;
   heroCtaLink?: string;
   heroBackgroundImage?: string;
-  // ==========================================
-  // STORE INFORMATION - ABOUT SECTION
-  // ==========================================
+  // ABOUT SECTION
   aboutTitle?: string;
   aboutSubtitle?: string;
   aboutContent?: string;
   aboutImage?: string;
   aboutFeatures?: FeatureItem[];
-  // ==========================================
-  // STORE INFORMATION - TESTIMONIALS SECTION
-  // ==========================================
+  // TESTIMONIALS SECTION
   testimonialsTitle?: string;
   testimonialsSubtitle?: string;
   testimonials?: Testimonial[];
-  // ==========================================
-  // STORE INFORMATION - CONTACT SECTION
-  // ==========================================
+  // CONTACT SECTION
   contactTitle?: string;
   contactSubtitle?: string;
   contactMapUrl?: string;
   contactShowMap?: boolean;
   contactShowForm?: boolean;
-  // ==========================================
-  // STORE INFORMATION - CTA SECTION
-  // ==========================================
+  // CTA SECTION
   ctaTitle?: string;
   ctaSubtitle?: string;
   ctaButtonText?: string;
@@ -316,8 +480,9 @@ export interface UpdateTenantInput {
 }
 
 // ==========================================
-// HERO SECTION FORM DATA
+// FORM DATA TYPES
 // ==========================================
+
 export interface HeroFormData {
   name: string;
   description: string;
@@ -370,13 +535,14 @@ export interface PembayaranFormData {
 }
 
 export interface PengirimanFormData {
+  currency: string;
   freeShippingThreshold: number | null;
   defaultShippingCost: number;
   shippingMethods: ShippingMethods;
 }
 
 // ==========================================
-// DASHBOARD STATS (Enhanced)
+// DASHBOARD STATS
 // ==========================================
 
 export interface RecentOrder {

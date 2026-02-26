@@ -1,5 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// PRODUCTS TABLE COLUMNS - V2.0 MINIMAL VIEW
+// PRODUCTS TABLE COLUMNS - V2.1 MINIMAL VIEW (MULTI-CURRENCY)
+// ✅ FIX: Accept currency parameter for future price column
 // Shows only essential info: Name + SKU + Date
 // Click to open drawer for full details
 // ══════════════════════════════════════════════════════════════
@@ -19,6 +20,7 @@ import type { Product } from '@/types';
 
 interface ColumnActions {
   onRowClick: (product: Product) => void;
+  currency: string; // ✅ FIX: Accept currency for future use
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -106,5 +108,31 @@ export function getProductColumns(actions: ColumnActions): ColumnDef<Product>[] 
         );
       },
     },
+
+    // ✅ NOTE: Price column commented out but ready for future use
+    // Uncomment this if you want to show price in table
+    /*
+    {
+      accessorKey: 'price',
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Harga
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ),
+      cell: ({ row }) => {
+        const price = row.getValue('price') as number;
+        if (price === 0) return <span className="text-muted-foreground">Custom</span>;
+        return (
+          <span onClick={() => actions.onRowClick(row.original)} className="cursor-pointer">
+            {formatPrice(price, actions.currency)}
+          </span>
+        );
+      },
+    },
+    */
   ];
 }

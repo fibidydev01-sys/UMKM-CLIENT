@@ -1,5 +1,11 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// CART SHEET - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: Semua formatPrice pakai tenant.currency, tidak hardcode IDR
+// ✅ FIX: currency diambil dari tenant prop (sudah ada di CartSheetProps)
+// ══════════════════════════════════════════════════════════════
+
 import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ShoppingCart, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
@@ -41,30 +47,32 @@ export function CartSheet({ tenant }: CartSheetProps) {
   const isEmpty = useCartIsEmpty();
   const isHydrated = useCartHydrated();
 
-  // Get actions directly
   const incrementQty = useCartStore((state) => state.incrementQty);
   const decrementQty = useCartStore((state) => state.decrementQty);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  // Calculate total items
+  // ✅ FIX: currency dari tenant, fallback IDR
+  const currency = tenant?.currency || 'IDR';
+
+  // ✅ FIX: helper lokal agar ringkas
+  const fmt = (value: number) => formatPrice(value, currency);
+
   const totalItems = useMemo(
     () => items.reduce((sum, item) => sum + item.qty, 0),
     [items]
   );
 
   const handleCheckout = () => {
-    setSheetOpen(false); // Close cart sheet
-    setCheckoutOpen(true); // Open checkout dialog
+    setSheetOpen(false);
+    setCheckoutOpen(true);
   };
 
-  // Prevent hydration mismatch by only rendering after mount
   React.useEffect(() => {
     setIsMounted(true);
   }, []);
 
   if (!isMounted) {
-    // Return simplified version for SSR to match initial client render
     return (
       <Button variant="outline" size="icon" className="relative">
         <ShoppingCart className="h-5 w-5" />
@@ -100,14 +108,12 @@ export function CartSheet({ tenant }: CartSheetProps) {
           </SheetHeader>
 
           {!isHydrated ? (
-            // Loading state
             <div className="flex-1 flex items-center justify-center">
               <div className="animate-pulse text-muted-foreground">
                 Memuat keranjang...
               </div>
             </div>
           ) : isEmpty ? (
-            // Empty state
             <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center">
               <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center">
                 <ShoppingCart className="h-10 w-10 text-muted-foreground" />
@@ -147,8 +153,9 @@ export function CartSheet({ tenant }: CartSheetProps) {
                         <h4 className="font-medium text-sm leading-tight truncate">
                           {item.name}
                         </h4>
+                        {/* ✅ FIX: pakai fmt() */}
                         <p className="text-sm text-muted-foreground">
-                          {formatPrice(item.price)}
+                          {fmt(item.price)}
                           {item.unit && ` / ${item.unit}`}
                         </p>
 
@@ -170,7 +177,10 @@ export function CartSheet({ tenant }: CartSheetProps) {
                             size="icon"
                             className="h-7 w-7"
                             onClick={() => incrementQty(item.id)}
-                            disabled={item.maxStock !== undefined && item.qty >= item.maxStock}
+                            disabled={
+                              item.maxStock !== undefined &&
+                              item.qty >= item.maxStock
+                            }
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
@@ -185,10 +195,11 @@ export function CartSheet({ tenant }: CartSheetProps) {
                         </div>
                       </div>
 
-                      {/* Subtotal */}
+                      {/* Subtotal per item */}
+                      {/* ✅ FIX: pakai fmt() */}
                       <div className="text-right">
                         <p className="font-medium text-sm">
-                          {formatPrice(item.price * item.qty)}
+                          {fmt(item.price * item.qty)}
                         </p>
                       </div>
                     </div>
@@ -203,7 +214,8 @@ export function CartSheet({ tenant }: CartSheetProps) {
                 {/* Total */}
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium">Total</span>
-                  <span className="text-lg font-bold">{formatPrice(totalPrice)}</span>
+                  {/* ✅ FIX: pakai fmt() */}
+                  <span className="text-lg font-bold">{fmt(totalPrice)}</span>
                 </div>
 
                 {/* Actions */}

@@ -1,5 +1,12 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// WHATSAPP ORDER BUTTON - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: currency diambil dari tenant.currency
+// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
+// ✅ FIX: fmt() helper lokal agar ringkas
+// ══════════════════════════════════════════════════════════════
+
 import { useState, type ReactNode } from 'react';
 import { Drawer } from 'vaul';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
@@ -24,6 +31,7 @@ interface Product {
 interface OrderTenant {
   name: string;
   whatsapp?: string;
+  currency?: string;        // ✅ FIX: tambah currency
   taxRate?: number;
   paymentMethods?: PaymentMethods;
 }
@@ -51,43 +59,43 @@ export function WhatsAppOrderButton({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ✅ FIX: currency dari tenant, fallback IDR
+  const currency = tenant.currency || 'IDR';
+
+  // ✅ FIX: helper lokal agar tidak perlu tulis currency di setiap call
+  const fmt = (value: number) => formatPrice(value, currency);
+
   const isCustomPrice = product.price === 0;
   const maxStock = product.trackStock ? (product.stock ?? 0) : 999;
 
-  const incrementQty = () => {
-    if (qty < maxStock) setQty(qty + 1);
-  };
+  const incrementQty = () => { if (qty < maxStock) setQty(qty + 1); };
+  const decrementQty = () => { if (qty > 1) setQty(qty - 1); };
 
-  const decrementQty = () => {
-    if (qty > 1) setQty(qty - 1);
-  };
-
-  // Calculate totals — hanya jika ada harga
+  // ✅ FIX: semua kalkulasi pakai fmt()
   const subtotal = isCustomPrice ? 0 : product.price * qty;
   const taxRate = tenant.taxRate || 0;
   const tax = !isCustomPrice && taxRate > 0 ? subtotal * (taxRate / 100) : 0;
   const total = subtotal + tax;
 
-  // Get enabled payment options for info
+  // Get enabled payment options
   const paymentMethods = tenant.paymentMethods as PaymentMethods | undefined;
-  const enabledBanks = paymentMethods?.bankAccounts?.filter(b => b.enabled) || [];
-  const enabledEwallets = paymentMethods?.eWallets?.filter(e => e.enabled) || [];
+  const enabledBanks = paymentMethods?.bankAccounts?.filter((b) => b.enabled) || [];
+  const enabledEwallets = paymentMethods?.eWallets?.filter((e) => e.enabled) || [];
   const codEnabled = paymentMethods?.cod?.enabled || false;
 
-  // Build payment info string
   const getPaymentInfoString = () => {
     const lines: string[] = [];
 
     if (enabledBanks.length > 0) {
       lines.push('*Transfer Bank:*');
-      enabledBanks.forEach(bank => {
+      enabledBanks.forEach((bank) => {
         lines.push(`${bank.bank}: ${bank.accountNumber} (${bank.accountName})`);
       });
     }
 
     if (enabledEwallets.length > 0) {
       lines.push('*E-Wallet:*');
-      enabledEwallets.forEach(ew => {
+      enabledEwallets.forEach((ew) => {
         lines.push(`${ew.provider}: ${ew.number}${ew.name ? ` (${ew.name})` : ''}`);
       });
     }
@@ -104,6 +112,7 @@ export function WhatsAppOrderButton({
 
     const paymentInfo = getPaymentInfoString();
 
+    // ✅ FIX: semua formatPrice di pesan WA pakai fmt()
     const message = isCustomPrice
       ? `Halo ${tenant.name},
 
@@ -121,8 +130,8 @@ Saya ingin memesan:
 
 *${product.name}*
 Jumlah: ${qty} ${product.unit || 'pcs'}
-Harga: ${formatPrice(product.price)}
-${tax > 0 ? `Pajak (${taxRate}%): ${formatPrice(tax)}\n` : ''}*Total: ${formatPrice(total)}*
+Harga: ${fmt(product.price)}
+${tax > 0 ? `Pajak (${taxRate}%): ${fmt(tax)}\n` : ''}*Total: ${fmt(total)}*
 ${name ? `\nNama: ${name}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
 ${paymentInfo ? `\n---\n${paymentInfo}` : ''}
 
@@ -132,7 +141,6 @@ Terima kasih! 🙏`;
     const link = generateWhatsAppLink(tenant.whatsapp || '', message);
     window.open(link, '_blank');
 
-    // Reset form
     setQty(1);
     setName('');
     setNotes('');
@@ -202,10 +210,10 @@ Terima kasih! 🙏`;
               {/* Product Info */}
               <div className="rounded-lg bg-muted p-3">
                 <p className="font-medium">{product.name}</p>
-                {/* Sembunyikan harga jika custom price */}
+                {/* ✅ FIX: pakai fmt() */}
                 {!isCustomPrice && (
                   <p className="text-sm text-muted-foreground">
-                    {formatPrice(product.price)} / {product.unit || 'pcs'}
+                    {fmt(product.price)} / {product.unit || 'pcs'}
                   </p>
                 )}
                 {product.trackStock && (
@@ -277,22 +285,24 @@ Terima kasih! 🙏`;
                 />
               </div>
 
-              {/* Total — sembunyikan jika custom price */}
+              {/* ✅ FIX: Total — pakai fmt() */}
               {!isCustomPrice && (
                 <div className="rounded-lg border p-3 space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>{formatPrice(subtotal)}</span>
+                    <span>{fmt(subtotal)}</span>
                   </div>
                   {tax > 0 && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
-                      <span>{formatPrice(tax)}</span>
+                      <span className="text-muted-foreground">
+                        Pajak ({taxRate}%)
+                      </span>
+                      <span>{fmt(tax)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-semibold pt-1 border-t">
                     <span>Total</span>
-                    <span>{formatPrice(total)}</span>
+                    <span>{fmt(total)}</span>
                   </div>
                 </div>
               )}

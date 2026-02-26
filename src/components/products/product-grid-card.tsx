@@ -1,8 +1,15 @@
+// ============================================================================
+// PRODUCT GRID CARD - V2.1 (MULTI-CURRENCY SUPPORT)
+// ✅ FIX: Accept currency prop for price display
+// Minimal card with thumbnail, name appears on hover
+// ============================================================================
+
 'use client';
 
 import Image from 'next/image';
 import { Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatPrice } from '@/lib/format';
 import type { Product } from '@/types';
 
 // ============================================================================
@@ -25,10 +32,12 @@ export function ProductGridCardSkeleton() {
 interface ProductGridCardProps {
   product: Product;
   onClick: (product: Product) => void;
+  currency: string; // ✅ FIX: Accept currency prop
 }
 
-export function ProductGridCard({ product, onClick }: ProductGridCardProps) {
+export function ProductGridCard({ product, onClick, currency }: ProductGridCardProps) {
   const imageUrl = product.images?.[0];
+  const showPrice = product.price > 0; // Only show if price > 0
 
   return (
     <button
@@ -57,6 +66,12 @@ export function ProductGridCard({ product, onClick }: ProductGridCardProps) {
             </h3>
             {product.category && (
               <p className="text-white/70 text-xs mt-1">{product.category}</p>
+            )}
+            {/* ✅ FIX: Show price with dynamic currency */}
+            {showPrice && (
+              <p className="text-white/90 text-xs mt-1 font-medium">
+                {formatPrice(product.price, currency)}
+              </p>
             )}
           </div>
         </div>

@@ -24,6 +24,7 @@ interface ShippingSettingsProps {
   settings: ShippingSettingsData | null;
   isLoading: boolean;
   isSaving: boolean;
+  currency?: string; // ✅ FIX: tambah currency prop (default 'IDR')
   onSettingsChange: (settings: ShippingSettingsData) => void;
   onSave: () => Promise<void>;
 }
@@ -36,6 +37,7 @@ export function ShippingSettings({
   settings,
   isLoading,
   isSaving,
+  currency = 'IDR', // ✅ FIX: pakai currency dari tenant
   onSettingsChange,
   onSave,
 }: ShippingSettingsProps) {
@@ -102,7 +104,8 @@ export function ShippingSettings({
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="free-shipping">Batas Gratis Ongkir (Rp)</Label>
+                {/* ✅ FIX: label pakai currency dinamis, bukan hardcoded Rp */}
+                <Label htmlFor="free-shipping">Batas Gratis Ongkir ({currency})</Label>
                 <Input
                   id="free-shipping"
                   type="number"
@@ -117,7 +120,8 @@ export function ShippingSettings({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="default-shipping">Ongkos Kirim Default (Rp)</Label>
+                {/* ✅ FIX: label pakai currency dinamis, bukan hardcoded Rp */}
+                <Label htmlFor="default-shipping">Ongkos Kirim Default ({currency})</Label>
                 <Input
                   id="default-shipping"
                   type="number"

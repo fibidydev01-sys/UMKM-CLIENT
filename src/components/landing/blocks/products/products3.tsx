@@ -1,5 +1,10 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS3 - STATEMENT MASONRY
+// ✅ FIX: Tambah currency prop, pass ke setiap ProductCard
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
@@ -12,6 +17,7 @@ interface Products3Props {
   showViewAll?: boolean;
   productsLink?: string;
   storeSlug?: string;
+  currency?: string;     // ✅ FIX: tambah currency prop
   limit?: number;
 }
 
@@ -26,6 +32,7 @@ export function Products3({
   showViewAll = true,
   productsLink = '/products',
   storeSlug = '',
+  currency = 'IDR',      // ✅ FIX: default fallback IDR
   limit = 8,
 }: Products3Props) {
   const displayProducts = products.slice(0, limit);
@@ -76,7 +83,8 @@ export function Products3({
       <div className="columns-2 md:columns-3 lg:columns-4" style={{ columnGap: '1.25rem' }}>
         {displayProducts.map((product) => (
           <div key={product.id} className="break-inside-avoid mb-4 md:mb-5">
-            <ProductCard product={product} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency ke ProductCard */}
+            <ProductCard product={product} storeSlug={storeSlug} currency={currency} />
           </div>
         ))}
       </div>

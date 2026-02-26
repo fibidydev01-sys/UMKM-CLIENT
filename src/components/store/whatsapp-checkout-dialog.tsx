@@ -1,5 +1,11 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// WHATSAPP CHECKOUT DIALOG - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: Semua formatPrice pakai tenant.currency, tidak hardcode IDR
+// ✅ FIX: currency diambil dari tenant dan di-pass ke setiap formatPrice
+// ══════════════════════════════════════════════════════════════
+
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageCircle, Truck, CreditCard, Banknote, Wallet, Loader2 } from 'lucide-react';
@@ -48,56 +54,66 @@ export function WhatsAppCheckoutDialog({
   const subtotal = useCartTotalPrice();
   const clearCart = useCartStore((state) => state.clearCart);
 
-  // ✅ FIXED: Add null safety checks and memoization
-  // Get payment methods with safe access
-  const paymentMethods = useMemo(() =>
-    (tenant?.paymentMethods as PaymentMethods | undefined) ?? {
-      bankAccounts: [],
-      eWallets: [],
-      cod: { enabled: false, note: '' },
-    }, [tenant?.paymentMethods]
+  // ✅ FIX: Ambil currency dari tenant
+  const currency = tenant?.currency || 'IDR';
+
+  // ✅ Helper formatPrice dengan currency tenant
+  const fmt = (value: number) => formatPrice(value, currency);
+
+  const paymentMethods = useMemo(
+    () =>
+      (tenant?.paymentMethods as PaymentMethods | undefined) ?? {
+        bankAccounts: [],
+        eWallets: [],
+        cod: { enabled: false, note: '' },
+      },
+    [tenant?.paymentMethods]
   );
 
-  const shippingMethods = useMemo(() =>
-    (tenant?.shippingMethods as ShippingMethods | undefined) ?? {
-      couriers: [],
-    }, [tenant?.shippingMethods]
+  const shippingMethods = useMemo(
+    () =>
+      (tenant?.shippingMethods as ShippingMethods | undefined) ?? {
+        couriers: [],
+      },
+    [tenant?.shippingMethods]
   );
 
-  // Get enabled payment options
-  const enabledBanks = useMemo(() =>
-    paymentMethods?.bankAccounts?.filter(b => b.enabled) || [],
+  const enabledBanks = useMemo(
+    () => paymentMethods?.bankAccounts?.filter((b) => b.enabled) || [],
     [paymentMethods]
   );
-  const enabledEwallets = useMemo(() =>
-    paymentMethods?.eWallets?.filter(e => e.enabled) || [],
+  const enabledEwallets = useMemo(
+    () => paymentMethods?.eWallets?.filter((e) => e.enabled) || [],
     [paymentMethods]
   );
   const codEnabled = paymentMethods?.cod?.enabled || false;
 
-  // Get enabled couriers
-  const enabledCouriers = useMemo(() =>
-    shippingMethods?.couriers?.filter(c => c.enabled) || [],
+  const enabledCouriers = useMemo(
+    () => shippingMethods?.couriers?.filter((c) => c.enabled) || [],
     [shippingMethods]
   );
 
-  // Calculate totals with null safety
   const taxRate = tenant?.taxRate || 0;
   const tax = taxRate > 0 ? subtotal * (taxRate / 100) : 0;
 
   const freeShippingThreshold = tenant?.freeShippingThreshold;
   const defaultShippingCost = tenant?.defaultShippingCost || 0;
-  const shipping = (freeShippingThreshold && subtotal >= freeShippingThreshold)
-    ? 0
-    : defaultShippingCost;
+  const shipping =
+    freeShippingThreshold && subtotal >= freeShippingThreshold
+      ? 0
+      : defaultShippingCost;
 
   const total = subtotal + tax + shipping;
 
-  // Build payment options for radio group
   const paymentOptions = useMemo(() => {
-    const options: { id: string; label: string; sublabel: string; type: 'bank' | 'ewallet' | 'cod' }[] = [];
+    const options: {
+      id: string;
+      label: string;
+      sublabel: string;
+      type: 'bank' | 'ewallet' | 'cod';
+    }[] = [];
 
-    enabledBanks.forEach(bank => {
+    enabledBanks.forEach((bank) => {
       options.push({
         id: `bank-${bank.id}`,
         label: bank.bank,
@@ -106,11 +122,12 @@ export function WhatsAppCheckoutDialog({
       });
     });
 
-    enabledEwallets.forEach(ewallet => {
+    enabledEwallets.forEach((ewallet) => {
       options.push({
         id: `ewallet-${ewallet.id}`,
         label: ewallet.provider,
-        sublabel: ewallet.number + (ewallet.name ? ` (${ewallet.name})` : ''),
+        sublabel:
+          ewallet.number + (ewallet.name ? ` (${ewallet.name})` : ''),
         type: 'ewallet',
       });
     });
@@ -119,7 +136,8 @@ export function WhatsAppCheckoutDialog({
       options.push({
         id: 'cod',
         label: 'COD (Bayar di Tempat)',
-        sublabel: paymentMethods?.cod?.note || 'Bayar saat barang diterima',
+        sublabel:
+          paymentMethods?.cod?.note || 'Bayar saat barang diterima',
         type: 'cod',
       });
     }
@@ -128,28 +146,14 @@ export function WhatsAppCheckoutDialog({
   }, [enabledBanks, enabledEwallets, codEnabled, paymentMethods]);
 
   const handleOrder = async () => {
-    // Validate required fields
-    if (!name.trim()) {
-      toast.error('Nama tidak boleh kosong');
-      return;
-    }
-    if (!phone.trim()) {
-      toast.error('Nomor WhatsApp tidak boleh kosong');
-      return;
-    }
-    if (!address.trim()) {
-      toast.error('Alamat pengiriman tidak boleh kosong');
-      return;
-    }
-    if (items.length === 0) {
-      toast.error('Keranjang belanja kosong');
-      return;
-    }
+    if (!name.trim()) { toast.error('Nama tidak boleh kosong'); return; }
+    if (!phone.trim()) { toast.error('Nomor WhatsApp tidak boleh kosong'); return; }
+    if (!address.trim()) { toast.error('Alamat pengiriman tidak boleh kosong'); return; }
+    if (items.length === 0) { toast.error('Keranjang belanja kosong'); return; }
 
     setIsLoading(true);
 
     try {
-      // 1. Create order via API (direct to backend)
       const response = await fetch(`${API_URL}/store/${tenant.slug}/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -180,13 +184,15 @@ export function WhatsAppCheckoutDialog({
       const data = await response.json();
       const { order, trackingUrl } = data;
 
-      // 2. Show success message
       toast.success('Pesanan berhasil dibuat!');
 
-      // 3. Optional: Open WhatsApp with order details
       if (tenant?.whatsapp) {
+        // ✅ FIX: Semua formatPrice di pesan WA pakai currency tenant
         const itemsList = items
-          .map((item) => `• ${item.name} x${item.qty} = ${formatPrice(item.price * item.qty)}`)
+          .map(
+            (item) =>
+              `• ${item.name} x${item.qty} = ${fmt(item.price * item.qty)}`
+          )
           .join('\n');
 
         const courierInfo = selectedCourier
@@ -215,9 +221,9 @@ Detail Pesanan:
 ${itemsList}
 
 ---
-Subtotal: ${formatPrice(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${formatPrice(tax)}` : ''}
-Ongos kirim: ${shipping === 0 ? 'GRATIS 🎉' : formatPrice(shipping)}
-*Total: ${formatPrice(total)}*
+Subtotal: ${fmt(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${fmt(tax)}` : ''}
+Ongkos kirim: ${shipping === 0 ? 'GRATIS 🎉' : fmt(shipping)}
+*Total: ${fmt(total)}*
 ---
 
 Nama: ${name}
@@ -232,18 +238,15 @@ Terima kasih! 🙏`;
         window.open(link, '_blank');
       }
 
-      // 4. Clear cart
       clearCart();
-
-      // 5. Close dialog
       onOpenChange(false);
-
-      // 6. Redirect to tracking page
       router.push(trackingUrl);
     } catch (error) {
       console.error('Checkout error:', error);
       toast.error(
-        error instanceof Error ? error.message : 'Gagal membuat pesanan. Silakan coba lagi.'
+        error instanceof Error
+          ? error.message
+          : 'Gagal membuat pesanan. Silakan coba lagi.'
       );
     } finally {
       setIsLoading(false);
@@ -253,10 +256,7 @@ Terima kasih! 🙏`;
   const hasPaymentOptions = paymentOptions.length > 0;
   const hasCouriers = enabledCouriers.length > 0;
 
-  // ✅ Early return if tenant is not available
-  if (!tenant) {
-    return null;
-  }
+  if (!tenant) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -282,7 +282,8 @@ Terima kasih! 🙏`;
                     <span className="text-muted-foreground">
                       {item.name} x{item.qty}
                     </span>
-                    <span>{formatPrice(item.price * item.qty)}</span>
+                    {/* ✅ FIX: pakai fmt() */}
+                    <span>{fmt(item.price * item.qty)}</span>
                   </div>
                 ))}
               </div>
@@ -354,13 +355,19 @@ Terima kasih! 🙏`;
                   >
                     <div className="grid grid-cols-2 gap-2">
                       {enabledCouriers.map((courier) => (
-                        <div key={courier.id} className="flex items-center space-x-2">
+                        <div
+                          key={courier.id}
+                          className="flex items-center space-x-2"
+                        >
                           <RadioGroupItem
                             value={courier.id}
                             id={`courier-${courier.id}`}
                             disabled={isLoading}
                           />
-                          <Label htmlFor={`courier-${courier.id}`} className="text-sm cursor-pointer">
+                          <Label
+                            htmlFor={`courier-${courier.id}`}
+                            className="text-sm cursor-pointer"
+                          >
                             {courier.name}
                             {courier.note && (
                               <span className="text-xs text-muted-foreground block">
@@ -402,14 +409,25 @@ Terima kasih! 🙏`;
                             className="mt-0.5"
                             disabled={isLoading}
                           />
-                          <Label htmlFor={option.id} className="flex-1 cursor-pointer">
+                          <Label
+                            htmlFor={option.id}
+                            className="flex-1 cursor-pointer"
+                          >
                             <div className="flex items-center gap-2">
-                              {option.type === 'bank' && <Banknote className="h-4 w-4 text-muted-foreground" />}
-                              {option.type === 'ewallet' && <Wallet className="h-4 w-4 text-muted-foreground" />}
-                              {option.type === 'cod' && <Truck className="h-4 w-4 text-muted-foreground" />}
+                              {option.type === 'bank' && (
+                                <Banknote className="h-4 w-4 text-muted-foreground" />
+                              )}
+                              {option.type === 'ewallet' && (
+                                <Wallet className="h-4 w-4 text-muted-foreground" />
+                              )}
+                              {option.type === 'cod' && (
+                                <Truck className="h-4 w-4 text-muted-foreground" />
+                              )}
                               <span className="font-medium">{option.label}</span>
                             </div>
-                            <span className="text-xs text-muted-foreground">{option.sublabel}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {option.sublabel}
+                            </span>
                           </Label>
                         </div>
                       ))}
@@ -433,33 +451,40 @@ Terima kasih! 🙏`;
               />
             </div>
 
-            {/* Order Summary */}
+            {/* ✅ FIX: Order Summary — semua pakai fmt() */}
             <div className="rounded-lg border p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span>{formatPrice(subtotal)}</span>
+                <span>{fmt(subtotal)}</span>
               </div>
               {tax > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Pajak ({taxRate}%)</span>
-                  <span>{formatPrice(tax)}</span>
+                  <span className="text-muted-foreground">
+                    Pajak ({taxRate}%)
+                  </span>
+                  <span>{fmt(tax)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Ongkos Kirim</span>
-                <span className={shipping === 0 ? 'text-green-600 font-medium' : ''}>
-                  {shipping === 0 ? 'GRATIS' : formatPrice(shipping)}
+                <span
+                  className={
+                    shipping === 0 ? 'text-green-600 font-medium' : ''
+                  }
+                >
+                  {shipping === 0 ? 'GRATIS' : fmt(shipping)}
                 </span>
               </div>
               {freeShippingThreshold && shipping > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  💡 Belanja min. {formatPrice(freeShippingThreshold)} untuk gratis ongkir!
+                  💡 Belanja min. {fmt(freeShippingThreshold)} untuk gratis
+                  ongkir!
                 </p>
               )}
               <Separator />
               <div className="flex justify-between font-semibold text-lg">
                 <span>Total</span>
-                <span>{formatPrice(total)}</span>
+                <span>{fmt(total)}</span>
               </div>
             </div>
           </div>

@@ -1,5 +1,10 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS2 - SPOTLIGHT GRID
+// ✅ FIX: Tambah currency prop, pass ke setiap ProductCard
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
@@ -12,6 +17,7 @@ interface Products2Props {
   showViewAll?: boolean;
   productsLink?: string;
   storeSlug?: string;
+  currency?: string;     // ✅ FIX: tambah currency prop
   limit?: number;
 }
 
@@ -26,6 +32,7 @@ export function Products2({
   showViewAll = true,
   productsLink = '/products',
   storeSlug = '',
+  currency = 'IDR',      // ✅ FIX: default fallback IDR
   limit = 8,
 }: Products2Props) {
   const displayProducts = products.slice(0, limit);
@@ -63,7 +70,8 @@ export function Products2({
                        hover:!opacity-100 hover:-translate-y-1
                        hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
           >
-            <ProductCard product={product} storeSlug={storeSlug} />
+            {/* ✅ FIX: pass currency ke ProductCard */}
+            <ProductCard product={product} storeSlug={storeSlug} currency={currency} />
           </div>
         ))}
       </div>

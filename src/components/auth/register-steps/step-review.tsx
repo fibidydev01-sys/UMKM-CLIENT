@@ -1,9 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { getCategoryConfig } from '@/config/categories';
-import { Store, Mail, Lock, Phone, Edit2, Loader2 } from 'lucide-react';
+import { Store, Mail, Lock, Phone, Edit2 } from 'lucide-react';
 
 // ==========================================
 // TYPES
@@ -19,192 +19,132 @@ interface StepReviewProps {
     password?: string;
     whatsapp?: string;
   };
-  onBack: () => void;
   onEdit: (step: number) => void;
   onSubmit: () => void;
   isLoading: boolean;
 }
 
 // ==========================================
-// COMPONENT
+// COMPONENT — no header, no nav (handled by parent)
 // ==========================================
 
-export function StepReview({
-  data,
-  onBack,
-  onEdit,
-  onSubmit,
-  isLoading,
-}: StepReviewProps) {
-  const categoryConfig = data.category
-    ? getCategoryConfig(data.category)
-    : null;
+export function StepReview({ data, onEdit }: StepReviewProps) {
+  const categoryConfig = data.category ? getCategoryConfig(data.category) : null;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Review & Konfirmasi</h2>
-        <p className="text-muted-foreground">
-          Pastikan semua informasi sudah benar
+    <div className="space-y-3 max-w-md">
+
+      {/* Business Type */}
+      <ReviewCard
+        label="Business type"
+        onEdit={() => onEdit(2)}
+      >
+        <p className="text-sm font-medium">
+          {categoryConfig?.label ?? data.category ?? '—'}
         </p>
-      </div>
+        {categoryConfig?.description && (
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {categoryConfig.description}
+          </p>
+        )}
+      </ReviewCard>
 
-      {/* Review Cards */}
-      <div className="space-y-4">
-        {/* Category */}
-        <Card className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <Store className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  Kategori Usaha
-                </p>
-              </div>
-              {categoryConfig && (
-                <div className="flex items-center gap-2">
-                  <div
-                    className="flex items-center justify-center w-8 h-8 rounded-lg"
-                    style={{
-                      backgroundColor: `${categoryConfig.color}20`,
-                      color: categoryConfig.color,
-                    }}
-                  >
-                    <categoryConfig.icon className="w-4 h-4" />
-                  </div>
-                  <p className="font-medium">{categoryConfig.label}</p>
-                </div>
-              )}
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(2)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
+      {/* Store Info */}
+      <ReviewCard
+        label="Store info"
+        icon={<Store className="h-3.5 w-3.5 text-muted-foreground" />}
+        onEdit={() => onEdit(3)}
+      >
+        <div className="space-y-1.5">
+          <div>
+            <p className="text-xs text-muted-foreground">Store name</p>
+            <p className="text-sm font-medium">{data.name || '—'}</p>
           </div>
-        </Card>
-
-        {/* Store Info */}
-        <Card className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-2">
-                <Store className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  Informasi Toko
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-sm text-muted-foreground">Nama Toko</p>
-                  <p className="font-medium">{data.name || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Alamat Toko</p>
-                  <p className="font-medium text-primary">
-                    {data.slug || '-'}.fibidy.com
-                  </p>
-                </div>
-                {data.description && (
-                  <div>
-                    <p className="text-sm text-muted-foreground">Deskripsi</p>
-                    <p className="text-sm">{data.description}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(3)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
+          <div>
+            <p className="text-xs text-muted-foreground">Store URL</p>
+            <p className="text-sm font-medium text-primary">
+              {data.slug || '—'}.fibidy.com
+            </p>
           </div>
-        </Card>
-
-        {/* Account Info */}
-        <Card className="p-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <p className="text-sm font-medium text-muted-foreground">
-                  Informasi Akun
-                </p>
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">{data.email || '-'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Lock className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">••••••••</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">+{data.whatsapp || '-'}</p>
-                </div>
-              </div>
+          {data.description && (
+            <div>
+              <p className="text-xs text-muted-foreground">Description</p>
+              <p className="text-sm">{data.description}</p>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onEdit(4)}
-            >
-              <Edit2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </Card>
-      </div>
-
-      {/* Terms Notice */}
-      <div className="p-4 rounded-lg bg-muted/50 text-sm text-muted-foreground">
-        Dengan mendaftar, Anda menyetujui{' '}
-        <a href="/terms" className="text-primary hover:underline">
-          Syarat & Ketentuan
-        </a>{' '}
-        serta{' '}
-        <a href="/privacy" className="text-primary hover:underline">
-          Kebijakan Privasi
-        </a>{' '}
-        kami.
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          disabled={isLoading}
-          className="flex-1"
-        >
-          Kembali
-        </Button>
-        <Button
-          type="button"
-          onClick={onSubmit}
-          disabled={isLoading}
-          className="flex-1"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Membuat Toko...
-            </>
-          ) : (
-            'Buat Toko Sekarang'
           )}
+        </div>
+      </ReviewCard>
+
+      {/* Account */}
+      <ReviewCard
+        label="Account"
+        icon={<Mail className="h-3.5 w-3.5 text-muted-foreground" />}
+        onEdit={() => onEdit(4)}
+      >
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Mail className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <p className="text-sm">{data.email || '—'}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <p className="text-sm">••••••••</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+            <p className="text-sm">+{data.whatsapp || '—'}</p>
+          </div>
+        </div>
+      </ReviewCard>
+
+      {/* Terms */}
+      <p className="text-xs text-muted-foreground pt-1">
+        By creating your store, you agree to our{' '}
+        <a href="/terms" className="text-primary hover:underline">Terms of Service</a>
+        {' '}and{' '}
+        <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
+      </p>
+    </div>
+  );
+}
+
+// ==========================================
+// REVIEW CARD
+// ==========================================
+
+function ReviewCard({
+  label,
+  icon,
+  onEdit,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  onEdit: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card className="p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 space-y-2">
+          <div className="flex items-center gap-1.5">
+            {icon}
+            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+              {label}
+            </p>
+          </div>
+          {children}
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onEdit}
+          className="shrink-0 h-7 w-7 p-0"
+        >
+          <Edit2 className="h-3.5 w-3.5" />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }

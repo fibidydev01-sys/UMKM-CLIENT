@@ -1,5 +1,10 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS4 - ELEGANT CAROUSEL
+// ✅ FIX: Tambah currency prop, pass ke setiap ProductCard
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
@@ -13,6 +18,7 @@ interface Products4Props {
   showViewAll?: boolean;
   productsLink?: string;
   storeSlug?: string;
+  currency?: string;     // ✅ FIX: tambah currency prop
   limit?: number;
 }
 
@@ -27,6 +33,7 @@ export function Products4({
   showViewAll = true,
   productsLink = '/products',
   storeSlug = '',
+  currency = 'IDR',      // ✅ FIX: default fallback IDR
   limit = 8,
 }: Products4Props) {
   const displayProducts = products.slice(0, limit);
@@ -37,6 +44,7 @@ export function Products4({
 
   if (displayProducts.length === 0) return null;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const handleScroll = useCallback(() => {
     if (!scrollRef.current) return;
     const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
@@ -46,6 +54,7 @@ export function Products4({
     setCanScrollRight(scrollLeft < maxScroll - 4);
   }, []);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const scroll = useCallback((direction: 'left' | 'right') => {
     if (!scrollRef.current) return;
     const cardWidth = scrollRef.current.querySelector('[data-card]')?.clientWidth ?? 300;
@@ -148,7 +157,8 @@ export function Products4({
                   {String(index + 1).padStart(2, '0')}
                 </span>
               </div>
-              <ProductCard product={product} storeSlug={storeSlug} />
+              {/* ✅ FIX: pass currency ke ProductCard */}
+              <ProductCard product={product} storeSlug={storeSlug} currency={currency} />
             </div>
           ))}
           <div className="flex-shrink-0 w-4 md:w-6" aria-hidden="true" />

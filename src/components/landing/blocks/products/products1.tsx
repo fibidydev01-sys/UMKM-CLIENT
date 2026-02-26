@@ -1,5 +1,10 @@
 'use client';
 
+// ══════════════════════════════════════════════════════════════
+// PRODUCTS1 - EDITORIAL GRID
+// ✅ FIX: Tambah currency prop, pass ke setiap ProductCard
+// ══════════════════════════════════════════════════════════════
+
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { ProductCard } from '@/components/store/product-card';
@@ -12,6 +17,7 @@ interface Products1Props {
   showViewAll?: boolean;
   productsLink?: string;
   storeSlug?: string;
+  currency?: string;     // ✅ FIX: tambah currency prop
   limit?: number;
 }
 
@@ -26,6 +32,7 @@ export function Products1({
   showViewAll = true,
   productsLink = '/products',
   storeSlug = '',
+  currency = 'IDR',      // ✅ FIX: default fallback IDR
   limit = 8,
 }: Products1Props) {
   const displayProducts = products.slice(0, limit);
@@ -69,7 +76,8 @@ export function Products1({
               {String(index + 1).padStart(2, '0')}
             </span>
             <div className="flex-1">
-              <ProductCard product={product} storeSlug={storeSlug} />
+              {/* ✅ FIX: pass currency ke ProductCard */}
+              <ProductCard product={product} storeSlug={storeSlug} currency={currency} />
             </div>
           </div>
         ))}

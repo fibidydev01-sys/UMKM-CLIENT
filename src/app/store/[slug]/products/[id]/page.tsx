@@ -21,15 +21,15 @@ import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import type { PublicTenant, Product } from '@/types';
 
-// ==========================================
-// PRODUCT DETAIL PAGE - FIXED URL
-// ==========================================
+// ══════════════════════════════════════════════════════════════
+// PRODUCT DETAIL PAGE - v2.3 (MULTI-CURRENCY FIX)
+// ✅ FIX: currency dari tenant di-pass ke ProductInfo & RelatedProducts
+// ══════════════════════════════════════════════════════════════
 
 interface ProductPageProps {
   params: Promise<{ slug: string; id: string }>;
 }
 
-// Fetch tenant
 async function getTenant(slug: string): Promise<PublicTenant | null> {
   try {
     return await tenantsApi.getBySlug(slug);
@@ -38,7 +38,6 @@ async function getTenant(slug: string): Promise<PublicTenant | null> {
   }
 }
 
-// Fetch product (PUBLIC endpoint)
 async function getProduct(
   slug: string,
   productId: string
@@ -50,7 +49,6 @@ async function getProduct(
   }
 }
 
-// Fetch related products
 async function getRelatedProducts(
   slug: string,
   currentId: string,
@@ -67,10 +65,6 @@ async function getRelatedProducts(
     return [];
   }
 }
-
-// ==========================================
-// GENERATE METADATA (Enhanced with SEO)
-// ==========================================
 
 export async function generateMetadata({
   params,
@@ -89,7 +83,6 @@ export async function generateMetadata({
     };
   }
 
-  // Use enhanced metadata generator from lib/seo.ts
   return createProductMetadata({
     product: {
       id: product.id,
@@ -107,10 +100,6 @@ export async function generateMetadata({
   });
 }
 
-// ==========================================
-// PRODUCT PAGE COMPONENT
-// ==========================================
-
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug, id } = await params;
 
@@ -119,15 +108,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
     getProduct(slug, id),
   ]);
 
-  // Not found
   if (!tenant || !product) {
     notFound();
   }
 
-  // Fetch related products
   const relatedProducts = await getRelatedProducts(slug, id, product.category);
 
-  // Generate breadcrumbs for SEO
   const breadcrumbs = generateProductBreadcrumbs(
     { name: tenant.name, slug: tenant.slug },
     {
@@ -138,14 +124,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
   );
 
-  // ✅ FIX: Generate correct product URL for sharing
   const productUrl = `https://www.fibidy.com/store/${tenant.slug}/products/${product.id}`;
+
+  // ✅ FIX: currency dari tenant
+  const currency = tenant.currency || 'IDR';
 
   return (
     <>
-      {/* ==========================================
-          SEO: Structured Data (JSON-LD)
-      ========================================== */}
       <BreadcrumbSchema items={breadcrumbs} />
       <ProductSchema
         product={{
@@ -168,9 +153,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         }}
       />
 
-      {/* ==========================================
-          PAGE CONTENT
-      ========================================== */}
       <div className="container px-4 py-8">
         {/* Breadcrumb */}
         <div className="mb-6">
@@ -186,19 +168,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
         {/* Product Detail */}
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Left: Gallery */}
           <div>
             <ProductGallery images={product.images} productName={product.name} />
           </div>
 
-          {/* Right: Info & Actions */}
           <div className="space-y-6">
-            <ProductInfo product={product} />
+            {/* ✅ FIX: pass currency ke ProductInfo */}
+            <ProductInfo product={product} currency={currency} />
 
-            {/* Shipping Information */}
             <ShippingInfo tenant={tenant} />
 
-            {/* Social Share Buttons */}
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
                 Bagikan produk ini:
@@ -231,9 +210,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         )}
 
-        {/* Related Products */}
+        {/* ✅ FIX: pass currency ke RelatedProducts → ProductGrid → ProductCard */}
         <Suspense fallback={<ProductGridSkeleton count={4} />}>
-          <RelatedProducts products={relatedProducts} storeSlug={slug} />
+          <RelatedProducts
+            products={relatedProducts}
+            storeSlug={slug}
+            currency={currency}
+          />
         </Suspense>
       </div>
     </>

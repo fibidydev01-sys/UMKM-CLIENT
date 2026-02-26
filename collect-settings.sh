@@ -282,11 +282,16 @@ feature_pengiriman() {
     section_header "PENGIRIMAN — Page" "$output"
     collect_folder "$SRC_DIR/app/(dashboard)/dashboard/settings/pengiriman" "$output"
 
-    section_header "PENGIRIMAN — Form Steps (biaya, kurir)" "$output"
+    section_header "PENGIRIMAN — Form Steps & Shared Utils" "$output"
     collect_folder "$SRC_DIR/components/settings/pengiriman-section" "$output"
+    # ✅ format-currency.ts ada di dalam folder pengiriman-section
+    # sudah ter-cover oleh collect_folder di atas
 
     section_header "PENGIRIMAN — Shipping Settings Form" "$output"
     collect_file "$SRC_DIR/components/settings/shipping-settings.tsx" "$output"
+
+    section_header "PENGIRIMAN — Shared Format (multi-currency)" "$output"
+    collect_file "$SRC_DIR/lib/format.ts" "$output"
 
     section_header "PENGIRIMAN — Hooks" "$output"
     collect_file "$SRC_DIR/hooks/use-tenant.ts" "$output"
@@ -349,7 +354,7 @@ show_menu() {
     echo -e "${WHITE}  ├─ ChannelsClient ──────────────────────────────────────┤${NC}"
     echo -e "  ${GREEN}6)${NC} SEO            ${CYAN}→ page, steps, form, hooks, api, types${NC}"
     echo -e "  ${GREEN}7)${NC} Pembayaran     ${CYAN}→ page, steps, dialogs, form, hooks, api, types${NC}"
-    echo -e "  ${GREEN}8)${NC} Pengiriman     ${CYAN}→ page, steps, form, hooks, api, types${NC}"
+    echo -e "  ${GREEN}8)${NC} Pengiriman     ${CYAN}→ page, steps, format-currency, form, hooks, api, types${NC}"
     echo -e "  ${GREEN}9)${NC} Domain         ${CYAN}→ page, component, api route, hooks, api, types${NC}"
     echo -e "${WHITE}  └───────────────────────────────────────────────────────┘${NC}"
     echo ""
@@ -428,7 +433,7 @@ EOF
         fi
 
         echo ""
-        echo -e "${GREEN}╔════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${GREEN}╔════════════════════════════════════════════════════════════╝${NC}"
         echo -e "${GREEN}║  ✅ SELESAI!                                               ║${NC}"
         echo -e "${GREEN}╚════════════════════════════════════════════════════════════╝${NC}"
         echo ""

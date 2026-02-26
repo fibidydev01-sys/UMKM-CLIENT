@@ -1,5 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// PRODUCT PREVIEW DRAWER
+// PRODUCT PREVIEW DRAWER - v2.2 (MULTI-CURRENCY SUPPORT)
+// ✅ FIX: Dynamic currency from tenant settings
 // Shows product details in drawer when clicked from list
 // ══════════════════════════════════════════════════════════════
 
@@ -27,6 +28,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { formatPrice, formatDateShort } from '@/lib/format';
+import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
 // ══════════════════════════════════════════════════════════════
@@ -59,6 +61,10 @@ export function ProductPreviewDrawer({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
 
+  // ✅ FIX: Get currency from tenant
+  const { tenant } = useTenant();
+  const currency = tenant?.currency || 'IDR';
+
   // ════════════════════════════════════════════════════════════
   // SCROLL TO TOP when product changes
   // ════════════════════════════════════════════════════════════
@@ -67,7 +73,7 @@ export function ProductPreviewDrawer({
     if (open && scrollContainerRef.current) {
       if (prevProductIdRef.current !== product?.id) {
         scrollContainerRef.current.scrollTop = 0;
-        // eslint-disable-next-line react-hooks/set-state-in-effect
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setSelectedImageIndex(0);
         prevProductIdRef.current = product?.id;
       }
@@ -102,7 +108,7 @@ export function ProductPreviewDrawer({
   const prevOpenRef = useRef(open);
   useEffect(() => {
     if (prevOpenRef.current && !open) {
-      setIsHeaderSticky(false); // eslint-disable-line react-hooks/set-state-in-effect
+      setIsHeaderSticky(false); // eslint-disable-line react-hooks/exhaustive-deps
       setSelectedImageIndex(0);
     }
     prevOpenRef.current = open;
@@ -262,7 +268,7 @@ export function ProductPreviewDrawer({
             {/* Content Area */}
             <div className="px-4 pb-8 max-w-2xl mx-auto">
 
-              {/* Price Section — sembunyikan jika custom price */}
+              {/* ✅ FIX: Price Section with dynamic currency */}
               {!isCustomPrice && (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">
@@ -270,11 +276,11 @@ export function ProductPreviewDrawer({
                   </h3>
                   <div className="flex items-baseline gap-3">
                     <span className="text-2xl font-bold">
-                      {formatPrice(product.price)}
+                      {formatPrice(product.price, currency)}
                     </span>
                     {product.comparePrice && product.comparePrice > product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {formatPrice(product.comparePrice)}
+                        {formatPrice(product.comparePrice, currency)}
                       </span>
                     )}
                   </div>
@@ -336,14 +342,14 @@ export function ProductPreviewDrawer({
                   </div>
                 )}
 
-                {/* Cost Price — sembunyikan jika custom price */}
+                {/* ✅ FIX: Cost Price with dynamic currency */}
                 {product.costPrice && !isCustomPrice && (
                   <div className="flex items-start gap-3">
                     <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-xs text-muted-foreground">Harga Modal</p>
                       <p className="text-sm font-medium">
-                        {formatPrice(product.costPrice)}
+                        {formatPrice(product.costPrice, currency)}
                       </p>
                     </div>
                   </div>

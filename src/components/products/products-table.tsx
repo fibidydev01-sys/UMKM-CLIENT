@@ -1,5 +1,6 @@
 // ══════════════════════════════════════════════════════════════
-// PRODUCTS TABLE - V2.0 WITH DRAWER
+// PRODUCTS TABLE - V2.1 WITH DRAWER (MULTI-CURRENCY SUPPORT)
+// ✅ FIX: Pass currency to columns for dynamic display
 // Minimal list view + drawer for details
 // ══════════════════════════════════════════════════════════════
 
@@ -44,6 +45,7 @@ import { ProductDeleteDialog } from './product-delete-dialog';
 import { ProductPreviewDrawer } from './product-preview-drawer';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
+import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
 interface ProductsTableProps {
@@ -64,6 +66,10 @@ export function ProductsTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
+
+  // ✅ FIX: Get currency from tenant
+  const { tenant } = useTenant();
+  const currency = tenant?.currency || 'IDR';
 
   // Drawer state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -114,11 +120,12 @@ export function ProductsTable({
   }, [refreshData]);
 
   // ════════════════════════════════════════════════════════════
-  // COLUMN ACTIONS - Only onRowClick needed
+  // ✅ FIX: COLUMN ACTIONS - Pass currency
   // ════════════════════════════════════════════════════════════
   const columnActions = useMemo(() => ({
     onRowClick,
-  }), [onRowClick]);
+    currency,
+  }), [onRowClick, currency]);
 
   const columns = useMemo(
     () => getProductColumns(columnActions),

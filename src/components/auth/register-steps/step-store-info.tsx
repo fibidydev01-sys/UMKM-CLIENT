@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -17,32 +16,21 @@ interface StepStoreInfoProps {
   slug: string;
   description: string;
   onUpdate: (data: { name?: string; slug?: string; description?: string }) => void;
-  onNext: () => void;
-  onBack: () => void;
 }
 
 // ==========================================
-// COMPONENT
+// COMPONENT — no header, no nav (handled by parent)
 // ==========================================
 
-export function StepStoreInfo({
-  name,
-  slug,
-  description,
-  onUpdate,
-  onNext,
-  onBack,
-}: StepStoreInfoProps) {
+export function StepStoreInfo({ name, slug, description, onUpdate }: StepStoreInfoProps) {
   const [localName, setLocalName] = useState(name);
   const [localSlug, setLocalSlug] = useState(slug);
   const [localDescription, setLocalDescription] = useState(description);
   const [hasManuallyEditedSlug, setHasManuallyEditedSlug] = useState(false);
-  const [errors, setErrors] = useState({ name: '', slug: '', description: '' });
 
   const { checkSlug, isChecking, isAvailable, reset: resetSlug } = useCheckSlug();
   const debouncedSlug = useDebounce(localSlug, 500);
 
-  // Check slug availability
   useEffect(() => {
     if (debouncedSlug && debouncedSlug.length >= 3) {
       checkSlug(debouncedSlug);
@@ -51,162 +39,111 @@ export function StepStoreInfo({
     }
   }, [debouncedSlug, checkSlug, resetSlug]);
 
-  // Auto-generate slug from name
+  // Sync up to parent on every change
   const handleNameChange = (value: string) => {
     setLocalName(value);
-    setErrors((prev) => ({ ...prev, name: '' }));
-
-    // Only auto-generate if user hasn't manually edited slug
     if (!hasManuallyEditedSlug) {
-      const generatedSlug = value
+      const generated = value
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '')
         .slice(0, 30);
-
-      setLocalSlug(generatedSlug);
+      setLocalSlug(generated);
+      onUpdate({ name: value, slug: generated });
+    } else {
+      onUpdate({ name: value });
     }
   };
 
   const handleSlugChange = (value: string) => {
-    const cleanedSlug = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
-    setLocalSlug(cleanedSlug);
+    const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    setLocalSlug(cleaned);
     setHasManuallyEditedSlug(true);
-    setErrors((prev) => ({ ...prev, slug: '' }));
+    onUpdate({ slug: cleaned });
   };
 
   const handleDescriptionChange = (value: string) => {
     setLocalDescription(value);
-    setErrors((prev) => ({ ...prev, description: '' }));
-  };
-
-  const validate = () => {
-    const newErrors = { name: '', slug: '', description: '' };
-    let isValid = true;
-
-    if (!localName || localName.trim().length < 3) {
-      newErrors.name = 'Nama toko minimal 3 karakter';
-      isValid = false;
-    }
-
-    if (!localSlug || localSlug.length < 3) {
-      newErrors.slug = 'Alamat toko minimal 3 karakter';
-      isValid = false;
-    }
-
-    if (isAvailable === false) {
-      newErrors.slug = 'Alamat toko sudah digunakan';
-      isValid = false;
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleNext = () => {
-    if (validate()) {
-      onUpdate({
-        name: localName,
-        slug: localSlug,
-        description: localDescription,
-      });
-      onNext();
-    }
+    onUpdate({ description: value });
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h2 className="text-2xl font-bold">Informasi Toko</h2>
-        <p className="text-muted-foreground">
-          Buat identitas toko online Anda
+    <div className="space-y-5 max-w-md">
+
+      {/* Store Name */}
+      <div className="space-y-1.5">
+        <Label htmlFor="store-name" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          Store name
+        </Label>
+        <Input
+          id="store-name"
+          placeholder="e.g. Burger House"
+          value={localName}
+          onChange={(e) => handleNameChange(e.target.value)}
+          className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
+        />
+        <p className="text-xs text-muted-foreground">
+          Shown on your store homepage and listings
         </p>
       </div>
 
-      {/* Form Fields */}
-      <div className="space-y-4">
-        {/* Store Name */}
-        <div className="space-y-2">
-          <Label htmlFor="name">Nama Toko *</Label>
+      <div className="border-t max-w-md" />
+
+      {/* Store URL */}
+      <div className="space-y-1.5">
+        <Label htmlFor="store-slug" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          Store URL
+        </Label>
+        <div className="relative">
           <Input
-            id="name"
-            placeholder="Warung Bu Sari"
-            value={localName}
-            onChange={(e) => handleNameChange(e.target.value)}
+            id="store-slug"
+            placeholder="burger-house"
+            value={localSlug}
+            onChange={(e) => handleSlugChange(e.target.value)}
+            className="h-11 text-sm font-medium placeholder:font-normal placeholder:text-muted-foreground/50"
           />
-          {errors.name && (
-            <p className="text-sm text-destructive">{errors.name}</p>
+          {localSlug.length >= 3 && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              {isChecking ? (
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              ) : isAvailable === true ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : isAvailable === false ? (
+                <X className="h-4 w-4 text-red-500" />
+              ) : null}
+            </div>
           )}
         </div>
-
-        {/* Slug */}
-        <div className="space-y-2">
-          <Label htmlFor="slug">Alamat Toko *</Label>
-          <div className="relative">
-            <Input
-              id="slug"
-              placeholder="warung-bu-sari"
-              value={localSlug}
-              onChange={(e) => handleSlugChange(e.target.value)}
-            />
-            {/* Availability Indicator */}
-            {localSlug.length >= 3 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {isChecking ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                ) : isAvailable === true ? (
-                  <Check className="h-4 w-4 text-green-500" />
-                ) : isAvailable === false ? (
-                  <X className="h-4 w-4 text-red-500" />
-                ) : null}
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-muted-foreground flex items-center gap-1">
-            <Info className="h-3 w-3" />
-            {localSlug || 'nama-toko'}.fibidy.com
-          </p>
-          {errors.slug && (
-            <p className="text-sm text-destructive">{errors.slug}</p>
-          )}
-        </div>
-
-        {/* Description */}
-        <div className="space-y-2">
-          <Label htmlFor="description">Deskripsi (opsional)</Label>
-          <Textarea
-            id="description"
-            placeholder="Ceritakan tentang toko Anda..."
-            rows={3}
-            value={localDescription}
-            onChange={(e) => handleDescriptionChange(e.target.value)}
-            maxLength={500}
-          />
-          <p className="text-xs text-muted-foreground text-right">
-            {localDescription.length}/500
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground flex items-center gap-1">
+          <Info className="h-3 w-3" />
+          {localSlug || 'your-store'}.fibidy.com
+        </p>
+        {isAvailable === false && (
+          <p className="text-xs text-destructive">This URL is already taken</p>
+        )}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex gap-3 pt-4">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          className="flex-1"
-        >
-          Kembali
-        </Button>
-        <Button
-          type="button"
-          onClick={handleNext}
-          disabled={isAvailable === false || isChecking}
-          className="flex-1"
-        >
-          Lanjut
-        </Button>
+      <div className="border-t max-w-md" />
+
+      {/* Description */}
+      <div className="space-y-1.5">
+        <Label htmlFor="store-desc" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          Description{' '}
+          <span className="normal-case font-normal text-muted-foreground/70">(optional)</span>
+        </Label>
+        <Textarea
+          id="store-desc"
+          placeholder="Tell customers what your store is about..."
+          rows={3}
+          value={localDescription}
+          onChange={(e) => handleDescriptionChange(e.target.value)}
+          maxLength={500}
+          className="resize-none text-sm placeholder:text-muted-foreground/50"
+        />
+        <div className="flex justify-between text-[11px] text-muted-foreground">
+          <span>Shown in your store profile &amp; search results</span>
+          <span className="font-mono tabular-nums">{localDescription.length}/500</span>
+        </div>
       </div>
     </div>
   );

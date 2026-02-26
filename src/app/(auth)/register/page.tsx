@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 // ==========================================
 
 export const metadata: Metadata = {
-  title: 'Daftar',
-  description: 'Buat toko online gratis dalam hitungan menit',
+  title: 'Create your store',
+  description: 'Get your store up and running in minutes',
 };
 
 // ==========================================
@@ -18,29 +18,52 @@ export const metadata: Metadata = {
 
 function RegisterFormSkeleton() {
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-10 w-full" />
+    <div className="w-full max-w-2xl mx-auto space-y-6">
+      {/* Step indicator */}
+      <div className="flex items-center justify-center gap-3 mb-2">
+        <Skeleton className="h-6 w-6 rounded-full" />
+        <Skeleton className="h-px w-10" />
+        <Skeleton className="h-6 w-6 rounded-full" />
+        <Skeleton className="h-px w-10" />
+        <Skeleton className="h-6 w-6 rounded-full" />
+        <Skeleton className="h-px w-10" />
+        <Skeleton className="h-6 w-6 rounded-full" />
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-10 w-full" />
+
+      {/* Header */}
+      <div className="pb-6 border-b space-y-2">
+        <Skeleton className="h-3 w-20" />
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-4 w-56" />
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-10 w-full" />
+
+      {/* Fields */}
+      <div className="space-y-5">
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-11 w-full" />
+        </div>
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="h-11 w-full" />
+        </div>
+        <div className="space-y-1.5">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="h-24 w-full" />
+        </div>
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-10 w-full" />
+
+      {/* Footer nav */}
+      <div className="flex items-center justify-between pt-6 border-t">
+        <Skeleton className="h-9 w-32 rounded-md" />
+        <div className="flex gap-1.5">
+          <Skeleton className="h-1.5 w-1.5 rounded-full" />
+          <Skeleton className="h-1.5 w-5 rounded-full" />
+          <Skeleton className="h-1.5 w-1.5 rounded-full" />
+          <Skeleton className="h-1.5 w-1.5 rounded-full" />
+        </div>
+        <Skeleton className="h-9 w-32 rounded-md" />
       </div>
-      <div className="space-y-2">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-4 w-40 mx-auto" />
     </div>
   );
 }
@@ -51,11 +74,7 @@ function RegisterFormSkeleton() {
 
 export default function RegisterPage() {
   return (
-    <AuthLayout
-      title="Buat Toko Online Gratis"
-      description="Mulai jualan online dalam hitungan menit"
-    >
-      {/* ✅ FIXED: Wrap in Suspense for client-side hooks */}
+    <AuthLayout>
       <Suspense fallback={<RegisterFormSkeleton />}>
         <RegisterForm />
       </Suspense>
