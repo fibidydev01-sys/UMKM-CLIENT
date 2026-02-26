@@ -9,14 +9,12 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { PageHeader } from '@/components/dashboard';
 import { ProductForm } from '@/components/products';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import type { Product } from '@/types';
 
 // ==========================================
-// EDIT PRODUCT PAGE (Client Component)
+// EDIT LISTING PAGE
 // ==========================================
 
 export default function EditProductPage() {
@@ -25,119 +23,80 @@ export default function EditProductPage() {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchData = async () => {
-      setIsLoading(true);
       setError(null);
 
       try {
-        // Fetch product
+        // Fetch product (blocking — we need this before rendering the form)
         const productData = await productsApi.getById(id);
         setProduct(productData);
 
-        // Fetch categories with fallback
-        let fetchedCategories: string[] = [];
-
+        // Fetch categories in background (non-blocking)
+        let fetched: string[] = [];
         try {
-          fetchedCategories = await productsApi.getCategories();
+          fetched = await productsApi.getCategories();
         } catch {
-          console.warn('Categories API failed, extracting from products...');
+          console.warn('Categories API failed, falling back...');
         }
 
-        // Fallback if API returns empty
-        if (fetchedCategories.length === 0) {
+        if (fetched.length === 0) {
           try {
-            const allProducts = await productsApi.getAll({ limit: 200 });
-            const uniqueCategories = new Set<string>();
-            allProducts.data.forEach((p) => {
-              if (p.category) uniqueCategories.add(p.category);
-            });
-            fetchedCategories = Array.from(uniqueCategories).sort();
+            const all = await productsApi.getAll({ limit: 200 });
+            const unique = new Set<string>();
+            all.data.forEach((p) => { if (p.category) unique.add(p.category); });
+            fetched = Array.from(unique).sort();
           } catch {
             console.error('Failed to extract categories');
           }
         }
 
-        // Ensure current product's category is included
-        if (productData.category && !fetchedCategories.includes(productData.category)) {
-          fetchedCategories = [productData.category, ...fetchedCategories].sort();
+        // Ensure the product's own category is always available
+        if (productData.category && !fetched.includes(productData.category)) {
+          fetched = [productData.category, ...fetched].sort();
         }
 
-        setCategories(fetchedCategories);
+        setCategories(fetched);
       } catch (err) {
         console.error('Failed to fetch product:', err);
         setError(getErrorMessage(err));
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    if (id) {
-      fetchData();
-    }
+    fetchData();
   }, [id]);
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <>
-        <PageHeader title="Edit Produk" description="Memuat data..." />
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <Skeleton className="h-6 w-40" />
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-24 w-full" />
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          <div>
-            <Card>
-              <CardContent className="pt-6 space-y-2">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Error / Not Found state
-  if (error || !product) {
+  // ── Error / Not found ──────────────────────────────────────
+  if (error || (product === null && error !== null)) {
     return (
       <>
         <PageHeader
-          title="Postingan Tidak Ditemukan"
-          description={error || 'Data postingan tidak ditemukan'}
+          title="Listing not found"
+          description={error || 'This listing could not be found'}
         />
         <Button variant="outline" asChild>
           <Link href="/dashboard/products">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Kembali ke Daftar Postingan
+            Back to listings
           </Link>
         </Button>
       </>
     );
   }
 
-  // ✅ Render ProductForm with fetched data
+  // ── Product not yet loaded — render nothing (no skeleton) ──
+  // Form will appear the moment product data is available
+  if (!product) return null;
+
   return (
     <>
       <PageHeader
-        title="Edit"
-        description={`Mengedit: ${product.name}`}
+        title="Edit listing"
+        description={`Editing: ${product.name}`}
       />
       <ProductForm product={product} categories={categories} />
     </>

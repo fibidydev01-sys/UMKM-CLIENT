@@ -1,10 +1,72 @@
-// ==========================================
-// CLOUDINARY TYPE DEFINITIONS
-// ==========================================
+// =================================================================
+// src/types/cloudinary.ts
+//
+// Single source of truth untuk semua Cloudinary types.
+// ⚠️  JANGAN declare global window.cloudinary di file lain.
+// =================================================================
+
+// -----------------------------------------------------------------
+// 1. Window global
+// -----------------------------------------------------------------
+
+declare global {
+  interface Window {
+    cloudinary?: {
+      createUploadWidget: (
+        options: CloudinaryWidgetConfig,
+        callback: CloudinaryCallback
+      ) => CloudinaryWidget;
+    };
+  }
+}
+
+// -----------------------------------------------------------------
+// 2. Widget internals
+// -----------------------------------------------------------------
+
+/** Config lengkap yang dikirim ke createUploadWidget */
+export interface CloudinaryWidgetConfig extends CloudinaryUploadOptions {
+  cloudName: string;
+  uploadPreset: string;
+}
+
+/** Instance yang dikembalikan createUploadWidget */
+export interface CloudinaryWidget {
+  open: () => void;
+  close: () => void;
+  destroy: () => void;
+}
+
+/** Callback signature */
+export type CloudinaryCallback = (
+  error: Error | null,
+  result: CloudinaryUploadResult
+) => void;
+
+// -----------------------------------------------------------------
+// 3. Upload result & info
+// -----------------------------------------------------------------
 
 export interface CloudinaryUploadResult {
-  event: 'success' | 'close' | 'display-changed' | string;
-  info: CloudinaryUploadInfo;
+  /**
+   * Event name dari Cloudinary widget.
+   * - 'queues-start'   : user mulai queue upload
+   * - 'success'        : satu file berhasil diupload (info tersedia)
+   * - 'queues-end'     : semua queue selesai
+   * - 'close'          : widget ditutup
+   * - 'abort'          : upload dibatalkan
+   * - 'display-changed': widget state berubah (tab, dll)
+   */
+  event:
+  | 'queues-start'
+  | 'queues-end'
+  | 'success'
+  | 'close'
+  | 'abort'
+  | 'display-changed'
+  | (string & Record<never, never>); // allow unknown events without losing autocomplete
+  /** Hanya tersedia saat event === 'success' */
+  info?: CloudinaryUploadInfo;
 }
 
 export interface CloudinaryUploadInfo {
@@ -31,7 +93,6 @@ export interface CloudinaryUploadInfo {
   original_filename: string;
   original_extension: string;
   api_key: string;
-  // Thumbnail info
   thumbnail_url?: string;
   eager?: Array<{
     transformation: string;
@@ -44,19 +105,23 @@ export interface CloudinaryUploadInfo {
   }>;
 }
 
+// -----------------------------------------------------------------
+// 4. Upload options
+// -----------------------------------------------------------------
+
 export interface CloudinaryUploadOptions {
-  uploadPreset?: string;
   folder?: string;
+  uploadPreset?: string;
   maxFiles?: number;
   maxFileSize?: number;
-  clientAllowedFormats?: string[];
+  multiple?: boolean;
   resourceType?: 'image' | 'video' | 'raw' | 'auto';
+  clientAllowedFormats?: string[];
+  sources?: Array<'local' | 'url' | 'camera' | 'dropbox' | 'google_drive'>;
+  defaultSource?: 'local' | 'url' | 'camera';
   cropping?: boolean;
   croppingAspectRatio?: number;
   showSkipCropButton?: boolean;
-  sources?: Array<'local' | 'url' | 'camera' | 'dropbox' | 'google_drive'>;
-  multiple?: boolean;
-  defaultSource?: 'local' | 'url' | 'camera';
   styles?: {
     palette?: {
       window?: string;
@@ -76,17 +141,27 @@ export interface CloudinaryUploadOptions {
   };
 }
 
+// -----------------------------------------------------------------
+// 5. Component props
+// -----------------------------------------------------------------
+
 export interface ImageUploadProps {
   value?: string;
-  onChange: (url: string | undefined) => void;
+  /** Selalu string — gunakan onChange("") untuk clear, bukan undefined */
+  onChange: (url: string) => void;
+  /** Override clear behaviour; kalau tidak diisi, onChange("") dipakai */
+  onRemove?: () => void;
   folder?: string;
-  aspectRatio?: 'square' | 'video' | 'banner' | 'free';
+  aspectRatio?: number;
   placeholder?: string;
   disabled?: boolean;
+  className?: string;
+  showPreview?: boolean;
 }
 
 export interface MultiImageUploadProps {
-  value: string[];
+  /** Optional — komponen default ke [] bila tidak diisi */
+  value?: string[];
   onChange: (urls: string[]) => void;
   folder?: string;
   maxImages?: number;

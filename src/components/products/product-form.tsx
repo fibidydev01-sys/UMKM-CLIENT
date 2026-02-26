@@ -1,94 +1,38 @@
 'use client';
 
 // ============================================================
-// PRODUCT FORM - v2.2 (MULTI-CURRENCY SUPPORT)
-// ✅ FIX: Dynamic currency from tenant settings
-// Supports Produk & Jasa with smart field show/hide logic
-// + showPrice toggle (Tampilkan Harga / Harga Atas Permintaan)
-// Zero backend changes — uses metadata to store preferences
+// PRODUCT FORM — Wizard Orchestrator v3.0
+// Multi-step wizard pattern (adopted from settings/pembayaran)
+// Supports Product & Service with smart step skip logic
 // ============================================================
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Loader2,
-  Save,
-  ArrowLeft,
-  Check,
-  ChevronsUpDown,
-  Package,
-  Wrench,
-  MessageCircle,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { Separator } from '@/components/ui/separator';
+import { Form } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
 import { useCreateProduct, useUpdateProduct, useTenant } from '@/hooks';
 import { productSchema, type ProductFormData } from '@/lib/validations';
-import { UNIT_OPTIONS_PRODUK, UNIT_OPTIONS_JASA } from '@/config/constants';
-import { MultiImageUpload } from '@/components/upload';
+import {
+  StepDetails,
+  StepMedia,
+  StepPricing,
+  StepInventory,
+  StepPublish,
+  PreviewProduct,
+  PRODUCT_STEPS,
+  SERVICE_STEPS,
+  type ProductType,
+} from './product-form-section';
 import type { Product } from '@/types';
 
-// ============================================================
-// TYPES
-// ============================================================
-
-type ProductType = 'produk' | 'jasa';
-
-interface ProductFormProps {
-  product?: Product;
-  categories?: string[];
-}
-
-// ============================================================
-// HELPERS
-// ============================================================
-
+// ─── Helpers ──────────────────────────────────────────────────────────────
 function getProductType(product?: Product): ProductType {
   const meta = product?.metadata as Record<string, unknown> | null | undefined;
-  if (meta?.type === 'jasa') return 'jasa';
-  return 'produk';
+  return meta?.type === 'service' ? 'service' : 'product';
 }
 
 function getShowPrice(product?: Product): boolean {
@@ -97,31 +41,106 @@ function getShowPrice(product?: Product): boolean {
   return true;
 }
 
-// ============================================================
-// PRODUCT FORM COMPONENT
-// ============================================================
+// ─── Step Indicator ───────────────────────────────────────────────────────
+interface WizardStep {
+  id: number;
+  title: string;
+  desc: string;
+}
 
+function StepIndicator({
+  steps,
+  currentStep,
+  onStepClick,
+  size = 'sm',
+}: {
+  steps: WizardStep[];
+  currentStep: number;
+  onStepClick?: (i: number) => void;
+  size?: 'sm' | 'lg';
+}) {
+  return (
+    <div className="flex items-center">
+      {steps.map((step, i) => (
+        <div key={step.id} className="flex items-center">
+          <div className="flex flex-col items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => i < currentStep && onStepClick?.(i)}
+              className={cn(
+                'flex items-center justify-center rounded-full font-semibold transition-all duration-300 focus-visible:outline-none',
+                size === 'lg' ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]',
+                i < currentStep
+                  ? 'bg-primary text-primary-foreground cursor-pointer hover:opacity-75'
+                  : i === currentStep
+                    ? 'bg-primary text-primary-foreground ring-[3px] ring-primary/25 cursor-default'
+                    : 'bg-muted text-muted-foreground/60 cursor-default'
+              )}
+            >
+              {i < currentStep ? (
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              ) : (
+                i + 1
+              )}
+            </button>
+            {size === 'lg' && (
+              <span className={cn(
+                'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
+                i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
+              )}>
+                {step.title}
+              </span>
+            )}
+          </div>
+          {i < steps.length - 1 && (
+            <div className={cn(
+              'h-px mx-2 transition-colors duration-500',
+              size === 'lg' ? 'w-10 mb-[22px]' : 'w-5',
+              i < currentStep ? 'bg-primary' : 'bg-border'
+            )} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────
+interface ProductFormProps {
+  product?: Product;
+  categories?: string[];
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────
 export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const router = useRouter();
   const isEditing = !!product;
 
   const { createProduct, isLoading: isCreating } = useCreateProduct();
   const { updateProduct, isLoading: isUpdating } = useUpdateProduct();
-  const isLoading = isCreating || isUpdating;
+  const isSaving = isCreating || isUpdating;
 
-  // ✅ FIX: Get currency from tenant
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
-  const [productType, setProductType] = useState<ProductType>(
-    getProductType(product)
-  );
-  const isJasa = productType === 'jasa';
+  // ── Wizard state ───────────────────────────────────────────
+  const [currentStep, setCurrentStep] = useState(0);
+  const [showPreview, setShowPreview] = useState(false);
 
+  // ── Product type state ─────────────────────────────────────
+  const [productType, setProductType] = useState<ProductType>(getProductType(product));
+  const isService = productType === 'service';
+
+  // ── Price display state ────────────────────────────────────
   const [showPrice, setShowPrice] = useState<boolean>(getShowPrice(product));
-  const [categoryOpen, setCategoryOpen] = useState(false);
-  const [categorySearch, setCategorySearch] = useState('');
 
+  // ── Steps (dynamic based on type) ─────────────────────────
+  const STEPS = isService ? SERVICE_STEPS : PRODUCT_STEPS;
+  const isLastStep = currentStep === STEPS.length - 1;
+
+  // ── Form ───────────────────────────────────────────────────
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -142,28 +161,50 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     },
   });
 
-  const watchTrackStock = form.watch('trackStock');
-  const watchCategory = form.watch('category');
+  // ── Type change handler ────────────────────────────────────
+  const handleTypeChange = (type: ProductType) => {
+    setProductType(type);
+    if (type === 'service') {
+      form.setValue('trackStock', false);
+      form.setValue('stock', undefined);
+      form.setValue('minStock', undefined);
+      form.setValue('sku', '');
+      form.setValue('costPrice', undefined);
+      form.setValue('unit', 'hour');
+    } else {
+      form.setValue('trackStock', true);
+      form.setValue('unit', 'pcs');
+    }
+    // Reset to first step on type change to avoid step-index mismatch
+    setCurrentStep(0);
+  };
 
-  const showSKU = !isJasa;
-  const showCostPrice = !isJasa && showPrice;
-  const showTrackStock = !isJasa;
-  const showStockFields = !isJasa && watchTrackStock;
-  const showUnit = isJasa || watchTrackStock;
+  // ── Show price change handler ──────────────────────────────
+  const handleShowPriceChange = (checked: boolean) => {
+    setShowPrice(checked);
+    if (!checked) {
+      form.setValue('price', 0);
+      form.setValue('comparePrice', undefined);
+      form.setValue('costPrice', undefined);
+    }
+  };
 
-  const unitOptions = isJasa ? UNIT_OPTIONS_JASA : UNIT_OPTIONS_PRODUK;
+  // ── Navigation ─────────────────────────────────────────────
+  const handleNext = () => {
+    if (currentStep < STEPS.length - 1) {
+      setCurrentStep((p) => p + 1);
+    } else {
+      setShowPreview(true);
+    }
+  };
 
-  const filteredCategories = categories.filter((cat) =>
-    cat.toLowerCase().includes(categorySearch.toLowerCase())
-  );
+  const handlePrev = () => {
+    if (currentStep > 0) setCurrentStep((p) => p - 1);
+  };
 
-  const isNewCategory =
-    categorySearch.trim() !== '' &&
-    !categories.some(
-      (cat) => cat.toLowerCase() === categorySearch.toLowerCase()
-    );
-
-  const onSubmit = async (data: ProductFormData) => {
+  // ── Save ───────────────────────────────────────────────────
+  const handleSave = async () => {
+    const data = form.getValues();
     try {
       const payload: ProductFormData = {
         ...data,
@@ -179,7 +220,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           type: productType,
           showPrice,
         },
-        ...(isJasa && {
+        ...(isService && {
           sku: undefined,
           trackStock: false,
           stock: undefined,
@@ -196,689 +237,232 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
 
       router.push('/dashboard/products');
     } catch {
-      // Error handled in hooks
+      // Errors handled inside hooks (toast etc.)
     }
   };
 
-  const handleSelectCategory = (value: string) => {
-    form.setValue('category', value);
-    setCategorySearch('');
-    setCategoryOpen(false);
-  };
+  // ── Step renderer ──────────────────────────────────────────
+  const renderStep = () => {
+    // For Service: steps are [0=Details, 1=Media, 2=Pricing, 3=Publish]
+    // For Product: steps are [0=Details, 1=Media, 2=Pricing, 3=Inventory, 4=Publish]
+    // We match on STEP TITLE to be safe against index drift
+    const stepTitle = STEPS[currentStep].title;
 
-  const handleCreateCategory = () => {
-    const newCategory = categorySearch.trim();
-    if (newCategory) {
-      form.setValue('category', newCategory);
-      setCategorySearch('');
-      setCategoryOpen(false);
-    }
-  };
-
-  const handleTypeChange = (type: ProductType) => {
-    setProductType(type);
-    if (type === 'jasa') {
-      form.setValue('trackStock', false);
-      form.setValue('stock', undefined);
-      form.setValue('minStock', undefined);
-      form.setValue('sku', '');
-      form.setValue('costPrice', undefined);
-      form.setValue('unit', 'jam');
-    } else {
-      form.setValue('trackStock', true);
-      form.setValue('unit', 'pcs');
-    }
-  };
-
-  const handleShowPriceChange = (checked: boolean) => {
-    setShowPrice(checked);
-    if (!checked) {
-      form.setValue('price', 0);
-      form.setValue('comparePrice', undefined);
-      form.setValue('costPrice', undefined);
+    switch (stepTitle) {
+      case 'Details':
+        return (
+          <StepDetails
+            form={form}
+            productType={productType}
+            onTypeChange={handleTypeChange}
+            categories={categories}
+          />
+        );
+      case 'Media':
+        return (
+          <StepMedia
+            form={form}
+            productType={productType}
+          />
+        );
+      case 'Pricing':
+        return (
+          <StepPricing
+            form={form}
+            productType={productType}
+            showPrice={showPrice}
+            onShowPriceChange={handleShowPriceChange}
+            currency={currency}
+          />
+        );
+      case 'Inventory':
+        return <StepInventory form={form} />;
+      case 'Publish':
+        return (
+          <StepPublish
+            form={form}
+            productType={productType}
+            showPrice={showPrice}
+            isEditing={isEditing}
+          />
+        );
+      default:
+        return null;
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
-          <button
-            type="button"
-            onClick={() => handleTypeChange('produk')}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all',
-              productType === 'produk'
-                ? 'bg-background shadow-sm text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <Package className="h-4 w-4" />
-            Produk
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTypeChange('jasa')}
-            className={cn(
-              'flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all',
-              productType === 'jasa'
-                ? 'bg-background shadow-sm text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            <Wrench className="h-4 w-4" />
-            Jasa
-          </button>
-        </div>
+    <>
+      {/* ── Preview Sheet ──────────────────────────────────────── */}
+      <PreviewProduct
+        open={showPreview}
+        onClose={() => setShowPreview(false)}
+        onSave={handleSave}
+        isSaving={isSaving}
+        formData={form.getValues()}
+        productType={productType}
+        showPrice={showPrice}
+        currency={currency}
+        isEditing={isEditing}
+      />
 
-        <p className="text-sm text-muted-foreground -mt-4">
-          {isJasa
-            ? 'Mode Jasa: field stok & SKU disembunyikan otomatis.'
-            : 'Mode Produk: semua field tersedia.'}
-        </p>
+      <Form {...form}>
+        <form onSubmit={(e) => e.preventDefault()} className="h-full flex flex-col">
 
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {isJasa ? 'Informasi Jasa' : 'Informasi Produk'}
-                </CardTitle>
-                <CardDescription>
-                  {isJasa
-                    ? 'Informasi dasar tentang layanan yang Anda tawarkan'
-                    : 'Informasi dasar tentang produk Anda'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {isJasa ? 'Nama Jasa *' : 'Nama Produk *'}
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder={
-                            isJasa
-                              ? 'Contoh: Desain Logo, Jasa Cuci AC'
-                              : 'Contoh: Nasi Goreng Spesial'
-                          }
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          {/* ══════════════════ DESKTOP ══════════════════════════ */}
+          <div className="hidden lg:flex lg:flex-col lg:h-full">
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deskripsi</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder={
-                            isJasa
-                              ? 'Jelaskan layanan yang Anda tawarkan, proses pengerjaan, dan apa yang termasuk...'
-                              : 'Deskripsi produk...'
-                          }
-                          rows={4}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className={cn(
-                  'grid gap-4',
-                  showSKU ? 'sm:grid-cols-2' : 'sm:grid-cols-1'
-                )}>
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Kategori</FormLabel>
-                        <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                role="combobox"
-                                aria-expanded={categoryOpen}
-                                className={cn(
-                                  'w-full justify-between font-normal',
-                                  !field.value && 'text-muted-foreground'
-                                )}
-                              >
-                                {field.value || 'Pilih atau ketik kategori'}
-                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-[300px] p-0" align="start">
-                            <Command shouldFilter={false}>
-                              <CommandInput
-                                placeholder="Cari atau buat kategori..."
-                                value={categorySearch}
-                                onValueChange={setCategorySearch}
-                              />
-                              <CommandList>
-                                <CommandEmpty className="py-2 px-4 text-sm text-muted-foreground">
-                                  {categorySearch ? (
-                                    <span>
-                                      Tidak ada kategori &quot;{categorySearch}&quot;
-                                    </span>
-                                  ) : (
-                                    <span>
-                                      Ketik untuk mencari atau membuat kategori baru
-                                    </span>
-                                  )}
-                                </CommandEmpty>
-
-                                {filteredCategories.length > 0 && (
-                                  <CommandGroup heading="Kategori">
-                                    {filteredCategories.map((cat) => (
-                                      <CommandItem
-                                        key={cat}
-                                        value={cat}
-                                        onSelect={() => handleSelectCategory(cat)}
-                                      >
-                                        <Check
-                                          className={cn(
-                                            'mr-2 h-4 w-4',
-                                            watchCategory === cat
-                                              ? 'opacity-100'
-                                              : 'opacity-0'
-                                          )}
-                                        />
-                                        {cat}
-                                      </CommandItem>
-                                    ))}
-                                  </CommandGroup>
-                                )}
-
-                                {isNewCategory && (
-                                  <CommandGroup heading="Buat Baru">
-                                    <CommandItem
-                                      value={`create-${categorySearch}`}
-                                      onSelect={handleCreateCategory}
-                                      className="text-primary"
-                                    >
-                                      <span className="mr-2">+</span>
-                                      Buat &quot;{categorySearch}&quot;
-                                    </CommandItem>
-                                  </CommandGroup>
-                                )}
-                              </CommandList>
-                            </Command>
-                          </PopoverContent>
-                        </Popover>
-                        <FormDescription>
-                          Pilih kategori yang ada atau ketik untuk membuat baru
-                        </FormDescription>
-                      </FormItem>
-                    )}
-                  />
-
-                  {showSKU && (
-                    <FormField
-                      control={form.control}
-                      name="sku"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>SKU</FormLabel>
-                          <FormControl>
-                            <Input placeholder="SKU-001" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {isJasa ? 'Foto Portofolio / Contoh Kerja' : 'Gambar Produk'}
-                </CardTitle>
-                <CardDescription>
-                  {isJasa
-                    ? 'Upload foto portofolio atau contoh hasil kerja (maksimal 5 foto). Foto pertama akan jadi thumbnail utama.'
-                    : 'Upload gambar produk (maksimal 5 gambar). Gambar pertama akan jadi thumbnail utama.'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <FormField
-                  control={form.control}
-                  name="images"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <MultiImageUpload
-                          value={field.value || []}
-                          onChange={field.onChange}
-                          folder="fibidy/products"
-                          maxImages={5}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Harga</CardTitle>
-                <CardDescription>
-                  {isJasa
-                    ? 'Harga per sesi, jam, atau paket layanan'
-                    : 'Atur harga jual dan harga modal produk'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <p className="text-base font-medium leading-none">
-                      Tampilkan Harga
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Nonaktifkan jika harga bersifat negosiasi atau hubungi kami
-                    </p>
-                  </div>
-                  <Switch
-                    checked={showPrice}
-                    onCheckedChange={handleShowPriceChange}
-                  />
-                </div>
-
-                {!showPrice && (
-                  <div className="flex items-center gap-3 rounded-lg border border-dashed bg-muted/40 p-4">
-                    <MessageCircle className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium">Harga Atas Permintaan</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        Pembeli akan melihat tombol &quot;Hubungi Kami&quot; tanpa angka harga.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {showPrice && (
-                  <div className={cn(
-                    'grid gap-4',
-                    showCostPrice ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
-                  )}>
-                    <FormField
-                      control={form.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            {isJasa ? 'Harga Layanan *' : 'Harga Jual *'}
-                          </FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                {currency}
-                              </span>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                className="pl-14"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                              />
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="comparePrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Harga Coret</FormLabel>
-                          <FormControl>
-                            <div className="relative">
-                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                {currency}
-                              </span>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                className="pl-14"
-                                {...field}
-                                value={field.value || ''}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    e.target.value
-                                      ? Number(e.target.value)
-                                      : undefined
-                                  )
-                                }
-                              />
-                            </div>
-                          </FormControl>
-                          <FormDescription>Harga sebelum diskon</FormDescription>
-                        </FormItem>
-                      )}
-                    />
-
-                    {showCostPrice && (
-                      <FormField
-                        control={form.control}
-                        name="costPrice"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Harga Modal</FormLabel>
-                            <FormControl>
-                              <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                                  {currency}
-                                </span>
-                                <Input
-                                  type="number"
-                                  placeholder="0"
-                                  className="pl-14"
-                                  {...field}
-                                  value={field.value || ''}
-                                  onChange={(e) =>
-                                    field.onChange(
-                                      e.target.value
-                                        ? Number(e.target.value)
-                                        : undefined
-                                    )
-                                  }
-                                />
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {isJasa ? 'Satuan Layanan' : 'Inventori'}
-                </CardTitle>
-                {isJasa && (
-                  <CardDescription>
-                    Tentukan satuan layanan yang Anda tawarkan
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {showTrackStock && (
-                  <FormField
-                    control={form.control}
-                    name="trackStock"
-                    render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-4">
-                        <div className="space-y-0.5">
-                          <FormLabel className="text-base">Lacak Stok</FormLabel>
-                          <FormDescription>
-                            Aktifkan untuk melacak jumlah stok produk
-                          </FormDescription>
-                        </div>
-                        <FormControl>
-                          <Switch
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                        </FormControl>
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {showUnit && (
-                  <div className={cn(
-                    'grid gap-4',
-                    showStockFields ? 'sm:grid-cols-3' : 'sm:grid-cols-1 max-w-[200px]'
-                  )}>
-                    {showStockFields && (
-                      <FormField
-                        control={form.control}
-                        name="stock"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Jumlah Stok</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="0"
-                                {...field}
-                                value={field.value ?? ''}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    e.target.value
-                                      ? Number(e.target.value)
-                                      : undefined
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    )}
-
-                    {showStockFields && (
-                      <FormField
-                        control={form.control}
-                        name="minStock"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Stok Minimum</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                placeholder="5"
-                                {...field}
-                                value={field.value ?? ''}
-                                onChange={(e) =>
-                                  field.onChange(
-                                    e.target.value
-                                      ? Number(e.target.value)
-                                      : undefined
-                                  )
-                                }
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              Peringatan jika stok di bawah ini
-                            </FormDescription>
-                          </FormItem>
-                        )}
-                      />
-                    )}
-
-                    <FormField
-                      control={form.control}
-                      name="unit"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Satuan</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            value={field.value || (isJasa ? 'jam' : 'pcs')}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {unitOptions.map((unit) => (
-                                <SelectItem key={unit.value} value={unit.value}>
-                                  {unit.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Status</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div>
-                        <FormLabel>Aktif</FormLabel>
-                        <FormDescription>Tampilkan di toko</FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <Separator />
-
-                <FormField
-                  control={form.control}
-                  name="isFeatured"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center justify-between">
-                      <div>
-                        <FormLabel>Unggulan</FormLabel>
-                        <FormDescription>Tampilkan di halaman utama</FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
-
-            <Card className="border-dashed">
-              <CardContent className="pt-4 space-y-3">
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                    Tipe Postingan
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {isJasa ? (
-                      <>
-                        <Wrench className="h-4 w-4 text-blue-500" />
-                        <span className="text-sm font-medium text-blue-600">Jasa</span>
-                      </>
-                    ) : (
-                      <>
-                        <Package className="h-4 w-4 text-emerald-500" />
-                        <span className="text-sm font-medium text-emerald-600">Produk</span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">
-                    Mode Harga
-                  </p>
-                  <div className="flex items-center gap-2">
-                    {showPrice ? (
-                      <span className="text-sm font-medium text-foreground">
-                        Harga ditampilkan
-                      </span>
-                    ) : (
-                      <>
-                        <MessageCircle className="h-4 w-4 text-orange-500" />
-                        <span className="text-sm font-medium text-orange-600">
-                          Hubungi Kami
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <p className="text-xs text-muted-foreground">
-                  {isJasa
-                    ? 'SKU & stok disembunyikan. Unit layanan tersedia.'
-                    : 'Semua field tersedia termasuk stok & SKU.'}
+            {/* Header */}
+            <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
+              <div className="space-y-1">
+                <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+                  Step {currentStep + 1} of {STEPS.length}
                 </p>
-              </CardContent>
-            </Card>
+                <h2 className="text-2xl font-bold tracking-tight leading-none">
+                  {STEPS[currentStep].title}
+                </h2>
+                <p className="text-sm text-muted-foreground pt-0.5">
+                  {STEPS[currentStep].desc}
+                </p>
+              </div>
+              <div className="shrink-0 pt-0.5">
+                <StepIndicator
+                  steps={STEPS}
+                  currentStep={currentStep}
+                  onStepClick={(i) => i < currentStep && setCurrentStep(i)}
+                  size="lg"
+                />
+              </div>
+            </div>
 
-            <Card>
-              <CardContent className="pt-6 space-y-2">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {isEditing ? 'Menyimpan...' : 'Membuat...'}
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      {isEditing ? 'Simpan Perubahan' : 'Simpan Produk'}
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => router.back()}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Kembali
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Body */}
+            <div className="flex-1 min-h-[300px]">
+              {renderStep()}
+            </div>
+
+            {/* Footer nav */}
+            <div className="flex items-center justify-between pt-6 border-t mt-8">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handlePrev}
+                className={cn(
+                  'gap-1.5 min-w-[130px] h-9 text-sm',
+                  currentStep === 0 && 'invisible'
+                )}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Previous
+              </Button>
+
+              {/* Progress dots */}
+              <div className="flex items-center gap-1.5">
+                {STEPS.map((_, i) => (
+                  <div
+                    key={i}
+                    className={cn(
+                      'rounded-full transition-all duration-300',
+                      i === currentStep
+                        ? 'w-5 h-1.5 bg-primary'
+                        : i < currentStep
+                          ? 'w-1.5 h-1.5 bg-primary/40'
+                          : 'w-1.5 h-1.5 bg-border'
+                    )}
+                  />
+                ))}
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleNext}
+                className="gap-1.5 min-w-[130px] h-9 text-sm"
+              >
+                {isLastStep ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    Review &amp; {isEditing ? 'Save' : 'Publish'}
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </form>
-    </Form>
+
+          {/* ══════════════════ MOBILE ════════════════════════════ */}
+          <div className="lg:hidden flex flex-col pb-24">
+
+            {/* Step header */}
+            <div className="mb-6">
+              <div className="flex justify-center mb-4">
+                <StepIndicator
+                  steps={STEPS}
+                  currentStep={currentStep}
+                  onStepClick={(i) => i < currentStep && setCurrentStep(i)}
+                  size="sm"
+                />
+              </div>
+              <div className="text-center space-y-0.5">
+                <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
+                  Step {currentStep + 1} of {STEPS.length}
+                </p>
+                <h3 className="text-base font-bold tracking-tight">
+                  {STEPS[currentStep].title}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {STEPS[currentStep].desc}
+                </p>
+              </div>
+            </div>
+
+            {/* Step body */}
+            <div className="min-h-[260px]">
+              {renderStep()}
+            </div>
+          </div>
+
+          {/* ── Mobile bottom nav (fixed) ─────────────────────── */}
+          <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
+            <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handlePrev}
+                className={cn(
+                  'gap-1 flex-1 h-9 text-xs font-medium',
+                  currentStep === 0 && 'invisible'
+                )}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                Previous
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                onClick={handleNext}
+                className="gap-1 flex-1 h-9 text-xs font-medium"
+              >
+                {isLastStep ? (
+                  <>
+                    <Eye className="h-3.5 w-3.5" />
+                    Review
+                  </>
+                ) : (
+                  <>
+                    Next
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+        </form>
+      </Form>
+    </>
   );
 }
