@@ -1,12 +1,5 @@
 'use client';
 
-// =================================================================
-// src/components/upload/image-upload.tsx
-//
-// Single-image upload dengan Cloudinary widget.
-// Script di-load via next/script (lazyOnload) — hanya sekali.
-// =================================================================
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Script from 'next/script';
@@ -15,10 +8,6 @@ import { ImagePlus, Loader2, Trash2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { CloudinaryWidget, ImageUploadProps } from '@/types/cloudinary';
-
-// -----------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------
 
 function checkScriptAlreadyLoaded(): boolean {
   if (typeof window === 'undefined') return false;
@@ -35,10 +24,6 @@ function isValidHttpUrl(url?: string): boolean {
   }
 }
 
-// -----------------------------------------------------------------
-// Component
-// -----------------------------------------------------------------
-
 export function ImageUpload({
   value,
   onChange,
@@ -47,7 +32,7 @@ export function ImageUpload({
   className,
   aspectRatio = 1,
   folder = 'tenant-uploads',
-  placeholder = 'Upload gambar',
+  placeholder = 'Upload image',
   showPreview = true,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
@@ -56,14 +41,11 @@ export function ImageUpload({
 
   const hasImage = isValidHttpUrl(value);
 
-  // Cek apakah script sudah ada di window saat mount
-  // (misal: komponen lain sudah load duluan)
   useEffect(() => {
     if (!scriptReady && window.cloudinary) setScriptReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Buka widget — destroy dulu supaya config selalu fresh
   const openWidget = useCallback(() => {
     if (disabled || isUploading || !window.cloudinary) return;
 
@@ -138,13 +120,8 @@ export function ImageUpload({
     onRemove ? onRemove() : onChange('');
   };
 
-  // -----------------------------------------------------------------
-  // Render
-  // -----------------------------------------------------------------
-
   return (
     <>
-      {/* Load script sekali — hanya kalau belum ada */}
       {!scriptReady && (
         <Script
           src="https://upload-widget.cloudinary.com/global/all.js"
@@ -155,7 +132,6 @@ export function ImageUpload({
 
       <div className={cn('relative group', className)}>
         {hasImage && showPreview ? (
-          /* ── Preview mode ──────────────────────────────────────── */
           <div
             className="relative overflow-hidden rounded-lg border bg-muted"
             style={{ aspectRatio }}
@@ -181,7 +157,7 @@ export function ImageUpload({
                     ? <Loader2 className="mr-1 h-4 w-4 animate-spin" />
                     : <Upload className="mr-1 h-4 w-4" />
                   }
-                  Ganti
+                  Replace
                 </Button>
 
                 <Button
@@ -192,13 +168,12 @@ export function ImageUpload({
                   disabled={isUploading}
                 >
                   <Trash2 className="mr-1 h-4 w-4" />
-                  Hapus
+                  Remove
                 </Button>
               </div>
             )}
           </div>
         ) : (
-          /* ── Upload mode ───────────────────────────────────────── */
           <button
             type="button"
             onClick={openWidget}
@@ -216,7 +191,7 @@ export function ImageUpload({
               <>
                 <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
                 <span className="text-sm text-muted-foreground">
-                  {isUploading ? 'Mengupload...' : 'Memuat...'}
+                  {isUploading ? 'Uploading...' : 'Loading...'}
                 </span>
               </>
             ) : (
@@ -224,7 +199,7 @@ export function ImageUpload({
                 <ImagePlus className="h-8 w-8 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">{placeholder}</span>
                 <span className="text-xs text-muted-foreground/70">
-                  PNG, JPG, WebP · maks 5 MB
+                  PNG, JPG, WebP · max 5 MB
                 </span>
               </>
             )}

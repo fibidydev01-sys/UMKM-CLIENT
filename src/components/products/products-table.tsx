@@ -1,9 +1,3 @@
-// ══════════════════════════════════════════════════════════════
-// PRODUCTS TABLE - V2.1 WITH DRAWER (MULTI-CURRENCY SUPPORT)
-// ✅ FIX: Pass currency to columns for dynamic display
-// Minimal list view + drawer for details
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
@@ -67,17 +61,13 @@ export function ProductsTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  // ✅ FIX: Get currency from tenant
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
-  // Drawer state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [bulkDeleteIds, setBulkDeleteIds] = useState<string[]>([]);
@@ -90,17 +80,11 @@ export function ProductsTable({
     }
   }, [onRefresh, router]);
 
-  // ════════════════════════════════════════════════════════════
-  // ROW CLICK HANDLER - Open drawer
-  // ════════════════════════════════════════════════════════════
   const onRowClick = useCallback((product: Product) => {
     setSelectedProduct(product);
     setDrawerOpen(true);
   }, []);
 
-  // ════════════════════════════════════════════════════════════
-  // DRAWER ACTIONS
-  // ════════════════════════════════════════════════════════════
   const onEdit = useCallback((product: Product) => {
     router.push(`/dashboard/products/${product.id}/edit`);
   }, [router]);
@@ -112,16 +96,13 @@ export function ProductsTable({
   const onToggleActive = useCallback(async (product: Product) => {
     try {
       await productsApi.update(product.id, { isActive: !product.isActive });
-      toast.success(product.isActive ? 'Postingan dinonaktifkan' : 'Postingan diaktifkan');
+      toast.success(product.isActive ? 'Product deactivated' : 'Product activated');
       await refreshData();
     } catch (err) {
-      toast.error('Gagal mengubah status', getErrorMessage(err));
+      toast.error('Failed to update status', getErrorMessage(err));
     }
   }, [refreshData]);
 
-  // ════════════════════════════════════════════════════════════
-  // ✅ FIX: COLUMN ACTIONS - Pass currency
-  // ════════════════════════════════════════════════════════════
   const columnActions = useMemo(() => ({
     onRowClick,
     currency,
@@ -153,16 +134,14 @@ export function ProductsTable({
 
   const handleDelete = useCallback(async () => {
     if (!deleteProduct) return;
-
     setIsDeleting(true);
-
     try {
       await productsApi.delete(deleteProduct.id);
-      toast.success('Postingan berhasil dihapus');
+      toast.success('Product deleted');
       setDeleteProduct(null);
       await refreshData();
     } catch (err) {
-      toast.error('Gagal menghapus postingan', getErrorMessage(err));
+      toast.error('Failed to delete product', getErrorMessage(err));
     } finally {
       setIsDeleting(false);
     }
@@ -173,27 +152,23 @@ export function ProductsTable({
     const ids = selectedRows
       .map((row) => row.original?.id)
       .filter((id): id is string => Boolean(id));
-
     if (ids.length === 0) return;
-
     setBulkDeleteIds(ids);
     setIsBulkDeleteOpen(true);
   }, [table]);
 
   const handleBulkDelete = useCallback(async () => {
     if (bulkDeleteIds.length === 0) return;
-
     setIsBulkDeleting(true);
-
     try {
       const result = await productsApi.bulkDelete(bulkDeleteIds);
-      toast.success(result.message || `${result.count} postingan berhasil dihapus`);
+      toast.success(result.message || `${result.count} products deleted`);
       setRowSelection({});
       setIsBulkDeleteOpen(false);
       setBulkDeleteIds([]);
       await refreshData();
     } catch (err) {
-      toast.error('Gagal menghapus postingan', getErrorMessage(err));
+      toast.error('Failed to delete products', getErrorMessage(err));
     } finally {
       setIsBulkDeleting(false);
     }
@@ -219,10 +194,7 @@ export function ProductsTable({
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -231,27 +203,18 @@ export function ProductsTable({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  Tidak ada postingan ditemukan.
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  No products found.
                 </TableCell>
               </TableRow>
             )}
@@ -261,8 +224,8 @@ export function ProductsTable({
 
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} dari{' '}
-          {table.getFilteredRowModel().rows.length} baris dipilih.
+          {table.getFilteredSelectedRowModel().rows.length} of{' '}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -271,7 +234,7 @@ export function ProductsTable({
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
-            Sebelumnya
+            Previous
           </Button>
           <Button
             variant="outline"
@@ -279,12 +242,11 @@ export function ProductsTable({
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >
-            Selanjutnya
+            Next
           </Button>
         </div>
       </div>
 
-      {/* Product Preview Drawer */}
       <ProductPreviewDrawer
         product={selectedProduct}
         open={drawerOpen}
@@ -309,27 +271,23 @@ export function ProductsTable({
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-5 w-5 text-destructive" />
               </div>
-              <AlertDialogTitle>Hapus {bulkDeleteIds.length} Postingan</AlertDialogTitle>
+              <AlertDialogTitle>Delete {bulkDeleteIds.length} products</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="pt-2">
-              Apakah Anda yakin ingin menghapus <strong>{bulkDeleteIds.length} postingan</strong> yang dipilih?
-              Tindakan ini tidak dapat dibatalkan.
+              Are you sure you want to delete <strong>{bulkDeleteIds.length} products</strong>?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isBulkDeleting}>Batal</AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleBulkDelete}
-              disabled={isBulkDeleting}
-            >
+            <AlertDialogCancel disabled={isBulkDeleting}>Cancel</AlertDialogCancel>
+            <Button variant="destructive" onClick={handleBulkDelete} disabled={isBulkDeleting}>
               {isBulkDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Menghapus...
+                  Deleting...
                 </>
               ) : (
-                'Hapus'
+                'Delete'
               )}
             </Button>
           </AlertDialogFooter>

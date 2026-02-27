@@ -21,10 +21,6 @@ import { useStoreUrls } from '@/lib/store-url';
 import { cn } from '@/lib/utils';
 import type { PublicTenant } from '@/types';
 
-// ==========================================
-// STORE HEADER
-// ==========================================
-
 interface StoreHeaderProps {
   tenant: PublicTenant;
 }
@@ -35,18 +31,18 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
   const urls = useStoreUrls(tenant.slug);
 
   const navItems = [
-    { label: 'Beranda', href: urls.home },
-    { label: 'Tentang', href: urls.path('/about') },
-    { label: 'Produk', href: urls.products() },
-    { label: 'Testimoni', href: urls.path('/testimonials') },
-    { label: 'Kontak', href: urls.path('/contact') },
+    { label: 'Home', href: urls.home },
+    { label: 'About', href: urls.path('/about') },
+    { label: 'Products', href: urls.products() },
+    { label: 'Testimonials', href: urls.path('/testimonials') },
+    { label: 'Contact', href: urls.path('/contact') },
   ];
 
   const contactInfo = [
     { label: 'WhatsApp', value: tenant.whatsapp, type: 'whatsapp' as const },
-    { label: 'Telepon', value: tenant.phone, type: 'phone' as const },
+    { label: 'Phone', value: tenant.phone, type: 'phone' as const },
     { label: 'Email', value: 'email' in tenant ? tenant.email : undefined, type: 'email' as const },
-    { label: 'Alamat', value: tenant.address, type: 'address' as const },
+    { label: 'Address', value: tenant.address, type: 'address' as const },
   ].filter(item => item.value);
 
   return (
@@ -75,14 +71,12 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
 
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {/* BERANDA - DENGAN DROPDOWN */}
+            {/* HOME - WITH DROPDOWN */}
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className={cn(
-                  pathname === urls.home && 'bg-primary/10 text-primary'
-                )}
+                className={cn(pathname === urls.home && 'bg-primary/10 text-primary')}
               >
-                Beranda
+                Home
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
@@ -111,25 +105,25 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                           {tenant.name}
                         </div>
                         <p className="text-muted-foreground text-sm leading-tight">
-                          {tenant.tagline || 'Selamat datang di toko kami'}
+                          {tenant.tagline || 'Welcome to our store'}
                         </p>
                       </Link>
                     </NavigationMenuLink>
                   </li>
-                  <ListItem href={urls.path('/about')} title="Tentang Kami" icon={<Users className="h-4 w-4" />}>
-                    Kenali lebih dalam tentang bisnis kami
+                  <ListItem href={urls.path('/about')} title="About Us" icon={<Users className="h-4 w-4" />}>
+                    Learn more about our business
                   </ListItem>
-                  <ListItem href={urls.path('/testimonials')} title="Testimoni" icon={<Store className="h-4 w-4" />}>
-                    Lihat testimoni pelanggan kami
+                  <ListItem href={urls.path('/testimonials')} title="Testimonials" icon={<Store className="h-4 w-4" />}>
+                    See what our customers say
                   </ListItem>
-                  <ListItem href={urls.path('/contact')} title="Hubungi Kami" icon={<Mail className="h-4 w-4" />}>
-                    Kontak dan informasi lokasi
+                  <ListItem href={urls.path('/contact')} title="Contact Us" icon={<Mail className="h-4 w-4" />}>
+                    Contact info and location
                   </ListItem>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            {/* PRODUK */}
+            {/* PRODUCTS */}
             <NavigationMenuItem>
               <NavigationMenuLink
                 asChild
@@ -138,25 +132,23 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                   pathname.startsWith(urls.products()) && 'bg-primary/10 text-primary'
                 )}
               >
-                <Link href={urls.products()}>Produk</Link>
+                <Link href={urls.products()}>Products</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-            {/* KONTAK - DROPDOWN */}
+            {/* CONTACT - DROPDOWN */}
             <NavigationMenuItem>
               <NavigationMenuTrigger
-                className={cn(
-                  pathname === urls.path('/contact') && 'bg-primary/10 text-primary'
-                )}
+                className={cn(pathname === urls.path('/contact') && 'bg-primary/10 text-primary')}
               >
-                Kontak
+                Contact
               </NavigationMenuTrigger>
               <NavigationMenuContent>
                 <div className="w-[400px] p-4">
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold mb-1">{tenant.name}</h3>
                     <p className="text-xs text-muted-foreground">
-                      Hubungi kami melalui
+                      Reach us through
                     </p>
                   </div>
 
@@ -207,7 +199,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                       href={urls.path('/contact')}
                       className="text-sm text-primary hover:underline"
                     >
-                      Lihat Halaman Kontak →
+                      View Contact Page →
                     </Link>
                   </div>
                 </div>
@@ -271,7 +263,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                     rel="noopener noreferrer"
                     className="mt-4 px-4 py-3 bg-green-500 text-white text-center font-medium rounded-lg"
                   >
-                    Hubungi via WhatsApp
+                    Chat on WhatsApp
                   </a>
                 )}
               </nav>

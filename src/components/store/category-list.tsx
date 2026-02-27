@@ -3,12 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { productsUrl } from '@/lib/store-url'; // ✅ NEW IMPORT
-
-// ==========================================
-// CATEGORY LIST COMPONENT
-// ✅ FIXED: Uses store-url helper for subdomain routing
-// ==========================================
+import { productsUrl } from '@/lib/store-url';
 
 interface CategoryListProps {
   categories: string[];
@@ -25,7 +20,6 @@ export function CategoryList({
   const searchParams = useSearchParams();
 
   const handleCategoryClick = (category: string | null) => {
-    // Build params from current search params (except category and page)
     const params: Record<string, string> = {};
     searchParams.forEach((value, key) => {
       if (key !== 'category' && key !== 'page') {
@@ -33,12 +27,10 @@ export function CategoryList({
       }
     });
 
-    // Add category if selected
     if (category) {
       params.category = category;
     }
 
-    // ✅ FIXED: Use smart URL helper
     router.push(productsUrl(storeSlug, params));
   };
 
@@ -49,17 +41,15 @@ export function CategoryList({
   return (
     <ScrollArea className="w-full whitespace-nowrap">
       <div className="flex gap-2 pb-2">
-        {/* All Category */}
         <Button
           variant={!currentCategory ? 'default' : 'outline'}
           size="sm"
           className="rounded-full"
           onClick={() => handleCategoryClick(null)}
         >
-          Semua
+          All
         </Button>
 
-        {/* Category Chips */}
         {categories.map((category) => (
           <Button
             key={category}

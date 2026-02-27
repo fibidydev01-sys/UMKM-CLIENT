@@ -103,7 +103,7 @@ export function DashboardClient() {
         isAtLimit={planInfo?.isAtLimit?.products}
         onAtLimit={() =>
           showUpgradeModal(
-            `Batas ${planInfo?.limits.maxProducts} Postingan tercapai. Upgrade ke Business untuk produk unlimited.`
+            `You've reached the ${planInfo?.limits.maxProducts} product limit. Upgrade to Business for unlimited products.`
           )
         }
       />
@@ -185,7 +185,7 @@ function ErrorBlock({
       <p className="text-destructive font-medium">{message}</p>
       <p className="text-sm text-muted-foreground mt-1">{error}</p>
       <Button variant="outline" className="mt-4" onClick={onRetry}>
-        Coba Lagi
+        Try again
       </Button>
     </div>
   );
@@ -223,7 +223,6 @@ function ProductsTabContent({
       if (!isMounted.current) return;
       setProducts(res.data);
 
-      // Extract categories from products
       const cats = [
         ...new Set(res.data.map((p) => p.category).filter((c): c is string => Boolean(c))),
       ].sort();
@@ -257,7 +256,7 @@ function ProductsTabContent({
           viewMode={viewMode}
           onViewModeChange={setViewMode}
           actionHref="/dashboard/products/new"
-          actionLabel="Tambah Produk"
+          actionLabel="Add product"
           disabled
         />
         <ProductsGridSkeleton />
@@ -268,7 +267,7 @@ function ProductsTabContent({
   if (error) {
     return (
       <ErrorBlock
-        message="Gagal memuat produk"
+        message="Failed to load products"
         error={error}
         onRetry={() => {
           hasFetched.current = false;
@@ -284,7 +283,7 @@ function ProductsTabContent({
         viewMode={viewMode}
         onViewModeChange={setViewMode}
         actionHref="/dashboard/products/new"
-        actionLabel="Tambah"
+        actionLabel="Add"
         onAtLimit={isAtLimit ? onAtLimit : undefined}
       />
       {viewMode === 'list' ? (

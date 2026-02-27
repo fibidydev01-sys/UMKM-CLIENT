@@ -47,7 +47,7 @@ interface NavGroup {
 
 const navigation: NavGroup[] = [
   {
-    title: 'Menu Utama',
+    title: 'Main',
     items: [
       {
         title: 'Dashboard',
@@ -60,22 +60,22 @@ const navigation: NavGroup[] = [
         icon: Layout,
       },
       {
-        title: 'Setup Toko',
+        title: 'Store Setup',
         href: '/dashboard/onboarding',
         icon: Rocket,
       },
     ],
   },
   {
-    title: 'Lainnya',
+    title: 'More',
     items: [
       {
-        title: 'Pengaturan',
+        title: 'Settings',
         href: '/dashboard/settings/toko',
         icon: Settings,
       },
       {
-        title: 'Langganan',
+        title: 'Subscription',
         href: '/dashboard/subscription',
         icon: Crown,
       },
@@ -106,7 +106,6 @@ export function DashboardNav() {
             {group.items.map((item) => {
               const active = isActive(item.href);
 
-              // Item with children (collapsible)
               if (item.children) {
                 return (
                   <Collapsible
@@ -147,7 +146,6 @@ export function DashboardNav() {
                 );
               }
 
-              // Simple item
               return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton

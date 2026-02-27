@@ -1,9 +1,3 @@
-// ============================================================================
-// PRODUCTS GRID - V2.1 (MULTI-CURRENCY SUPPORT)
-// ✅ FIX: Pass currency to grid cards for dynamic display
-// Grid view for products with preview drawer
-// ============================================================================
-
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -16,11 +10,6 @@ import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
 import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
-
-// ============================================================================
-// PRODUCTS GRID
-// Grid view for products with preview drawer
-// ============================================================================
 
 interface ProductsGridProps {
   products: Product[];
@@ -35,7 +24,6 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // ✅ FIX: Get currency from tenant
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
@@ -54,14 +42,9 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
 
   const handleDrawerOpenChange = (open: boolean) => {
     setDrawerOpen(open);
-    if (!open) {
-      setSelectedProduct(null);
-    }
+    if (!open) setSelectedProduct(null);
   };
 
-  // ════════════════════════════════════════════════════════════
-  // DRAWER ACTIONS
-  // ════════════════════════════════════════════════════════════
   const onEdit = useCallback((product: Product) => {
     router.push(`/dashboard/products/${product.id}/edit`);
   }, [router]);
@@ -73,25 +56,23 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
   const onToggleActive = useCallback(async (product: Product) => {
     try {
       await productsApi.update(product.id, { isActive: !product.isActive });
-      toast.success(product.isActive ? 'Produk dinonaktifkan' : 'Produk diaktifkan');
+      toast.success(product.isActive ? 'Product deactivated' : 'Product activated');
       await refreshData();
     } catch (err) {
-      toast.error('Gagal mengubah status', getErrorMessage(err));
+      toast.error('Failed to update status', getErrorMessage(err));
     }
   }, [refreshData]);
 
   const handleDelete = useCallback(async () => {
     if (!deleteProduct) return;
-
     setIsDeleting(true);
-
     try {
       await productsApi.delete(deleteProduct.id);
-      toast.success('Produk berhasil dihapus');
+      toast.success('Product deleted');
       setDeleteProduct(null);
       await refreshData();
     } catch (err) {
-      toast.error('Gagal menghapus produk', getErrorMessage(err));
+      toast.error('Failed to delete product', getErrorMessage(err));
     } finally {
       setIsDeleting(false);
     }
@@ -100,7 +81,7 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
   if (products.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Belum ada produk</p>
+        <p className="text-muted-foreground">No products yet</p>
       </div>
     );
   }
@@ -116,12 +97,11 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
             key={product.id}
             product={product}
             onClick={handleProductClick}
-            currency={currency} // ✅ FIX: Pass currency
+            currency={currency}
           />
         ))}
       </div>
 
-      {/* Preview Drawer */}
       <ProductPreviewDrawer
         product={selectedProduct}
         open={drawerOpen}
@@ -131,7 +111,6 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
         onToggleActive={onToggleActive}
       />
 
-      {/* Delete Confirmation Dialog */}
       <ProductDeleteDialog
         product={deleteProduct}
         isOpen={!!deleteProduct}
@@ -142,10 +121,6 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
     </>
   );
 }
-
-// ============================================================================
-// SKELETON
-// ============================================================================
 
 export function ProductsGridSkeleton({ count = 10 }: { count?: number }) {
   return (

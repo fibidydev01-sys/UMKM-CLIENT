@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 // ==========================================
 
 export const metadata: Metadata = {
-  title: 'Lupa Password',
-  description: 'Reset password akun Anda',
+  title: 'Forgot Password',
+  description: 'Reset your account password',
 };
 
 // ==========================================
@@ -52,7 +52,7 @@ function ComingSoonBadge() {
 export default function ForgotPasswordPage() {
   return (
     <AuthLayout
-      title="Lupa Password?"
+      title="Forgot your password?"
       badge={<ComingSoonBadge />}
       image="/auth-picture/auth-forgot-password.jpg"
       imageAlt="Forgot password illustration"

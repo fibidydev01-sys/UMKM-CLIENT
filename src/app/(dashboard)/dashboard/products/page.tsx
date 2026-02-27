@@ -15,10 +15,6 @@ import type { Product } from '@/types';
 
 type ViewMode = 'list' | 'grid';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
 interface PageState {
   products: Product[];
   categories: string[];
@@ -27,15 +23,10 @@ interface PageState {
   error: string | null;
 }
 
-// ============================================================================
-// HELPER FUNCTIONS
-// ============================================================================
-
 function extractCategories(products: Product[]): string[] {
   const categories = products
     .map((p) => p.category)
     .filter((c): c is string => Boolean(c));
-
   return [...new Set(categories)].sort();
 }
 
@@ -45,10 +36,6 @@ function parseCategories(response: unknown): string[] | null {
   }
   return null;
 }
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
 
 export default function ProductsPage() {
   const [state, setState] = useState<PageState>({
@@ -60,17 +47,12 @@ export default function ProductsPage() {
   });
   const [viewMode, setViewMode] = useState<ViewMode>('list');
 
-  // ✅ FIX 1: Use ref to track if initial fetch has been done
   const hasFetched = useRef(false);
-
-  // ✅ FIX 2: Use ref to track if component is mounted (prevent state updates after unmount)
   const isMounted = useRef(true);
 
   const { products, categories, isLoading, isRefreshing, error } = state;
 
-  // ✅ FIX 3: Fetch data function - NOT in useCallback to avoid dependency issues
   const fetchData = async (showFullLoading = true) => {
-    // Prevent duplicate calls
     if (!isMounted.current) return;
 
     setState((prev) => ({
@@ -81,18 +63,13 @@ export default function ProductsPage() {
     }));
 
     try {
-      // Single API call for products
-      const productsRes = await productsApi.getAll({
-        limit: 100,
-      });
+      const productsRes = await productsApi.getAll({ limit: 100 });
 
       if (!isMounted.current) return;
 
       const fetchedProducts = productsRes.data;
 
-      // Try to get categories, fallback to extracting from products
       let fetchedCategories: string[];
-
       try {
         const categoriesRes = await productsApi.getCategories();
         const parsed = parseCategories(categoriesRes);
@@ -123,32 +100,21 @@ export default function ProductsPage() {
     }
   };
 
-  // ✅ FIX 4: Initial fetch - runs ONLY ONCE
   useEffect(() => {
-    // Set mounted flag
     isMounted.current = true;
-
-    // Only fetch if not already fetched
     if (!hasFetched.current) {
       hasFetched.current = true;
       fetchData(true);
     }
-
-    // Cleanup on unmount
     return () => {
       isMounted.current = false;
     };
-  }, []); // ← Empty deps, runs once on mount
+  }, []);
 
-  // ✅ FIX 5: Refresh handler - manual trigger only
   const handleRefresh = async () => {
     await fetchData(false);
   };
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-  // View mode toggle component
   const ViewToggle = () => (
     <ToggleGroup type="single" value={viewMode} onValueChange={(v) => v && setViewMode(v as ViewMode)}>
       <ToggleGroupItem value="list" aria-label="List view" size="sm">
@@ -163,12 +129,12 @@ export default function ProductsPage() {
   if (isLoading) {
     return (
       <>
-        <PageHeader title="Postingan" description="Kelola postingan toko Anda">
+        <PageHeader title="Products" description="Manage your store products">
           <div className="flex items-center gap-2">
             <ViewToggle />
             <Button disabled>
               <Plus className="h-4 w-4 mr-2" />
-              Tambah
+              Add
             </Button>
           </div>
         </PageHeader>
@@ -180,20 +146,20 @@ export default function ProductsPage() {
   if (error) {
     return (
       <>
-        <PageHeader title="Produk" description="Kelola produk toko Anda">
+        <PageHeader title="Products" description="Manage your store products">
           <div className="flex items-center gap-2">
             <ViewToggle />
             <Button asChild>
               <Link href="/dashboard/products/new">
                 <Plus className="h-4 w-4 mr-2" />
-                Tambah Produk
+                Add product
               </Link>
             </Button>
           </div>
         </PageHeader>
 
         <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-          <p className="text-destructive font-medium">Gagal memuat produk</p>
+          <p className="text-destructive font-medium">Failed to load products</p>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
           <Button
             variant="outline"
@@ -203,7 +169,7 @@ export default function ProductsPage() {
               fetchData(true);
             }}
           >
-            Coba Lagi
+            Try again
           </Button>
         </div>
       </>
@@ -212,13 +178,13 @@ export default function ProductsPage() {
 
   return (
     <>
-      <PageHeader title="Produk" description="Kelola produk toko Anda">
+      <PageHeader title="Products" description="Manage your store products">
         <div className="flex items-center gap-2">
           <ViewToggle />
           <Button asChild>
             <Link href="/dashboard/products/new">
               <Plus className="h-4 w-4 mr-2" />
-              Tambah
+              Add
             </Link>
           </Button>
         </div>
@@ -242,28 +208,17 @@ export default function ProductsPage() {
   );
 }
 
-// ============================================================================
-// SKELETON - MINIMAL VIEW
-// Matches minimal table: Checkbox | Name+SKU | Date (3 columns)
-// ============================================================================
-
 function ProductsTableSkeleton() {
   return (
     <div className="space-y-4">
-      {/* Toolbar Skeleton - hanya search */}
       <div className="flex gap-2">
         <Skeleton className="h-10 w-80" />
       </div>
-
-      {/* Table Skeleton - 3 columns minimal */}
       <div className="rounded-md border">
         <div className="p-4 space-y-3">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="flex items-center gap-4">
-              {/* Checkbox */}
               <Skeleton className="h-4 w-4 flex-shrink-0" />
-
-              {/* Name + SKU (dengan icon dummy) */}
               <div className="flex items-center gap-3 flex-1">
                 <Skeleton className="h-10 w-10 rounded-lg flex-shrink-0" />
                 <div className="flex-1 space-y-1">
@@ -271,15 +226,11 @@ function ProductsTableSkeleton() {
                   <Skeleton className="h-3 w-24" />
                 </div>
               </div>
-
-              {/* Date */}
               <Skeleton className="h-4 w-24 flex-shrink-0" />
             </div>
           ))}
         </div>
       </div>
-
-      {/* Pagination */}
       <div className="flex items-center justify-between">
         <Skeleton className="h-4 w-32" />
         <div className="flex gap-2">

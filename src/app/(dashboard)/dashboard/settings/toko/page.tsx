@@ -1,20 +1,10 @@
 import type { Metadata } from 'next';
 import { TokoClient } from './client';
 
-// ==========================================
-// METADATA
-// ==========================================
-
 export const metadata: Metadata = {
-  title: 'Informasi Toko',
-  description: 'Kelola informasi toko dan konten landing page',
+  title: 'Store Settings',
+  description: 'Manage your store information and landing page content',
 };
-
-// ==========================================
-// TOKO PAGE
-// Pattern: page.tsx (server/metadata) + client.tsx (client/UI)
-// Sticky tabs: Hero Section, About, Testimonials, Contact, CTA
-// ==========================================
 
 export default function TokoPage() {
   return <TokoClient />;

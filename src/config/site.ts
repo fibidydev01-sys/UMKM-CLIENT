@@ -4,8 +4,8 @@
 
 export const siteConfig = {
   name: 'Fibidy',
-  description: 'Platform toko online untuk UMKM Indonesia. Buat toko online dalam hitungan menit, tanpa coding, tanpa biaya bulanan.',
-  tagline: 'Toko Online UMKM Lebih Mudah',
+  description: 'Online store platform for Indonesian small businesses. Launch your store in minutes — no coding',
+  tagline: 'Effortless online stores for small businesses',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://fibidy.com',
   ogImage: '/og-image.png',
 
@@ -22,10 +22,10 @@ export const siteConfig = {
 
   // SEO
   keywords: [
-    'toko online',
-    'umkm',
-    'jualan online',
-    'katalog produk',
+    'online store',
+    'small business',
+    'sell online',
+    'product catalog',
     'whatsapp order',
     'indonesia',
   ],

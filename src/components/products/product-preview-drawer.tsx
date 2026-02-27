@@ -1,9 +1,3 @@
-// ══════════════════════════════════════════════════════════════
-// PRODUCT PREVIEW DRAWER - v2.2 (MULTI-CURRENCY SUPPORT)
-// ✅ FIX: Dynamic currency from tenant settings
-// Shows product details in drawer when clicked from list
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
 import { useState, useCallback, useRef, useEffect } from 'react';
@@ -31,10 +25,6 @@ import { formatPrice, formatDateShort } from '@/lib/format';
 import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
-// ══════════════════════════════════════════════════════════════
-// TYPES
-// ══════════════════════════════════════════════════════════════
-
 interface ProductPreviewDrawerProps {
   product: Product | null;
   open: boolean;
@@ -43,10 +33,6 @@ interface ProductPreviewDrawerProps {
   onDelete?: (product: Product) => void;
   onToggleActive?: (product: Product) => void;
 }
-
-// ══════════════════════════════════════════════════════════════
-// MAIN COMPONENT
-// ══════════════════════════════════════════════════════════════
 
 export function ProductPreviewDrawer({
   product,
@@ -61,62 +47,46 @@ export function ProductPreviewDrawer({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
 
-  // ✅ FIX: Get currency from tenant
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
-  // ════════════════════════════════════════════════════════════
-  // SCROLL TO TOP when product changes
-  // ════════════════════════════════════════════════════════════
   const prevProductIdRef = useRef(product?.id);
   useEffect(() => {
     if (open && scrollContainerRef.current) {
       if (prevProductIdRef.current !== product?.id) {
         scrollContainerRef.current.scrollTop = 0;
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSelectedImageIndex(0);
         prevProductIdRef.current = product?.id;
       }
     }
   }, [product?.id, open]);
 
-  // ════════════════════════════════════════════════════════════
-  // STICKY HEADER DETECTION
-  // ════════════════════════════════════════════════════════════
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     const sentinel = headerSentinelRef.current;
-
     if (!scrollContainer || !sentinel) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         setIsHeaderSticky(!entry.isIntersecting);
       },
-      {
-        root: scrollContainer,
-        threshold: 0,
-        rootMargin: '-1px 0px 0px 0px',
-      }
+      { root: scrollContainer, threshold: 0, rootMargin: '-1px 0px 0px 0px' }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [open]);
 
-  // Reset states when drawer closes
   const prevOpenRef = useRef(open);
   useEffect(() => {
     if (prevOpenRef.current && !open) {
-      setIsHeaderSticky(false); // eslint-disable-line react-hooks/exhaustive-deps
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsHeaderSticky(false);
       setSelectedImageIndex(0);
     }
     prevOpenRef.current = open;
   }, [open]);
-
-  // ════════════════════════════════════════════════════════════
-  // HANDLERS
-  // ════════════════════════════════════════════════════════════
 
   const handleEdit = useCallback(() => {
     if (product && onEdit) {
@@ -150,10 +120,8 @@ export function ProductPreviewDrawer({
   return (
     <Drawer.Root open={open} onOpenChange={onOpenChange}>
       <Drawer.Portal>
-        {/* Overlay */}
         <Drawer.Overlay className="fixed inset-0 bg-black/60 z-[9999]" />
 
-        {/* Content */}
         <Drawer.Content
           className={cn(
             'fixed bottom-0 left-0 right-0 z-[10000]',
@@ -163,19 +131,17 @@ export function ProductPreviewDrawer({
           )}
           aria-describedby="drawer-description"
         >
-          {/* Accessibility */}
           <Drawer.Title asChild>
             <VisuallyHidden.Root>
-              {product.name ? `Preview ${product.name}` : 'Preview Produk'}
+              {product.name ? `Preview ${product.name}` : 'Product Preview'}
             </VisuallyHidden.Root>
           </Drawer.Title>
           <Drawer.Description asChild>
             <VisuallyHidden.Root id="drawer-description">
-              {product.description || `Lihat detail produk ${product.name || ''}`}
+              {product.description || `View details for ${product.name || ''}`}
             </VisuallyHidden.Root>
           </Drawer.Description>
 
-          {/* Drag Handle */}
           <div className="flex justify-center pt-3 pb-2 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
@@ -203,7 +169,7 @@ export function ProductPreviewDrawer({
               </div>
               <div className="flex items-center gap-2 ml-4">
                 <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                  {product.isActive ? 'Aktif' : 'Nonaktif'}
+                  {product.isActive ? 'Active' : 'Inactive'}
                 </Badge>
               </div>
             </div>
@@ -211,13 +177,11 @@ export function ProductPreviewDrawer({
 
           {/* Scrollable Content */}
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-            {/* Sentinel for sticky detection */}
             <div ref={headerSentinelRef} className="h-0" />
 
             {/* Product Images */}
             <div className="px-4 py-6">
               <div className="relative w-full max-w-2xl mx-auto">
-                {/* Main Image */}
                 <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted">
                   {currentImage ? (
                     <Image
@@ -230,14 +194,11 @@ export function ProductPreviewDrawer({
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
                       <ImageIcon className="h-16 w-16 text-muted-foreground/30" />
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Tidak ada gambar
-                      </p>
+                      <p className="text-sm text-muted-foreground mt-2">No image</p>
                     </div>
                   )}
                 </div>
 
-                {/* Thumbnails */}
                 {hasImages && product.images.length > 1 && (
                   <div className="grid grid-cols-4 gap-2 mt-3">
                     {product.images.map((img, idx) => (
@@ -268,12 +229,10 @@ export function ProductPreviewDrawer({
             {/* Content Area */}
             <div className="px-4 pb-8 max-w-2xl mx-auto">
 
-              {/* ✅ FIX: Price Section with dynamic currency */}
+              {/* Price */}
               {!isCustomPrice && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    Harga
-                  </h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Price</h3>
                   <div className="flex items-baseline gap-3">
                     <span className="text-2xl font-bold">
                       {formatPrice(product.price, currency)}
@@ -292,27 +251,23 @@ export function ProductPreviewDrawer({
               {/* Description */}
               {product.description && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                    Deskripsi
-                  </h3>
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
                   <p className="text-sm leading-relaxed">{product.description}</p>
                 </div>
               )}
 
               {/* Details Grid */}
               <div className="grid grid-cols-2 gap-4 mb-6">
-                {/* Category */}
                 {product.category && (
                   <div className="flex items-start gap-3">
                     <Tag className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Kategori</p>
+                      <p className="text-xs text-muted-foreground">Category</p>
                       <p className="text-sm font-medium">{product.category}</p>
                     </div>
                   </div>
                 )}
 
-                {/* SKU */}
                 {product.sku && (
                   <div className="flex items-start gap-3">
                     <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -323,31 +278,24 @@ export function ProductPreviewDrawer({
                   </div>
                 )}
 
-                {/* Stock */}
                 {product.trackStock && (
                   <div className="flex items-start gap-3">
                     <Box className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Stok</p>
-                      <p
-                        className={cn(
-                          'text-sm font-medium',
-                          isLowStock && 'text-orange-500'
-                        )}
-                      >
+                      <p className="text-xs text-muted-foreground">Stock</p>
+                      <p className={cn('text-sm font-medium', isLowStock && 'text-orange-500')}>
                         {stock} {product.unit || 'pcs'}
-                        {isLowStock && ' (Rendah)'}
+                        {isLowStock && ' (Low)'}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* ✅ FIX: Cost Price with dynamic currency */}
                 {product.costPrice && !isCustomPrice && (
                   <div className="flex items-start gap-3">
                     <DollarSign className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
-                      <p className="text-xs text-muted-foreground">Harga Modal</p>
+                      <p className="text-xs text-muted-foreground">Cost price</p>
                       <p className="text-sm font-medium">
                         {formatPrice(product.costPrice, currency)}
                       </p>
@@ -355,26 +303,20 @@ export function ProductPreviewDrawer({
                   </div>
                 )}
 
-                {/* Created Date */}
                 <div className="flex items-start gap-3">
                   <Calendar className="h-4 w-4 text-muted-foreground mt-0.5" />
                   <div>
-                    <p className="text-xs text-muted-foreground">Dibuat</p>
-                    <p className="text-sm font-medium">
-                      {formatDateShort(product.createdAt)}
-                    </p>
+                    <p className="text-xs text-muted-foreground">Created</p>
+                    <p className="text-sm font-medium">{formatDateShort(product.createdAt)}</p>
                   </div>
                 </div>
 
-                {/* Featured Badge */}
                 {product.isFeatured && (
                   <div className="flex items-start gap-3">
                     <BarChart3 className="h-4 w-4 text-muted-foreground mt-0.5" />
                     <div>
                       <p className="text-xs text-muted-foreground">Status</p>
-                      <Badge variant="secondary" className="mt-1">
-                        Unggulan
-                      </Badge>
+                      <Badge variant="secondary" className="mt-1">Featured</Badge>
                     </div>
                   </div>
                 )}
@@ -385,20 +327,16 @@ export function ProductPreviewDrawer({
               {/* Action Buttons */}
               <div className="grid grid-cols-2 gap-3">
                 {onToggleActive && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleToggleActive}
-                  >
+                  <Button variant="outline" className="w-full" onClick={handleToggleActive}>
                     {product.isActive ? (
                       <>
                         <EyeOff className="h-4 w-4 mr-2" />
-                        Nonaktifkan
+                        Deactivate
                       </>
                     ) : (
                       <>
                         <Eye className="h-4 w-4 mr-2" />
-                        Aktifkan
+                        Activate
                       </>
                     )}
                   </Button>
@@ -419,7 +357,7 @@ export function ProductPreviewDrawer({
                   onClick={handleDelete}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Hapus Produk
+                  Delete product
                 </Button>
               )}
             </div>

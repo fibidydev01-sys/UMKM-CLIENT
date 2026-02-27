@@ -1,10 +1,5 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// FEATURED PRODUCTS - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: Terima currency prop dan pass ke ProductGrid
-// ══════════════════════════════════════════════════════════════
-
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,7 +10,7 @@ import type { Product } from '@/types';
 interface FeaturedProductsProps {
   products: Product[];
   storeSlug: string;
-  currency: string;        // ✅ FIX: tambah currency prop
+  currency: string;
   title?: string;
   showViewAll?: boolean;
 }
@@ -23,8 +18,8 @@ interface FeaturedProductsProps {
 export function FeaturedProducts({
   products,
   storeSlug,
-  currency,                // ✅ FIX: diteruskan ke ProductGrid
-  title = 'Produk Unggulan',
+  currency,
+  title = 'Featured Products',
   showViewAll = true,
 }: FeaturedProductsProps) {
   const urls = useStoreUrls(storeSlug);
@@ -40,13 +35,12 @@ export function FeaturedProducts({
         {showViewAll && (
           <Button asChild variant="ghost" size="sm">
             <Link href={urls.products()}>
-              Lihat Semua
+              View All
               <ArrowRight className="h-4 w-4 ml-1" />
             </Link>
           </Button>
         )}
       </div>
-      {/* ✅ FIX: pass currency ke ProductGrid */}
       <ProductGrid
         products={products}
         storeSlug={storeSlug}

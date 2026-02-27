@@ -2,11 +2,6 @@ import Link from 'next/link';
 import { Store, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// ==========================================
-// STORE NOT FOUND COMPONENT
-// 404 page for invalid store slug
-// ==========================================
-
 interface StoreNotFoundProps {
   slug?: string;
 }
@@ -21,30 +16,18 @@ export function StoreNotFound({ slug }: StoreNotFoundProps) {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">Toko Tidak Ditemukan</h1>
+        <h1 className="text-2xl font-bold mb-2">Store Not Found</h1>
 
         <p className="text-muted-foreground mb-6">
           {slug ? (
             <>
-              Toko dengan alamat <span className="font-medium">&quot;{slug}&quot;</span> tidak
-              ditemukan atau sudah tidak aktif.
+              The store <span className="font-medium">&quot;{slug}&quot;</span> does not
+              exist or is no longer active.
             </>
           ) : (
-            'Toko yang Anda cari tidak ditemukan atau sudah tidak aktif.'
+            'The store you are looking for does not exist or is no longer active.'
           )}
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild variant="outline">
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali ke Beranda
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href="/register">Buat Toko Gratis</Link>
-          </Button>
-        </div>
       </div>
     </div>
   );

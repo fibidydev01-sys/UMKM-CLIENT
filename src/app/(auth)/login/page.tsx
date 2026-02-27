@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 // ==========================================
 
 export const metadata: Metadata = {
-  title: 'Masuk',
-  description: 'Masuk ke dashboard toko Anda',
+  title: 'Sign In',
+  description: 'Sign in to your Fibidy dashboard',
 };
 
 // ==========================================
@@ -40,8 +40,8 @@ function LoginFormSkeleton() {
 export default function LoginPage() {
   return (
     <AuthLayout
-      title="Selamat Datang Kembali"
-      description="Masuk ke dashboard untuk mengelola toko Anda"
+      title="Welcome back"
+      description="Sign in to your account to continue"
       image="/auth-picture/auth-login.jpg"
       imageAlt="Login illustration"
     >

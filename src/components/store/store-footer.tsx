@@ -69,7 +69,7 @@ const SocialIcons = {
   ),
   dribbble: () => (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-      <path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.025-8.048 6.404 1.73 1.348 3.886 2.158 6.23 2.158 1.42 0 2.77-.29 4.074-.812zm-9.773-2.219c.213-.356 2.773-4.lichkeit 8.219-6.083.145-.048.29-.09.435-.13-.277-.625-.574-1.249-.885-1.86C8.816 12.68 3.12 12.755 2.648 12.76l-.002.171c0 2.467.887 4.73 2.336 6.5zm-2.associated-2.834c.487.017 5.411.093 10.164-1.396-1.83-3.248-3.795-5.972-4.094-6.37-2.66 1.255-4.56 3.64-5.05 6.503.266-.025.534-.046.78-.046.57 0 1.14.05 1.7.05-.066.42-.1.847-.1 1.28 0 .006 0 .013.001.02-.466.012-.93.025-1.4.025-.34 0-.68-.01-1.02-.035zm6.737-9.154c.31.41 2.286 3.14 4.095 6.42 3.91-1.464 5.563-3.684 5.75-3.947-1.278-2.884-4.02-4.992-7.295-5.346-.843 1.05-1.705 2.182-2.55 2.873z" />
+      <path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.025-8.048 6.404 1.73 1.348 3.886 2.158 6.23 2.158 1.42 0 2.77-.29 4.074-.812zm-9.773-2.219c.213-.356 2.773-4.956 8.219-6.083.145-.048.29-.09.435-.13-.277-.625-.574-1.249-.885-1.86C8.816 12.68 3.12 12.755 2.648 12.76l-.002.171c0 2.467.887 4.73 2.336 6.5zm-2.301-8.23c.487.017 5.411.093 10.164-1.396-1.83-3.248-3.795-5.972-4.094-6.37-2.66 1.255-4.56 3.64-5.05 6.503.266-.025.534-.046.78-.046.57 0 1.14.05 1.7.05-.066.42-.1.847-.1 1.28 0 .006 0 .013.001.02-.466.012-.93.025-1.4.025-.34 0-.68-.01-1.02-.035zm6.737-9.154c.31.41 2.286 3.14 4.095 6.42 3.91-1.464 5.563-3.684 5.75-3.947-1.278-2.884-4.02-4.992-7.295-5.346-.843 1.05-1.705 2.182-2.55 2.873z" />
     </svg>
   ),
   threads: () => (
@@ -83,10 +83,6 @@ const SocialIcons = {
     </svg>
   ),
 };
-
-// ==========================================
-// SOCIAL LINK CONFIG
-// ==========================================
 
 const SOCIAL_CONFIG = [
   { key: 'instagram', label: 'Instagram', color: 'hover:text-pink-500' },
@@ -104,10 +100,6 @@ const SOCIAL_CONFIG = [
   { key: 'vimeo', label: 'Vimeo', color: 'hover:text-cyan-500' },
 ] as const;
 
-// ==========================================
-// STORE FOOTER COMPONENT
-// ==========================================
-
 interface StoreFooterProps {
   tenant: PublicTenant;
 }
@@ -116,7 +108,6 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
   const currentYear = new Date().getFullYear();
   const urls = useStoreUrls(tenant.slug);
 
-  // Filter social links yang diisi
   const activeSocialLinks = SOCIAL_CONFIG.filter(
     ({ key }) => tenant.socialLinks?.[key as keyof typeof tenant.socialLinks]
   );
@@ -126,7 +117,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
       <div className="container px-4 py-8 md:py-12">
         <div className={`grid gap-6 md:grid-cols-2 ${activeSocialLinks.length > 0 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
 
-          {/* Kolom 1 - Store Info */}
+          {/* Col 1 - Store Info */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">{tenant.name}</CardTitle>
@@ -140,13 +131,13 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
               <Button asChild size="sm" className="w-full">
                 <a href={`https://wa.me/${tenant.whatsapp}`} target="_blank" rel="noopener noreferrer">
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Hubungi Kami
+                  Contact Us
                 </a>
               </Button>
             </CardContent>
           </Card>
 
-          {/* Kolom 2 - Menu */}
+          {/* Col 2 - Menu */}
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-base">Menu</CardTitle>
@@ -155,22 +146,22 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
               <ul className="space-y-2">
                 <li>
                   <Link href={urls.home} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Beranda
+                    Home
                   </Link>
                 </li>
                 <li>
                   <Link href={urls.products()} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Semua Produk
+                    All Products
                   </Link>
                 </li>
               </ul>
             </CardContent>
           </Card>
 
-          {/* Kolom 3 - Kontak */}
+          {/* Col 3 - Contact */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Kontak</CardTitle>
+              <CardTitle className="text-base">Contact</CardTitle>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
@@ -202,7 +193,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
             </CardContent>
           </Card>
 
-          {/* Kolom 4 - Social Media */}
+          {/* Col 4 - Social Media */}
           {activeSocialLinks.length > 0 && (
             <Card>
               <CardHeader className="pb-3">
@@ -241,9 +232,9 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
 
         {/* Bottom Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-          <p>© {currentYear} {tenant.name}. Hak cipta dilindungi.</p>
+          <p>© {currentYear} {tenant.name}. All rights reserved.</p>
           <p>
-            Dibuat dengan{' '}
+            Powered by{' '}
             <Link href="/" className="font-medium text-primary hover:underline">
               {siteConfig.name}
             </Link>

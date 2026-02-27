@@ -25,30 +25,12 @@ interface OnboardingStepProps {
 
 function StepIndicator({ completed, isCritical }: { completed: boolean; isCritical: boolean }) {
   if (completed) {
-    return (
-      <IconCircleCheckFilled
-        className="mt-0.5 size-5 shrink-0 text-primary"
-        aria-hidden="true"
-      />
-    );
+    return <IconCircleCheckFilled className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />;
   }
-
   if (isCritical) {
-    return (
-      <IconAlertTriangle
-        className="mt-0.5 size-5 shrink-0 text-amber-500"
-        aria-hidden="true"
-      />
-    );
+    return <IconAlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500" aria-hidden="true" />;
   }
-
-  return (
-    <IconCircleDashed
-      className="mt-0.5 size-5 shrink-0 stroke-muted-foreground/40"
-      strokeWidth={2}
-      aria-hidden="true"
-    />
-  );
+  return <IconCircleDashed className="mt-0.5 size-5 shrink-0 stroke-muted-foreground/40" strokeWidth={2} aria-hidden="true" />;
 }
 
 export function OnboardingStep({
@@ -91,12 +73,10 @@ export function OnboardingStep({
         >
           <div className="relative flex items-start justify-between gap-3 py-3 pl-4 pr-2">
             <div className="flex w-full gap-3">
-              {/* Step Indicator */}
               <div className="shrink-0">
                 <StepIndicator completed={step.completed} isCritical={step.isCritical} />
               </div>
 
-              {/* Content */}
               <div className="grow">
                 <h4
                   className={cn(
@@ -107,12 +87,11 @@ export function OnboardingStep({
                   {step.title}
                   {step.isCritical && !step.completed && (
                     <span className="ml-2 text-xs text-amber-600 dark:text-amber-400">
-                      (Wajib)
+                      (Required)
                     </span>
                   )}
                 </h4>
 
-                {/* Expandable Content */}
                 <div
                   className={cn(
                     'overflow-hidden transition-all duration-200',
@@ -138,14 +117,13 @@ export function OnboardingStep({
 
                   {step.completed && (
                     <p className="mt-2 text-xs text-green-600 dark:text-green-400">
-                      ✓ Selesai
+                      ✓ Completed
                     </p>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* Chevron (when closed) */}
             {!isOpen && (
               <IconChevronRight
                 className="mt-0.5 size-4 shrink-0 text-muted-foreground"

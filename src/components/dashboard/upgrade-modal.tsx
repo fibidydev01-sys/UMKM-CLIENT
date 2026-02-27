@@ -22,8 +22,8 @@ interface UpgradeModalProps {
 export function UpgradeModal({
   open,
   onOpenChange,
-  title = 'Batas plan tercapai',
-  description = 'Upgrade ke Business untuk membuka limit dan fitur premium lainnya.',
+  title = 'Plan limit reached',
+  description = 'Upgrade to Business to unlock higher limits and premium features.',
 }: UpgradeModalProps) {
   const router = useRouter();
 
@@ -48,14 +48,14 @@ export function UpgradeModal({
             }}
           >
             <Crown className="mr-2 h-4 w-4" />
-            Lihat Paket Upgrade
+            View upgrade plans
           </Button>
           <Button
             variant="ghost"
             className="w-full"
             onClick={() => onOpenChange(false)}
           >
-            Nanti saja
+            Maybe later
           </Button>
         </DialogFooter>
       </DialogContent>

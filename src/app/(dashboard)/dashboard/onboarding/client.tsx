@@ -32,46 +32,29 @@ function StepCard({ step }: { step: OnboardingStepStatus }) {
       )}
     >
       <div className="flex items-start gap-3">
-        {/* Step Indicator */}
         <div className="shrink-0 mt-0.5">
           {step.completed ? (
-            <IconCircleCheckFilled
-              className="size-6 text-primary"
-              aria-hidden="true"
-            />
+            <IconCircleCheckFilled className="size-6 text-primary" aria-hidden="true" />
           ) : step.isCritical ? (
-            <IconAlertTriangle
-              className="size-6 text-amber-500"
-              aria-hidden="true"
-            />
+            <IconAlertTriangle className="size-6 text-amber-500" aria-hidden="true" />
           ) : (
-            <IconCircleDashed
-              className="size-6 stroke-muted-foreground/40"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
+            <IconCircleDashed className="size-6 stroke-muted-foreground/40" strokeWidth={2} aria-hidden="true" />
           )}
         </div>
 
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3
-              className={cn(
-                'font-semibold',
-                step.completed ? 'text-primary' : 'text-foreground'
-              )}
-            >
+            <h3 className={cn('font-semibold', step.completed ? 'text-primary' : 'text-foreground')}>
               {step.title}
             </h3>
             {step.isCritical && !step.completed && (
               <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 dark:text-amber-400">
-                Wajib
+                Required
               </Badge>
             )}
             {step.completed && (
               <Badge variant="secondary" className="text-xs">
-                Selesai
+                Done
               </Badge>
             )}
           </div>
@@ -115,9 +98,9 @@ function CelebrationView() {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-center">
       <IconTrophy className="h-20 w-20 text-primary mb-6" />
-      <h1 className="text-3xl font-bold mb-2">Selamat! 🎉</h1>
+      <h1 className="text-3xl font-bold mb-2">You&apos;re all set! 🎉</h1>
       <p className="text-lg text-muted-foreground max-w-md">
-        Toko Anda sudah 100% siap untuk dipublikasikan!
+        Your store is 100% ready to go live!
       </p>
     </div>
   );
@@ -156,10 +139,10 @@ export function OnboardingClient() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <IconRocket className="h-5 w-5" />
-                  Setup Toko
+                  Store Setup
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {remainingSteps} dari {progress.totalSteps} langkah tersisa
+                  {remainingSteps} of {progress.totalSteps} steps remaining
                 </p>
               </div>
             </div>
@@ -179,7 +162,6 @@ export function OnboardingClient() {
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          {/* Progress Bar */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Progress</span>
@@ -193,11 +175,10 @@ export function OnboardingClient() {
             </div>
           </div>
 
-          {/* Critical Warning */}
           {!progress.canPublish && (
             <div className="mt-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 px-4 py-3">
               <p className="text-sm text-amber-800 dark:text-amber-200">
-                <strong>Logo</strong> dan <strong>Hero Background</strong> wajib untuk publish toko.
+                <strong>Logo</strong> and <strong>Hero Background</strong> are required to publish your store.
               </p>
             </div>
           )}

@@ -44,25 +44,25 @@ const PLAN_FEATURES: Array<{
   starter: string | boolean;
   business: string | boolean;
 }> = [
-    { feature: 'Produk/Layanan', starter: 'Max 50', business: 'Unlimited' },
-    { feature: 'Pelanggan/Klien', starter: 'Max 200', business: 'Unlimited' },
-    { feature: 'Landing Page', starter: 'Subdomain gratis', business: 'Subdomain gratis' },
-    { feature: 'Component Blocks', starter: '10 variants', business: '50+ variants + update' },
+    { feature: 'Products', starter: 'Max 50', business: 'Unlimited' },
+    { feature: 'Customers', starter: 'Max 200', business: 'Unlimited' },
+    { feature: 'Landing Page', starter: 'Free subdomain', business: 'Free subdomain' },
+    { feature: 'Component Blocks', starter: '10 variants', business: '50+ variants + updates' },
     { feature: 'WhatsApp Integration', starter: 'Connect + Auto-reply', business: 'Connect + Auto-reply' },
   ];
 
 const PAYMENT_STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  settlement: { label: 'Lunas', variant: 'default' },
-  capture: { label: 'Lunas', variant: 'default' },
-  pending: { label: 'Menunggu', variant: 'outline' },
-  expire: { label: 'Kedaluwarsa', variant: 'secondary' },
-  cancel: { label: 'Dibatalkan', variant: 'secondary' },
-  deny: { label: 'Ditolak', variant: 'destructive' },
-  failure: { label: 'Gagal', variant: 'destructive' },
+  settlement: { label: 'Paid', variant: 'default' },
+  capture: { label: 'Paid', variant: 'default' },
+  pending: { label: 'Pending', variant: 'outline' },
+  expire: { label: 'Expired', variant: 'secondary' },
+  cancel: { label: 'Cancelled', variant: 'secondary' },
+  deny: { label: 'Declined', variant: 'destructive' },
+  failure: { label: 'Failed', variant: 'destructive' },
 };
 
 function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('id-ID', {
+  return new Date(dateStr).toLocaleDateString('en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -97,28 +97,25 @@ export default function SubscriptionPage() {
     setPayments(history);
   };
 
-  // Fetch data
   useEffect(() => {
     refreshData().catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  // Handle redirect dari Midtrans
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
     if (paymentStatus === 'finish') {
-      toast.success('Pembayaran berhasil! Plan Business aktif.');
+      toast.success('Payment successful! Business plan is now active.');
       refreshData();
     } else if (paymentStatus === 'unfinish') {
-      toast.info('Pembayaran belum selesai. Silakan coba lagi kapan saja.');
+      toast.info('Payment incomplete. You can try again anytime.');
     } else if (paymentStatus === 'error') {
-      toast.error('Pembayaran gagal. Silakan coba lagi.');
+      toast.error('Payment failed. Please try again.');
     }
   }, [searchParams]);
 
-  // Handle upgrade / retry payment
   const handleUpgrade = async () => {
     if (!isLoaded) {
-      toast.error('Sistem pembayaran sedang dimuat, tunggu sebentar...');
+      toast.error('Payment system is loading, please wait a moment...');
       return;
     }
 
@@ -128,17 +125,17 @@ export default function SubscriptionPage() {
 
       pay(response.token, {
         onSuccess: () => {
-          toast.success('Pembayaran berhasil! Plan Business aktif.');
+          toast.success('Payment successful! Business plan is now active.');
           refreshData();
           setUpgrading(false);
         },
         onPending: () => {
-          toast.info('Selesaikan pembayaran sesuai instruksi yang diberikan.');
+          toast.info('Complete your payment using the instructions provided.');
           refreshData();
           setUpgrading(false);
         },
         onError: () => {
-          toast.error('Pembayaran gagal. Silakan coba lagi.');
+          toast.error('Payment failed. Please try again.');
           setUpgrading(false);
         },
         onClose: () => {
@@ -146,21 +143,20 @@ export default function SubscriptionPage() {
         },
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Gagal memproses pembayaran';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to process payment';
       toast.error(errorMessage);
       setUpgrading(false);
     }
   };
 
-  // Handle cancel subscription
   const handleCancel = async () => {
     setCancelling(true);
     try {
       await subscriptionApi.cancelSubscription();
-      toast.success('Langganan dibatalkan. Akses Business tetap aktif sampai akhir periode.');
+      toast.success('Subscription cancelled. Business access remains active until the end of your billing period.');
       refreshData();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Gagal membatalkan langganan';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel subscription';
       toast.error(errorMessage);
     } finally {
       setCancelling(false);
@@ -195,8 +191,8 @@ export default function SubscriptionPage() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-2xl font-bold">Langganan</h1>
-        <p className="text-muted-foreground">Kelola plan dan pembayaran Anda</p>
+        <h1 className="text-2xl font-bold">Subscription</h1>
+        <p className="text-muted-foreground">Manage your plan and billing</p>
       </div>
 
       {/* Trial Banner */}
@@ -207,21 +203,16 @@ export default function SubscriptionPage() {
               <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
               <div className="space-y-1">
                 <p className="font-medium text-sm">
-                  Trial Business Gratis - {daysRemaining} hari tersisa
+                  Free Business Trial — {daysRemaining} days remaining
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Nikmati semua fitur Business sampai <strong>{formatDate(trialEndsAt)}</strong>.
-                  Setelah trial berakhir, akun akan otomatis beralih ke plan Starter.
+                  Enjoy all Business features until <strong>{formatDate(trialEndsAt)}</strong>.
+                  After your trial ends, your account will automatically revert to the Starter plan.
                 </p>
-                <Button
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleUpgrade}
-                  disabled={upgrading}
-                >
+                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
                   {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   <Crown className="mr-2 h-3 w-3" />
-                  Upgrade ke Business - Rp 100.000/bulan
+                  Upgrade to Business — Rp 100,000/mo
                 </Button>
               </div>
             </div>
@@ -236,20 +227,14 @@ export default function SubscriptionPage() {
             <div className="flex gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-sm">Langganan dibatalkan</p>
+                <p className="font-medium text-sm">Subscription cancelled</p>
                 <p className="text-sm text-muted-foreground">
-                  Akses Business Anda tetap aktif sampai <strong>{formatDate(periodEnd)}</strong>.
-                  Setelah itu, akun akan kembali ke plan Starter.
+                  Your Business access remains active until <strong>{formatDate(periodEnd)}</strong>.
+                  After that, your account will revert to the Starter plan.
                 </p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleUpgrade}
-                  disabled={upgrading}
-                >
+                <Button variant="outline" size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
                   {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
-                  Perpanjang Langganan
+                  Renew subscription
                 </Button>
               </div>
             </div>
@@ -257,32 +242,27 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      {/* Over-Limit Banner (grandfathered data) */}
+      {/* Over-Limit Banner */}
       {isStarter && hasOverLimit && (
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="pt-6">
             <div className="flex gap-3">
               <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium text-sm">Data melebihi batas plan Starter</p>
+                <p className="font-medium text-sm">You&apos;ve exceeded your Starter plan limits</p>
                 <p className="text-sm text-muted-foreground">
                   {overLimitProducts && overLimitCustomers
-                    ? `Anda memiliki ${planInfo?.usage.products} produk (limit ${planInfo?.limits.maxProducts}) dan ${planInfo?.usage.customers} pelanggan (limit ${planInfo?.limits.maxCustomers}).`
+                    ? `You have ${planInfo?.usage.products} products (limit ${planInfo?.limits.maxProducts}) and ${planInfo?.usage.customers} customers (limit ${planInfo?.limits.maxCustomers}).`
                     : overLimitProducts
-                      ? `Anda memiliki ${planInfo?.usage.products} produk (limit ${planInfo?.limits.maxProducts}).`
-                      : `Anda memiliki ${planInfo?.usage.customers} pelanggan (limit ${planInfo?.limits.maxCustomers}).`}
-                  {' '}Data yang sudah ada tetap aman, tapi Anda tidak bisa menambah baru.
-                  Upgrade untuk membuka limit.
+                      ? `You have ${planInfo?.usage.products} products (limit ${planInfo?.limits.maxProducts}).`
+                      : `You have ${planInfo?.usage.customers} customers (limit ${planInfo?.limits.maxCustomers}).`}
+                  {' '}Your existing data is safe, but you can&apos;t add new entries.
+                  Upgrade to unlock your limits.
                 </p>
-                <Button
-                  size="sm"
-                  className="mt-2"
-                  onClick={handleUpgrade}
-                  disabled={upgrading}
-                >
+                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
                   {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   <Crown className="mr-2 h-3 w-3" />
-                  Upgrade ke Business - Rp 100.000/bulan
+                  Upgrade to Business — Rp 100,000/mo
                 </Button>
               </div>
             </div>
@@ -302,15 +282,15 @@ export default function SubscriptionPage() {
               )}
               <div>
                 <CardTitle>
-                  Plan {plan}
+                  {plan} Plan
                   {isTrial && ' (Trial)'}
                 </CardTitle>
                 <CardDescription>
                   {isStarter
-                    ? 'Gratis selamanya'
+                    ? 'Free forever'
                     : isTrial
-                      ? 'Trial gratis 30 hari'
-                      : `Rp ${planInfo?.subscription.priceAmount.toLocaleString('id-ID')}/bulan`}
+                      ? '30-day free trial'
+                      : `Rp ${planInfo?.subscription.priceAmount.toLocaleString('id-ID')}/mo`}
                 </CardDescription>
               </div>
             </div>
@@ -323,10 +303,10 @@ export default function SubscriptionPage() {
               }
             >
               {isTrial && isActive && 'Trial'}
-              {isTrial && isCancelled && 'Trial (Dibatalkan)'}
-              {!isTrial && isActive && 'Aktif'}
-              {!isTrial && isCancelled && 'Dibatalkan'}
-              {isExpired && 'Kedaluwarsa'}
+              {isTrial && isCancelled && 'Trial (Cancelled)'}
+              {!isTrial && isActive && 'Active'}
+              {!isTrial && isCancelled && 'Cancelled'}
+              {isExpired && 'Expired'}
               {!isActive && !isCancelled && !isExpired && !isTrial && status}
             </Badge>
           </div>
@@ -335,7 +315,7 @@ export default function SubscriptionPage() {
           {/* Usage Stats */}
           <div className="grid grid-cols-2 gap-4">
             <div className="rounded-lg border p-3">
-              <p className="text-sm text-muted-foreground">Produk</p>
+              <p className="text-sm text-muted-foreground">Products</p>
               <p className="text-lg font-bold">
                 {planInfo?.usage.products}
                 <span className="text-sm font-normal text-muted-foreground">
@@ -347,7 +327,7 @@ export default function SubscriptionPage() {
               </p>
             </div>
             <div className="rounded-lg border p-3">
-              <p className="text-sm text-muted-foreground">Pelanggan</p>
+              <p className="text-sm text-muted-foreground">Customers</p>
               <p className="text-lg font-bold">
                 {planInfo?.usage.customers}
                 <span className="text-sm font-normal text-muted-foreground">
@@ -366,10 +346,10 @@ export default function SubscriptionPage() {
               {isTrial ? <Clock className="h-4 w-4" /> : <Calendar className="h-4 w-4" />}
               <span>
                 {isTrial
-                  ? `Trial berakhir: ${formatDate(trialEndsAt!)} (${daysRemaining} hari lagi)`
+                  ? `Trial ends: ${formatDate(trialEndsAt!)} (${daysRemaining} days left)`
                   : isCancelled
-                    ? `Akses aktif sampai: ${formatDate(periodEnd!)}`
-                    : `Berlaku sampai: ${formatDate(periodEnd!)}`}
+                    ? `Access active until: ${formatDate(periodEnd!)}`
+                    : `Renews: ${formatDate(periodEnd!)}`}
               </span>
             </div>
           )}
@@ -380,11 +360,11 @@ export default function SubscriptionPage() {
               {upgrading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Crown className="mr-2 h-4 w-4" />
               {isTrial
-                ? 'Lanjutkan Business'
+                ? 'Continue with Business'
                 : isExpired
-                  ? 'Aktifkan Kembali Business'
-                  : 'Upgrade ke Business'}{' '}
-              - Rp 100.000/bulan
+                  ? 'Reactivate Business'
+                  : 'Upgrade to Business'}{' '}
+              — Rp 100,000/mo
             </Button>
           )}
 
@@ -393,35 +373,35 @@ export default function SubscriptionPage() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="sm" className="w-full text-muted-foreground">
-                  Batalkan langganan
+                  Cancel subscription
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Batalkan Langganan Business?</AlertDialogTitle>
+                  <AlertDialogTitle>Cancel Business subscription?</AlertDialogTitle>
                   <AlertDialogDescription className="space-y-3">
                     <span className="block">
-                      Akses Business Anda tetap aktif sampai akhir periode ({periodEnd ? formatDate(periodEnd) : '-'}).
-                      Setelah itu, akun akan kembali ke plan Starter.
+                      Your Business access remains active until the end of your billing period ({periodEnd ? formatDate(periodEnd) : '-'}).
+                      After that, your account will revert to the Starter plan.
                     </span>
                     <span className="block flex items-start gap-2 rounded-md border p-3 text-foreground">
                       <Info className="h-4 w-4 mt-0.5 shrink-0" />
                       <span className="text-xs">
-                        Tidak ada pengembalian dana untuk periode yang sedang berjalan.
-                        Anda bisa menggunakan semua fitur Business sampai periode berakhir.
+                        No refunds are issued for the current billing period.
+                        You can continue using all Business features until it ends.
                       </span>
                     </span>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Tetap Berlangganan</AlertDialogCancel>
+                  <AlertDialogCancel>Keep subscription</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleCancel}
                     disabled={cancelling}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
                     {cancelling && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Ya, Batalkan
+                    Yes, cancel
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -434,13 +414,12 @@ export default function SubscriptionPage() {
       {showUpgrade && (
         <Card>
           <CardHeader>
-            <CardTitle>Kenapa Upgrade?</CardTitle>
+            <CardTitle>Why upgrade?</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-0">
-              {/* Header */}
               <div className="grid grid-cols-3 gap-4 pb-3 border-b font-medium text-sm">
-                <span>Fitur</span>
+                <span>Feature</span>
                 <span className="text-center text-muted-foreground">Starter</span>
                 <span className="text-center text-primary">Business</span>
               </div>
@@ -482,11 +461,11 @@ export default function SubscriptionPage() {
           <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
             <ShieldCheck className="h-4 w-4 text-green-500" />
             <span>
-              Bank Transfer, GoPay, ShopeePay, QRIS, Kartu Kredit - diproses aman oleh Midtrans
+              Bank Transfer, GoPay, ShopeePay, QRIS, Credit Card — securely processed by Midtrans
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Bisa dibatalkan kapan saja. Tidak ada pengembalian dana untuk periode berjalan.
+            Cancel anytime. No refunds for the current billing period.
           </p>
         </div>
       )}
@@ -497,7 +476,7 @@ export default function SubscriptionPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Receipt className="h-5 w-5" />
-              Riwayat Pembayaran
+              Payment history
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -514,15 +493,15 @@ export default function SubscriptionPage() {
                   >
                     <div>
                       <p className="text-sm font-medium">
-                        Business Plan -{' '}
-                        {new Date(payment.periodStart).toLocaleDateString('id-ID', {
+                        Business Plan —{' '}
+                        {new Date(payment.periodStart).toLocaleDateString('en-US', {
                           month: 'short',
                           year: 'numeric',
                         })}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {new Date(payment.createdAt).toLocaleDateString('id-ID')}
-                        {payment.paymentType && ` - ${payment.paymentType}`}
+                        {new Date(payment.createdAt).toLocaleDateString('en-US')}
+                        {payment.paymentType && ` — ${payment.paymentType}`}
                       </p>
                     </div>
                     <div className="text-right">

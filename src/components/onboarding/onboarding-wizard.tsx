@@ -1,13 +1,5 @@
 "use client";
 
-/**
- * OnboardingWizard Component
- * 
- * ✅ FIXED (ROUND 2): Removed unused useEffect import
- * - Already using useMemo for derived state
- * - No effects needed in this component
- */
-
 import { useState, useMemo } from 'react';
 import {
   IconArchive,
@@ -43,7 +35,6 @@ export function OnboardingWizard() {
     restoreOnboarding,
   } = useOnboarding();
 
-  // ✅ FIX: Compute default open step with useMemo instead of setState in effect
   const defaultOpenStepId = useMemo(() => {
     if (!progress) return null;
     const firstIncomplete = progress.steps.find((s) => !s.completed);
@@ -51,17 +42,14 @@ export function OnboardingWizard() {
   }, [progress]);
 
   const [openStepId, setOpenStepId] = useState<string | null>(null);
-
-  // ✅ FIX: Use derived state - if user hasn't manually opened a step, use default
   const effectiveOpenStepId = openStepId ?? defaultOpenStepId;
 
-  // Show dismissed state
   if (isDismissed) {
     return (
       <div className="rounded-lg border border-dashed border-border bg-muted/30 p-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Setup wizard disembunyikan
+            Setup wizard is hidden
           </p>
           <Button
             variant="ghost"
@@ -70,14 +58,13 @@ export function OnboardingWizard() {
             className="text-xs"
           >
             <IconRefresh className="mr-1 size-3" />
-            Tampilkan lagi
+            Show again
           </Button>
         </div>
       </div>
     );
   }
 
-  // Loading state
   if (isLoading || !progress) {
     return (
       <div className="rounded-lg border bg-card p-4">
@@ -94,7 +81,6 @@ export function OnboardingWizard() {
     );
   }
 
-  // Hide when 100% complete
   if (progress.percentage >= 100) {
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-900/20">
@@ -102,10 +88,10 @@ export function OnboardingWizard() {
           <IconTrophy className="size-8 text-green-600 dark:text-green-400" />
           <div>
             <h3 className="font-semibold text-green-800 dark:text-green-200">
-              Selamat! Profil toko lengkap!
+              Your store profile is complete!
             </h3>
             <p className="text-sm text-green-700 dark:text-green-300">
-              Toko Anda sudah siap untuk menerima pelanggan.
+              You&apos;re ready to start receiving customers.
             </p>
           </div>
         </div>
@@ -122,15 +108,14 @@ export function OnboardingWizard() {
         <div className="flex flex-col gap-2 border-b p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="font-semibold text-foreground">
-              Mulai dengan {tenant?.name || 'Toko Anda'}
+              Get started with {tenant?.name || 'your store'}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Lengkapi profil untuk meningkatkan visibilitas toko
+              Complete your profile to increase store visibility
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Progress Indicator */}
             <div className="flex items-center gap-2">
               <CircularProgress
                 completed={progress.completedSteps}
@@ -141,15 +126,14 @@ export function OnboardingWizard() {
                 <span className="font-medium text-foreground">
                   {remainingSteps}
                 </span>{' '}
-                dari{' '}
+                of{' '}
                 <span className="font-medium text-foreground">
                   {progress.totalSteps}
                 </span>{' '}
-                langkah tersisa
+                steps remaining
               </span>
             </div>
 
-            {/* Options Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="size-8">
@@ -160,7 +144,7 @@ export function OnboardingWizard() {
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={dismissOnboarding}>
                   <IconArchive className="mr-2 size-4" aria-hidden="true" />
-                  Sembunyikan
+                  Hide
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -169,7 +153,7 @@ export function OnboardingWizard() {
                   }
                 >
                   <IconMail className="mr-2 size-4" aria-hidden="true" />
-                  Beri Feedback
+                  Send feedback
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -180,9 +164,7 @@ export function OnboardingWizard() {
         {!progress.canPublish && (
           <div className="border-b bg-amber-50 px-4 py-3 dark:bg-amber-900/20">
             <p className="text-sm text-amber-800 dark:text-amber-200">
-              Lengkapi{' '}
-              <strong>Logo</strong> dan{' '}
-              <strong>Hero Background</strong> untuk dapat publish toko Anda.
+              Add a <strong>Logo</strong> and <strong>Hero Background</strong> to publish your store.
             </p>
           </div>
         )}
@@ -207,7 +189,7 @@ export function OnboardingWizard() {
           </div>
         </div>
 
-        {/* Footer - Progress Bar */}
+        {/* Footer */}
         <div className="border-t px-4 py-3">
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Progress: {progress.percentage}%</span>

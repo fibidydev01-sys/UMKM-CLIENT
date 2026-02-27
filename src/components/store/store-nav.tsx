@@ -12,10 +12,6 @@ import { normalizeTestimonials } from '@/lib/landing';
 import { cn } from '@/lib/utils';
 import type { PublicTenant } from '@/types';
 
-// ==========================================
-// STORE NAVIGATION (Mobile Sidebar)
-// ==========================================
-
 interface StoreNavProps {
   tenant: PublicTenant;
 }
@@ -26,20 +22,18 @@ export function StoreNav({ tenant }: StoreNavProps) {
 
   const landingConfig = tenant.landingConfig;
 
-  // Check what data exists
   const hasAbout = !!landingConfig?.about?.config?.content || !!tenant.description;
   const hasContact = !!tenant.address || !!tenant.whatsapp || !!tenant.phone;
   const hasTestimonials = normalizeTestimonials(
     landingConfig?.testimonials?.config?.items
   ).length > 0;
 
-  // Build nav items — sama persis dengan desktop, tanpa Lacak Pesanan
   const navItems = [
-    { href: urls.home, label: 'Beranda', icon: Home, show: true },
-    { href: urls.path('/about'), label: 'Tentang Kami', icon: Info, show: hasAbout },
-    { href: urls.products(), label: 'Semua Produk', icon: Package, show: true },
-    { href: urls.path('/testimonials'), label: 'Testimoni', icon: Users, show: hasTestimonials },
-    { href: urls.path('/contact'), label: 'Kontak', icon: MessageSquare, show: hasContact },
+    { href: urls.home, label: 'Home', icon: Home, show: true },
+    { href: urls.path('/about'), label: 'About', icon: Info, show: hasAbout },
+    { href: urls.products(), label: 'All Products', icon: Package, show: true },
+    { href: urls.path('/testimonials'), label: 'Testimonials', icon: Users, show: hasTestimonials },
+    { href: urls.path('/contact'), label: 'Contact', icon: MessageSquare, show: hasContact },
   ].filter(item => item.show);
 
   return (
@@ -101,7 +95,7 @@ export function StoreNav({ tenant }: StoreNavProps) {
 
       {/* Store Info */}
       <div className="p-4 space-y-3">
-        <h3 className="text-sm font-semibold">Informasi Toko</h3>
+        <h3 className="text-sm font-semibold">Store Info</h3>
 
         {tenant.whatsapp && (
           <a

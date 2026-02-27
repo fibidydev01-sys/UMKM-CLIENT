@@ -31,7 +31,7 @@ import {
 // ==========================================
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Format email tidak valid'),
+  email: z.string().email('Please enter a valid email address'),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -63,15 +63,15 @@ export function ForgotPasswordForm() {
                 <Clock className="h-8 w-8 text-amber-500" />
               </div>
             </div>
-            <DialogTitle className="text-center">Segera Hadir!</DialogTitle>
+            <DialogTitle className="text-center">Coming soon</DialogTitle>
             <DialogDescription className="text-center">
-              Fitur reset password sedang dalam pengembangan. Kami akan
-              segera mengaktifkan fitur ini. Nantikan updatenya!
+              Password reset is currently under development. We&apos;ll have
+              it ready soon — stay tuned!
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col gap-2 sm:flex-col">
             <Button asChild className="w-full">
-              <Link href="/login">Ke Halaman Login</Link>
+              <Link href="/login">Back to sign in</Link>
             </Button>
             <Button
               variant="outline"
@@ -79,7 +79,7 @@ export function ForgotPasswordForm() {
               onClick={() => setShowComingSoon(false)}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali
+              Go back
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -93,8 +93,8 @@ export function ForgotPasswordForm() {
           {/* Info */}
           <Alert>
             <AlertDescription>
-              Masukkan email yang terdaftar. Kami akan mengirimkan link untuk
-              reset password.
+              Enter your registered email and we&apos;ll send you a link to
+              reset your password.
             </AlertDescription>
           </Alert>
 
@@ -108,7 +108,7 @@ export function ForgotPasswordForm() {
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="nama@email.com"
+                    placeholder="gavin@hooli.com"
                     autoComplete="email"
                     {...field}
                   />
@@ -120,14 +120,14 @@ export function ForgotPasswordForm() {
 
           {/* Submit */}
           <Button type="submit" className="w-full">
-            Kirim Link Reset
+            Send reset link
           </Button>
 
           {/* Back to Login */}
           <Button asChild variant="ghost" className="w-full">
             <Link href="/login">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Kembali ke Login
+              Back to sign in
             </Link>
           </Button>
         </form>

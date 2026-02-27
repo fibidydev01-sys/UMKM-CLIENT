@@ -13,10 +13,6 @@ import {
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/types';
 
-// ==========================================
-// PRODUCT DELETE DIALOG
-// ==========================================
-
 interface ProductDeleteDialogProps {
   product: Product | null;
   isOpen: boolean;
@@ -38,28 +34,23 @@ export function ProductDeleteDialog({
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
-            Hapus Produk
+            Delete product
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Apakah Anda yakin ingin menghapus produk{' '}
-            <strong>&#34;{product?.name}&#34;</strong>? Tindakan ini tidak dapat
-            dibatalkan.
+            Are you sure you want to delete{' '}
+            <strong>&#34;{product?.name}&#34;</strong>? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Batal</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isLoading}
-          >
+          <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+          <Button variant="destructive" onClick={onConfirm} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Menghapus...
+                Deleting...
               </>
             ) : (
-              'Hapus'
+              'Delete'
             )}
           </Button>
         </AlertDialogFooter>

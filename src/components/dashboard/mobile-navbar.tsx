@@ -26,8 +26,6 @@ import { useLogout } from '@/hooks';
 
 // ==========================================
 // MOBILE NAVBAR (Bottom Navigation)
-// ✅ ADDED: Settings Toko & Channels
-// ✅ REMOVED: Pengaturan from menu
 // ==========================================
 
 const navItems = [
@@ -90,10 +88,8 @@ export function MobileNavbar() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
-      {/* Gradient blur background */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-lg border-t" />
 
-      {/* Nav items */}
       <div className="relative flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
         {navItems.map((item) => {
           const active = isActive(item.href);
@@ -114,8 +110,6 @@ export function MobileNavbar() {
                   active && 'scale-110'
                 )}
               />
-
-              {/* Active indicator dot */}
               {active && (
                 <span className="absolute -bottom-0 w-1 h-1 rounded-full bg-primary" />
               )}
@@ -123,7 +117,6 @@ export function MobileNavbar() {
           );
         })}
 
-        {/* Menu Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -144,7 +137,7 @@ export function MobileNavbar() {
             <DropdownMenuItem asChild>
               <Link href="/dashboard/subscription">
                 <Crown className="mr-3 h-5 w-5" />
-                Langganan
+                Subscription
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -152,25 +145,24 @@ export function MobileNavbar() {
               {isDark ? (
                 <>
                   <Sun className="mr-3 h-5 w-5" />
-                  Mode Terang
+                  Light mode
                 </>
               ) : (
                 <>
                   <Moon className="mr-3 h-5 w-5" />
-                  Mode Gelap
+                  Dark mode
                 </>
               )}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="mr-3 h-5 w-5" />
-              Keluar
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      {/* Safe area padding for iOS */}
       <div className="h-safe-area-inset-bottom bg-background/80" />
     </nav>
   );

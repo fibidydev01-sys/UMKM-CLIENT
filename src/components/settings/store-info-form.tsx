@@ -11,10 +11,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
 interface StoreFormData {
   name: string;
   description: string;
@@ -30,10 +26,6 @@ interface StoreInfoFormProps {
   onFormChange: (key: keyof StoreFormData, value: string) => void;
 }
 
-// ============================================================================
-// COMPONENT - Now renders as AccordionItem (no Card wrapper)
-// ============================================================================
-
 export function StoreInfoForm({
   formData,
   tenantEmail,
@@ -47,7 +39,7 @@ export function StoreInfoForm({
         <AccordionTrigger className="hover:no-underline">
           <div className="flex items-center gap-2">
             <Store className="h-5 w-5 text-primary" />
-            <span>Informasi Dasar</span>
+            <span>Basic Information</span>
           </div>
         </AccordionTrigger>
         <AccordionContent>
@@ -66,34 +58,34 @@ export function StoreInfoForm({
       <AccordionTrigger className="hover:no-underline">
         <div className="flex items-center gap-2">
           <Store className="h-5 w-5 text-primary" />
-          <span>Informasi Dasar</span>
+          <span>Basic Information</span>
         </div>
       </AccordionTrigger>
       <AccordionContent>
         <div className="space-y-4 pt-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="store-name">Nama Toko</Label>
+              <Label htmlFor="store-name">Store name</Label>
               <Input
                 id="store-name"
-                placeholder="Nama toko Anda"
+                placeholder="Your store name"
                 value={formData.name}
                 onChange={(e) => onFormChange('name', e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="store-email">Email Toko</Label>
+              <Label htmlFor="store-email">Store email</Label>
               <Input
                 id="store-email"
                 type="email"
-                placeholder="email@toko.com"
+                placeholder="email@store.com"
                 value={tenantEmail || ''}
                 disabled
               />
-              <p className="text-xs text-muted-foreground">Email tidak dapat diubah</p>
+              <p className="text-xs text-muted-foreground">Email cannot be changed</p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="store-phone">Nomor Telepon</Label>
+              <Label htmlFor="store-phone">Phone number</Label>
               <Input
                 id="store-phone"
                 placeholder="+62 xxx xxxx xxxx"
@@ -102,21 +94,21 @@ export function StoreInfoForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="store-slug">URL Toko</Label>
+              <Label htmlFor="store-slug">Store URL</Label>
               <Input
                 id="store-slug"
                 value={`fibidy.com/store/${tenantSlug || ''}`}
                 disabled
               />
-              <p className="text-xs text-muted-foreground">URL toko tidak dapat diubah</p>
+              <p className="text-xs text-muted-foreground">Store URL cannot be changed</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="store-description">Deskripsi Toko</Label>
+            <Label htmlFor="store-description">Store description</Label>
             <Textarea
               id="store-description"
-              placeholder="Ceritakan tentang toko Anda..."
+              placeholder="Tell customers about your store..."
               rows={4}
               value={formData.description}
               onChange={(e) => onFormChange('description', e.target.value)}
@@ -124,10 +116,10 @@ export function StoreInfoForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="store-address">Alamat</Label>
+            <Label htmlFor="store-address">Address</Label>
             <Textarea
               id="store-address"
-              placeholder="Alamat lengkap toko"
+              placeholder="Full store address"
               rows={3}
               value={formData.address}
               onChange={(e) => onFormChange('address', e.target.value)}

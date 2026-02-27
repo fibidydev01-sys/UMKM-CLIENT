@@ -26,7 +26,7 @@ export function StepWelcome({ onNext }: StepWelcomeProps) {
         </h1>
         <p className="text-muted-foreground leading-relaxed">
           Get your store up and running in minutes. Manage products, orders,
-          and customers — all in one place.
+          and customers all in one place.
         </p>
       </div>
 

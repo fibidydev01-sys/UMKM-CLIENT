@@ -40,8 +40,6 @@ import { useLogout } from '@/hooks';
 
 // ==========================================
 // NAVIGATION ITEMS
-// ✅ ADDED: Settings Toko & Channels
-// ✅ REMOVED: Pengaturan from menu
 // ==========================================
 
 interface NavItem {
@@ -59,7 +57,7 @@ interface NavGroup {
 
 const navigation: NavGroup[] = [
   {
-    title: 'Menu Utama',
+    title: 'Main',
     items: [
       {
         title: 'Dashboard',
@@ -72,7 +70,7 @@ const navigation: NavGroup[] = [
         icon: Layout,
       },
       {
-        title: 'Settings Toko',
+        title: 'Store Settings',
         href: '/dashboard/settings/toko',
         icon: Settings,
       },
@@ -126,7 +124,6 @@ export function DashboardSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      {/* Navigation - Centered vertically */}
       <SidebarContent className="flex flex-col justify-center">
         {navigation.map((group) => (
           <SidebarGroup key={group.title}>
@@ -134,7 +131,6 @@ export function DashboardSidebar() {
               {group.items.map((item) => {
                 const active = isActive(item.href);
 
-                // Item with children (collapsible)
                 if (item.children) {
                   return (
                     <Collapsible
@@ -169,7 +165,6 @@ export function DashboardSidebar() {
                   );
                 }
 
-                // Simple item
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={active}>
@@ -191,10 +186,8 @@ export function DashboardSidebar() {
         ))}
       </SidebarContent>
 
-      {/* Footer with Hamburger Menu */}
       <SidebarFooter>
         <SidebarMenu>
-          {/* Hamburger Menu Button */}
           <SidebarMenuItem>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -212,7 +205,7 @@ export function DashboardSidebar() {
                 <DropdownMenuItem asChild>
                   <Link href="/dashboard/subscription">
                     <Crown className="mr-3 h-5 w-5" />
-                    Langganan
+                    Subscription
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -220,19 +213,19 @@ export function DashboardSidebar() {
                   {isDark ? (
                     <>
                       <Sun className="mr-3 h-5 w-5" />
-                      Mode Terang
+                      Light mode
                     </>
                   ) : (
                     <>
                       <Moon className="mr-3 h-5 w-5" />
-                      Mode Gelap
+                      Dark mode
                     </>
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout} className="text-destructive">
                   <LogOut className="mr-3 h-5 w-5" />
-                  Keluar
+                  Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

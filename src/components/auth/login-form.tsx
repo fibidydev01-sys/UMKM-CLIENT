@@ -63,7 +63,7 @@ export function LoginForm() {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="nama@email.com"
+                  placeholder="gavin@hooli.com"
                   autoComplete="email"
                   disabled={isLoading}
                   {...field}
@@ -86,7 +86,7 @@ export function LoginForm() {
                   href="/forgot-password"
                   className="text-xs text-primary hover:underline"
                 >
-                  Lupa password?
+                  Forgot password?
                 </Link>
               </div>
               <FormControl>
@@ -123,18 +123,18 @@ export function LoginForm() {
           {isLoading ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Masuk...
+              Signing in...
             </>
           ) : (
-            'Masuk'
+            'Sign in'
           )}
         </Button>
 
         {/* Register Link */}
         <p className="text-center text-sm text-muted-foreground">
-          Belum punya toko?{' '}
+          Don&apos;t have an account?{' '}
           <Link href="/register" className="text-primary hover:underline font-medium">
-            Daftar Gratis
+            Create free account
           </Link>
         </p>
       </form>
