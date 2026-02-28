@@ -1,9 +1,12 @@
 /**
  * useSnapPayment Hook
- * 
- * ✅ FIXED (ROUND 2): Removed ALL setState in useEffect
- * - Moved setIsLoading to event handlers only
- * - No synchronous setState in effect callback body
+ *
+ * Loads Midtrans Snap.js and triggers the payment popup.
+ *
+ * ```tsx
+ * const { isLoaded, pay } = useSnapPayment({ clientKey: '...' });
+ * pay(token, { onSuccess, onPending, onError, onClose });
+ * ```
  */
 
 'use client';
@@ -18,14 +21,6 @@ interface UseSnapPaymentOptions {
   isProduction?: boolean;
 }
 
-/**
- * Hook untuk load Midtrans Snap.js dan trigger payment popup.
- *
- * ```tsx
- * const { isLoaded, pay } = useSnapPayment({ clientKey: '...' });
- * pay(token, { onSuccess, onPending, onError, onClose });
- * ```
- */
 export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPaymentOptions) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +29,7 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // ✅ FIX: Check if already loaded BEFORE effect runs
+    // Check if already loaded before effect runs
     const checkInitialLoad = () => {
       if (window.snap) {
         setIsLoaded(true);
@@ -43,14 +38,13 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
       return false;
     };
 
-    // If already loaded, return early
     if (checkInitialLoad()) return;
 
-    // Script sudah ada di DOM tapi belum loaded
+    // Script already in DOM but not yet loaded
     const existingScript = document.querySelector('script[src*="snap.js"]') as HTMLScriptElement;
     if (existingScript) {
       const onLoad = () => setIsLoaded(true);
-      const onError = () => setError('Gagal memuat sistem pembayaran');
+      const onError = () => setError('Failed to load payment system');
       existingScript.addEventListener('load', onLoad);
       existingScript.addEventListener('error', onError);
       return () => {
@@ -59,13 +53,13 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
       };
     }
 
-    // ✅ FIX: Create script and set loading state in event handlers ONLY
+    // Create script — set loading state in event handlers only
     const script = document.createElement('script');
     script.src = isProduction ? SNAP_URL_PRODUCTION : SNAP_URL_SANDBOX;
     script.setAttribute('data-client-key', clientKey);
     script.async = true;
 
-    // ✅ Set loading state BEFORE adding to DOM (not in effect body)
+    // Set loading state before adding to DOM (not in effect body)
     const startLoading = () => setIsLoading(true);
     startLoading();
 
@@ -74,7 +68,7 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
       setIsLoading(false);
     };
     script.onerror = () => {
-      setError('Gagal memuat sistem pembayaran');
+      setError('Failed to load payment system');
       setIsLoading(false);
     };
 
@@ -84,7 +78,7 @@ export function useSnapPayment({ clientKey, isProduction = false }: UseSnapPayme
   const pay = useCallback(
     (snapToken: string, options?: SnapOptions) => {
       if (!isLoaded || !window.snap) {
-        console.error('Snap.js belum siap');
+        console.error('[useSnapPayment] Snap.js not ready');
         return;
       }
       window.snap.pay(snapToken, {

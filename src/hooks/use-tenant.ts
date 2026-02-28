@@ -88,10 +88,10 @@ export function useUpdateTenant() {
       const response = await tenantsApi.update(data);
       const updated = 'tenant' in response ? response.tenant : response;
       setTenant(updated);
-      toast.success('Pengaturan toko berhasil disimpan');
+      toast.success('Store settings saved');
       return updated;
     } catch (err) {
-      toast.error('Gagal menyimpan pengaturan', getErrorMessage(err));
+      toast.error('Failed to save settings', getErrorMessage(err));
       throw err;
     } finally {
       setIsLoading(false);

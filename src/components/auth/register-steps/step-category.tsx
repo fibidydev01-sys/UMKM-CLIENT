@@ -21,7 +21,7 @@ interface StepCategoryProps {
 }
 
 // ==========================================
-// COMPONENT — no header, no nav (handled by parent)
+// COMPONENT — tanpa header & nav (dihandle parent)
 // ==========================================
 
 export function StepCategory({ selectedCategory, onSelectCategory }: StepCategoryProps) {
@@ -80,7 +80,7 @@ export function StepCategory({ selectedCategory, onSelectCategory }: StepCategor
             </div>
           ) : (
             <div className="py-8 text-center text-sm text-muted-foreground">
-              No categories found.{' '}
+              No categories found{' '}
               <button
                 type="button"
                 className="text-primary underline underline-offset-4"
@@ -167,7 +167,7 @@ export function StepCategory({ selectedCategory, onSelectCategory }: StepCategor
                   </Button>
                   <Button type="button" size="sm" className="flex-1 h-8 text-xs"
                     disabled={!customValue.trim()} onClick={handleCustomSubmit}>
-                    Use this
+                    Use this type
                   </Button>
                 </div>
               </div>

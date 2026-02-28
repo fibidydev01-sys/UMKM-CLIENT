@@ -52,19 +52,6 @@ export default async function StorePage({ params }: StorePageProps) {
 
   const landingConfig = tenant.landingConfig;
 
-  console.group(`🏪 [STORE PAGE] ${slug}`);
-  console.log('📥 Landing Config from DB (JSON):', JSON.stringify(landingConfig, null, 2));
-  console.log('🎯 HERO SECTION:', JSON.stringify(landingConfig?.hero, null, 2));
-  console.log('📊 Sections enabled:', {
-    hero: landingConfig?.hero?.enabled,
-    about: landingConfig?.about?.enabled,
-    products: landingConfig?.products?.enabled,
-    testimonials: landingConfig?.testimonials?.enabled,
-    cta: landingConfig?.cta?.enabled,
-    contact: landingConfig?.contact?.enabled,
-  });
-  console.groupEnd();
-
   const breadcrumbs = generateTenantBreadcrumbs({
     name: tenant.name,
     slug: tenant.slug,

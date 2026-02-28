@@ -57,7 +57,7 @@ export default function ForgotPasswordPage() {
       image="/auth-picture/auth-forgot-password.jpg"
       imageAlt="Forgot password illustration"
     >
-      {/* ✅ FIXED: Wrap in Suspense for client-side hooks */}
+      {/* Suspense diperlukan untuk client-side hooks */}
       <Suspense fallback={<ForgotPasswordFormSkeleton />}>
         <ForgotPasswordForm />
       </Suspense>

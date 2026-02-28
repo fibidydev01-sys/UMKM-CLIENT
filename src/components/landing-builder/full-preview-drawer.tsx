@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════
 // FULL PREVIEW DRAWER
-// Shows complete landing page preview in drawer
+// Shows complete landing page preview in a drawer
 // ══════════════════════════════════════════════════════════════
 
 'use client';
@@ -39,18 +39,14 @@ export function FullPreviewDrawer({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
 
-  // ════════════════════════════════════════════════════════════
-  // SCROLL TO TOP when drawer opens
-  // ════════════════════════════════════════════════════════════
+  // Scroll to top when drawer opens
   useEffect(() => {
     if (open && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
   }, [open]);
 
-  // ════════════════════════════════════════════════════════════
-  // STICKY HEADER DETECTION
-  // ════════════════════════════════════════════════════════════
+  // Sticky header detection
   useEffect(() => {
     const scrollContainer = scrollContainerRef.current;
     const sentinel = headerSentinelRef.current;
@@ -105,7 +101,7 @@ export function FullPreviewDrawer({
           </Drawer.Title>
           <Drawer.Description asChild>
             <VisuallyHidden.Root id="full-preview-drawer-description">
-              Preview lengkap landing page {tenant.name}
+              Full landing page preview for {tenant.name}
             </VisuallyHidden.Root>
           </Drawer.Description>
 

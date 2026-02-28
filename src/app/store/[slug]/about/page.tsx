@@ -34,13 +34,13 @@ export async function generateMetadata({ params }: AboutPageProps): Promise<Meta
   const aboutContent = landingConfig?.about?.config?.content;
   const description = aboutContent
     ? String(aboutContent).slice(0, 160)
-    : tenant.description || `Tentang ${tenant.name}`;
+    : tenant.description || `About ${tenant.name}`;
 
   return {
-    title: `Tentang Kami | ${tenant.name}`,
+    title: `About Us | ${tenant.name}`,
     description,
     openGraph: {
-      title: `Tentang ${tenant.name}`,
+      title: `About ${tenant.name}`,
       description,
       images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
     },
@@ -60,16 +60,15 @@ export default async function AboutPage({ params }: AboutPageProps) {
 
   const breadcrumbs = [
     ...generateTenantBreadcrumbs({ name: tenant.name, slug: tenant.slug }),
-    { name: 'Tentang Kami', url: `/store/${slug}/about` },
+    { name: 'About Us', url: `/store/${slug}/about` },
   ];
 
   return (
     <>
       <BreadcrumbSchema items={breadcrumbs} />
 
-      {/* FULL WIDTH - No container wrapper */}
+      {/* Full width — no container wrapper */}
       <div className="w-full">
-        {/* About Content with Lazy Loading */}
         <Suspense fallback={<AboutSkeleton />}>
           <TenantAbout
             config={aboutConfig}

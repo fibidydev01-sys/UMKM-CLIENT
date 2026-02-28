@@ -16,16 +16,16 @@ export default function ProductNotFound() {
           </div>
         </div>
 
-        <h1 className="text-2xl font-bold mb-2">Produk Tidak Ditemukan</h1>
+        <h1 className="text-2xl font-bold mb-2">Product Not Found</h1>
 
         <p className="text-muted-foreground mb-6">
-          Produk yang Anda cari tidak ditemukan atau sudah tidak tersedia.
+          This product could not be found or is no longer available.
         </p>
 
         <Button asChild>
           <Link href="..">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali ke Toko
+            Back to Store
           </Link>
         </Button>
       </div>

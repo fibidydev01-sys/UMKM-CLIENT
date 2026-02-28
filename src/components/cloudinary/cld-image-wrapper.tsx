@@ -7,7 +7,7 @@ import { extractPublicId, isCloudinaryUrl } from '@/lib/cloudinary';
 
 // ==========================================
 // CLOUDINARY IMAGE WRAPPER
-// Handles both Cloudinary URLs and public_ids
+// Menangani Cloudinary URL dan public_id
 // ==========================================
 
 interface CloudinaryImageProps extends Omit<CldImageProps, 'src'> {
@@ -16,7 +16,7 @@ interface CloudinaryImageProps extends Omit<CldImageProps, 'src'> {
   className?: string;
 }
 
-// Base64 blur placeholder (grey)
+// Base64 blur placeholder (abu-abu)
 const BLUR_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3C/svg%3E";
 
 export function CloudinaryImage({
@@ -27,7 +27,7 @@ export function CloudinaryImage({
 }: CloudinaryImageProps) {
   const [hasError, setHasError] = useState(false);
 
-  // No source provided
+  // Tidak ada sumber gambar
   if (!src || hasError) {
     if (fallback) return <>{fallback}</>;
     return (
@@ -38,12 +38,12 @@ export function CloudinaryImage({
         )}
         style={{ width: props.width, height: props.height }}
       >
-        <span className="text-sm">No Image</span>
+        <span className="text-sm">No image</span>
       </div>
     );
   }
 
-  // Determine if we need to extract public_id
+  // Tentukan apakah perlu ekstrak public_id
   const imageSrc = isCloudinaryUrl(src) ? extractPublicId(src) : src;
 
   return (
@@ -59,7 +59,7 @@ export function CloudinaryImage({
 }
 
 // ==========================================
-// PRESET-BASED COMPONENTS
+// KOMPONEN BERBASIS PRESET
 // ==========================================
 
 // Product Card Image (300x300)
@@ -84,7 +84,7 @@ export function ProductCardImage({
       gravity="auto"
       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
       className={cn('object-cover', className)}
-      // Next.js 16+: priority → preload
+      // priority → preload (Next.js 16+)
       {...(priority ? { loading: 'eager', fetchPriority: 'high' } : {})}
     />
   );
@@ -149,7 +149,7 @@ export function HeroBanner({
   );
 }
 
-// Testimonial Avatar (80x80 with face detection)
+// Testimonial Avatar (80x80 dengan face detection)
 export function TestimonialAvatar({
   src,
   name,
@@ -163,7 +163,7 @@ export function TestimonialAvatar({
 }) {
   const dimensions = size === 'small' ? 80 : 150;
 
-  // Fallback to initials
+  // Fallback ke inisial nama
   if (!src) {
     const initials = name
       .split(' ')
@@ -192,13 +192,13 @@ export function TestimonialAvatar({
       width={dimensions}
       height={dimensions}
       crop="thumb"
-      gravity="face" // AI Face Detection!
+      gravity="face" // AI Face Detection
       className={cn('rounded-full object-cover', className)}
     />
   );
 }
 
-// Store Logo (200x200, maintain aspect ratio)
+// Store Logo (200x200, pertahankan aspect ratio)
 export function StoreLogo({
   src,
   storeName,
@@ -222,7 +222,7 @@ export function StoreLogo({
       alt={`${storeName} logo`}
       width={200}
       height={200}
-      crop="fit" // Maintain aspect ratio
+      crop="fit" // Pertahankan aspect ratio
       className={className}
     />
   );

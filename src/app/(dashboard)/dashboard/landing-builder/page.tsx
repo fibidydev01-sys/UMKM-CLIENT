@@ -5,7 +5,6 @@
  * Route: /landing-builder
  * Description: Full-Screen Landing Page Builder
  * Layout: Sidebar (left) | Isolated Preview (center) | Block Drawer (overlay)
- * NEW: Full Preview Drawer via Vaul bottom sheet
  * ============================================================================
  */
 'use client';
@@ -67,7 +66,7 @@ export default function LandingBuilderPage() {
   const [loadingComplete, setLoadingComplete] = useState(false);
   const [device] = useState<DeviceType>('desktop');
 
-  // 🚀 Full Preview Drawer
+  // Full Preview Drawer
   const [fullPreviewOpen, setFullPreviewOpen] = useState(false);
 
   // ============================================================================
@@ -201,7 +200,7 @@ export default function LandingBuilderPage() {
   if (!tenant) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Gagal memuat data tenant</p>
+        <p className="text-muted-foreground">Failed to load store data</p>
       </div>
     );
   }
@@ -212,7 +211,7 @@ export default function LandingBuilderPage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {/* ── Header ────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="h-14 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex items-center justify-between px-4">
         {/* Left: Sidebar Toggle + Actions Menu */}
         <div className="flex items-center gap-3">
@@ -230,7 +229,6 @@ export default function LandingBuilderPage() {
           </Button>
 
           <Menubar className="border-0 bg-transparent">
-            {/* Actions */}
             <MenubarMenu>
               <MenubarTrigger className="gap-2 cursor-pointer">
                 <Menu className="h-4 w-4" />
@@ -296,7 +294,7 @@ export default function LandingBuilderPage() {
         </div>
       </div>
 
-      {/* ── Main Layout ───────────────────────────────────────── */}
+      {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <BuilderSidebar
@@ -334,7 +332,7 @@ export default function LandingBuilderPage() {
         onBlockSelect={handleBlockSelect}
       />
 
-      {/* 🚀 Full Preview Drawer */}
+      {/* Full Preview Drawer */}
       <FullPreviewDrawer
         open={fullPreviewOpen}
         onOpenChange={setFullPreviewOpen}

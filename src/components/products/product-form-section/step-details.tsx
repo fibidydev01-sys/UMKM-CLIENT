@@ -1,7 +1,7 @@
 'use client';
 
 // ─── Step 1: Details ───────────────────────────────────────────────────────
-// Listing type toggle, name, description, category combobox, SKU
+// Toggle tipe listing, nama, deskripsi, category combobox, SKU
 
 import { useState } from 'react';
 import { Package, Wrench, Check, ChevronsUpDown } from 'lucide-react';
@@ -50,7 +50,7 @@ export function StepDetails({
   const isService = productType === 'service';
   const watchCategory = form.watch('category');
 
-  // ── Category state lives HERE — same as original product-form.tsx ──
+  // ── State category dikelola di sini ──
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
 
@@ -80,7 +80,7 @@ export function StepDetails({
   return (
     <div className="space-y-6">
 
-      {/* ── Listing type toggle ──────────────────────────────────── */}
+      {/* ── Toggle tipe listing ──────────────────────────────────── */}
       <div className="space-y-3">
         <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">
           Listing type
@@ -120,7 +120,7 @@ export function StepDetails({
         </p>
       </div>
 
-      {/* ── Name ─────────────────────────────────────────────────── */}
+      {/* ── Nama ─────────────────────────────────────────────────── */}
       <FormField
         control={form.control}
         name="name"
@@ -146,7 +146,7 @@ export function StepDetails({
         )}
       />
 
-      {/* ── Description ──────────────────────────────────────────── */}
+      {/* ── Deskripsi ──────────────────────────────────────────── */}
       <FormField
         control={form.control}
         name="description"

@@ -11,7 +11,7 @@ export interface BlockOption {
 }
 
 // ============================================================================
-// CONFIGURATION - Atur jumlah block per section di sini!
+// CONFIGURATION — set block count per section here
 // ============================================================================
 
 const BLOCKS_PER_SECTION: Record<SectionType, number> = {
@@ -24,7 +24,7 @@ const BLOCKS_PER_SECTION: Record<SectionType, number> = {
 };
 
 // ============================================================================
-// SMART GENERATION FUNCTION
+// GENERATION FUNCTION
 // ============================================================================
 
 type SectionType = 'hero' | 'about' | 'products' | 'testimonials' | 'contact' | 'cta';
@@ -66,20 +66,3 @@ export const BLOCK_OPTIONS_MAP = {
   contact: CONTACT_BLOCKS,
   cta: CTA_BLOCKS,
 } as const;
-
-// ============================================================================
-// DEBUG
-// ============================================================================
-
-if (process.env.NODE_ENV === 'development') {
-  console.log('🚀 Generated block options:', {
-    hero: HERO_BLOCKS.length,
-    about: ABOUT_BLOCKS.length,
-    products: PRODUCTS_BLOCKS.length,
-    testimonials: TESTIMONIALS_BLOCKS.length,
-    contact: CONTACT_BLOCKS.length,
-    cta: CTA_BLOCKS.length,
-    total: HERO_BLOCKS.length + ABOUT_BLOCKS.length + PRODUCTS_BLOCKS.length +
-      TESTIMONIALS_BLOCKS.length + CONTACT_BLOCKS.length + CTA_BLOCKS.length,
-  });
-}

@@ -51,7 +51,7 @@ export function AddToCartButton({
   const handleIncrement = () => incrementQty(product.id);
   const handleDecrement = () => decrementQty(product.id);
 
-  // Icon only variant
+  // Icon-only variant
   if (variant === 'icon') {
     return (
       <Button
@@ -114,14 +114,14 @@ export function AddToCartButton({
       {showAdded ? (
         <>
           <Check className="h-4 w-4" />
-          Ditambahkan Keranjang
+          Added to cart
         </>
       ) : isOutOfStock ? (
-        'Stok Habis'
+        'Out of stock'
       ) : (
         <>
           <ShoppingCart className="h-4 w-4" />
-          {qty > 0 ? `Tambah (${qty})` : 'Tambah'}
+          {qty > 0 ? `Add more (${qty})` : 'Add to cart'}
         </>
       )}
     </Button>

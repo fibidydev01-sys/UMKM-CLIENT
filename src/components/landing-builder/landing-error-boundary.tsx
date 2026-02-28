@@ -49,12 +49,10 @@ export class LandingErrorBoundary extends Component<Props, State> {
 
   render() {
     if (this.state.hasError) {
-      // Custom fallback provided
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      // Default error UI
       return (
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="pt-6">
@@ -64,10 +62,10 @@ export class LandingErrorBoundary extends Component<Props, State> {
               </div>
               <div>
                 <h3 className="font-semibold text-lg">
-                  Terjadi Kesalahan
+                  Something went wrong
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Gagal memuat Landing Builder. Silakan coba lagi.
+                  Failed to load the Landing Builder. Please try again.
                 </p>
               </div>
               {process.env.NODE_ENV === 'development' && this.state.error && (
@@ -77,7 +75,7 @@ export class LandingErrorBoundary extends Component<Props, State> {
               )}
               <Button onClick={this.handleRetry} variant="outline" size="sm">
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Coba Lagi
+                Try Again
               </Button>
             </div>
           </CardContent>

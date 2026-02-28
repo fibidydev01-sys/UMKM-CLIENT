@@ -7,7 +7,7 @@ import { toast } from '@/providers';
 import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams } from '@/types';
 
 // ==========================================
-// USE PRODUCTS HOOK - FIXED
+// USE PRODUCTS HOOK
 // ==========================================
 
 export function useProducts(initialParams?: ProductQueryParams) {
@@ -25,7 +25,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
     setCategories,
   } = useProductsStore();
 
-  // ✅ FIX: Track if initial fetch done
+  // Track if initial fetch done
   const hasFetched = useRef(false);
   const isMounted = useRef(true);
 
@@ -35,7 +35,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
       setFilters(initialParams);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once - intentionally empty
+  }, []); // Run once — intentionally empty
 
   // Fetch products
   const fetchProducts = useCallback(async () => {
@@ -56,7 +56,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
     }
   }, [filters, setLoading, setProducts, setPagination, setError]);
 
-  // ✅ FIX: Fetch only once on mount, then on filter change
+  // Fetch only once on mount, then on filter change
   useEffect(() => {
     isMounted.current = true;
 
@@ -69,17 +69,17 @@ export function useProducts(initialParams?: ProductQueryParams) {
       isMounted.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Mount only - intentionally empty
+  }, []); // Mount only — intentionally empty
 
-  // ✅ FIX: Separate effect for filter changes (after initial fetch)
+  // Separate effect for filter changes (after initial fetch)
   useEffect(() => {
     if (hasFetched.current) {
       fetchProducts();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]); // Only when filters change - fetchProducts is stable
+  }, [filters]); // Only when filters change — fetchProducts is stable
 
-  // Fetch categories - only once
+  // Fetch categories — only once
   const fetchCategories = useCallback(async () => {
     try {
       const categories = await productsApi.getCategories();
@@ -105,7 +105,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
     }
   }, [setCategories]);
 
-  // ✅ FIX: Categories fetch once
+  // Categories fetch once
   const categoriesFetched = useRef(false);
   useEffect(() => {
     if (!categoriesFetched.current) {
@@ -113,7 +113,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
       fetchCategories();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once - intentionally empty
+  }, []); // Run once — intentionally empty
 
   return {
     products,
@@ -127,7 +127,7 @@ export function useProducts(initialParams?: ProductQueryParams) {
 }
 
 // ==========================================
-// USE PRODUCT HOOK - Single product
+// USE PRODUCT HOOK — single product
 // ==========================================
 
 export function useProduct(id: string | null) {
@@ -215,10 +215,10 @@ export function useCreateProduct() {
     try {
       const product = await productsApi.create(data);
       addProduct(product);
-      toast.success('Produk berhasil ditambahkan');
+      toast.success('Product added');
       return product;
     } catch (err) {
-      toast.error('Gagal menambahkan produk', getErrorMessage(err));
+      toast.error('Failed to add product', getErrorMessage(err));
       throw err;
     } finally {
       setIsLoading(false);
@@ -245,10 +245,10 @@ export function useUpdateProduct() {
     try {
       const product = await productsApi.update(id, data);
       updateInStore(id, product);
-      toast.success('Produk berhasil diperbarui');
+      toast.success('Product updated');
       return product;
     } catch (err) {
-      toast.error('Gagal memperbarui produk', getErrorMessage(err));
+      toast.error('Failed to update product', getErrorMessage(err));
       throw err;
     } finally {
       setIsLoading(false);
@@ -275,7 +275,7 @@ export function useDeleteProduct() {
     try {
       await productsApi.delete(id);
       removeProduct(id);
-      toast.success('Produk berhasil dihapus');
+      toast.success('Product deleted');
       return true;
     } catch (err) {
       if (isApiError(err) && err.isUnauthorized()) {
@@ -283,7 +283,7 @@ export function useDeleteProduct() {
         return false;
       }
 
-      toast.error('Gagal menghapus produk', getErrorMessage(err));
+      toast.error('Failed to delete product', getErrorMessage(err));
       return false;
     } finally {
       setIsLoading(false);
@@ -297,7 +297,7 @@ export function useDeleteProduct() {
 }
 
 // ==========================================
-// USE STORE PRODUCTS HOOK - Public store
+// USE STORE PRODUCTS HOOK — public store
 // ==========================================
 
 export function useStoreProducts(slug: string, params?: ProductQueryParams) {
@@ -351,7 +351,7 @@ export function useStoreProducts(slug: string, params?: ProductQueryParams) {
       isMounted.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]); // Only slug change triggers refetch - params intentionally excluded
+  }, [slug]); // Only slug change triggers refetch — params intentionally excluded
 
   const refetch = useCallback(async () => {
     if (!slug) return;

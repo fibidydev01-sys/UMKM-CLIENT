@@ -165,6 +165,8 @@ feat_products_new() {
     cf "$SRC/app/(dashboard)/dashboard/products/new/page.tsx"
     sec "COMPONENTS"
     cf "$SRC/components/products/product-form.tsx"
+    # FIX: gunakan cfolder_r agar subfolder product-form-section ikut ter-collect
+    cfolder_r "$SRC/components/products/product-form-section"
     cfolder "$SRC/components/upload"
     cfolder "$SRC/components/cloudinary"
     sec "TYPES"
@@ -178,6 +180,8 @@ feat_products_edit() {
     cf "$SRC/app/(dashboard)/dashboard/products/[id]/edit/page.tsx"
     sec "COMPONENTS"
     cf "$SRC/components/products/product-form.tsx"
+    # FIX: gunakan cfolder_r agar subfolder product-form-section ikut ter-collect
+    cfolder_r "$SRC/components/products/product-form-section"
     cfolder "$SRC/components/upload"
     cfolder "$SRC/components/cloudinary"
     sec "TYPES"
@@ -196,6 +200,11 @@ feat_settings_toko() {
     cf "$SRC/app/(dashboard)/dashboard/settings/toko/client.tsx"
     sec "COMPONENTS"
     cf "$SRC/components/settings/store-info-form.tsx"
+    # FIX: tambah settings layout/nav agar context navigasi tersedia
+    cf "$SRC/components/settings/settings-layout.tsx"
+    cf "$SRC/components/settings/settings-nav.tsx"
+    cf "$SRC/components/settings/settings-sidebar.tsx"
+    cf "$SRC/components/settings/settings-mobile-navbar.tsx"
     cfolder "$SRC/components/upload"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
@@ -208,6 +217,8 @@ feat_settings_hero() {
     cf "$SRC/app/(dashboard)/dashboard/settings/hero-section/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/hero-section"
+    # FIX: tambah preview-modal yang dipakai di settings
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     cf "$SRC/types/landing.ts"
@@ -220,6 +231,7 @@ feat_settings_about() {
     cf "$SRC/app/(dashboard)/dashboard/settings/about/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/about-section"
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -231,6 +243,7 @@ feat_settings_contact() {
     cf "$SRC/app/(dashboard)/dashboard/settings/contact/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/contact-section"
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -242,6 +255,7 @@ feat_settings_cta() {
     cf "$SRC/app/(dashboard)/dashboard/settings/cta/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/cta-section"
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -253,6 +267,7 @@ feat_settings_testimonials() {
     cf "$SRC/app/(dashboard)/dashboard/settings/testimonials/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/testimonials-section"
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -298,6 +313,9 @@ feat_settings_pembayaran() {
     cf "$SRC/app/(dashboard)/dashboard/settings/pembayaran/page.tsx"
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/pembayaran-section"
+    # FIX: dua file ini ada di root settings/, bukan di dalam pembayaran-section/
+    # cfolder hanya maxdepth 1 sehingga tidak menangkap subfolder
+    # file di root settings sudah di-cover oleh cf manual di bawah:
     cf "$SRC/components/settings/bank-account-dialog.tsx"
     cf "$SRC/components/settings/ewallet-dialog.tsx"
     cf "$SRC/components/settings/payment-settings.tsx"
@@ -313,6 +331,21 @@ feat_settings_pengiriman() {
     sec "COMPONENTS"
     cfolder "$SRC/components/settings/pengiriman-section"
     cf "$SRC/components/settings/shipping-settings.tsx"
+    sec "TYPES"
+    cf "$SRC/types/tenant.ts"
+    done_msg
+}
+
+# FIX: tambah fitur baru — Settings Layout (shared nav/sidebar settings)
+feat_settings_layout() {
+    init_file "SETTINGS-LAYOUT"
+    sec "LAYOUT COMPONENTS"
+    cf "$SRC/components/settings/settings-layout.tsx"
+    cf "$SRC/components/settings/settings-nav.tsx"
+    cf "$SRC/components/settings/settings-sidebar.tsx"
+    cf "$SRC/components/settings/settings-mobile-navbar.tsx"
+    cf "$SRC/components/settings/landing-content-settings.tsx"
+    cf "$SRC/components/settings/preview-modal.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -335,6 +368,8 @@ feat_store_home() {
     cf "$SRC/components/store/store-not-found.tsx"
     cf "$SRC/components/store/featured-products.tsx"
     cf "$SRC/components/store/category-list.tsx"
+    # FIX: tambah store-breadcrumb yang ada di folder store
+    cf "$SRC/components/store/store-breadcrumb.tsx"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     cf "$SRC/types/product.ts"
@@ -350,6 +385,8 @@ feat_store_products() {
     cf "$SRC/components/store/product-card.tsx"
     cf "$SRC/components/store/product-filters.tsx"
     cf "$SRC/components/store/product-pagination.tsx"
+    # FIX: tambah store-breadcrumb
+    cf "$SRC/components/store/store-breadcrumb.tsx"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     done_msg
@@ -372,6 +409,8 @@ feat_store_product_detail() {
     cf "$SRC/components/store/add-to-cart-button.tsx"
     cf "$SRC/components/store/cart-sheet.tsx"
     cf "$SRC/components/store/cart-badge.tsx"
+    # FIX: tambah store-breadcrumb
+    cf "$SRC/components/store/store-breadcrumb.tsx"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     cf "$SRC/types/tenant.ts"
@@ -479,6 +518,7 @@ show_menu() {
     echo "  18) Channels"
     echo "  19) Pembayaran"
     echo "  20) Pengiriman"
+    echo "  29) Settings Layout (shared nav/sidebar)"
     echo ""
     echo "  ── STORE (PUBLIC) ──────────────────────────────────────────"
     echo "  21) Home"
@@ -529,6 +569,7 @@ run_choice() {
         26) feat_store_testimonials ;;
         27) feat_landing_builder ;;
         28) feat_landing_blocks ;;
+        29) feat_settings_layout ;;
          *) echo "  ⚠ Unknown: $1" ;;
     esac
 }
@@ -540,7 +581,7 @@ while true; do
     [ -z "$choices" ] && continue
 
     if [ "$choices" = "all" ]; then
-        for i in $(seq 1 28); do run_choice $i; done
+        for i in $(seq 1 29); do run_choice $i; done
     else
         for c in $choices; do run_choice "$c"; done
     fi

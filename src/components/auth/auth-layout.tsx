@@ -5,10 +5,10 @@ import { AuthLogo } from './auth-logo';
 // ==========================================
 // AUTH LAYOUT COMPONENT
 // - Tanpa image: centered layout
-//   · Desktop: no card, clean full width
-//   · Mobile: card wrapper
+//   · Desktop: tanpa card, full width
+//   · Mobile: dengan card wrapper
 // - Dengan image: 2 kolom split layout
-// - title optional — wizard steps handle header sendiri
+// - title bersifat opsional — wizard steps menangani header sendiri
 // ==========================================
 
 interface AuthLayoutProps {
@@ -86,7 +86,7 @@ export function AuthLayout({
         <AuthLogo size="lg" />
       </div>
 
-      {/* ── DESKTOP: no card ── */}
+      {/* ── DESKTOP: tanpa card ── */}
       <div className="hidden lg:flex lg:flex-col lg:items-center w-full max-w-2xl">
         {(title || badge) && (
           <div className="text-center mb-8">

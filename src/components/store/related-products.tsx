@@ -1,7 +1,6 @@
-// ══════════════════════════════════════════════════════════════
-// RELATED PRODUCTS - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: Terima currency prop dan pass ke ProductGrid
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// RELATED PRODUCTS
+// ==========================================
 
 import { ProductGrid } from './product-grid';
 import type { Product } from '@/types';
@@ -9,7 +8,7 @@ import type { Product } from '@/types';
 interface RelatedProductsProps {
   products: Product[];
   storeSlug: string;
-  currency: string; // ✅ FIX: tambah currency prop
+  currency: string;
 }
 
 export function RelatedProducts({
@@ -23,8 +22,7 @@ export function RelatedProducts({
 
   return (
     <section className="mt-12">
-      <h2 className="text-xl font-semibold mb-6">Produk Terkait</h2>
-      {/* ✅ FIX: pass currency ke ProductGrid */}
+      <h2 className="text-xl font-semibold mb-6">Related products</h2>
       <ProductGrid
         products={products}
         storeSlug={storeSlug}

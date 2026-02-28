@@ -2,13 +2,12 @@
  * BuilderSidebar Component
  *
  * Fixed sidebar with 6 section buttons (Hero, About, Products, Testimonials, Contact, CTA)
- * 🚀 NEW: Drag & Drop support untuk reorder sections
+ * Supports drag & drop to reorder sections
  */
 
 'use client';
 
 import React from 'react';
-// Button removed - using div to avoid nested button issue with Switch
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import {
@@ -38,7 +37,7 @@ import {
 } from '@dnd-kit/sortable';
 import type { SectionKey } from '@/types';
 
-// 🚀 Re-export as SectionType for backward compatibility
+// Re-export as SectionType for backward compatibility
 export type SectionType = SectionKey;
 
 interface Section {
@@ -53,31 +52,31 @@ const sectionsData: Section[] = [
     id: 'hero',
     label: 'Hero',
     icon: Sparkles,
-    description: 'Banner utama',
+    description: 'Main banner',
   },
   {
     id: 'about',
     label: 'About',
     icon: Info,
-    description: 'Tentang toko',
+    description: 'About the store',
   },
   {
     id: 'products',
     label: 'Products',
     icon: ShoppingBag,
-    description: 'Katalog produk',
+    description: 'Product catalog',
   },
   {
     id: 'testimonials',
     label: 'Testimonials',
     icon: MessageSquare,
-    description: 'Testimoni pelanggan',
+    description: 'Customer reviews',
   },
   {
     id: 'contact',
     label: 'Contact',
     icon: Phone,
-    description: 'Informasi kontak',
+    description: 'Contact information',
   },
   {
     id: 'cta',
@@ -88,14 +87,12 @@ const sectionsData: Section[] = [
 ];
 
 interface BuilderSidebarProps {
-  activeSection: SectionType; // 🚀 Always set (defaults to 'hero')
+  activeSection: SectionType;
   onSectionClick: (section: SectionType) => void;
   collapsed?: boolean;
   className?: string;
-  // 🚀 NEW: Section order state
   sectionOrder: SectionType[];
   onSectionOrderChange: (newOrder: SectionType[]) => void;
-  // 🚀 NEW: Section enable/disable state
   getSectionEnabled: (section: SectionType) => boolean;
   onToggleSection: (section: SectionType, enabled: boolean) => void;
 }
@@ -148,26 +145,22 @@ function SortableSectionItem({
         {...attributes}
         {...listeners}
         className={cn(
-          // Base button styles
           'inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium',
           'transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring',
-          // Variant styles
           isActive ? 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80' : 'hover:bg-accent hover:text-accent-foreground',
-          // Custom styles
           'w-full h-auto transition-all justify-center items-center gap-2 py-3 px-2',
           isActive && 'bg-primary/10 text-primary hover:bg-primary/15',
-          // ✅ ALWAYS draggable (even when disabled)
+          // Always draggable (even when disabled)
           'cursor-grab active:cursor-grabbing',
-          // ✅ Disabled state = visual only (grayscale + opacity)
+          // Disabled state = visual only (grayscale + opacity)
           !enabled && 'opacity-50 grayscale'
         )}
         onClick={() => {
-          // ✅ Only trigger click if not dragging (dnd-kit handles delay)
           if (!isDragging) {
             onSectionClick(section.id);
           }
         }}
-        title={section.label} // Always show tooltip
+        title={section.label}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => {
@@ -177,7 +170,7 @@ function SortableSectionItem({
           }
         }}
       >
-        {/* Drag Handle | Separator - Inline on hover */}
+        {/* Drag Handle | Separator — inline on hover */}
         {!collapsed && (
           <>
             <div
@@ -198,7 +191,7 @@ function SortableSectionItem({
         {/* Icon */}
         <Icon className={cn('h-5 w-5', isActive && 'text-primary')} />
 
-        {/* Separator | Toggle - Horizontal layout */}
+        {/* Separator | Toggle */}
         {!collapsed && (
           <>
             <div className="h-4 w-px bg-border" />
@@ -209,7 +202,7 @@ function SortableSectionItem({
                 e.stopPropagation();
               }}
               onPointerDown={(e) => {
-                // ✅ Prevent drag when clicking toggle
+                // Prevent drag when clicking toggle
                 e.stopPropagation();
               }}
               className="scale-75"
@@ -233,9 +226,9 @@ export function BuilderSidebar({
 }: BuilderSidebarProps) {
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      // ✅ Distance-based activation for fast drag (no delay!)
+      // Distance-based activation for responsive drag (no delay)
       activationConstraint: {
-        distance: 8, // 8px movement = drag, 0px = click (instant & responsive!)
+        distance: 8,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -255,7 +248,6 @@ export function BuilderSidebar({
     }
   };
 
-  // Map section order to section data
   const orderedSections = sectionOrder.map(
     (id) => sectionsData.find((s) => s.id === id)!
   );
@@ -264,13 +256,10 @@ export function BuilderSidebar({
     <div
       className={cn(
         'border-r bg-muted/30 p-3 space-y-2 transition-all duration-300',
-        // 🚀 Full collapse (w-0) for maximum live preview space!
         collapsed ? 'w-0 p-0 border-0 opacity-0 overflow-hidden' : 'w-36',
         className
       )}
     >
-      {/* Removed header - icon-only design */}
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

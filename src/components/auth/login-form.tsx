@@ -39,7 +39,7 @@ export function LoginForm() {
     try {
       await login(data);
     } catch {
-      // Error handled in hook
+      // Error ditangani di hook
     }
   };
 
@@ -134,7 +134,7 @@ export function LoginForm() {
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="text-primary hover:underline font-medium">
-            Create free account
+            Create a free account
           </Link>
         </p>
       </form>

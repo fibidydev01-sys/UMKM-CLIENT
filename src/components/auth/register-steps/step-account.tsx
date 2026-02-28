@@ -18,7 +18,7 @@ interface StepAccountProps {
 }
 
 // ==========================================
-// COMPONENT — no header, no nav (handled by parent)
+// COMPONENT — tanpa header & nav (dihandle parent)
 // ==========================================
 
 export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccountProps) {
@@ -53,7 +53,7 @@ export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccount
           onChange={(e) => { setLocalEmail(e.target.value); onUpdate({ email: e.target.value }); }}
           className="h-11 text-sm placeholder:text-muted-foreground/50"
         />
-        <p className="text-xs text-muted-foreground">Used to log in to your store dashboard</p>
+        <p className="text-xs text-muted-foreground">Used to sign in to your store dashboard</p>
       </div>
 
       <div className="border-t" />
@@ -67,7 +67,7 @@ export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccount
           <Input
             id="acc-password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="At least 6 characters"
+            placeholder="Min. 6 characters"
             autoComplete="new-password"
             value={localPassword}
             onChange={(e) => { setLocalPassword(e.target.value); onUpdate({ password: e.target.value }); }}

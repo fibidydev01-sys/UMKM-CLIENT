@@ -78,7 +78,7 @@ export function useLogin() {
         setTenant(response.tenant);
         setChecked(true);
 
-        toast.success('Login berhasil!', `Selamat datang, ${response.tenant.name}`);
+        toast.success('Logged in!', `Welcome back, ${response.tenant.name}`);
 
         const from = searchParams.get('from');
         router.push(from || '/dashboard');
@@ -87,7 +87,7 @@ export function useLogin() {
       } catch (err) {
         const message = getErrorMessage(err);
         setError(message);
-        toast.error('Login gagal', message);
+        toast.error('Login failed', message);
         throw err;
       } finally {
         setIsLoading(false);
@@ -124,14 +124,14 @@ export function useRegister() {
         setTenant(response.tenant);
         setChecked(true);
 
-        toast.success('Pendaftaran berhasil!', 'Toko Anda sudah siap digunakan');
+        toast.success('Registration successful!', 'Your store is ready to use');
         router.push('/dashboard');
 
         return response;
       } catch (err) {
         const message = getErrorMessage(err);
         setError(message);
-        toast.error('Pendaftaran gagal', message);
+        toast.error('Registration failed', message);
         throw err;
       } finally {
         setIsLoading(false);
@@ -163,7 +163,7 @@ export function useLogout() {
     }
 
     reset();
-    toast.success('Logout berhasil');
+    toast.success('Logged out');
     router.push('/login');
   }, [reset, router]);
 
@@ -218,12 +218,12 @@ export function useChangePassword() {
       setError(null);
 
       try {
-        toast.success('Password berhasil diubah');
+        toast.success('Password updated');
         return true;
       } catch (err) {
         const message = getErrorMessage(err);
         setError(message);
-        toast.error('Gagal mengubah password', message);
+        toast.error('Failed to update password', message);
         return false;
       } finally {
         setIsLoading(false);
@@ -244,12 +244,12 @@ export function useDeleteAccount() {
     setError(null);
 
     try {
-      toast.success('Akun berhasil dihapus');
+      toast.success('Account deleted');
       return true;
     } catch (err) {
       const message = getErrorMessage(err);
       setError(message);
-      toast.error('Gagal menghapus akun', message);
+      toast.error('Failed to delete account', message);
       return false;
     } finally {
       setIsLoading(false);

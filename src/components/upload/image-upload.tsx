@@ -138,7 +138,7 @@ export function ImageUpload({
           >
             <Image
               src={value!.trim()}
-              alt="Uploaded image"
+              alt="Uploaded image preview"
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"

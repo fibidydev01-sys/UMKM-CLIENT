@@ -1,7 +1,6 @@
 // ============================================================================
 // FILE: src/components/landing/landing-builder.tsx
-// PURPOSE: Landing page builder with proper Publish flow (NO AUTO-SAVE!)
-// ✅ UPDATED: Added validation errors display
+// PURPOSE: Landing page builder with Publish flow (no auto-save)
 // ============================================================================
 
 'use client';
@@ -64,7 +63,7 @@ interface LandingBuilderProps {
   onDiscard: () => void;
   onReset: () => Promise<boolean>;
   onClearErrors?: () => void;
-  activeSection?: string | null; // Filter to show only specific section
+  activeSection?: string | null;
 }
 
 // ============================================================================
@@ -75,37 +74,37 @@ const SECTIONS = [
   {
     key: 'hero',
     title: 'Hero Section',
-    description: 'Banner utama di bagian atas halaman',
+    description: 'Main banner at the top of the page',
     icon: Target
   },
   {
     key: 'about',
-    title: 'Tentang Kami',
-    description: 'Informasi tentang toko Anda',
+    title: 'About Us',
+    description: 'Information about your store',
     icon: BookOpen
   },
   {
     key: 'products',
-    title: 'Produk Unggulan',
-    description: 'Tampilkan produk terbaik Anda',
+    title: 'Featured Products',
+    description: 'Showcase your best products',
     icon: ShoppingBag
   },
   {
     key: 'testimonials',
-    title: 'Testimoni',
-    description: 'Ulasan dari pelanggan',
+    title: 'Testimonials',
+    description: 'Customer reviews',
     icon: Star
   },
   {
     key: 'contact',
-    title: 'Kontak',
-    description: 'Informasi kontak toko',
+    title: 'Contact',
+    description: 'Store contact information',
     icon: Phone
   },
   {
     key: 'cta',
     title: 'Call to Action',
-    description: 'Ajakan untuk berbelanja',
+    description: 'Encourage visitors to shop',
     icon: Rocket
   },
 ] as const;
@@ -129,13 +128,12 @@ export function LandingBuilder({
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  // Filter sections based on activeSection prop
   const visibleSections = activeSection
     ? SECTIONS.filter((section) => section.key === activeSection)
     : SECTIONS;
 
   // ==========================================================================
-  // TOGGLE SECTION - LOCAL ONLY, NO AUTO-SAVE!
+  // TOGGLE SECTION
   // ==========================================================================
   const handleToggleSection = useCallback((key: SectionKey, enabled: boolean) => {
     const currentSection = config[key] || {};
@@ -209,7 +207,7 @@ export function LandingBuilder({
   // ==========================================================================
   return (
     <div className="space-y-6">
-      {/* ✅ NEW: Validation Errors Display */}
+      {/* Validation Errors */}
       {validationErrors.length > 0 && (
         <Card className="p-4 border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800">
           <div className="flex items-start gap-3">
@@ -217,7 +215,7 @@ export function LandingBuilder({
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                  Validasi Gagal ({validationErrors.length} error)
+                  Validation failed ({validationErrors.length} {validationErrors.length === 1 ? 'error' : 'errors'})
                 </p>
                 {onClearErrors && (
                   <button
@@ -248,10 +246,10 @@ export function LandingBuilder({
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Ada perubahan yang belum dipublish
+                You have unpublished changes
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
-                Klik &quot;Publish&quot; untuk menyimpan perubahan ke toko online Anda
+                Click &quot;Publish&quot; to save your changes to your live store
               </p>
             </div>
           </div>
@@ -281,7 +279,7 @@ export function LandingBuilder({
                       <h3 className="font-semibold text-lg">{section.title}</h3>
                       {isEnabled && (
                         <Badge variant="secondary" className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
-                          Aktif
+                          Active
                         </Badge>
                       )}
                     </div>
@@ -326,14 +324,13 @@ export function LandingBuilder({
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Landing Page?</AlertDialogTitle>
             <AlertDialogDescription>
-              Semua konfigurasi landing page akan direset ke default.
-              Perubahan ini akan langsung dipublish. Lanjutkan?
+              All landing page settings will be reset to defaults. This will be published immediately. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmReset}>
-              Ya, Reset
+              Yes, reset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -343,15 +340,15 @@ export function LandingBuilder({
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Batalkan Perubahan?</AlertDialogTitle>
+            <AlertDialogTitle>Discard Changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              Semua perubahan yang belum dipublish akan hilang. Lanjutkan?
+              All unpublished changes will be lost. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Kembali</AlertDialogCancel>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDiscard}>
-              Ya, Batalkan
+              Yes, discard
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -381,15 +378,14 @@ function TestimonialsSection({
 
   return (
     <div className="space-y-4">
-
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="testimonials-title">Judul Section</Label>
+          <Label htmlFor="testimonials-title">Section title</Label>
           <Input
             id="testimonials-title"
             value={config?.title || ''}
             onChange={(e) => onTitleChange(e.target.value)}
-            placeholder="Apa Kata Mereka?"
+            placeholder="What Our Customers Say"
           />
         </div>
         <div className="space-y-2">
@@ -398,13 +394,13 @@ function TestimonialsSection({
             id="testimonials-subtitle"
             value={config?.subtitle || ''}
             onChange={(e) => onSubtitleChange(e.target.value)}
-            placeholder="Testimoni dari pelanggan kami"
+            placeholder="Real reviews from our customers"
           />
         </div>
       </div>
       <Separator />
       <div>
-        <Label className="mb-3 block">Daftar Testimoni ({items.length})</Label>
+        <Label className="mb-3 block">Testimonials ({items.length})</Label>
         <TestimonialEditor
           items={items}
           onChange={onItemsChange}
@@ -437,15 +433,13 @@ function GenericSection({
 
   return (
     <div className="space-y-4">
-
-      {/* Common Fields */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Judul Section</Label>
+          <Label>Section title</Label>
           <Input
             value={config?.title || ''}
             onChange={(e) => onTitleChange(e.target.value)}
-            placeholder="Masukkan judul..."
+            placeholder="Enter title..."
           />
         </div>
         <div className="space-y-2">
@@ -453,12 +447,11 @@ function GenericSection({
           <Input
             value={config?.subtitle || ''}
             onChange={(e) => onSubtitleChange(e.target.value)}
-            placeholder="Masukkan subtitle..."
+            placeholder="Enter subtitle..."
           />
         </div>
       </div>
 
-      {/* Section-specific Fields */}
       {sectionKey === 'hero' && (
         <HeroFields config={sectionConfig} onChange={onConfigChange} />
       )}
@@ -502,25 +495,25 @@ function HeroFields({ config, onChange }: FieldProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="centered">Tengah</SelectItem>
-              <SelectItem value="left">Kiri</SelectItem>
-              <SelectItem value="right">Kanan</SelectItem>
+              <SelectItem value="centered">Centered</SelectItem>
+              <SelectItem value="left">Left</SelectItem>
+              <SelectItem value="right">Right</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Teks Tombol CTA</Label>
+          <Label>CTA button text</Label>
           <Input
             value={(config.ctaText as string) || ''}
             onChange={(e) => onChange({ ctaText: e.target.value })}
-            placeholder="Lihat Produk"
+            placeholder="Shop Now"
           />
         </div>
       </div>
       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
         <div>
-          <Label>Tampilkan Tombol CTA</Label>
-          <p className="text-xs text-muted-foreground">Tombol ajakan di hero section</p>
+          <Label>Show CTA button</Label>
+          <p className="text-xs text-muted-foreground">Call-to-action button in the hero section</p>
         </div>
         <Switch
           checked={(config.showCta as boolean) ?? true}
@@ -537,18 +530,18 @@ function AboutFields({ config, onChange }: FieldProps) {
       <Separator />
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label>Deskripsi Lengkap</Label>
+          <Label>Full description</Label>
           <Textarea
             value={(config.description as string) || ''}
             onChange={(e) => onChange({ description: e.target.value })}
-            placeholder="Ceritakan tentang toko Anda..."
+            placeholder="Tell customers about your store..."
             rows={4}
           />
         </div>
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div>
-            <Label>Tampilkan Gambar</Label>
-            <p className="text-xs text-muted-foreground">Gambar di samping deskripsi</p>
+            <Label>Show image</Label>
+            <p className="text-xs text-muted-foreground">Image alongside the description</p>
           </div>
           <Switch
             checked={(config.showImage as boolean) ?? true}
@@ -557,7 +550,7 @@ function AboutFields({ config, onChange }: FieldProps) {
         </div>
         {(config.showImage as boolean) !== false && (
           <div className="space-y-2">
-            <Label>URL Gambar</Label>
+            <Label>Image URL</Label>
             <Input
               value={(config.image as string) || ''}
               onChange={(e) => onChange({ image: e.target.value })}
@@ -576,7 +569,7 @@ function ProductsFields({ config, onChange }: FieldProps) {
       <Separator />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Mode Tampilan</Label>
+          <Label>Display mode</Label>
           <Select
             value={(config.displayMode as string) || 'featured'}
             onValueChange={(value) => onChange({ displayMode: value })}
@@ -585,14 +578,14 @@ function ProductsFields({ config, onChange }: FieldProps) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="featured">Produk Unggulan</SelectItem>
-              <SelectItem value="latest">Produk Terbaru</SelectItem>
-              <SelectItem value="all">Semua Produk</SelectItem>
+              <SelectItem value="featured">Featured Products</SelectItem>
+              <SelectItem value="latest">Latest Products</SelectItem>
+              <SelectItem value="all">All Products</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Jumlah Produk</Label>
+          <Label>Number of products</Label>
           <Input
             type="number"
             min={1}
@@ -604,8 +597,8 @@ function ProductsFields({ config, onChange }: FieldProps) {
       </div>
       <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
         <div>
-          <Label>Tombol Lihat Semua</Label>
-          <p className="text-xs text-muted-foreground">Link ke halaman produk</p>
+          <Label>Show "View All" button</Label>
+          <p className="text-xs text-muted-foreground">Link to the full products page</p>
         </div>
         <Switch
           checked={(config.showViewAll as boolean) ?? true}
@@ -623,7 +616,7 @@ function ContactFields({ config, onChange }: FieldProps) {
       <div className="space-y-4">
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div>
-            <Label>Tampilkan Map</Label>
+            <Label>Show map</Label>
             <p className="text-xs text-muted-foreground">Embed Google Maps</p>
           </div>
           <Switch
@@ -633,8 +626,8 @@ function ContactFields({ config, onChange }: FieldProps) {
         </div>
         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
           <div>
-            <Label>Tampilkan Form Kontak</Label>
-            <p className="text-xs text-muted-foreground">Form untuk mengirim pesan</p>
+            <Label>Show contact form</Label>
+            <p className="text-xs text-muted-foreground">Form for customers to send messages</p>
           </div>
           <Switch
             checked={(config.showForm as boolean) ?? true}
@@ -652,15 +645,15 @@ function CtaFields({ config, onChange }: FieldProps) {
       <Separator />
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label>Teks Tombol</Label>
+          <Label>Button text</Label>
           <Input
             value={(config.buttonText as string) || ''}
             onChange={(e) => onChange({ buttonText: e.target.value })}
-            placeholder="Mulai Belanja"
+            placeholder="Start Shopping"
           />
         </div>
         <div className="space-y-2">
-          <Label>Link Tombol</Label>
+          <Label>Button link</Label>
           <Input
             value={(config.buttonLink as string) || ''}
             onChange={(e) => onChange({ buttonLink: e.target.value })}
@@ -669,7 +662,7 @@ function CtaFields({ config, onChange }: FieldProps) {
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Style Tombol</Label>
+        <Label>Button style</Label>
         <Select
           value={(config.style as string) || 'primary'}
           onValueChange={(value) => onChange({ style: value })}
@@ -678,7 +671,7 @@ function CtaFields({ config, onChange }: FieldProps) {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="primary">Primary (Warna Utama)</SelectItem>
+            <SelectItem value="primary">Primary (brand color)</SelectItem>
             <SelectItem value="secondary">Secondary</SelectItem>
             <SelectItem value="outline">Outline</SelectItem>
           </SelectContent>

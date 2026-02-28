@@ -179,7 +179,7 @@ export function ProductPreviewDrawer({
           <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
             <div ref={headerSentinelRef} className="h-0" />
 
-            {/* Product Images */}
+            {/* Gambar produk */}
             <div className="px-4 py-6">
               <div className="relative w-full max-w-2xl mx-auto">
                 <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-muted">
@@ -226,10 +226,10 @@ export function ProductPreviewDrawer({
               </div>
             </div>
 
-            {/* Content Area */}
+            {/* Konten detail */}
             <div className="px-4 pb-8 max-w-2xl mx-auto">
 
-              {/* Price */}
+              {/* Harga */}
               {!isCustomPrice && (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Price</h3>
@@ -248,7 +248,7 @@ export function ProductPreviewDrawer({
 
               <Separator className="my-6" />
 
-              {/* Description */}
+              {/* Deskripsi */}
               {product.description && (
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Description</h3>
@@ -256,7 +256,7 @@ export function ProductPreviewDrawer({
                 </div>
               )}
 
-              {/* Details Grid */}
+              {/* Grid detail */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {product.category && (
                   <div className="flex items-start gap-3">
@@ -285,7 +285,7 @@ export function ProductPreviewDrawer({
                       <p className="text-xs text-muted-foreground">Stock</p>
                       <p className={cn('text-sm font-medium', isLowStock && 'text-orange-500')}>
                         {stock} {product.unit || 'pcs'}
-                        {isLowStock && ' (Low)'}
+                        {isLowStock && ' — low stock'}
                       </p>
                     </div>
                   </div>
@@ -324,7 +324,7 @@ export function ProductPreviewDrawer({
 
               <Separator className="my-6" />
 
-              {/* Action Buttons */}
+              {/* Tombol aksi */}
               <div className="grid grid-cols-2 gap-3">
                 {onToggleActive && (
                   <Button variant="outline" className="w-full" onClick={handleToggleActive}>

@@ -26,11 +26,11 @@ export function StepWelcome({ onNext }: StepWelcomeProps) {
         </h1>
         <p className="text-muted-foreground leading-relaxed">
           Get your store up and running in minutes. Manage products, orders,
-          and customers all in one place.
+          and customers — all in one place.
         </p>
       </div>
 
-      {/* Steps preview */}
+      {/* Preview langkah-langkah */}
       <div className="w-full max-w-xs space-y-2 text-left">
         {[
           { step: '01', label: 'Choose your business type' },

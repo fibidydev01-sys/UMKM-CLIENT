@@ -89,7 +89,7 @@ const SOCIAL_CONFIG = [
   { key: 'facebook', label: 'Facebook', color: 'hover:text-blue-600' },
   { key: 'tiktok', label: 'TikTok', color: 'hover:text-black dark:hover:text-white' },
   { key: 'youtube', label: 'YouTube', color: 'hover:text-red-600' },
-  { key: 'twitter', label: 'Twitter / X', color: 'hover:text-sky-500' },
+  { key: 'twitter', label: 'X (Twitter)', color: 'hover:text-sky-500' },
   { key: 'whatsapp', label: 'WhatsApp', color: 'hover:text-green-500' },
   { key: 'telegram', label: 'Telegram', color: 'hover:text-blue-500' },
   { key: 'pinterest', label: 'Pinterest', color: 'hover:text-red-500' },
@@ -230,7 +230,7 @@ export function StoreFooter({ tenant }: StoreFooterProps) {
 
         <Separator className="my-8" />
 
-        {/* Bottom Bar */}
+        {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>© {currentYear} {tenant.name}. All rights reserved.</p>
           <p>

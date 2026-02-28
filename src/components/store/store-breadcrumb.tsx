@@ -11,11 +11,11 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb';
 import { Fragment } from 'react';
-import { useStoreUrls } from '@/lib/store-url'; // ✅ NEW IMPORT
+import { useStoreUrls } from '@/lib/store-url';
 
 // ==========================================
 // STORE BREADCRUMB COMPONENT
-// ✅ FIXED: Uses store-url helper for subdomain routing
+// Menggunakan store-url helper untuk subdomain routing
 // ==========================================
 
 interface BreadcrumbItemData {
@@ -34,13 +34,13 @@ export function StoreBreadcrumb({
   storeSlug,
   storeName,
 }: StoreBreadcrumbProps) {
-  // ✅ Smart URLs
+  // URL dinamis berdasarkan subdomain/slug
   const urls = useStoreUrls(storeSlug);
 
   return (
     <Breadcrumb>
       <BreadcrumbList>
-        {/* Home - ✅ FIXED */}
+        {/* Home */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
             <Link href={urls.home} className="flex items-center gap-1">
@@ -50,7 +50,7 @@ export function StoreBreadcrumb({
           </BreadcrumbLink>
         </BreadcrumbItem>
 
-        {/* Dynamic Items */}
+        {/* Dynamic items */}
         {items.map((item, index) => (
           <Fragment key={index}>
             <BreadcrumbSeparator>

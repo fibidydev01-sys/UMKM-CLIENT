@@ -31,11 +31,11 @@ export async function generateMetadata({ params }: TestimonialsPageProps): Promi
   }
 
   return {
-    title: `Testimoni & Review | ${tenant.name}`,
-    description: `Baca testimoni dan review pelanggan ${tenant.name}. Lihat pengalaman customer yang sudah berbelanja.`,
+    title: `Reviews & Testimonials | ${tenant.name}`,
+    description: `Read customer reviews and testimonials for ${tenant.name}. See what shoppers are saying.`,
     openGraph: {
-      title: `Review ${tenant.name}`,
-      description: `Testimoni pelanggan ${tenant.name}`,
+      title: `${tenant.name} Reviews`,
+      description: `Customer testimonials for ${tenant.name}`,
       images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
     },
   };
@@ -55,7 +55,7 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
 
   const breadcrumbs = [
     ...generateTenantBreadcrumbs({ name: tenant.name, slug: tenant.slug }),
-    { name: 'Testimoni', url: `/store/${slug}/testimonials` },
+    { name: 'Testimonials', url: `/store/${slug}/testimonials` },
   ];
 
   return (
@@ -70,7 +70,7 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
           />
         ) : (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
-            <p className="text-muted-foreground">Belum ada testimoni</p>
+            <p className="text-muted-foreground">No testimonials yet</p>
           </div>
         )}
       </div>

@@ -45,7 +45,7 @@ export default function LoginPage() {
       image="/auth-picture/auth-login.jpg"
       imageAlt="Login illustration"
     >
-      {/* ✅ FIXED: Wrap in Suspense because LoginForm uses useSearchParams via useLogin hook */}
+      {/* Suspense diperlukan: LoginForm menggunakan useSearchParams via useLogin hook */}
       <Suspense fallback={<LoginFormSkeleton />}>
         <LoginForm />
       </Suspense>

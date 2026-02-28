@@ -214,7 +214,7 @@ export function ProductsTable({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No products found.
+                  No products found
                 </TableCell>
               </TableRow>
             )}
@@ -225,7 +225,7 @@ export function ProductsTable({
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} row(s) selected
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -287,7 +287,7 @@ export function ProductsTable({
                   Deleting...
                 </>
               ) : (
-                'Delete'
+                'Delete all'
               )}
             </Button>
           </AlertDialogFooter>

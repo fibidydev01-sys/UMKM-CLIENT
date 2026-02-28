@@ -1,19 +1,19 @@
 // ==========================================
-// SITE CONFIGURATION
+// KONFIGURASI SITE
 // ==========================================
 
 export const siteConfig = {
   name: 'Fibidy',
-  description: 'Online store platform for Indonesian small businesses. Launch your store in minutes — no coding',
+  description: 'Online store platform for Indonesian small businesses. Launch your store in minutes no coding required',
   tagline: 'Effortless online stores for small businesses',
   url: process.env.NEXT_PUBLIC_APP_URL || 'https://fibidy.com',
   ogImage: '/og-image.png',
 
-  // Contact
+  // Kontak
   email: 'hello@fibidy.com',
   whatsapp: '6281234567890',
 
-  // Social
+  // Media sosial
   links: {
     instagram: 'https://instagram.com/fibidy.id',
     twitter: 'https://twitter.com/fibidy_id',
@@ -30,8 +30,8 @@ export const siteConfig = {
     'indonesia',
   ],
 
-  // Creator
-  creator: 'PKM Kewirausahaan Mahasiswa 2026',
+  // Pembuat
+  creator: 'Bayu Surya Pranata',
 }
 
 export type SiteConfig = typeof siteConfig;

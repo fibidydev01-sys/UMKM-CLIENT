@@ -1,8 +1,6 @@
-// ══════════════════════════════════════════════════════════════
-// PRODUCT INFO - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: currency diterima sebagai prop dari parent page
-// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// PRODUCT INFO
+// ==========================================
 
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +9,7 @@ import type { Product } from '@/types';
 
 interface ProductInfoProps {
   product: Product;
-  currency: string; // ✅ FIX: wajib dari parent (tenant.currency)
+  currency: string; // Dari tenant.currency
 }
 
 export function ProductInfo({ product, currency }: ProductInfoProps) {
@@ -34,26 +32,26 @@ export function ProductInfo({ product, currency }: ProductInfoProps) {
         <p className="text-sm text-muted-foreground">{product.category}</p>
       )}
 
-      {/* Product Name */}
+      {/* Product name */}
       <h1 className="text-2xl font-bold md:text-3xl">{product.name}</h1>
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
         {product.isFeatured && (
-          <Badge className="bg-primary">⭐ Produk Unggulan</Badge>
+          <Badge className="bg-primary">⭐ Featured</Badge>
         )}
         {isOutOfStock && (
-          <Badge variant="destructive">Stok Habis</Badge>
+          <Badge variant="destructive">Out of stock</Badge>
         )}
         {product.trackStock &&
           !isOutOfStock &&
           (product.stock ?? 0) <= (product.minStock ?? 5) &&
           (product.stock ?? 0) > 0 && (
-            <Badge variant="secondary">Stok Terbatas</Badge>
+            <Badge variant="secondary">Limited stock</Badge>
           )}
       </div>
 
-      {/* ✅ FIX: Semua formatPrice pakai currency dari prop */}
+      {/* Price */}
       {!isCustomPrice && (
         <>
           <div className="flex items-baseline gap-3">
@@ -73,7 +71,7 @@ export function ProductInfo({ product, currency }: ProductInfoProps) {
           {/* Unit */}
           {product.unit && (
             <p className="text-sm text-muted-foreground">
-              Harga per {product.unit}
+              Price per {product.unit}
             </p>
           )}
         </>
@@ -81,10 +79,10 @@ export function ProductInfo({ product, currency }: ProductInfoProps) {
 
       <Separator />
 
-      {/* Stock Info */}
+      {/* Stock info */}
       {product.trackStock && product.stock !== null && (
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted-foreground">Stok:</span>
+          <span className="text-muted-foreground">Stock:</span>
           <span className={isOutOfStock ? 'text-destructive' : 'font-medium'}>
             {product.stock} {product.unit || 'pcs'}
           </span>

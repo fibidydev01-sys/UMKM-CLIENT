@@ -1,10 +1,8 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// SHIPPING INFO - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: formatPrice pakai tenant.currency, tidak hardcode IDR
-// ✅ FIX: currency diambil dari tenant prop
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// SHIPPING INFO
+// ==========================================
 
 import { Truck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,13 +16,11 @@ interface ShippingInfoProps {
 export function ShippingInfo({ tenant }: ShippingInfoProps) {
   const { freeShippingThreshold, defaultShippingCost } = tenant;
 
-  // ✅ FIX: currency dari tenant, fallback IDR
+  // Currency dari tenant
   const currency = tenant?.currency || 'IDR';
-
-  // ✅ FIX: helper lokal
   const fmt = (value: number) => formatPrice(value, currency);
 
-  // If no shipping settings configured, don't show anything
+  // Jika tidak ada konfigurasi pengiriman, sembunyikan komponen
   if (!freeShippingThreshold && !defaultShippingCost) {
     return null;
   }
@@ -37,28 +33,26 @@ export function ShippingInfo({ tenant }: ShippingInfoProps) {
             <Truck className="h-5 w-5 text-primary" />
           </div>
           <div className="flex-1 space-y-1">
-            <h4 className="font-medium text-sm">Informasi Pengiriman</h4>
+            <h4 className="font-medium text-sm">Shipping</h4>
 
-            {/* ✅ FIX: pakai fmt() */}
             {freeShippingThreshold && freeShippingThreshold > 0 ? (
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-primary">Gratis ongkir</span>{' '}
-                untuk pembelian min. {fmt(freeShippingThreshold)}
+                <span className="font-medium text-primary">Free shipping</span>{' '}
+                on orders over {fmt(freeShippingThreshold)}
               </p>
             ) : null}
 
-            {/* ✅ FIX: pakai fmt() */}
             {defaultShippingCost && defaultShippingCost > 0 ? (
               <p className="text-sm text-muted-foreground">
-                Ongkos kirim flat: {fmt(defaultShippingCost)}
+                Flat shipping rate: {fmt(defaultShippingCost)}
               </p>
             ) : null}
 
             {(!freeShippingThreshold || freeShippingThreshold === 0) &&
               (!defaultShippingCost || defaultShippingCost === 0) ? (
               <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-primary">Gratis ongkir</span>{' '}
-                untuk semua pesanan
+                <span className="font-medium text-primary">Free shipping</span>{' '}
+                on all orders
               </p>
             ) : null}
           </div>

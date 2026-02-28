@@ -58,17 +58,13 @@ export type UpdateProductInput = Partial<CreateProductInput>;
  * Update stock request
  */
 export interface UpdateStockInput {
-  quantity: number;  // Positive = add, Negative = subtract
+  quantity: number; // Positif = tambah, Negatif = kurangi
   reason?: string;
 }
 
 /**
  * Product query parameters
  */
-/**
- * Product query parameters
- */
-// In ProductQueryParams type (src/types/product.ts)
 export interface ProductQueryParams {
   search?: string;
   category?: string;
@@ -82,6 +78,7 @@ export interface ProductQueryParams {
   _t?: number;
   [key: string]: string | number | boolean | undefined;
 }
+
 /**
  * Low stock product
  */

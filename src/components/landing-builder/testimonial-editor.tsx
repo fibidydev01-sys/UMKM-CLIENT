@@ -41,7 +41,6 @@ interface TestimonialEditorProps {
   onChange: (items: Testimonial[]) => void;
 }
 
-// Generate unique ID
 const generateId = () => `testi_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
 const DEFAULT_TESTIMONIAL: Omit<Testimonial, 'id'> = {
@@ -94,24 +93,22 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
     if (deletingId) {
       const newItems = items.filter((item) => item.id !== deletingId);
       onChange(newItems);
-      toast.success('Testimonial berhasil dihapus');
+      toast.success('Testimonial deleted');
     }
     setDeleteDialogOpen(false);
     setDeletingId(null);
   };
 
   const handleSave = () => {
-    // Validasi
     if (!formData.name || !formData.name.trim()) {
-      toast.error('Nama wajib diisi');
+      toast.error('Name is required');
       return;
     }
     if (!formData.content || !formData.content.trim()) {
-      toast.error('Isi testimonial wajib diisi');
+      toast.error('Testimonial content is required');
       return;
     }
 
-    // Pastikan ID selalu ada
     const savedItem: Testimonial = {
       ...formData,
       id: formData.id || generateId(),
@@ -125,15 +122,13 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
     let newItems: Testimonial[];
 
     if (editingItem) {
-      // Update existing
       newItems = items.map((item) =>
         item.id === editingItem.id ? savedItem : item
       );
-      toast.success('Testimonial berhasil diperbarui');
+      toast.success('Testimonial updated');
     } else {
-      // Add new
       newItems = [...items, savedItem];
-      toast.success('Testimonial berhasil ditambahkan');
+      toast.success('Testimonial added');
     }
 
     onChange(newItems);
@@ -148,7 +143,6 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
 
   const handleDialogClose = (open: boolean) => {
     if (!open) {
-      // Reset form saat dialog ditutup
       setEditingItem(null);
       setFormData({ id: '', ...DEFAULT_TESTIMONIAL });
     }
@@ -165,12 +159,12 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm text-muted-foreground">
-            {items.length} testimonial
+            {items.length} {items.length === 1 ? 'testimonial' : 'testimonials'}
           </p>
         </div>
         <Button size="sm" onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-1" />
-          Tambah
+          Add
         </Button>
       </div>
 
@@ -178,13 +172,13 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
       {items.length === 0 && (
         <div className="text-center py-8 border-2 border-dashed rounded-lg">
           <User className="h-12 w-12 mx-auto mb-3 text-muted-foreground/50" />
-          <p className="text-muted-foreground mb-2">Belum ada testimonial</p>
+          <p className="text-muted-foreground mb-2">No testimonials yet</p>
           <p className="text-sm text-muted-foreground mb-4">
-            Tambahkan testimonial dari pelanggan untuk meningkatkan kepercayaan
+            Add customer testimonials to build trust with new visitors
           </p>
           <Button size="sm" variant="outline" onClick={handleAdd}>
             <Plus className="h-4 w-4 mr-1" />
-            Tambah Testimonial Pertama
+            Add First Testimonial
           </Button>
         </div>
       )}
@@ -208,14 +202,13 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <p className="font-medium">{item.name || 'Tanpa Nama'}</p>
+                        <p className="font-medium">{item.name || 'Unnamed'}</p>
                         {item.role && (
                           <p className="text-sm text-muted-foreground">
                             {item.role}
                           </p>
                         )}
                       </div>
-                      {/* Rating */}
                       {typeof item.rating === 'number' && item.rating > 0 && (
                         <div className="flex gap-0.5">
                           {[1, 2, 3, 4, 5].map((star) => (
@@ -233,7 +226,7 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                      &quot;{item.content || 'Tidak ada konten'}&quot;
+                      &quot;{item.content || 'No content'}&quot;
                     </p>
                   </div>
 
@@ -268,17 +261,17 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editingItem ? 'Edit Testimonial' : 'Tambah Testimonial'}
+              {editingItem ? 'Edit Testimonial' : 'Add Testimonial'}
             </DialogTitle>
             <DialogDescription>
-              Masukkan detail testimonial dari pelanggan Anda
+              Enter the customer&apos;s testimonial details
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {/* Avatar */}
             <div className="space-y-2">
-              <Label>Foto (Opsional)</Label>
+              <Label>Photo (optional)</Label>
               <div className="flex justify-center">
                 <div className="w-24 h-24">
                   <ImageUpload
@@ -287,7 +280,7 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
                     onRemove={() => setFormData({ ...formData, avatar: '' })}
                     folder={LANDING_CONSTANTS.IMAGE_FOLDERS.TESTIMONIALS}
                     aspectRatio={1}
-                    placeholder="Foto"
+                    placeholder="Photo"
                   />
                 </div>
               </div>
@@ -295,10 +288,10 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
 
             {/* Name */}
             <div className="space-y-2">
-              <Label htmlFor="testimonial-name">Nama *</Label>
+              <Label htmlFor="testimonial-name">Name *</Label>
               <Input
                 id="testimonial-name"
-                placeholder="Nama pelanggan"
+                placeholder="Customer name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               />
@@ -306,10 +299,10 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
 
             {/* Role */}
             <div className="space-y-2">
-              <Label htmlFor="testimonial-role">Jabatan / Keterangan</Label>
+              <Label htmlFor="testimonial-role">Title / Description</Label>
               <Input
                 id="testimonial-role"
-                placeholder="CEO, Pengusaha, Ibu Rumah Tangga, dll"
+                placeholder="CEO, Business Owner, Stay-at-home Parent, etc."
                 value={formData.role || ''}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               />
@@ -337,17 +330,17 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
                   </button>
                 ))}
                 <span className="ml-2 text-sm text-muted-foreground">
-                  {formData.rating || 5} bintang
+                  {formData.rating || 5} {(formData.rating || 5) === 1 ? 'star' : 'stars'}
                 </span>
               </div>
             </div>
 
             {/* Content */}
             <div className="space-y-2">
-              <Label htmlFor="testimonial-content">Isi Testimonial *</Label>
+              <Label htmlFor="testimonial-content">Testimonial *</Label>
               <Textarea
                 id="testimonial-content"
-                placeholder="Tulis testimonial dari pelanggan..."
+                placeholder="Write the customer's testimonial..."
                 rows={4}
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
@@ -357,9 +350,9 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => handleDialogClose(false)}>
-              Batal
+              Cancel
             </Button>
-            <Button onClick={handleSave}>Simpan</Button>
+            <Button onClick={handleSave}>Save</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -368,18 +361,18 @@ export function TestimonialEditor({ items, onChange }: TestimonialEditorProps) {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Hapus Testimonial?</AlertDialogTitle>
+            <AlertDialogTitle>Delete testimonial?</AlertDialogTitle>
             <AlertDialogDescription>
-              Tindakan ini tidak dapat dibatalkan. Testimonial akan dihapus secara permanen.
+              This action cannot be undone. The testimonial will be permanently deleted.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Hapus
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

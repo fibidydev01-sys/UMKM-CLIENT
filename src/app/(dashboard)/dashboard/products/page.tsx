@@ -90,7 +90,7 @@ export default function ProductsPage() {
     } catch (err) {
       if (!isMounted.current) return;
 
-      console.error('[ProductsPage] Failed to fetch:', err);
+      console.error('[ProductsPage] Gagal fetch data:', err);
       setState((prev) => ({
         ...prev,
         isLoading: false,
@@ -134,7 +134,7 @@ export default function ProductsPage() {
             <ViewToggle />
             <Button disabled>
               <Plus className="h-4 w-4 mr-2" />
-              Add
+              Add product
             </Button>
           </div>
         </PageHeader>
@@ -184,7 +184,7 @@ export default function ProductsPage() {
           <Button asChild>
             <Link href="/dashboard/products/new">
               <Plus className="h-4 w-4 mr-2" />
-              Add
+              Add product
             </Link>
           </Button>
         </div>

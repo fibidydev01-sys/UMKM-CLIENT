@@ -1,9 +1,9 @@
 'use client';
 
 // ============================================================
-// PRODUCT FORM — Wizard Orchestrator v3.0
-// Multi-step wizard pattern (adopted from settings/pembayaran)
-// Supports Product & Service with smart step skip logic
+// PRODUCT FORM — Wizard Orchestrator
+// Multi-step wizard pattern
+// Mendukung Product & Service dengan smart step skip logic
 // ============================================================
 
 import { useState } from 'react';
@@ -136,7 +136,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   // ── Price display state ────────────────────────────────────
   const [showPrice, setShowPrice] = useState<boolean>(getShowPrice(product));
 
-  // ── Steps (dynamic based on type) ─────────────────────────
+  // ── Steps (dinamis berdasarkan tipe) ───────────────────────
   const STEPS = isService ? SERVICE_STEPS : PRODUCT_STEPS;
   const isLastStep = currentStep === STEPS.length - 1;
 
@@ -175,7 +175,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
       form.setValue('trackStock', true);
       form.setValue('unit', 'pcs');
     }
-    // Reset to first step on type change to avoid step-index mismatch
+    // Reset ke step pertama saat tipe berubah — menghindari index mismatch
     setCurrentStep(0);
   };
 
@@ -189,7 +189,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     }
   };
 
-  // ── Navigation ─────────────────────────────────────────────
+  // ── Navigasi ───────────────────────────────────────────────
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((p) => p + 1);
@@ -202,7 +202,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     if (currentStep > 0) setCurrentStep((p) => p - 1);
   };
 
-  // ── Save ───────────────────────────────────────────────────
+  // ── Simpan ─────────────────────────────────────────────────
   const handleSave = async () => {
     const data = form.getValues();
     try {
@@ -237,15 +237,13 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
 
       router.push('/dashboard/products');
     } catch {
-      // Errors handled inside hooks (toast etc.)
+      // Error ditangani di hook (toast, dll.)
     }
   };
 
   // ── Step renderer ──────────────────────────────────────────
   const renderStep = () => {
-    // For Service: steps are [0=Details, 1=Media, 2=Pricing, 3=Publish]
-    // For Product: steps are [0=Details, 1=Media, 2=Pricing, 3=Inventory, 4=Publish]
-    // We match on STEP TITLE to be safe against index drift
+    // Cocokkan berdasarkan judul step agar aman terhadap perubahan index
     const stepTitle = STEPS[currentStep].title;
 
     switch (stepTitle) {

@@ -71,7 +71,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
 
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {/* HOME - WITH DROPDOWN */}
+            {/* Home — dengan dropdown */}
             <NavigationMenuItem>
               <NavigationMenuTrigger
                 className={cn(pathname === urls.home && 'bg-primary/10 text-primary')}
@@ -123,7 +123,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            {/* PRODUCTS */}
+            {/* Products */}
             <NavigationMenuItem>
               <NavigationMenuLink
                 asChild
@@ -136,7 +136,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
               </NavigationMenuLink>
             </NavigationMenuItem>
 
-            {/* CONTACT - DROPDOWN */}
+            {/* Contact — dengan dropdown */}
             <NavigationMenuItem>
               <NavigationMenuTrigger
                 className={cn(pathname === urls.path('/contact') && 'bg-primary/10 text-primary')}
@@ -148,7 +148,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                   <div className="mb-4">
                     <h3 className="text-sm font-semibold mb-1">{tenant.name}</h3>
                     <p className="text-xs text-muted-foreground">
-                      Reach us through
+                      Reach us through:
                     </p>
                   </div>
 
@@ -199,7 +199,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                       href={urls.path('/contact')}
                       className="text-sm text-primary hover:underline"
                     >
-                      View Contact Page →
+                      View contact page →
                     </Link>
                   </div>
                 </div>

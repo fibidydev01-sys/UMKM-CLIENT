@@ -1,10 +1,8 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// WHATSAPP CHECKOUT DIALOG - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: Semua formatPrice pakai tenant.currency, tidak hardcode IDR
-// ✅ FIX: currency diambil dari tenant dan di-pass ke setiap formatPrice
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// WHATSAPP CHECKOUT DIALOG
+// ==========================================
 
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -54,10 +52,8 @@ export function WhatsAppCheckoutDialog({
   const subtotal = useCartTotalPrice();
   const clearCart = useCartStore((state) => state.clearCart);
 
-  // ✅ FIX: Ambil currency dari tenant
+  // Currency dari tenant
   const currency = tenant?.currency || 'IDR';
-
-  // ✅ Helper formatPrice dengan currency tenant
   const fmt = (value: number) => formatPrice(value, currency);
 
   const paymentMethods = useMemo(
@@ -135,9 +131,9 @@ export function WhatsAppCheckoutDialog({
     if (codEnabled) {
       options.push({
         id: 'cod',
-        label: 'COD (Bayar di Tempat)',
+        label: 'Cash on Delivery',
         sublabel:
-          paymentMethods?.cod?.note || 'Bayar saat barang diterima',
+          paymentMethods?.cod?.note || 'Pay when your order arrives',
         type: 'cod',
       });
     }
@@ -146,10 +142,10 @@ export function WhatsAppCheckoutDialog({
   }, [enabledBanks, enabledEwallets, codEnabled, paymentMethods]);
 
   const handleOrder = async () => {
-    if (!name.trim()) { toast.error('Nama tidak boleh kosong'); return; }
-    if (!phone.trim()) { toast.error('Nomor WhatsApp tidak boleh kosong'); return; }
-    if (!address.trim()) { toast.error('Alamat pengiriman tidak boleh kosong'); return; }
-    if (items.length === 0) { toast.error('Keranjang belanja kosong'); return; }
+    if (!name.trim()) { toast.error('Name is required'); return; }
+    if (!phone.trim()) { toast.error('WhatsApp number is required'); return; }
+    if (!address.trim()) { toast.error('Shipping address is required'); return; }
+    if (items.length === 0) { toast.error('Your cart is empty'); return; }
 
     setIsLoading(true);
 
@@ -178,16 +174,15 @@ export function WhatsAppCheckoutDialog({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || 'Gagal membuat pesanan');
+        throw new Error(error.message || 'Failed to place order');
       }
 
       const data = await response.json();
       const { order, trackingUrl } = data;
 
-      toast.success('Pesanan berhasil dibuat!');
+      toast.success('Order placed successfully!');
 
       if (tenant?.whatsapp) {
-        // ✅ FIX: Semua formatPrice di pesan WA pakai currency tenant
         const itemsList = items
           .map(
             (item) =>
@@ -204,35 +199,35 @@ export function WhatsAppCheckoutDialog({
           const option = paymentOptions.find((o) => o.id === selectedPayment);
           if (option) {
             if (option.type === 'bank') {
-              paymentInfo = `Transfer ${option.label}: ${option.sublabel}`;
+              paymentInfo = `Bank Transfer — ${option.label}: ${option.sublabel}`;
             } else if (option.type === 'ewallet') {
               paymentInfo = `${option.label}: ${option.sublabel}`;
             } else {
-              paymentInfo = 'COD (Bayar di Tempat)';
+              paymentInfo = 'Cash on Delivery';
             }
           }
         }
 
-        const message = `Halo ${tenant.name},
+        const message = `Hi ${tenant.name},
 
-Saya sudah membuat pesanan dengan nomor: *${order.orderNumber}*
+I just placed an order: *${order.orderNumber}*
 
-Detail Pesanan:
+Order summary:
 ${itemsList}
 
 ---
-Subtotal: ${fmt(subtotal)}${tax > 0 ? `\nPajak (${taxRate}%): ${fmt(tax)}` : ''}
-Ongkos kirim: ${shipping === 0 ? 'GRATIS 🎉' : fmt(shipping)}
+Subtotal: ${fmt(subtotal)}${tax > 0 ? `\nTax (${taxRate}%): ${fmt(tax)}` : ''}
+Shipping: ${shipping === 0 ? 'FREE 🎉' : fmt(shipping)}
 *Total: ${fmt(total)}*
 ---
 
-Nama: ${name}
-No. WhatsApp: ${phone}
-Alamat: ${address}${courierInfo ? `\nKurir: ${courierInfo}` : ''}${paymentInfo ? `\nPembayaran: ${paymentInfo}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
+Name: ${name}
+WhatsApp: ${phone}
+Address: ${address}${courierInfo ? `\nCourier: ${courierInfo}` : ''}${paymentInfo ? `\nPayment: ${paymentInfo}` : ''}${notes ? `\nNotes: ${notes}` : ''}
 
-Link tracking: ${window.location.origin}${trackingUrl}
+Tracking: ${window.location.origin}${trackingUrl}
 
-Terima kasih! 🙏`;
+Thank you! 🙏`;
 
         const link = generateWhatsAppLink(tenant.whatsapp, message);
         window.open(link, '_blank');
@@ -242,11 +237,11 @@ Terima kasih! 🙏`;
       onOpenChange(false);
       router.push(trackingUrl);
     } catch (error) {
-      console.error('Checkout error:', error);
+      console.error('[WhatsAppCheckout] Gagal membuat pesanan:', error);
       toast.error(
         error instanceof Error
           ? error.message
-          : 'Gagal membuat pesanan. Silakan coba lagi.'
+          : 'Failed to place order. Please try again.'
       );
     } finally {
       setIsLoading(false);
@@ -264,17 +259,17 @@ Terima kasih! 🙏`;
         <DialogHeader>
           <DialogTitle>Checkout via WhatsApp</DialogTitle>
           <DialogDescription>
-            Lengkapi detail pesanan Anda untuk dikirim ke {tenant.name}
+            Complete your order details to send to {tenant.name}
           </DialogDescription>
         </DialogHeader>
 
         <ScrollArea className="flex-1 -mx-6 px-6">
           <div className="space-y-6 py-4">
-            {/* Order Items */}
+            {/* Order items */}
             <div className="rounded-lg bg-muted p-4">
               <h4 className="font-medium mb-3 flex items-center gap-2">
                 <MessageCircle className="h-4 w-4" />
-                Ringkasan Pesanan
+                Order summary
               </h4>
               <div className="space-y-2 text-sm">
                 {items.map((item) => (
@@ -282,7 +277,6 @@ Terima kasih! 🙏`;
                     <span className="text-muted-foreground">
                       {item.name} x{item.qty}
                     </span>
-                    {/* ✅ FIX: pakai fmt() */}
                     <span>{fmt(item.price * item.qty)}</span>
                   </div>
                 ))}
@@ -291,15 +285,15 @@ Terima kasih! 🙏`;
 
             <Separator />
 
-            {/* Customer Info */}
+            {/* Customer info */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="checkout-name">
-                  Nama <span className="text-destructive">*</span>
+                  Name <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="checkout-name"
-                  placeholder="Nama lengkap"
+                  placeholder="Full name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
@@ -308,28 +302,25 @@ Terima kasih! 🙏`;
               </div>
               <div className="space-y-2">
                 <Label htmlFor="checkout-phone">
-                  Nomor WhatsApp <span className="text-destructive">*</span>
+                  WhatsApp number <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="checkout-phone"
                   type="tel"
-                  placeholder="08xx atau +62xx"
+                  placeholder="e.g. 081234567890 or +6281234567890"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   required
                   disabled={isLoading}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Contoh: 081234567890 atau +6281234567890
-                </p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="checkout-address">
-                  Alamat Pengiriman <span className="text-destructive">*</span>
+                  Shipping address <span className="text-destructive">*</span>
                 </Label>
                 <Textarea
                   id="checkout-address"
-                  placeholder="Alamat lengkap untuk pengiriman"
+                  placeholder="Full shipping address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   rows={2}
@@ -339,14 +330,14 @@ Terima kasih! 🙏`;
               </div>
             </div>
 
-            {/* Courier Selection */}
+            {/* Courier selection */}
             {hasCouriers && (
               <>
                 <Separator />
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2">
                     <Truck className="h-4 w-4" />
-                    Pilih Kurir
+                    Courier
                   </Label>
                   <RadioGroup
                     value={selectedCourier}
@@ -383,14 +374,14 @@ Terima kasih! 🙏`;
               </>
             )}
 
-            {/* Payment Method Selection */}
+            {/* Payment method selection */}
             {hasPaymentOptions && (
               <>
                 <Separator />
                 <div className="space-y-3">
                   <Label className="flex items-center gap-2">
                     <CreditCard className="h-4 w-4" />
-                    Metode Pembayaran
+                    Payment method
                   </Label>
                   <RadioGroup
                     value={selectedPayment}
@@ -440,10 +431,10 @@ Terima kasih! 🙏`;
             {/* Notes */}
             <Separator />
             <div className="space-y-2">
-              <Label htmlFor="checkout-notes">Catatan (Opsional)</Label>
+              <Label htmlFor="checkout-notes">Notes (optional)</Label>
               <Textarea
                 id="checkout-notes"
-                placeholder="Catatan tambahan untuk penjual..."
+                placeholder="Any notes for the seller..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={2}
@@ -451,7 +442,7 @@ Terima kasih! 🙏`;
               />
             </div>
 
-            {/* ✅ FIX: Order Summary — semua pakai fmt() */}
+            {/* Order total */}
             <div className="rounded-lg border p-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
@@ -460,25 +451,24 @@ Terima kasih! 🙏`;
               {tax > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">
-                    Pajak ({taxRate}%)
+                    Tax ({taxRate}%)
                   </span>
                   <span>{fmt(tax)}</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Ongkos Kirim</span>
+                <span className="text-muted-foreground">Shipping</span>
                 <span
                   className={
                     shipping === 0 ? 'text-green-600 font-medium' : ''
                   }
                 >
-                  {shipping === 0 ? 'GRATIS' : fmt(shipping)}
+                  {shipping === 0 ? 'FREE' : fmt(shipping)}
                 </span>
               </div>
               {freeShippingThreshold && shipping > 0 && (
                 <p className="text-xs text-muted-foreground">
-                  💡 Belanja min. {fmt(freeShippingThreshold)} untuk gratis
-                  ongkir!
+                  💡 Spend {fmt(freeShippingThreshold)} or more for free shipping!
                 </p>
               )}
               <Separator />
@@ -496,7 +486,7 @@ Terima kasih! 🙏`;
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Batal
+            Cancel
           </Button>
           <Button
             onClick={handleOrder}
@@ -505,12 +495,12 @@ Terima kasih! 🙏`;
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Memproses...
+                Processing...
               </>
             ) : (
               <>
                 <MessageCircle className="mr-2 h-4 w-4" />
-                Buat Pesanan
+                Place order
               </>
             )}
           </Button>

@@ -1,7 +1,6 @@
 // ============================================================================
 // FILE: src/hooks/use-landing-config.ts
 // PURPOSE: Custom hook for managing Landing Page configuration
-// ✅ UPDATED: Added validation error handling
 // ============================================================================
 
 'use client';
@@ -47,12 +46,10 @@ function getAllErrorMessages(error: unknown): string[] {
   if (error instanceof ApiRequestError) {
     const errors: string[] = [];
 
-    // Add main message
     if (error.message) {
       errors.push(error.message);
     }
 
-    // Add detailed errors array
     if (error.errors && error.errors.length > 0) {
       errors.push(...error.errors);
     }
@@ -65,7 +62,7 @@ function getAllErrorMessages(error: unknown): string[] {
     return [error.message];
   }
 
-  return ['Terjadi kesalahan yang tidak diketahui'];
+  return ['An unknown error occurred'];
 }
 
 // ============================================================================
@@ -92,7 +89,7 @@ export function useLandingConfig({
   // Saving state
   const [isSaving, setIsSaving] = useState(false);
 
-  // ✅ NEW: Validation errors state
+  // Validation errors state
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   // ==========================================================================
@@ -113,7 +110,7 @@ export function useLandingConfig({
   const hasUnsavedChanges = JSON.stringify(config) !== JSON.stringify(savedConfig);
 
   // ==========================================================================
-  // UPDATE CONFIG (local only, no auto-save!)
+  // UPDATE CONFIG (local only, no auto-save)
   // ==========================================================================
   const updateConfig = useCallback((newConfig: TenantLandingConfig) => {
     setConfig(newConfig);
@@ -130,61 +127,44 @@ export function useLandingConfig({
 
   // ==========================================================================
   // PUBLISH CHANGES (save to server)
-  // ✅ UPDATED: Better error handling
   // ==========================================================================
   const publishChanges = useCallback(async (): Promise<boolean> => {
     setIsSaving(true);
-    setValidationErrors([]); // Clear previous errors
+    setValidationErrors([]);
 
     try {
-      // Prepare config (normalize testimonials, etc.)
       const preparedConfig = prepareConfigForSave(config);
-
-      // 🔥 DEBUG: Log what we're sending to backend
-      console.group('🚀 [PUBLISH] Landing Config');
-      console.log('📤 Prepared Config:', JSON.stringify(preparedConfig, null, 2));
-      console.log('📊 Config Size:', JSON.stringify(preparedConfig).length, 'bytes');
-      console.groupEnd();
 
       // Save to server
       const response = await tenantsApi.update({ landingConfig: preparedConfig });
-
-      // 🔥 DEBUG: Log backend response
-      console.group('✅ [PUBLISH] Backend Response');
-      console.log('📥 Response:', response);
-      console.log('📥 Saved landingConfig:', response?.tenant?.landingConfig);
-      console.groupEnd();
 
       // Update saved config reference
       setSavedConfig(JSON.parse(JSON.stringify(preparedConfig)));
       setConfig(preparedConfig);
 
-      toast.success('Landing page berhasil dipublish!');
+      toast.success('Landing page published!');
       onSaveSuccess?.();
 
       return true;
     } catch (error) {
       console.error('[useLandingConfig] Publish error:', error);
 
-      // ✅ Handle validation errors specifically
       if (error instanceof ApiRequestError && error.isValidationError()) {
         const errors = getAllErrorMessages(error);
         setValidationErrors(errors);
         onValidationError?.(errors);
 
-        // Show detailed toast for validation errors
         if (errors.length === 1) {
-          toast.error('Validasi gagal', {
+          toast.error('Validation failed', {
             description: errors[0],
           });
         } else {
-          toast.error('Validasi gagal', {
-            description: `${errors.length} error ditemukan. Periksa form Anda.`,
+          toast.error('Validation failed', {
+            description: `${errors.length} errors found. Please review your settings.`,
           });
         }
       } else {
-        // Generic error
-        toast.error('Gagal menyimpan landing page', {
+        toast.error('Failed to save landing page', {
           description: getErrorMessage(error),
         });
       }
@@ -200,8 +180,8 @@ export function useLandingConfig({
   // ==========================================================================
   const discardChanges = useCallback(() => {
     setConfig(JSON.parse(JSON.stringify(savedConfig)));
-    setValidationErrors([]); // Clear errors
-    toast.info('Perubahan dibatalkan');
+    setValidationErrors([]);
+    toast.info('Changes discarded');
   }, [savedConfig]);
 
   // ==========================================================================
@@ -212,7 +192,6 @@ export function useLandingConfig({
     setValidationErrors([]);
 
     try {
-      // Use DEFAULT_LANDING_CONFIG (all sections disabled)
       const resetConfig: TenantLandingConfig = JSON.parse(
         JSON.stringify(DEFAULT_LANDING_CONFIG)
       );
@@ -224,22 +203,21 @@ export function useLandingConfig({
       setConfig(resetConfig);
       setSavedConfig(JSON.parse(JSON.stringify(resetConfig)));
 
-      toast.success('Landing page berhasil direset ke default');
+      toast.success('Landing page reset to defaults');
       onSaveSuccess?.();
 
       return true;
     } catch (error) {
       console.error('[useLandingConfig] Reset error:', error);
 
-      // Handle validation errors
       if (error instanceof ApiRequestError && error.isValidationError()) {
         const errors = getAllErrorMessages(error);
         setValidationErrors(errors);
-        toast.error('Gagal mereset landing page', {
+        toast.error('Failed to reset landing page', {
           description: errors[0],
         });
       } else {
-        toast.error('Gagal mereset landing page', {
+        toast.error('Failed to reset landing page', {
           description: getErrorMessage(error),
         });
       }

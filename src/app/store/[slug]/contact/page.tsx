@@ -29,13 +29,13 @@ export async function generateMetadata({ params }: ContactPageProps): Promise<Me
     return { title: 'Not Found' };
   }
 
-  const description = `Hubungi ${tenant.name}. ${tenant.address ? `Alamat: ${tenant.address}.` : ''} ${tenant.whatsapp ? `WhatsApp: ${tenant.whatsapp}` : ''}`;
+  const description = `Contact ${tenant.name}.${tenant.address ? ` Address: ${tenant.address}.` : ''}${tenant.whatsapp ? ` WhatsApp: ${tenant.whatsapp}` : ''}`;
 
   return {
-    title: `Kontak | ${tenant.name}`,
+    title: `Contact | ${tenant.name}`,
     description: description.slice(0, 160),
     openGraph: {
-      title: `Hubungi ${tenant.name}`,
+      title: `Contact ${tenant.name}`,
       description,
       images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
     },
@@ -55,7 +55,7 @@ export default async function ContactPage({ params }: ContactPageProps) {
 
   const breadcrumbs = [
     ...generateTenantBreadcrumbs({ name: tenant.name, slug: tenant.slug }),
-    { name: 'Kontak', url: `/store/${slug}/contact` },
+    { name: 'Contact', url: `/store/${slug}/contact` },
   ];
 
   return (

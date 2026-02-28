@@ -1,10 +1,8 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// CART SHEET - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: Semua formatPrice pakai tenant.currency, tidak hardcode IDR
-// ✅ FIX: currency diambil dari tenant prop (sudah ada di CartSheetProps)
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// CART SHEET
+// ==========================================
 
 import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -41,7 +39,7 @@ export function CartSheet({ tenant }: CartSheetProps) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
-  // ✅ ALL HOOKS MUST BE CALLED BEFORE CONDITIONAL RETURN!
+  // Semua hooks harus dipanggil sebelum conditional return
   const items = useCartItems();
   const totalPrice = useCartTotalPrice();
   const isEmpty = useCartIsEmpty();
@@ -52,10 +50,8 @@ export function CartSheet({ tenant }: CartSheetProps) {
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  // ✅ FIX: currency dari tenant, fallback IDR
+  // Currency dari tenant
   const currency = tenant?.currency || 'IDR';
-
-  // ✅ FIX: helper lokal agar ringkas
   const fmt = (value: number) => formatPrice(value, currency);
 
   const totalItems = useMemo(
@@ -98,10 +94,10 @@ export function CartSheet({ tenant }: CartSheetProps) {
           <SheetHeader>
             <SheetTitle className="flex items-center gap-2">
               <ShoppingBag className="h-5 w-5" />
-              Keranjang Belanja
+              Cart
               {isHydrated && totalItems > 0 && (
                 <span className="text-sm font-normal text-muted-foreground">
-                  ({totalItems} item)
+                  ({totalItems} {totalItems === 1 ? 'item' : 'items'})
                 </span>
               )}
             </SheetTitle>
@@ -110,7 +106,7 @@ export function CartSheet({ tenant }: CartSheetProps) {
           {!isHydrated ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="animate-pulse text-muted-foreground">
-                Memuat keranjang...
+                Loading cart...
               </div>
             </div>
           ) : isEmpty ? (
@@ -119,15 +115,15 @@ export function CartSheet({ tenant }: CartSheetProps) {
                 <ShoppingCart className="h-10 w-10 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-medium">Keranjang kosong</p>
+                <p className="font-medium">Your cart is empty</p>
                 <p className="text-sm text-muted-foreground">
-                  Tambahkan produk untuk mulai belanja
+                  Add products to get started
                 </p>
               </div>
             </div>
           ) : (
             <>
-              {/* Cart Items */}
+              {/* Cart items */}
               <ScrollArea className="flex-1 -mx-6 px-6">
                 <div className="space-y-4 py-4">
                   {items.map((item) => (
@@ -153,13 +149,12 @@ export function CartSheet({ tenant }: CartSheetProps) {
                         <h4 className="font-medium text-sm leading-tight truncate">
                           {item.name}
                         </h4>
-                        {/* ✅ FIX: pakai fmt() */}
                         <p className="text-sm text-muted-foreground">
                           {fmt(item.price)}
                           {item.unit && ` / ${item.unit}`}
                         </p>
 
-                        {/* Quantity Controls */}
+                        {/* Quantity controls */}
                         <div className="flex items-center gap-2 mt-2">
                           <Button
                             variant="outline"
@@ -196,7 +191,6 @@ export function CartSheet({ tenant }: CartSheetProps) {
                       </div>
 
                       {/* Subtotal per item */}
-                      {/* ✅ FIX: pakai fmt() */}
                       <div className="text-right">
                         <p className="font-medium text-sm">
                           {fmt(item.price * item.qty)}
@@ -214,7 +208,6 @@ export function CartSheet({ tenant }: CartSheetProps) {
                 {/* Total */}
                 <div className="flex items-center justify-between w-full">
                   <span className="font-medium">Total</span>
-                  {/* ✅ FIX: pakai fmt() */}
                   <span className="text-lg font-bold">{fmt(totalPrice)}</span>
                 </div>
 
@@ -226,7 +219,7 @@ export function CartSheet({ tenant }: CartSheetProps) {
                     onClick={clearCart}
                     className="flex-1"
                   >
-                    Kosongkan
+                    Clear cart
                   </Button>
                   <Button className="flex-1" onClick={handleCheckout}>
                     Checkout
@@ -238,7 +231,7 @@ export function CartSheet({ tenant }: CartSheetProps) {
         </SheetContent>
       </Sheet>
 
-      {/* WhatsApp Checkout Dialog */}
+      {/* WhatsApp checkout dialog */}
       <WhatsAppCheckoutDialog
         open={checkoutOpen}
         onOpenChange={setCheckoutOpen}

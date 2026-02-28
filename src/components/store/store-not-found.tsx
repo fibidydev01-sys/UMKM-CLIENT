@@ -1,6 +1,10 @@
 import Link from 'next/link';
-import { Store, ArrowLeft } from 'lucide-react';
+import { Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// ==========================================
+// STORE NOT FOUND PAGE
+// ==========================================
 
 interface StoreNotFoundProps {
   slug?: string;
@@ -28,6 +32,10 @@ export function StoreNotFound({ slug }: StoreNotFoundProps) {
             'The store you are looking for does not exist or is no longer active.'
           )}
         </p>
+
+        <Button asChild variant="outline">
+          <Link href="/">Back to Home</Link>
+        </Button>
       </div>
     </div>
   );

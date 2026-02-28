@@ -15,7 +15,7 @@ import {
 import { cn } from '@/lib/utils';
 
 // ==========================================
-// STEPS CONFIG
+// KONFIGURASI STEPS
 // ==========================================
 
 const STEPS = [
@@ -43,7 +43,7 @@ function StepIndicator({
       {STEPS.map((step, i) => (
         <div key={i} className="flex items-center">
           <div className="flex flex-col items-center gap-2">
-            {/* Circle */}
+            {/* Lingkaran step */}
             <button
               type="button"
               onClick={() => i < currentStep && onStepClick?.(i)}
@@ -66,7 +66,7 @@ function StepIndicator({
               )}
             </button>
 
-            {/* Label — lg only */}
+            {/* Label — hanya muncul di ukuran lg */}
             {size === 'lg' && (
               <span className={cn(
                 'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
@@ -77,7 +77,7 @@ function StepIndicator({
             )}
           </div>
 
-          {/* Connector */}
+          {/* Konektor antar step */}
           {i < STEPS.length - 1 && (
             <div className={cn(
               'h-px mx-2 transition-colors duration-500',
@@ -100,8 +100,7 @@ export function RegisterForm() {
   const { register, isLoading, error } = useRegister();
 
   // wizard.state.currentStep: 1 = Welcome, 2 = Category, 3 = StoreInfo, 4 = Account, 5 = Review
-  // Hero pattern: 0-based step untuk indicator
-  // Step 1 (Welcome) = landing screen, mulai indicator dari step 2 (index 0)
+  // 0-based index untuk step indicator, mulai dari step 2 (index 0)
   const isWelcome = wizard.state.currentStep === 1;
   const indicatorStep = wizard.state.currentStep - 2; // 0-based, mulai dari step 2
   const isLastStep = wizard.state.currentStep === 5;
@@ -119,7 +118,7 @@ export function RegisterForm() {
         whatsapp: wizard.state.whatsapp!,
       });
     } catch {
-      // Error handled in hook
+      // Error ditangani di hook
     }
   };
 
@@ -138,7 +137,7 @@ export function RegisterForm() {
             </p>
           </div>
 
-          {/* Steps preview */}
+          {/* Preview langkah-langkah */}
           <div className="w-full max-w-xs space-y-2 text-left">
             {STEPS.map((step, i) => (
               <div
@@ -393,7 +392,7 @@ export function RegisterForm() {
         </div>
       </div>
 
-      {/* Sign in link */}
+      {/* Link sign in */}
       <p className="hidden lg:block text-center text-sm text-muted-foreground mt-4">
         Already have a store?{' '}
         <Link href="/login" className="text-primary hover:underline font-medium">

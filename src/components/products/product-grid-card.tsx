@@ -1,9 +1,3 @@
-// ============================================================================
-// PRODUCT GRID CARD - V2.1 (MULTI-CURRENCY SUPPORT)
-// ✅ FIX: Accept currency prop for price display
-// Minimal card with thumbnail, name appears on hover
-// ============================================================================
-
 'use client';
 
 import Image from 'next/image';
@@ -12,9 +6,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { formatPrice } from '@/lib/format';
 import type { Product } from '@/types';
 
-// ============================================================================
+// ==========================================
 // SKELETON
-// ============================================================================
+// ==========================================
 
 export function ProductGridCardSkeleton() {
   return (
@@ -24,20 +18,20 @@ export function ProductGridCardSkeleton() {
   );
 }
 
-// ============================================================================
+// ==========================================
 // PRODUCT GRID CARD
-// Minimal card with thumbnail, name appears on hover
-// ============================================================================
+// Minimal card — nama muncul saat hover
+// ==========================================
 
 interface ProductGridCardProps {
   product: Product;
   onClick: (product: Product) => void;
-  currency: string; // ✅ FIX: Accept currency prop
+  currency: string;
 }
 
 export function ProductGridCard({ product, onClick, currency }: ProductGridCardProps) {
   const imageUrl = product.images?.[0];
-  const showPrice = product.price > 0; // Only show if price > 0
+  const showPrice = product.price > 0; // Sembunyikan jika harga belum diset
 
   return (
     <button
@@ -58,7 +52,7 @@ export function ProductGridCard({ product, onClick, currency }: ProductGridCardP
           </div>
         )}
 
-        {/* Hover overlay with name */}
+        {/* Hover overlay dengan nama produk */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
             <h3 className="text-white font-medium text-sm line-clamp-2">
@@ -67,7 +61,6 @@ export function ProductGridCard({ product, onClick, currency }: ProductGridCardP
             {product.category && (
               <p className="text-white/70 text-xs mt-1">{product.category}</p>
             )}
-            {/* ✅ FIX: Show price with dynamic currency */}
             {showPrice && (
               <p className="text-white/90 text-xs mt-1 font-medium">
                 {formatPrice(product.price, currency)}
@@ -76,7 +69,7 @@ export function ProductGridCard({ product, onClick, currency }: ProductGridCardP
           </div>
         </div>
 
-        {/* Inactive badge */}
+        {/* Badge draft */}
         {!product.isActive && (
           <div className="absolute top-2 left-2">
             <span className="bg-yellow-500/90 text-white text-xs px-2 py-0.5 rounded">

@@ -21,11 +21,6 @@ import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import type { PublicTenant, Product } from '@/types';
 
-// ══════════════════════════════════════════════════════════════
-// PRODUCT DETAIL PAGE - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: currency dari tenant di-pass ke ProductInfo & RelatedProducts
-// ══════════════════════════════════════════════════════════════
-
 interface ProductPageProps {
   params: Promise<{ slug: string; id: string }>;
 }
@@ -77,8 +72,8 @@ export async function generateMetadata({
 
   if (!tenant || !product) {
     return {
-      title: 'Produk Tidak Ditemukan',
-      description: 'Produk yang Anda cari tidak ditemukan.',
+      title: 'Product Not Found',
+      description: 'The product you are looking for could not be found.',
       robots: { index: false, follow: false },
     };
   }
@@ -125,8 +120,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 
   const productUrl = `https://www.fibidy.com/store/${tenant.slug}/products/${product.id}`;
-
-  // ✅ FIX: currency dari tenant
   const currency = tenant.currency || 'IDR';
 
   return (
@@ -160,34 +153,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
             storeSlug={slug}
             storeName={tenant.name}
             items={[
-              { label: 'Produk', href: `/store/${slug}/products` },
+              { label: 'Products', href: `/store/${slug}/products` },
               { label: product.name },
             ]}
           />
         </div>
 
-        {/* Product Detail */}
+        {/* Product detail */}
         <div className="grid gap-8 lg:grid-cols-2">
           <div>
             <ProductGallery images={product.images} productName={product.name} />
           </div>
 
           <div className="space-y-6">
-            {/* ✅ FIX: pass currency ke ProductInfo */}
             <ProductInfo product={product} currency={currency} />
 
             <ShippingInfo tenant={tenant} />
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
-                Bagikan produk ini:
+                Share this product:
               </span>
               <SocialShare
                 url={productUrl}
                 title={`${product.name} - ${tenant.name}`}
                 description={
                   product.description ||
-                  `Beli ${product.name} di ${tenant.name}`
+                  `Buy ${product.name} at ${tenant.name}`
                 }
                 variant="buttons"
               />
@@ -201,7 +193,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         {/* Description */}
         {product.description && (
           <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Deskripsi Produk</h2>
+            <h2 className="text-xl font-semibold mb-4">Product description</h2>
             <div className="prose prose-gray max-w-none">
               <p className="whitespace-pre-wrap text-muted-foreground">
                 {product.description}
@@ -210,7 +202,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </section>
         )}
 
-        {/* ✅ FIX: pass currency ke RelatedProducts → ProductGrid → ProductCard */}
         <Suspense fallback={<ProductGridSkeleton count={4} />}>
           <RelatedProducts
             products={relatedProducts}

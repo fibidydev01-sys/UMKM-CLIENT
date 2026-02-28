@@ -2,13 +2,10 @@
 
 // ==========================================
 // LIVE PREVIEW COMPONENT
-// ✅ FIX: Pass currency={tenant.currency} ke TenantProducts
-//         Sebelumnya tidak di-pass → fallback IDR → silent bug di preview
-// ==========================================
-// mode="isolated" → Renders ONLY activeSection (editing mode)
-// mode="full"     → Renders ALL sections (full preview drawer)
+// mode="isolated" → renders only activeSection (editing mode)
+// mode="full"     → renders all sections (full preview drawer)
 //
-// Pure responsive - no device frame, adapts to viewport naturally
+// Pure responsive — no device frame, adapts to viewport naturally
 // ==========================================
 
 import { TemplateProvider } from '@/lib/landing';
@@ -35,14 +32,14 @@ interface LivePreviewProps {
   products: Product[];
   isLoading?: boolean;
   activeSection?: SectionKey | null;
-  device?: 'desktop'; // Keep for compatibility but unused
+  device?: 'desktop'; // Keep for compatibility, unused
   mode?: PreviewMode;
   drawerOpen?: boolean;
   onToggleDrawer?: () => void;
 }
 
 // ==========================================
-// SECTION LABELS (for disabled state)
+// SECTION LABELS (for disabled state message)
 // ==========================================
 
 const SECTION_LABELS: Record<SectionKey, string> = {
@@ -66,13 +63,11 @@ export function LivePreview({
   mode = 'isolated',
 }: LivePreviewProps) {
 
-  // Section order
   const defaultOrder: SectionKey[] = [
     'hero', 'about', 'products', 'testimonials', 'cta', 'contact',
   ];
   const sectionOrder = config?.sectionOrder || defaultOrder;
 
-  // Section enabled checks
   const heroEnabled = config?.hero?.enabled === true;
   const aboutEnabled = config?.about?.enabled === true;
   const productsEnabled = config?.products?.enabled === true && products.length > 0;
@@ -92,7 +87,6 @@ export function LivePreview({
   const hasAnySectionEnabled =
     heroEnabled || aboutEnabled || productsEnabled || testimonialsEnabled || ctaEnabled || contactEnabled;
 
-  // Section component map
   const sectionComponents: Record<SectionKey, React.ReactNode> = {
     hero: heroEnabled ? (
       <div key="hero">
@@ -110,7 +104,7 @@ export function LivePreview({
           products={products}
           config={config.products}
           storeSlug={tenant.slug}
-          currency={tenant.currency}  // ✅ FIX: pass currency dari tenant
+          currency={tenant.currency}
         />
       </div>
     ) : null,
@@ -132,7 +126,7 @@ export function LivePreview({
   };
 
   // ==========================================
-  // ISOLATED MODE — single section, pure responsive
+  // ISOLATED MODE — single section
   // ==========================================
 
   if (mode === 'isolated') {
@@ -155,10 +149,10 @@ export function LivePreview({
                     <EyeOff className="h-8 w-8 text-muted-foreground/50" />
                   </div>
                   <p className="text-muted-foreground font-medium">
-                    Section &quot;{SECTION_LABELS[currentSection]}&quot; belum aktif
+                    &quot;{SECTION_LABELS[currentSection]}&quot; section is not active
                   </p>
                   <p className="text-sm text-muted-foreground/70 mt-1">
-                    Aktifkan di sidebar untuk melihat preview
+                    Enable it in the sidebar to see a preview
                   </p>
                 </div>
               )}
@@ -170,7 +164,7 @@ export function LivePreview({
   }
 
   // ==========================================
-  // FULL MODE — all sections, responsive with container
+  // FULL MODE — all sections
   // ==========================================
 
   return (
@@ -182,10 +176,10 @@ export function LivePreview({
           <div className="container mx-auto px-4">
             <div className="text-center py-12 bg-muted/30 rounded-lg">
               <p className="text-muted-foreground mb-2">
-                Landing page belum dikonfigurasi
+                Landing page not configured yet
               </p>
               <p className="text-sm text-muted-foreground">
-                Aktifkan section di panel konfigurasi
+                Enable sections in the configuration panel
               </p>
             </div>
           </div>

@@ -37,13 +37,13 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
 
   return (
     <div className="space-y-4">
-      {/* Main Image */}
+      {/* Main image */}
       <div className="relative aspect-square overflow-hidden rounded-xl bg-muted">
         {hasImages && currentImage ? (
           <>
             <OptimizedImage
               src={currentImage}
-              alt={`${productName} - Gambar ${selectedIndex + 1}`}
+              alt={`${productName} — image ${selectedIndex + 1}`}
               fill
               crop="fill"
               gravity="auto"
@@ -113,7 +113,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
             >
               <OptimizedImage
                 src={image}
-                alt={`${productName} - Thumbnail ${index + 1}`}
+                alt={`${productName} — thumbnail ${index + 1}`}
                 width={80}
                 height={80}
                 crop="fill"
@@ -125,23 +125,22 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         </div>
       )}
 
-      {/* ✅ FIXED: Custom Full-screen Zoom Modal */}
+      {/* Full-screen zoom modal */}
       <Dialog open={zoomOpen} onOpenChange={setZoomOpen}>
         <DialogPrimitive.Portal>
-          {/* Dark Overlay */}
+          {/* Dark overlay */}
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
 
-          {/* ✅ CENTERED Content */}
           <DialogPrimitive.Content
             className="fixed inset-0 z-50 flex items-center justify-center outline-none"
             onKeyDown={handleKeyDown}
           >
             {/* Hidden title for accessibility */}
             <DialogTitle className="sr-only">
-              {productName} - Gambar {selectedIndex + 1}
+              {productName} — image {selectedIndex + 1}
             </DialogTitle>
 
-            {/* Close Button */}
+            {/* Close button */}
             <DialogPrimitive.Close asChild>
               <Button
                 variant="ghost"
@@ -149,7 +148,7 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                 className="absolute top-4 right-4 z-50 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white"
               >
                 <X className="h-5 w-5" />
-                <span className="sr-only">Tutup</span>
+                <span className="sr-only">Close</span>
               </Button>
             </DialogPrimitive.Close>
 
@@ -175,12 +174,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               </>
             )}
 
-            {/* ✅ CENTERED Image Container */}
+            {/* Image container */}
             <div className="relative w-[90vw] h-[90vh] flex items-center justify-center">
               {currentImage && (
                 <OptimizedImage
                   src={currentImage}
-                  alt={`${productName} - Gambar ${selectedIndex + 1}`}
+                  alt={`${productName} — image ${selectedIndex + 1}`}
                   fill
                   crop="fit"
                   sizes="90vw"

@@ -1,13 +1,13 @@
 /**
  * BlockDrawer Component - LIST VIEW (Not Card)
  *
- * ✅ Native-feel swipe gesture — jari ngikut real-time
- * ✅ Momentum based: flick cepat = langsung snap
- * ✅ Damp drag: saat expanded & swipe up, drawer melambat natural
- * ✅ iOS cubic-bezier curve: cubic-bezier(0.32, 0.72, 0, 1)
- * ✅ style langsung di element (bukan CSS var) — tidak laggy
- * ✅ Multi-touch guard: ignore jari kedua saat sedang drag
- * ✅ Struktur Vaul tidak diubah — always open, always visible
+ * Native-feel swipe gesture — real-time finger tracking
+ * Momentum based: quick flick = instant snap
+ * Damp drag: when expanded and swiping up, drawer slows naturally
+ * iOS cubic-bezier curve: cubic-bezier(0.32, 0.72, 0, 1)
+ * Style applied directly on element (not CSS var) — no lag
+ * Multi-touch guard: ignores second finger while dragging
+ * Vaul structure unchanged — always open, always visible
  */
 
 'use client';
@@ -35,11 +35,11 @@ export type DrawerState = 'collapsed' | 'expanded';
 
 const UI_DISPLAY_LIMIT = 50;
 
-// Tinggi drawer dalam px
+// Drawer height in px
 const HEIGHT_COLLAPSED = 80;
 const HEIGHT_EXPANDED = typeof window !== 'undefined' ? window.innerHeight * 0.95 : 700;
 
-// Threshold untuk snap — kalau drag > 20% tinggi atau velocity > 0.4px/ms → snap
+// Snap threshold — drag > 20% height or velocity > 0.4px/ms → snap
 const DRAG_THRESHOLD_RATIO = 0.08;
 const VELOCITY_THRESHOLD = 0.2;
 
@@ -96,7 +96,7 @@ function DrawerMode({
   const debouncedSearch = useDebounce(search, 300);
   const isExpanded = state === 'expanded';
 
-  // Touch tracking refs — pakai ref bukan state supaya tidak trigger re-render saat drag
+  // Touch tracking refs — using refs instead of state to avoid re-renders during drag
   const touchStartY = useRef<number>(0);
   const touchStartTime = useRef<number>(0);
   const currentDragY = useRef<number>(0);
@@ -137,9 +137,7 @@ function DrawerMode({
   const handleBlockSelect = useCallback((v: string) => onBlockSelect(v), [onBlockSelect]);
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => setSearch(e.target.value), []);
 
-  // ── Drag helpers ──────────────────────────────────────────────────────────
-
-  // Set translateY langsung ke DOM element — tidak lewat state, tidak re-render
+  // Set translateY directly on DOM element — no state, no re-render
   const setDragTransform = useCallback((y: number, withTransition: boolean) => {
     if (!drawerRef.current) return;
     drawerRef.current.style.transition = withTransition
@@ -156,10 +154,8 @@ function DrawerMode({
     drawerRef.current.style.transform = 'translateY(0px)';
   }, []);
 
-  // ── Touch handlers ────────────────────────────────────────────────────────
-
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    // Multi-touch guard — hanya track satu jari
+    // Multi-touch guard — track only one finger
     if (activeTouchId.current !== null) return;
 
     const touch = e.touches[0];
@@ -171,30 +167,28 @@ function DrawerMode({
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    // Cari touch yang kita track
     const touch = Array.from(e.touches).find(t => t.identifier === activeTouchId.current);
     if (!touch) return;
 
     const deltaY = touch.clientY - touchStartY.current;
 
-    // Kalau expanded dan scroll content belum di atas, biarkan scroll dulu
+    // If expanded and content not scrolled to top, let scroll happen first
     if (isExpanded && scrollContainerRef.current) {
       const scrollTop = scrollContainerRef.current.scrollTop;
-      if (scrollTop > 0 && deltaY > 0) return; // sedang scroll ke bawah di dalam list
+      if (scrollTop > 0 && deltaY > 0) return;
     }
 
     isDragging.current = true;
-    // cegah scroll page saat drag handle
 
     let clampedDelta = deltaY;
 
     if (isExpanded) {
-      // Saat expanded: hanya izinkan drag ke bawah (positif)
+      // Expanded: only allow downward drag (positive)
       clampedDelta = Math.max(0, deltaY);
     } else {
-      // Saat collapsed: hanya izinkan drag ke atas (negatif)
+      // Collapsed: only allow upward drag (negative)
       clampedDelta = Math.min(0, deltaY);
-      // Damp drag ke atas saat sudah collapsed
+      // Damp upward drag when collapsed
       clampedDelta = clampedDelta * 0.4;
     }
 
@@ -203,7 +197,6 @@ function DrawerMode({
   }, [isExpanded, setDragTransform]);
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    // Pastikan ini touch yang kita track
     const touch = Array.from(e.changedTouches).find(t => t.identifier === activeTouchId.current);
     if (!touch) return;
     activeTouchId.current = null;
@@ -221,18 +214,18 @@ function DrawerMode({
     let nextState: DrawerState = state;
 
     if (isExpanded) {
-      // Drag ke bawah: collapse kalau cukup jauh atau velocity tinggi (flick)
+      // Downward drag: collapse if far enough or velocity high (flick)
       if (deltaY > threshold || velocity > VELOCITY_THRESHOLD) {
         nextState = 'collapsed';
       }
     } else {
-      // Drag ke atas: expand kalau cukup jauh atau velocity tinggi (flick)
+      // Upward drag: expand if far enough or velocity high (flick)
       if (Math.abs(deltaY) > threshold || velocity > VELOCITY_THRESHOLD) {
         nextState = 'expanded';
       }
     }
 
-    // Reset transform dengan animasi iOS curve
+    // Reset transform with iOS curve animation
     resetTransform(true);
 
     if (nextState !== state) {
@@ -257,11 +250,10 @@ function DrawerMode({
           ref={drawerRef}
           className={cn(
             'fixed bottom-0 left-4 right-4 z-40 flex flex-col rounded-t-[20px] bg-background border-t shadow-2xl',
-            // Tinggi via CSS — transition dikontrol manual saat drag selesai
             isExpanded ? 'h-[95vh]' : 'h-auto min-h-[115px]',
           )}
           style={{
-            // iOS-like transition untuk state change (bukan saat drag)
+            // iOS-like transition for state change (not during drag)
             transition: 'height 0.5s cubic-bezier(0.32, 0.72, 0, 1)',
           }}
           aria-describedby="block-drawer-description"
@@ -273,7 +265,7 @@ function DrawerMode({
             <Drawer.Description>Choose a block design for the {section} section</Drawer.Description>
           </VisuallyHidden.Root>
 
-          {/* ── Drag Handle — area touch utama ── */}
+          {/* Drag handle — main touch area */}
           <div
             className="flex flex-col items-center pt-3 pb-2 shrink-0 select-none gap-1"
             style={{ cursor: 'grab', touchAction: 'none' }}
@@ -284,11 +276,11 @@ function DrawerMode({
           >
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30 hover:bg-muted-foreground/50 transition-colors" />
             {!isExpanded && (
-              <p className="text-xs text-muted-foreground mt-1">Tap atau Tarik atas untuk buka</p>
+              <p className="text-xs text-muted-foreground mt-1">Tap or swipe up to open</p>
             )}
           </div>
 
-          {/* ── Header: heading + search ── */}
+          {/* Header: title + search */}
           {isExpanded && (
             <div className="px-4 pb-3 border-b shrink-0 space-y-3">
               <h3 className="capitalize font-semibold text-foreground">{section}</h3>
@@ -308,7 +300,7 @@ function DrawerMode({
             </div>
           )}
 
-          {/* ── Block list ── */}
+          {/* Block list */}
           {isExpanded && (
             <div ref={scrollContainerRef} className="flex-1 overflow-auto pb-20">
               {displayedBlocks.length > 0 ? (

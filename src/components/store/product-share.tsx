@@ -34,10 +34,10 @@ export function ProductShare({ product, tenant }: ProductShareProps) {
     try {
       await navigator.clipboard.writeText(productUrl);
       setCopied(true);
-      toast.success('Link berhasil disalin!');
+      toast.success('Link copied!');
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Gagal menyalin link');
+      toast.error('Failed to copy link');
     }
   };
 
@@ -65,21 +65,21 @@ export function ProductShare({ product, tenant }: ProductShareProps) {
           url: productUrl,
         });
       } catch {
-        // User cancelled or error
+        // User cancelled or error — no action needed
       }
     }
   };
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-sm text-muted-foreground">Bagikan:</span>
+      <span className="text-sm text-muted-foreground">Share:</span>
 
-      {/* Copy Link */}
+      {/* Copy link */}
       <Button
         variant="outline"
         size="icon"
         onClick={copyLink}
-        title="Salin Link"
+        title="Copy link"
       >
         {copied ? (
           <Check className="h-4 w-4 text-green-500" />
@@ -88,10 +88,10 @@ export function ProductShare({ product, tenant }: ProductShareProps) {
         )}
       </Button>
 
-      {/* Share Dropdown */}
+      {/* Share dropdown */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="icon" title="Bagikan">
+          <Button variant="outline" size="icon" title="Share">
             <Share2 className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
@@ -108,12 +108,12 @@ export function ProductShare({ product, tenant }: ProductShareProps) {
           </DropdownMenuItem>
           <DropdownMenuItem onClick={shareToTwitter}>
             <Twitter className="h-4 w-4 mr-2" />
-            Twitter
+            X (Twitter)
           </DropdownMenuItem>
           {typeof navigator !== 'undefined' && 'share' in navigator && (
             <DropdownMenuItem onClick={handleNativeShare}>
               <Share2 className="h-4 w-4 mr-2" />
-              Lainnya...
+              More options...
             </DropdownMenuItem>
           )}
         </DropdownMenuContent>

@@ -3,11 +3,7 @@
  * FILE: components/landing-builder/builder-loading-steps.tsx
  * ============================================================================
  * Multi-step loading screen for Landing Builder
- * Shows REAL loading progress based on actual data fetching status
- * 
- * ✅ FIXED: Removed ref.current update during render (Line 99)
- * - Moved ref update to useEffect
- * - Prevents React warning about accessing refs during render
+ * Shows real loading progress based on actual data fetching status
  * ============================================================================
  */
 'use client';
@@ -33,7 +29,7 @@ interface BuilderLoadingStepsProps {
 }
 
 // ============================================================================
-// LOADING STEPS (Dynamic based on actual states)
+// LOADING STEPS
 // ============================================================================
 
 interface StepConfig {
@@ -46,14 +42,14 @@ interface StepConfig {
 const STEP_CONFIGS: StepConfig[] = [
   {
     id: 'tenant',
-    label: 'Data Toko',
-    loadingLabel: 'Memuat data toko...',
+    label: 'Store data',
+    loadingLabel: 'Loading store data...',
     getStatus: (s) => s.tenantLoading ? 'loading' : 'completed',
   },
   {
     id: 'products',
-    label: 'Produk',
-    loadingLabel: 'Mengambil daftar produk...',
+    label: 'Products',
+    loadingLabel: 'Fetching product catalog...',
     getStatus: (s) => {
       if (s.tenantLoading) return 'pending';
       return s.productsLoading ? 'loading' : 'completed';
@@ -61,8 +57,8 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 'config',
-    label: 'Konfigurasi Landing',
-    loadingLabel: 'Memuat konfigurasi...',
+    label: 'Landing configuration',
+    loadingLabel: 'Loading configuration...',
     getStatus: (s) => {
       if (s.tenantLoading) return 'pending';
       return s.configReady ? 'completed' : 'loading';
@@ -70,8 +66,8 @@ const STEP_CONFIGS: StepConfig[] = [
   },
   {
     id: 'ready',
-    label: 'Siap!',
-    loadingLabel: 'Menyiapkan editor...',
+    label: 'Ready!',
+    loadingLabel: 'Preparing editor...',
     getStatus: (s) => {
       if (s.tenantLoading || s.productsLoading || !s.configReady) return 'pending';
       return 'completed';
@@ -84,21 +80,16 @@ const STEP_CONFIGS: StepConfig[] = [
 // ============================================================================
 
 export function BuilderLoadingSteps({ loadingStates, onComplete, className }: BuilderLoadingStepsProps) {
-  // Calculate step statuses
   const steps = STEP_CONFIGS.map(config => ({
     ...config,
     status: config.getStatus(loadingStates),
   }));
 
-  // Calculate progress
   const completedCount = steps.filter(s => s.status === 'completed').length;
   const progress = (completedCount / steps.length) * 100;
-
-  // Check if all done
   const allComplete = steps.every(s => s.status === 'completed');
 
-  // ✅ FIX: Use useEffect to update ref instead of during render
-  // This prevents "Cannot access refs during render" error
+  // Use useEffect to update ref instead of during render
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -107,13 +98,12 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
   useEffect(() => {
     if (!allComplete) return;
 
-    // All steps complete - call onComplete after brief delay
     const timer = setTimeout(() => {
       onCompleteRef.current?.();
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [allComplete]); // Only depend on allComplete, not onComplete
+  }, [allComplete]);
 
   return (
     <div className={cn(
@@ -125,7 +115,7 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Landing Page Builder</h1>
           <p className="text-muted-foreground text-sm">
-            Mempersiapkan workspace Anda
+            Preparing your workspace
           </p>
         </div>
 
@@ -191,7 +181,7 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
 
         {/* Footer Hint */}
         <p className="text-center text-xs text-muted-foreground">
-          Tip: Gunakan drag & drop untuk mengatur urutan section
+          Tip: Drag and drop to reorder sections
         </p>
       </div>
     </div>

@@ -1,11 +1,8 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// WHATSAPP ORDER BUTTON - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: currency diambil dari tenant.currency
-// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
-// ✅ FIX: fmt() helper lokal agar ringkas
-// ══════════════════════════════════════════════════════════════
+// ==========================================
+// WHATSAPP ORDER BUTTON
+// ==========================================
 
 import { useState, type ReactNode } from 'react';
 import { Drawer } from 'vaul';
@@ -31,7 +28,7 @@ interface Product {
 interface OrderTenant {
   name: string;
   whatsapp?: string;
-  currency?: string;        // ✅ FIX: tambah currency
+  currency?: string;
   taxRate?: number;
   paymentMethods?: PaymentMethods;
 }
@@ -59,10 +56,8 @@ export function WhatsAppOrderButton({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // ✅ FIX: currency dari tenant, fallback IDR
+  // Currency dari tenant
   const currency = tenant.currency || 'IDR';
-
-  // ✅ FIX: helper lokal agar tidak perlu tulis currency di setiap call
   const fmt = (value: number) => formatPrice(value, currency);
 
   const isCustomPrice = product.price === 0;
@@ -71,13 +66,11 @@ export function WhatsAppOrderButton({
   const incrementQty = () => { if (qty < maxStock) setQty(qty + 1); };
   const decrementQty = () => { if (qty > 1) setQty(qty - 1); };
 
-  // ✅ FIX: semua kalkulasi pakai fmt()
   const subtotal = isCustomPrice ? 0 : product.price * qty;
   const taxRate = tenant.taxRate || 0;
   const tax = !isCustomPrice && taxRate > 0 ? subtotal * (taxRate / 100) : 0;
   const total = subtotal + tax;
 
-  // Get enabled payment options
   const paymentMethods = tenant.paymentMethods as PaymentMethods | undefined;
   const enabledBanks = paymentMethods?.bankAccounts?.filter((b) => b.enabled) || [];
   const enabledEwallets = paymentMethods?.eWallets?.filter((e) => e.enabled) || [];
@@ -87,7 +80,7 @@ export function WhatsAppOrderButton({
     const lines: string[] = [];
 
     if (enabledBanks.length > 0) {
-      lines.push('*Transfer Bank:*');
+      lines.push('*Bank Transfer:*');
       enabledBanks.forEach((bank) => {
         lines.push(`${bank.bank}: ${bank.accountNumber} (${bank.accountName})`);
       });
@@ -101,7 +94,7 @@ export function WhatsAppOrderButton({
     }
 
     if (codEnabled) {
-      lines.push('*COD* (Bayar di Tempat) tersedia');
+      lines.push('*Cash on Delivery* available');
     }
 
     return lines.join('\n');
@@ -112,31 +105,30 @@ export function WhatsAppOrderButton({
 
     const paymentInfo = getPaymentInfoString();
 
-    // ✅ FIX: semua formatPrice di pesan WA pakai fmt()
     const message = isCustomPrice
-      ? `Halo ${tenant.name},
+      ? `Hi ${tenant.name},
 
-Saya ingin menanyakan harga untuk:
-
-*${product.name}*
-Jumlah: ${qty} ${product.unit || 'pcs'}
-${name ? `\nNama: ${name}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
-
-Mohon informasi harga dan ketersediaan.
-Terima kasih! 🙏`
-      : `Halo ${tenant.name},
-
-Saya ingin memesan:
+I'd like to inquire about pricing for:
 
 *${product.name}*
-Jumlah: ${qty} ${product.unit || 'pcs'}
-Harga: ${fmt(product.price)}
-${tax > 0 ? `Pajak (${taxRate}%): ${fmt(tax)}\n` : ''}*Total: ${fmt(total)}*
-${name ? `\nNama: ${name}` : ''}${notes ? `\nCatatan: ${notes}` : ''}
+Quantity: ${qty} ${product.unit || 'pcs'}
+${name ? `\nName: ${name}` : ''}${notes ? `\nNotes: ${notes}` : ''}
+
+Could you please share the price and availability?
+Thank you! 🙏`
+      : `Hi ${tenant.name},
+
+I'd like to order:
+
+*${product.name}*
+Quantity: ${qty} ${product.unit || 'pcs'}
+Price: ${fmt(product.price)}
+${tax > 0 ? `Tax (${taxRate}%): ${fmt(tax)}\n` : ''}*Total: ${fmt(total)}*
+${name ? `\nName: ${name}` : ''}${notes ? `\nNotes: ${notes}` : ''}
 ${paymentInfo ? `\n---\n${paymentInfo}` : ''}
 
-Mohon konfirmasi ketersediaan.
-Terima kasih! 🙏`;
+Please confirm availability.
+Thank you! 🙏`;
 
     const link = generateWhatsAppLink(tenant.whatsapp || '', message);
     window.open(link, '_blank');
@@ -162,7 +154,7 @@ Terima kasih! 🙏`;
           {children || (
             <>
               <MessageCircle className="mr-2 h-4 w-4" />
-              {isOutOfStock ? 'Stok Habis' : 'Pesan via WhatsApp'}
+              {isOutOfStock ? 'Out of stock' : 'Order via WhatsApp'}
             </>
           )}
         </Button>
@@ -180,15 +172,15 @@ Terima kasih! 🙏`;
           aria-describedby="wa-order-drawer-description"
         >
           <Drawer.Title asChild>
-            <VisuallyHidden.Root>Pesan {product.name}</VisuallyHidden.Root>
+            <VisuallyHidden.Root>Order {product.name}</VisuallyHidden.Root>
           </Drawer.Title>
           <Drawer.Description asChild>
             <VisuallyHidden.Root id="wa-order-drawer-description">
-              Lengkapi detail pesanan untuk dikirim ke {tenant.name}
+              Complete your order details to send to {tenant.name}
             </VisuallyHidden.Root>
           </Drawer.Description>
 
-          {/* Drag Handle */}
+          {/* Drag handle */}
           <div className="flex justify-center pt-3 pb-2 shrink-0">
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
@@ -196,21 +188,20 @@ Terima kasih! 🙏`;
           {/* Header */}
           <div className="px-6 pb-3 border-b shrink-0">
             <div className="max-w-2xl mx-auto w-full">
-              <h3 className="font-semibold text-lg">Pesan {product.name}</h3>
+              <h3 className="font-semibold text-lg">Order {product.name}</h3>
               <p className="text-sm text-muted-foreground">
-                Lengkapi detail pesanan untuk dikirim ke {tenant.name}
+                Complete your order details to send to {tenant.name}
               </p>
             </div>
           </div>
 
-          {/* Scrollable Body */}
+          {/* Scrollable body */}
           <div className="flex-1 overflow-y-auto">
             <div className="max-w-2xl mx-auto w-full px-6 py-4 space-y-4">
 
-              {/* Product Info */}
+              {/* Product info */}
               <div className="rounded-lg bg-muted p-3">
                 <p className="font-medium">{product.name}</p>
-                {/* ✅ FIX: pakai fmt() */}
                 {!isCustomPrice && (
                   <p className="text-sm text-muted-foreground">
                     {fmt(product.price)} / {product.unit || 'pcs'}
@@ -218,14 +209,14 @@ Terima kasih! 🙏`;
                 )}
                 {product.trackStock && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Stok tersedia: {product.stock}
+                    In stock: {product.stock}
                   </p>
                 )}
               </div>
 
               {/* Quantity */}
               <div className="space-y-2">
-                <Label>Jumlah</Label>
+                <Label>Quantity</Label>
                 <div className="flex items-center gap-3">
                   <Button
                     type="button"
@@ -262,12 +253,12 @@ Terima kasih! 🙏`;
                 </div>
               </div>
 
-              {/* Customer Name */}
+              {/* Customer name */}
               <div className="space-y-2">
-                <Label htmlFor="order-name">Nama (Opsional)</Label>
+                <Label htmlFor="order-name">Name (optional)</Label>
                 <Input
                   id="order-name"
-                  placeholder="Nama Anda"
+                  placeholder="Your name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                 />
@@ -275,17 +266,17 @@ Terima kasih! 🙏`;
 
               {/* Notes */}
               <div className="space-y-2">
-                <Label htmlFor="order-notes">Catatan (Opsional)</Label>
+                <Label htmlFor="order-notes">Notes (optional)</Label>
                 <Textarea
                   id="order-notes"
-                  placeholder="Catatan tambahan..."
+                  placeholder="Any additional notes..."
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
                 />
               </div>
 
-              {/* ✅ FIX: Total — pakai fmt() */}
+              {/* Order total */}
               {!isCustomPrice && (
                 <div className="rounded-lg border p-3 space-y-1">
                   <div className="flex justify-between text-sm">
@@ -295,7 +286,7 @@ Terima kasih! 🙏`;
                   {tax > 0 && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">
-                        Pajak ({taxRate}%)
+                        Tax ({taxRate}%)
                       </span>
                       <span>{fmt(tax)}</span>
                     </div>
@@ -309,11 +300,11 @@ Terima kasih! 🙏`;
             </div>
           </div>
 
-          {/* Sticky Footer */}
+          {/* Sticky footer */}
           <div className="border-t px-6 py-4 shrink-0">
             <div className="max-w-2xl mx-auto w-full flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setOpen(false)}>
-                Batal
+                Cancel
               </Button>
               <Button className="flex-1" onClick={handleOrder} disabled={isSubmitting}>
                 {isSubmitting ? (
@@ -321,7 +312,7 @@ Terima kasih! 🙏`;
                 ) : (
                   <MessageCircle className="mr-2 h-4 w-4" />
                 )}
-                Kirim via WhatsApp
+                Send via WhatsApp
               </Button>
             </div>
           </div>

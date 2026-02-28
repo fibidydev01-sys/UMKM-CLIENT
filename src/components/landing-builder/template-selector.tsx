@@ -9,8 +9,8 @@ import type { LandingTemplate } from '@/lib/landing';
 /**
  * Template Selector Component
  *
- * Allows users to switch between different landing page templates
- * Displays template cards with name, description, and selection state
+ * Allows users to switch between different landing page templates.
+ * Displays template cards with name, description, and selection state.
  */
 export function TemplateSelector() {
   const { currentTemplate, setTemplate } = useTemplate();
@@ -28,7 +28,7 @@ export function TemplateSelector() {
           <CardTitle>Template Design</CardTitle>
         </div>
         <CardDescription>
-          Pilih template untuk mengubah tampilan keseluruhan landing page
+          Choose a template to change the overall look of your landing page
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -39,9 +39,8 @@ export function TemplateSelector() {
             return (
               <Card
                 key={template.id}
-                className={`cursor-pointer transition-all hover:shadow-md ${
-                  isSelected ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary/50'
-                }`}
+                className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'border-2 border-primary bg-primary/5' : 'border hover:border-primary/50'
+                  }`}
                 onClick={() => handleSelectTemplate(template)}
               >
                 <CardContent className="p-6">
@@ -78,10 +77,9 @@ export function TemplateSelector() {
                     </span>
                   </div>
 
-                  {/* Select Button (only show when not selected) */}
                   {!isSelected && (
                     <Button variant="outline" size="sm" className="w-full mt-4">
-                      Pilih Template
+                      Use this template
                     </Button>
                   )}
                 </CardContent>
@@ -93,8 +91,8 @@ export function TemplateSelector() {
         {/* Info Box */}
         <div className="mt-6 p-4 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            <strong>Template aktif:</strong> {currentTemplate.name} • Template ini mengubah layout dan
-            style dari setiap section tanpa mengubah konten yang sudah ada.
+            <strong>Active template:</strong> {currentTemplate.name} &mdash; Switching templates changes
+            the layout and style of each section without affecting your existing content.
           </p>
         </div>
       </CardContent>

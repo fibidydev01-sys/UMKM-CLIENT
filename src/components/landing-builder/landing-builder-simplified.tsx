@@ -1,13 +1,13 @@
 /**
  * ============================================================================
  * FILE: src/components/landing-builder/landing-builder-simplified.tsx
- * PURPOSE: Simplified Landing Builder - Block Selection Only
+ * PURPOSE: Simplified Landing Builder — Block Selection Only
  * ============================================================================
  *
- * REFACTORED: Data input removed, now handled in Settings > Landing Content
+ * Data input is handled in Settings > Landing Content.
  * This component only handles:
  * - Enable/disable section toggle
- * - Block selection (hero1-200, about1-200, etc.)
+ * - Block selection (hero1–200, about1–200, etc.)
  * - Read-only preview of data from tenant fields
  *
  * ============================================================================
@@ -91,39 +91,39 @@ const SECTIONS = [
   {
     key: 'hero' as const,
     title: 'Hero Section',
-    description: 'Banner utama di bagian atas halaman',
+    description: 'Main banner at the top of the page',
     icon: Target,
     blockPrefix: 'hero',
     blockCount: 200,
   },
   {
     key: 'about' as const,
-    title: 'Tentang Kami',
-    description: 'Informasi tentang toko Anda',
+    title: 'About Us',
+    description: 'Information about your store',
     icon: BookOpen,
     blockPrefix: 'about',
     blockCount: 200,
   },
   {
     key: 'products' as const,
-    title: 'Produk Unggulan',
-    description: 'Tampilkan produk terbaik Anda',
+    title: 'Featured Products',
+    description: 'Showcase your best products',
     icon: ShoppingBag,
     blockPrefix: 'products',
     blockCount: 200,
   },
   {
     key: 'testimonials' as const,
-    title: 'Testimoni',
-    description: 'Ulasan dari pelanggan',
+    title: 'Testimonials',
+    description: 'Customer reviews',
     icon: Star,
     blockPrefix: 'testimonials',
     blockCount: 200,
   },
   {
     key: 'contact' as const,
-    title: 'Kontak',
-    description: 'Informasi kontak toko',
+    title: 'Contact',
+    description: 'Store contact information',
     icon: Phone,
     blockPrefix: 'contact',
     blockCount: 200,
@@ -131,7 +131,7 @@ const SECTIONS = [
   {
     key: 'cta' as const,
     title: 'Call to Action',
-    description: 'Ajakan untuk berbelanja',
+    description: 'Encourage visitors to shop',
     icon: Rocket,
     blockPrefix: 'cta',
     blockCount: 200,
@@ -166,7 +166,6 @@ export function LandingBuilderSimplified({
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [showDiscardDialog, setShowDiscardDialog] = useState(false);
 
-  // Filter sections based on activeSection prop
   const visibleSections = activeSection
     ? SECTIONS.filter((section) => section.key === activeSection)
     : SECTIONS;
@@ -237,20 +236,20 @@ export function LandingBuilderSimplified({
         <Info className="h-4 w-4" />
         <AlertDescription className="flex items-center justify-between">
           <span>
-            Konten landing page dikelola di{' '}
-            <strong>Pengaturan &gt; Landing</strong>. Di sini Anda hanya memilih
-            tampilan (block) yang ingin digunakan.
+            Landing page content is managed in{' '}
+            <strong>Settings &gt; Landing</strong>. Here you only choose the
+            design (block) for each section.
           </span>
           <Link href="/dashboard/settings" className="ml-2">
             <Button variant="outline" size="sm">
               <ExternalLink className="h-3 w-3 mr-1" />
-              Ke Pengaturan
+              Go to Settings
             </Button>
           </Link>
         </AlertDescription>
       </Alert>
 
-      {/* Validation Errors Display */}
+      {/* Validation Errors */}
       {validationErrors.length > 0 && (
         <Card className="p-4 border-red-300 bg-red-50 dark:bg-red-950/30 dark:border-red-800">
           <div className="flex items-start gap-3">
@@ -258,7 +257,7 @@ export function LandingBuilderSimplified({
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                  Validasi Gagal ({validationErrors.length} error)
+                  Validation failed ({validationErrors.length} {validationErrors.length === 1 ? 'error' : 'errors'})
                 </p>
                 {onClearErrors && (
                   <button
@@ -292,10 +291,10 @@ export function LandingBuilderSimplified({
             <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                Ada perubahan yang belum dipublish
+                You have unpublished changes
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-0.5">
-                Klik &quot;Publish&quot; untuk menyimpan perubahan
+                Click &quot;Publish&quot; to save your changes
               </p>
             </div>
           </div>
@@ -311,7 +310,6 @@ export function LandingBuilderSimplified({
           const currentBlock =
             (sectionConfig?.block as string) || `${section.blockPrefix}1`;
 
-          // Get preview data for this section
           let previewTitle = '';
           let previewSubtitle = '';
 
@@ -326,7 +324,7 @@ export function LandingBuilderSimplified({
               break;
             case 'testimonials':
               previewTitle = testimonialsData.title;
-              previewSubtitle = `${testimonialsData.items.length} testimoni`;
+              previewSubtitle = `${testimonialsData.items.length} testimonial${testimonialsData.items.length !== 1 ? 's' : ''}`;
               break;
             case 'contact':
               previewTitle = contactData.title;
@@ -337,8 +335,8 @@ export function LandingBuilderSimplified({
               previewSubtitle = ctaData.subtitle;
               break;
             case 'products':
-              previewTitle = 'Produk Kami';
-              previewSubtitle = 'Dari katalog produk';
+              previewTitle = 'Our Products';
+              previewSubtitle = 'From product catalog';
               break;
           }
 
@@ -365,7 +363,7 @@ export function LandingBuilderSimplified({
                           variant="secondary"
                           className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
                         >
-                          Aktif
+                          Active
                         </Badge>
                       )}
                     </div>
@@ -391,7 +389,7 @@ export function LandingBuilderSimplified({
                     {/* Block Selector */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Pilih Desain Block
+                        Choose block design
                       </label>
                       <Select
                         value={currentBlock}
@@ -400,7 +398,7 @@ export function LandingBuilderSimplified({
                         }
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Pilih block..." />
+                          <SelectValue placeholder="Select a block..." />
                         </SelectTrigger>
                         <SelectContent className="max-h-60">
                           {generateBlockOptions(
@@ -414,20 +412,20 @@ export function LandingBuilderSimplified({
                         </SelectContent>
                       </Select>
                       <p className="text-xs text-muted-foreground">
-                        Tersedia {section.blockCount} variasi desain
+                        {section.blockCount} design variations available
                       </p>
                     </div>
 
                     {/* Data Preview */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
-                        Preview Konten
+                        Content preview
                       </label>
                       <div className="p-3 bg-muted/50 rounded-lg space-y-1">
                         <p className="text-sm font-medium truncate">
                           {previewTitle || (
                             <span className="text-muted-foreground italic">
-                              Belum diisi
+                              Not filled in yet
                             </span>
                           )}
                         </p>
@@ -436,12 +434,12 @@ export function LandingBuilderSimplified({
                         </p>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Edit konten di{' '}
+                        Edit content in{' '}
                         <Link
                           href="/dashboard/settings"
                           className="text-primary hover:underline"
                         >
-                          Pengaturan &gt; Landing
+                          Settings &gt; Landing
                         </Link>
                       </p>
                     </div>
@@ -459,14 +457,13 @@ export function LandingBuilderSimplified({
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Landing Page?</AlertDialogTitle>
             <AlertDialogDescription>
-              Semua konfigurasi landing page akan direset ke default. Perubahan
-              ini akan langsung dipublish. Lanjutkan?
+              All landing page settings will be reset to defaults. This will be published immediately. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmReset}>
-              Ya, Reset
+              Yes, reset
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -476,15 +473,15 @@ export function LandingBuilderSimplified({
       <AlertDialog open={showDiscardDialog} onOpenChange={setShowDiscardDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Batalkan Perubahan?</AlertDialogTitle>
+            <AlertDialogTitle>Discard Changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              Semua perubahan yang belum dipublish akan hilang. Lanjutkan?
+              All unpublished changes will be lost. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Kembali</AlertDialogCancel>
+            <AlertDialogCancel>Go back</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDiscard}>
-              Ya, Batalkan
+              Yes, discard
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
