@@ -2,7 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getCategoryConfig } from '@/config/categories';
+import { getCategoryConfig } from '@/constants/shared/categories';
 import { Store, Mail, Lock, Phone, Edit2 } from 'lucide-react';
 
 // ==========================================

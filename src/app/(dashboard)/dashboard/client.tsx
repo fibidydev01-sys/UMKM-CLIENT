@@ -16,7 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { useTenant } from '@/hooks';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import { subscriptionApi, type SubscriptionInfo } from '@/lib/api/subscription';
-import { ProductsTable, ProductsGrid, ProductsGridSkeleton } from '@/components/products';
+import { ProductsTable, ProductsGrid, ProductsGridSkeleton } from '@/components/dashboard/products';
 import { UpgradeModal } from '@/components/dashboard/upgrade-modal';
 
 import type { Product } from '@/types';

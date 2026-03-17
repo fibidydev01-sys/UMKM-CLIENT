@@ -1,8 +1,7 @@
 // ==========================================
-// STORES INDEX - Export all stores
+// STORES INDEX
 // ==========================================
 
-// Auth Store
 export {
   useAuthStore,
   useIsAuthenticated,
@@ -15,7 +14,6 @@ export {
   selectIsChecked,
 } from './auth-store';
 
-// Cart Store
 export {
   useCartStore,
   selectCartItems,
@@ -33,10 +31,8 @@ export {
   useCartItem,
   useItemQty,
   useCartActions,
-  type CartItem,
 } from './cart-store';
 
-// Products Store
 export {
   useProductsStore,
   selectProducts,
@@ -59,7 +55,6 @@ export {
   useFeaturedProducts,
 } from './products-store';
 
-// UI Store
 export {
   useUIStore,
   selectSidebarOpen,
@@ -81,5 +76,16 @@ export {
   useGlobalLoading,
   useLoadingMessage,
   MODAL_TYPES,
-  type ModalType,
 } from './ui-store';
+
+export {
+  useAdminStore,
+  useIsAdminAuthenticated,
+  useAdminChecked,
+  useAdminHydrated,
+  useCurrentAdmin,
+  useAdminLoading,
+  selectAdmin,
+  selectAdminIsLoading,
+  selectAdminIsChecked,
+} from './admin-store';

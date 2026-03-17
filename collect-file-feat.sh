@@ -1,8 +1,21 @@
 #!/bin/bash
 
+# ================================================================
+# FEAT-COLLECT.SH — PER FITUR (page + components + types)
+# Struktur BARU: components/dashboard|public/store|shared
+#               hooks/auth|dashboard|shared
+#               lib/api|dashboard|public|shared
+#               constants/shared
+# Run from: /d/PRODUK-LPPM-FINAL/UMKM-MULTI-TENANT/restruktur
+# ================================================================
+
 SRC="./src"
 OUT="collections"
 mkdir -p "$OUT"
+
+# ================================================================
+# HELPERS
+# ================================================================
 
 cf() {
     local f=$1
@@ -19,6 +32,7 @@ cf() {
     echo "  ✓ $rel ($lines)"
 }
 
+# Shallow — hanya file di root folder (maxdepth 1)
 cfolder() {
     local dir=$1
     [ -d "$dir" ] || { echo "  ⚠ NOT FOUND: $dir"; return; }
@@ -27,6 +41,7 @@ cfolder() {
     done < <(find "$dir" -maxdepth 1 -type f \( -name "*.ts" -o -name "*.tsx" \) -print0 | sort -z)
 }
 
+# Recursive — semua subfolder ikut
 cfolder_r() {
     local dir=$1
     [ -d "$dir" ] || { echo "  ⚠ NOT FOUND: $dir"; return; }
@@ -62,9 +77,17 @@ feat_auth_login() {
     cf "$SRC/components/auth/auth-layout.tsx"
     cf "$SRC/components/auth/auth-logo.tsx"
     cf "$SRC/components/auth/login-form.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/auth/use-auth.ts"
+    cf "$SRC/hooks/auth/index.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/auth.ts"
+    cf "$SRC/lib/shared/validations.ts"
+    sec "STORE"
+    cf "$SRC/stores/auth-store.ts"
     sec "TYPES"
     cf "$SRC/types/auth.ts"
-    cf "$SRC/config/site.ts"
+    cf "$SRC/constants/shared/site.ts"
     done_msg
 }
 
@@ -79,9 +102,17 @@ feat_auth_register() {
     cf "$SRC/components/auth/register-form.tsx"
     cf "$SRC/components/auth/category-card.tsx"
     cfolder_r "$SRC/components/auth/register-steps"
+    sec "HOOKS"
+    cf "$SRC/hooks/auth/use-auth.ts"
+    cf "$SRC/hooks/auth/use-register-wizard.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/auth.ts"
+    cf "$SRC/lib/shared/validations.ts"
+    sec "CONSTANTS"
+    cf "$SRC/constants/shared/categories.ts"
+    cf "$SRC/constants/shared/site.ts"
     sec "TYPES"
     cf "$SRC/types/auth.ts"
-    cf "$SRC/config/site.ts"
     done_msg
 }
 
@@ -94,9 +125,13 @@ feat_auth_forgot() {
     cf "$SRC/components/auth/auth-layout.tsx"
     cf "$SRC/components/auth/auth-logo.tsx"
     cf "$SRC/components/auth/forgot-password-form.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/auth/use-auth.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/auth.ts"
     sec "TYPES"
     cf "$SRC/types/auth.ts"
-    cf "$SRC/config/site.ts"
+    cf "$SRC/constants/shared/site.ts"
     done_msg
 }
 
@@ -110,8 +145,13 @@ feat_dashboard_home() {
     cf "$SRC/app/(dashboard)/layout.tsx"
     cf "$SRC/app/(dashboard)/dashboard/page.tsx"
     cf "$SRC/app/(dashboard)/dashboard/client.tsx"
-    sec "COMPONENTS"
+    sec "COMPONENTS — Dashboard root"
     cfolder "$SRC/components/dashboard"
+    sec "COMPONENTS — Onboarding"
+    cfolder_r "$SRC/components/dashboard/onboarding"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-onboarding.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -123,7 +163,14 @@ feat_dashboard_onboarding() {
     cf "$SRC/app/(dashboard)/dashboard/onboarding/page.tsx"
     cf "$SRC/app/(dashboard)/dashboard/onboarding/client.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/onboarding"
+    cfolder_r "$SRC/components/dashboard/onboarding"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-onboarding.ts"
+    sec "LIB"
+    cf "$SRC/lib/dashboard/calculate-progress.ts"
+    cf "$SRC/lib/dashboard/onboarding-types.ts"
+    cf "$SRC/lib/dashboard/steps-config.ts"
+    cf "$SRC/lib/dashboard/index.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -133,8 +180,13 @@ feat_dashboard_subscription() {
     init_file "DASHBOARD-SUBSCRIPTION"
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/subscription/page.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-xendit-payment.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/subscription.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
+    cf "$SRC/types/xendit-invoice.d.ts"
     done_msg
 }
 
@@ -147,13 +199,19 @@ feat_products_list() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/products/page.tsx"
     sec "COMPONENTS"
-    cf "$SRC/components/products/products-table.tsx"
-    cf "$SRC/components/products/products-table-columns.tsx"
-    cf "$SRC/components/products/products-table-toolbar.tsx"
-    cf "$SRC/components/products/products-grid.tsx"
-    cf "$SRC/components/products/product-grid-card.tsx"
-    cf "$SRC/components/products/product-delete-dialog.tsx"
-    cf "$SRC/components/products/product-preview-drawer.tsx"
+    cf "$SRC/components/dashboard/products/products-table.tsx"
+    cf "$SRC/components/dashboard/products/products-table-columns.tsx"
+    cf "$SRC/components/dashboard/products/products-table-toolbar.tsx"
+    cf "$SRC/components/dashboard/products/products-grid.tsx"
+    cf "$SRC/components/dashboard/products/product-grid-card.tsx"
+    cf "$SRC/components/dashboard/products/product-delete-dialog.tsx"
+    cf "$SRC/components/dashboard/products/product-preview-drawer.tsx"
+    cf "$SRC/components/dashboard/products/index.ts"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-products.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/products.ts"
+    cf "$SRC/lib/shared/format.ts"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     done_msg
@@ -164,11 +222,18 @@ feat_products_new() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/products/new/page.tsx"
     sec "COMPONENTS"
-    cf "$SRC/components/products/product-form.tsx"
-    # FIX: gunakan cfolder_r agar subfolder product-form-section ikut ter-collect
-    cfolder_r "$SRC/components/products/product-form-section"
-    cfolder "$SRC/components/upload"
-    cfolder "$SRC/components/cloudinary"
+    cf "$SRC/components/dashboard/products/product-form.tsx"
+    cfolder_r "$SRC/components/dashboard/products/product-form-section"
+    cfolder_r "$SRC/components/shared/upload"
+    cfolder_r "$SRC/components/shared/cloudinary"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-products.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/products.ts"
+    cf "$SRC/lib/shared/validations.ts"
+    cf "$SRC/lib/shared/cloudinary.ts"
+    sec "CONSTANTS"
+    cf "$SRC/constants/shared/constants.ts"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     done_msg
@@ -179,11 +244,18 @@ feat_products_edit() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/products/[id]/edit/page.tsx"
     sec "COMPONENTS"
-    cf "$SRC/components/products/product-form.tsx"
-    # FIX: gunakan cfolder_r agar subfolder product-form-section ikut ter-collect
-    cfolder_r "$SRC/components/products/product-form-section"
-    cfolder "$SRC/components/upload"
-    cfolder "$SRC/components/cloudinary"
+    cf "$SRC/components/dashboard/products/product-form.tsx"
+    cfolder_r "$SRC/components/dashboard/products/product-form-section"
+    cfolder_r "$SRC/components/shared/upload"
+    cfolder_r "$SRC/components/shared/cloudinary"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-products.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/products.ts"
+    cf "$SRC/lib/shared/validations.ts"
+    cf "$SRC/lib/shared/cloudinary.ts"
+    sec "CONSTANTS"
+    cf "$SRC/constants/shared/constants.ts"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     done_msg
@@ -193,19 +265,42 @@ feat_products_edit() {
 # SETTINGS
 # ================================================================
 
+feat_settings_layout() {
+    init_file "SETTINGS-LAYOUT"
+    sec "LAYOUT COMPONENTS"
+    cf "$SRC/components/dashboard/settings/settings-layout.tsx"
+    cf "$SRC/components/dashboard/settings/settings-nav.tsx"
+    cf "$SRC/components/dashboard/settings/settings-sidebar.tsx"
+    cf "$SRC/components/dashboard/settings/settings-mobile-navbar.tsx"
+    cf "$SRC/components/dashboard/settings/landing-content-settings.tsx"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    cf "$SRC/components/dashboard/settings/index.ts"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    sec "TYPES"
+    cf "$SRC/types/tenant.ts"
+    done_msg
+}
+
 feat_settings_toko() {
     init_file "SETTINGS-TOKO"
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/toko/page.tsx"
     cf "$SRC/app/(dashboard)/dashboard/settings/toko/client.tsx"
     sec "COMPONENTS"
-    cf "$SRC/components/settings/store-info-form.tsx"
-    # FIX: tambah settings layout/nav agar context navigasi tersedia
-    cf "$SRC/components/settings/settings-layout.tsx"
-    cf "$SRC/components/settings/settings-nav.tsx"
-    cf "$SRC/components/settings/settings-sidebar.tsx"
-    cf "$SRC/components/settings/settings-mobile-navbar.tsx"
-    cfolder "$SRC/components/upload"
+    cf "$SRC/components/dashboard/settings/store-info-form.tsx"
+    cf "$SRC/components/dashboard/settings/settings-layout.tsx"
+    cf "$SRC/components/dashboard/settings/settings-nav.tsx"
+    cf "$SRC/components/dashboard/settings/settings-sidebar.tsx"
+    cf "$SRC/components/dashboard/settings/settings-mobile-navbar.tsx"
+    cfolder_r "$SRC/components/shared/upload"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -216,9 +311,17 @@ feat_settings_hero() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/hero-section/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/hero-section"
-    # FIX: tambah preview-modal yang dipakai di settings
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/hero-section"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    cf "$SRC/hooks/dashboard/use-landing-config.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/shared/colors.ts"
+    cfolder_r "$SRC/components/shared/upload"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     cf "$SRC/types/landing.ts"
@@ -230,8 +333,18 @@ feat_settings_about() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/about/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/about-section"
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/about-section"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    # Block preview
+    cf "$SRC/components/public/store/about/about1.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/shared/colors.ts"
+    cfolder_r "$SRC/components/shared/upload"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -242,8 +355,16 @@ feat_settings_contact() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/contact/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/contact-section"
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/contact-section"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    cf "$SRC/components/public/store/contact/contact1.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/shared/colors.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -254,8 +375,16 @@ feat_settings_cta() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/cta/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/cta-section"
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/cta-section"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    cf "$SRC/components/public/store/cta/cta1.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/shared/colors.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -266,8 +395,18 @@ feat_settings_testimonials() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/testimonials/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/testimonials-section"
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/testimonials-section"
+    cf "$SRC/components/dashboard/settings/preview-modal.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    cf "$SRC/components/public/store/testimonials/testimonials1.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    cf "$SRC/hooks/dashboard/use-landing-config.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/public/landing-utils.ts"
+    cfolder_r "$SRC/components/shared/upload"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -278,8 +417,14 @@ feat_settings_seo() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/seo/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/seo-section"
-    cf "$SRC/components/settings/seo-settings.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/seo-section"
+    cf "$SRC/components/dashboard/settings/seo-settings.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -290,7 +435,11 @@ feat_settings_domain() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/domain/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/domain"
+    cfolder_r "$SRC/components/dashboard/domain"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-domain.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/domain.ts"
     sec "TYPES"
     cf "$SRC/types/domain.ts"
     cf "$SRC/types/tenant.ts"
@@ -302,6 +451,8 @@ feat_settings_channels() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/channels/page.tsx"
     cf "$SRC/app/(dashboard)/dashboard/settings/channels/client.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -312,15 +463,16 @@ feat_settings_pembayaran() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/pembayaran/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/pembayaran-section"
-    # FIX: dua file ini ada di root settings/, bukan di dalam pembayaran-section/
-    # cfolder hanya maxdepth 1 sehingga tidak menangkap subfolder
-    # file di root settings sudah di-cover oleh cf manual di bawah:
-    cf "$SRC/components/settings/bank-account-dialog.tsx"
-    cf "$SRC/components/settings/ewallet-dialog.tsx"
-    cf "$SRC/components/settings/payment-settings.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/pembayaran-section"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
+    cf "$SRC/types/asean-currency.ts"
     done_msg
 }
 
@@ -329,23 +481,14 @@ feat_settings_pengiriman() {
     sec "PAGE"
     cf "$SRC/app/(dashboard)/dashboard/settings/pengiriman/page.tsx"
     sec "COMPONENTS"
-    cfolder "$SRC/components/settings/pengiriman-section"
-    cf "$SRC/components/settings/shipping-settings.tsx"
-    sec "TYPES"
-    cf "$SRC/types/tenant.ts"
-    done_msg
-}
-
-# FIX: tambah fitur baru — Settings Layout (shared nav/sidebar settings)
-feat_settings_layout() {
-    init_file "SETTINGS-LAYOUT"
-    sec "LAYOUT COMPONENTS"
-    cf "$SRC/components/settings/settings-layout.tsx"
-    cf "$SRC/components/settings/settings-nav.tsx"
-    cf "$SRC/components/settings/settings-sidebar.tsx"
-    cf "$SRC/components/settings/settings-mobile-navbar.tsx"
-    cf "$SRC/components/settings/landing-content-settings.tsx"
-    cf "$SRC/components/settings/preview-modal.tsx"
+    cfolder_r "$SRC/components/dashboard/settings/pengiriman-section"
+    cf "$SRC/components/dashboard/settings/shipping-settings.tsx"
+    cf "$SRC/components/dashboard/settings/auto-save-status.tsx"
+    sec "HOOKS"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    cf "$SRC/hooks/dashboard/use-auto-save.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -360,18 +503,32 @@ feat_store_home() {
     sec "PAGE"
     cf "$SRC/app/store/[slug]/layout.tsx"
     cf "$SRC/app/store/[slug]/page.tsx"
-    sec "COMPONENTS"
-    cf "$SRC/components/store/store-header.tsx"
-    cf "$SRC/components/store/store-nav.tsx"
-    cf "$SRC/components/store/store-footer.tsx"
-    cf "$SRC/components/store/store-skeleton.tsx"
-    cf "$SRC/components/store/store-not-found.tsx"
-    cf "$SRC/components/store/featured-products.tsx"
-    cf "$SRC/components/store/category-list.tsx"
-    # FIX: tambah store-breadcrumb yang ada di folder store
-    cf "$SRC/components/store/store-breadcrumb.tsx"
+    sec "COMPONENTS — Layout"
+    cfolder_r "$SRC/components/public/store/layout"
+    sec "COMPONENTS — Hero"
+    cf "$SRC/components/public/store/hero/tenant-hero.tsx"
+    cf "$SRC/components/public/store/hero/hero1.tsx"
+    cf "$SRC/components/public/store/hero/index.ts"
+    sec "COMPONENTS — About/Contact/CTA/Products/Testimonials (tenant renderers)"
+    cf "$SRC/components/public/store/about/tenant-about.tsx"
+    cf "$SRC/components/public/store/contact/tenant-contact.tsx"
+    cf "$SRC/components/public/store/cta/tenant-cta.tsx"
+    cf "$SRC/components/public/store/products/tenant-products.tsx"
+    cf "$SRC/components/public/store/testimonials/tenant-testimonials.tsx"
+    sec "COMPONENTS — Cart"
+    cfolder_r "$SRC/components/public/store/cart"
+    sec "LIB"
+    cf "$SRC/lib/public/landing-context.tsx"
+    cf "$SRC/lib/public/landing-utils.ts"
+    cf "$SRC/lib/public/store-url.ts"
+    cf "$SRC/lib/shared/colors.ts"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/api/products.ts"
+    sec "SEO"
+    cfolder_r "$SRC/components/shared/seo"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
+    cf "$SRC/types/landing.ts"
     cf "$SRC/types/product.ts"
     done_msg
 }
@@ -380,15 +537,23 @@ feat_store_products() {
     init_file "STORE-PRODUCTS"
     sec "PAGE"
     cf "$SRC/app/store/[slug]/products/page.tsx"
-    sec "COMPONENTS"
-    cf "$SRC/components/store/product-grid.tsx"
-    cf "$SRC/components/store/product-card.tsx"
-    cf "$SRC/components/store/product-filters.tsx"
-    cf "$SRC/components/store/product-pagination.tsx"
-    # FIX: tambah store-breadcrumb
-    cf "$SRC/components/store/store-breadcrumb.tsx"
+    sec "COMPONENTS — Product listing"
+    cf "$SRC/components/public/store/product/product-grid.tsx"
+    cf "$SRC/components/public/store/product/product-card.tsx"
+    cf "$SRC/components/public/store/product/product-filters.tsx"
+    cf "$SRC/components/public/store/product/product-pagination.tsx"
+    cf "$SRC/components/public/store/product/category-list.tsx"
+    cf "$SRC/components/public/store/layout/store-breadcrumb.tsx"
+    cf "$SRC/components/public/store/layout/store-skeleton.tsx"
+    cf "$SRC/components/public/store/product/index.ts"
+    sec "LIB"
+    cf "$SRC/lib/api/products.ts"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/public/store-url.ts"
+    cf "$SRC/lib/shared/cloudinary.ts"
     sec "TYPES"
     cf "$SRC/types/product.ts"
+    cf "$SRC/types/tenant.ts"
     done_msg
 }
 
@@ -397,20 +562,28 @@ feat_store_product_detail() {
     sec "PAGE"
     cf "$SRC/app/store/[slug]/products/[id]/page.tsx"
     cf "$SRC/app/store/[slug]/products/[id]/not-found.tsx"
-    sec "COMPONENTS"
-    cf "$SRC/components/store/product-gallery.tsx"
-    cf "$SRC/components/store/product-info.tsx"
-    cf "$SRC/components/store/product-actions.tsx"
-    cf "$SRC/components/store/product-share.tsx"
-    cf "$SRC/components/store/related-products.tsx"
-    cf "$SRC/components/store/shipping-info.tsx"
-    cf "$SRC/components/store/whatsapp-order-button.tsx"
-    cf "$SRC/components/store/whatsapp-checkout-dialog.tsx"
-    cf "$SRC/components/store/add-to-cart-button.tsx"
-    cf "$SRC/components/store/cart-sheet.tsx"
-    cf "$SRC/components/store/cart-badge.tsx"
-    # FIX: tambah store-breadcrumb
-    cf "$SRC/components/store/store-breadcrumb.tsx"
+    cf "$SRC/app/store/[slug]/products/[id]/opengraph-image.tsx"
+    sec "COMPONENTS — Product detail"
+    cf "$SRC/components/public/store/product/product-gallery.tsx"
+    cf "$SRC/components/public/store/product/product-info.tsx"
+    cf "$SRC/components/public/store/product/product-actions.tsx"
+    cf "$SRC/components/public/store/product/product-share.tsx"
+    cf "$SRC/components/public/store/product/related-products.tsx"
+    cf "$SRC/components/public/store/product/payment-shipping-info.tsx"
+    cf "$SRC/components/public/store/layout/store-breadcrumb.tsx"
+    sec "COMPONENTS — Cart + Checkout"
+    cfolder_r "$SRC/components/public/store/cart"
+    cfolder_r "$SRC/components/public/store/checkout"
+    sec "SEO"
+    cfolder_r "$SRC/components/shared/seo"
+    sec "LIB"
+    cf "$SRC/lib/api/products.ts"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/shared/seo.ts"
+    cf "$SRC/lib/shared/cloudinary.ts"
+    cf "$SRC/lib/public/store-url.ts"
+    sec "STORES"
+    cf "$SRC/stores/cart-store.ts"
     sec "TYPES"
     cf "$SRC/types/product.ts"
     cf "$SRC/types/tenant.ts"
@@ -421,8 +594,17 @@ feat_store_about() {
     init_file "STORE-ABOUT"
     sec "PAGE"
     cf "$SRC/app/store/[slug]/about/page.tsx"
+    sec "COMPONENTS"
+    cf "$SRC/components/public/store/about/tenant-about.tsx"
+    cfolder "$SRC/components/public/store/about"
+    cf "$SRC/components/public/store/layout/store-breadcrumb.tsx"
+    sec "SEO"
+    cfolder_r "$SRC/components/shared/seo"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
+    cf "$SRC/types/landing.ts"
     done_msg
 }
 
@@ -430,6 +612,14 @@ feat_store_contact() {
     init_file "STORE-CONTACT"
     sec "PAGE"
     cf "$SRC/app/store/[slug]/contact/page.tsx"
+    sec "COMPONENTS"
+    cf "$SRC/components/public/store/contact/tenant-contact.tsx"
+    cfolder "$SRC/components/public/store/contact"
+    cf "$SRC/components/public/store/layout/store-breadcrumb.tsx"
+    sec "SEO"
+    cfolder_r "$SRC/components/shared/seo"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
     done_msg
@@ -439,8 +629,18 @@ feat_store_testimonials() {
     init_file "STORE-TESTIMONIALS"
     sec "PAGE"
     cf "$SRC/app/store/[slug]/testimonials/page.tsx"
+    sec "COMPONENTS"
+    cf "$SRC/components/public/store/testimonials/tenant-testimonials.tsx"
+    cfolder "$SRC/components/public/store/testimonials"
+    cf "$SRC/components/public/store/layout/store-breadcrumb.tsx"
+    sec "SEO"
+    cfolder_r "$SRC/components/shared/seo"
+    sec "LIB"
+    cf "$SRC/lib/api/tenants.ts"
+    cf "$SRC/lib/public/landing-utils.ts"
     sec "TYPES"
     cf "$SRC/types/tenant.ts"
+    cf "$SRC/types/landing.ts"
     done_msg
 }
 
@@ -454,28 +654,44 @@ feat_landing_builder() {
     cf "$SRC/app/(dashboard)/dashboard/landing-builder/layout.tsx"
     cf "$SRC/app/(dashboard)/dashboard/landing-builder/page.tsx"
     sec "BUILDER COMPONENTS"
-    cfolder "$SRC/components/landing-builder"
+    cfolder_r "$SRC/components/landing-builder"
+    sec "HOOKS"
+    cf "$SRC/hooks/dashboard/use-landing-config.ts"
+    cf "$SRC/hooks/shared/use-tenant.ts"
+    sec "LIB"
+    cfolder_r "$SRC/lib/public"
     sec "TYPES"
     cf "$SRC/types/landing.ts"
+    cf "$SRC/types/tenant.ts"
     done_msg
 }
 
 feat_landing_blocks() {
     init_file "LANDING-BLOCKS"
     sec "TENANT RENDERERS"
-    cfolder "$SRC/components/landing"
-    sec "BLOCKS — Hero"
-    cfolder "$SRC/components/landing/blocks/hero"
-    sec "BLOCKS — About"
-    cfolder "$SRC/components/landing/blocks/about"
-    sec "BLOCKS — Contact"
-    cfolder "$SRC/components/landing/blocks/contact"
-    sec "BLOCKS — CTA"
-    cfolder "$SRC/components/landing/blocks/cta"
-    sec "BLOCKS — Products"
-    cfolder "$SRC/components/landing/blocks/products"
-    sec "BLOCKS — Testimonials"
-    cfolder "$SRC/components/landing/blocks/testimonials"
+    cf "$SRC/components/public/store/hero/tenant-hero.tsx"
+    cf "$SRC/components/public/store/about/tenant-about.tsx"
+    cf "$SRC/components/public/store/contact/tenant-contact.tsx"
+    cf "$SRC/components/public/store/cta/tenant-cta.tsx"
+    cf "$SRC/components/public/store/products/tenant-products.tsx"
+    cf "$SRC/components/public/store/testimonials/tenant-testimonials.tsx"
+    sec "BLOCKS — Hero (25 variants)"
+    cfolder "$SRC/components/public/store/hero"
+    sec "BLOCKS — About (5 variants)"
+    cfolder "$SRC/components/public/store/about"
+    sec "BLOCKS — Contact (5 variants)"
+    cfolder "$SRC/components/public/store/contact"
+    sec "BLOCKS — CTA (5 variants)"
+    cfolder "$SRC/components/public/store/cta"
+    sec "BLOCKS — Products (5 variants)"
+    cfolder "$SRC/components/public/store/products"
+    sec "BLOCKS — Testimonials (5 variants)"
+    cfolder "$SRC/components/public/store/testimonials"
+    sec "LIB — Templates"
+    cfolder_r "$SRC/lib/public/templates"
+    cf "$SRC/lib/public/landing-context.tsx"
+    cf "$SRC/lib/public/landing-constants.ts"
+    cf "$SRC/lib/public/landing-defaults.ts"
     sec "TYPES"
     cf "$SRC/types/landing.ts"
     done_msg
@@ -488,7 +704,8 @@ feat_landing_blocks() {
 show_menu() {
     clear
     echo "================================================================"
-    echo "  COLLECT UI — PER FITUR (page + components + types)"
+    echo "  FEAT-COLLECT — PER FITUR (page + components + types)"
+    echo "  Struktur BARU: components/dashboard|public|shared"
     echo "================================================================"
     echo ""
     echo "  ── AUTH ────────────────────────────────────────────────────"
@@ -521,8 +738,8 @@ show_menu() {
     echo "  29) Settings Layout (shared nav/sidebar)"
     echo ""
     echo "  ── STORE (PUBLIC) ──────────────────────────────────────────"
-    echo "  21) Home"
-    echo "  22) Products"
+    echo "  21) Home (+ hero/about/cta/testimonials blocks)"
+    echo "  22) Products List"
     echo "  23) Product Detail"
     echo "  24) About"
     echo "  25) Contact"
@@ -530,7 +747,7 @@ show_menu() {
     echo ""
     echo "  ── LANDING ─────────────────────────────────────────────────"
     echo "  27) Builder"
-    echo "  28) Blocks"
+    echo "  28) Blocks (semua variants)"
     echo ""
     echo "   0) Exit        all) Semua"
     echo "================================================================"
@@ -581,11 +798,13 @@ while true; do
     [ -z "$choices" ] && continue
 
     if [ "$choices" = "all" ]; then
-        for i in $(seq 1 29); do run_choice $i; done
+        for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29; do
+            run_choice $i
+        done
     else
         for c in $choices; do run_choice "$c"; done
     fi
 
     echo ""
-    read -rp "Tekan Enter untuk kembali ke menu..."
+    read -rp "Enter untuk kembali ke menu..."
 done

@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { tenantsApi } from '@/lib/api';
-import { TenantContact } from '@/components/landing';
-import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
+import { TenantContact } from '@/components/public/store';
+import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/shared/seo';
 import type { PublicTenant } from '@/types';
 
 // ==========================================

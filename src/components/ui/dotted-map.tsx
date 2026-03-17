@@ -1,7 +1,7 @@
 import * as React from "react"
 import { createMap } from "svg-dotted-map"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/shared"
 
 interface Marker {
   lat: number
@@ -62,7 +62,7 @@ export function DottedMap({
     }
 
     return { xStep: step || 1, yToRowIndex: rowMap }
-  // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
   }, [points])
 
   return (

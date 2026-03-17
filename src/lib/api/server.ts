@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { API_URL } from '@/config/constants';
+import { API_URL } from '@/constants/shared/constants';
 import type {
   Tenant,
   Product,

@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useSyncExternalStore, useCallback } from 'react';
-import { STORAGE_KEYS } from '@/config/constants';
+import { STORAGE_KEYS } from '@/constants/shared';
 
 // ==========================================
 // CART STORE TYPES

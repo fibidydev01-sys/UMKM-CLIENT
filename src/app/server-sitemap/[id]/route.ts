@@ -1,5 +1,5 @@
 import { getServerSideSitemap, ISitemapField } from 'next-sitemap';
-import { seoConfig } from '@/config/seo.config';
+import { seoConfig } from '@/constants/shared/seo.config';
 
 // ==========================================
 // DYNAMIC SITEMAP PAGES

@@ -9,7 +9,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import { Check, Loader2 } from 'lucide-react';
 
 // ============================================================================

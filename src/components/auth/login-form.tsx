@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useLogin } from '@/hooks';
-import { loginSchema, type LoginFormData } from '@/lib/validations';
+import { loginSchema, type LoginFormData } from '@/lib/shared/validations';
 
 // ==========================================
 // LOGIN FORM COMPONENT

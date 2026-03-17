@@ -8,7 +8,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Drawer } from 'vaul';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import { LivePreview } from './live-preview';
 import type { TenantLandingConfig, Product, Tenant } from '@/types';
 

@@ -2,16 +2,22 @@
  * ============================================================================
  * FILE: src/components/landing-builder/block-options.ts
  * PURPOSE: Auto-generated block options for landing builder
+ *
+ * ✅ CANVA STRATEGY:
+ * - Semua block bisa dipilih/preview bebas
+ * - isPro = hint visual (badge) saja
+ * - Gate terjadi saat Publish, bukan saat pilih block
  * ============================================================================
  */
 
 export interface BlockOption {
   value: string;
   label: string;
+  isPro: boolean; // hint visual badge — tidak memblokir selection
 }
 
 // ============================================================================
-// CONFIGURATION — set block count per section here
+// CONFIGURATION
 // ============================================================================
 
 const BLOCKS_PER_SECTION: Record<SectionType, number> = {
@@ -24,6 +30,59 @@ const BLOCKS_PER_SECTION: Record<SectionType, number> = {
 };
 
 // ============================================================================
+// PRO LIMIT — untuk badge hint & publish gate
+// ============================================================================
+
+export const FREE_BLOCK_LIMIT = 3; // block 1-3 gratis, 4+ = Pro
+
+/**
+ * Cek apakah blockId ini adalah Pro block.
+ * Dipakai untuk:
+ * 1. Badge hint di block list (visual only)
+ * 2. Publish gate — cek apakah config punya Pro block aktif
+ *
+ * Safe handling: null/undefined/Infinity → false (tidak Pro)
+ */
+export function isProBlock(
+  blockId: string,
+  limit: number | null | undefined = FREE_BLOCK_LIMIT,
+): boolean {
+  if (limit == null || limit === 0 || !isFinite(limit) || isNaN(limit)) {
+    return false; // unlimited → tidak ada Pro block
+  }
+  const match = blockId.match(/(\d+)$/);
+  if (!match) return false;
+  return parseInt(match[1]) > limit;
+}
+
+/**
+ * Cek apakah landing config punya Pro block yang aktif.
+ * Dipanggil sebelum Publish — kalau true → block + UpgradeModal.
+ *
+ * Hanya cek section yang ENABLED — section disabled tidak dihitung.
+ */
+export function hasProBlocks(
+  config: Record<string, any> | null | undefined,
+  limit: number | null | undefined = FREE_BLOCK_LIMIT,
+): boolean {
+  if (!config) return false;
+  if (limit == null || !isFinite(limit as number)) return false; // unlimited
+
+  const sections = ['hero', 'about', 'products', 'testimonials', 'contact', 'cta'];
+
+  return sections.some((section) => {
+    const sectionConfig = config[section];
+    if (!sectionConfig) return false;
+    if (!sectionConfig.enabled) return false; // disabled section → skip
+
+    const block = sectionConfig.block as string | undefined;
+    if (!block) return false;
+
+    return isProBlock(block, limit);
+  });
+}
+
+// ============================================================================
 // GENERATION FUNCTION
 // ============================================================================
 
@@ -31,16 +90,12 @@ type SectionType = 'hero' | 'about' | 'products' | 'testimonials' | 'contact' | 
 
 function generateBlocks(section: SectionType): BlockOption[] {
   const count = BLOCKS_PER_SECTION[section];
-  const blocks: BlockOption[] = [];
 
-  for (let i = 1; i <= count; i++) {
-    blocks.push({
-      value: `${section}${i}`,
-      label: `${capitalize(section)} ${i}`,
-    });
-  }
-
-  return blocks;
+  return Array.from({ length: count }, (_, i) => ({
+    value: `${section}${i + 1}`,
+    label: `${capitalize(section)} ${i + 1}`,
+    isPro: i + 1 > FREE_BLOCK_LIMIT,
+  }));
 }
 
 function capitalize(str: string): string {

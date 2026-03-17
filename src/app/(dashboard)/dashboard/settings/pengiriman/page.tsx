@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { AutoSaveStatus } from '@/components/dashboard/settings';
 import { toast } from 'sonner';
-import { useTenant } from '@/hooks';
+import { useTenant, useAutoSave } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import type { CourierName, PengirimanFormData, ShippingMethods } from '@/types';
-import { StepRates, StepCarriers, PreviewPengiriman } from '@/components/settings/pengiriman-section';
+import { StepRates, StepCarriers, PreviewPengiriman } from '@/components/dashboard/settings/pengiriman-section';
 
-// ─── Constants ─────────────────────────────────────────────────────────────
 const COURIER_OPTIONS: CourierName[] = [
   'JNE', 'J&T Express', 'SiCepat', 'SPX Express', 'Ninja Express',
   'Paxel', 'Lion Parcel', 'Pos Indonesia', 'TIKI',
@@ -43,13 +43,11 @@ function mergeCouriers(saved: ShippingMethods): ShippingMethods {
   return { couriers: merged };
 }
 
-// ─── Steps — Carriers first, Rates second ──────────────────────────────────
 const STEPS = [
   { title: 'Shipping Carriers', desc: 'Select carriers available for delivery' },
   { title: 'Shipping Rates', desc: 'Flat rate and free shipping threshold' },
 ] as const;
 
-// ─── Step Indicator ────────────────────────────────────────────────────────
 function StepIndicator({
   currentStep,
   onStepClick,
@@ -81,13 +79,10 @@ function StepIndicator({
                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
-              ) : (
-                i + 1
-              )}
+              ) : (i + 1)}
             </button>
             {size === 'lg' && (
-              <span className={cn(
-                'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
+              <span className={cn('text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
                 i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
               )}>
                 {step.title}
@@ -95,8 +90,7 @@ function StepIndicator({
             )}
           </div>
           {i < STEPS.length - 1 && (
-            <div className={cn(
-              'h-px mx-2 transition-colors duration-500',
+            <div className={cn('h-px mx-2 transition-colors duration-500',
               size === 'lg' ? 'w-14 mb-[22px]' : 'w-8',
               i < currentStep ? 'bg-primary' : 'bg-border'
             )} />
@@ -107,14 +101,13 @@ function StepIndicator({
   );
 }
 
-// ─── Page ──────────────────────────────────────────────────────────────────
 export default function PengirimanPage() {
   const { tenant, refresh } = useTenant();
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
-  // ✅ Init langsung dari Zustand store — tidak ada useEffect, tidak ada skeleton, tidak ada flash
+  // ✅ Init langsung dari Zustand — tidak ada useEffect, tidak ada skeleton, tidak ada flash
   const [formData, setFormData] = useState<PengirimanFormData>(() => ({
     currency: tenant?.currency || 'IDR',
     freeShippingThreshold: tenant?.freeShippingThreshold ?? null,
@@ -123,6 +116,9 @@ export default function PengirimanPage() {
       ? mergeCouriers(tenant.shippingMethods)
       : DEFAULT_SHIPPING_METHODS,
   }));
+
+  // ─── Auto-save (no image fields) ───────────────────────────────────────
+  const { status: autoSaveStatus } = useAutoSave(formData);
 
   const handleFreeShippingChange = (v: string) =>
     setFormData((p) => ({ ...p, freeShippingThreshold: v ? parseFloat(v) : null }));
@@ -189,132 +185,82 @@ export default function PengirimanPage() {
   return (
     <div className="h-full flex flex-col">
 
-      {/* ════════════════════════ DESKTOP ════════════════════════ */}
+      {/* DESKTOP */}
       <div className="hidden lg:flex lg:flex-col lg:h-full">
-
-        {/* Header */}
         <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
           <div className="space-y-1">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Step {currentStep + 1} of {STEPS.length}
             </p>
-            <h2 className="text-2xl font-bold tracking-tight leading-none">
-              {STEPS[currentStep].title}
-            </h2>
-            <p className="text-sm text-muted-foreground pt-0.5">
-              {STEPS[currentStep].desc}
-            </p>
+            <h2 className="text-2xl font-bold tracking-tight leading-none">{STEPS[currentStep].title}</h2>
+            <AutoSaveStatus status={autoSaveStatus} className="pt-0.5" />
           </div>
           <div className="shrink-0 pt-0.5">
-            <StepIndicator
-              currentStep={currentStep}
-              onStepClick={(i) => i < currentStep && setCurrentStep(i)}
-              size="lg"
-            />
+            <StepIndicator currentStep={currentStep} onStepClick={(i) => i < currentStep && setCurrentStep(i)} size="lg" />
           </div>
         </div>
-
-        {/* Body */}
         <div className="flex-1 min-h-[280px]">
           {currentStep === 0 && (
-            <StepCarriers
-              formData={formData}
-              onToggle={handleToggleCourier}
-              onNoteChange={handleCourierNoteChange}
-              isDesktop
-            />
+            <StepCarriers formData={formData} onToggle={handleToggleCourier} onNoteChange={handleCourierNoteChange} isDesktop />
           )}
           {currentStep === 1 && (
-            <StepRates
-              formData={formData}
-              onFreeShippingChange={handleFreeShippingChange}
-              onDefaultCostChange={handleDefaultCostChange}
-              isDesktop
-            />
+            <StepRates formData={formData} onFreeShippingChange={handleFreeShippingChange} onDefaultCostChange={handleDefaultCostChange} isDesktop />
           )}
         </div>
-
-        {/* Footer nav */}
         <div className="flex items-center justify-between pt-6 border-t mt-8">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
-          >
+          <Button variant="outline" onClick={handlePrev} className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}>
             <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <div className="flex items-center gap-1.5">
             {STEPS.map((_, i) => (
-              <div key={i} className={cn(
-                'rounded-full transition-all duration-300',
+              <div key={i} className={cn('rounded-full transition-all duration-300',
                 i === currentStep ? 'w-5 h-1.5 bg-primary' : i < currentStep ? 'w-1.5 h-1.5 bg-primary/40' : 'w-1.5 h-1.5 bg-border'
               )} />
             ))}
           </div>
           <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
-            {isLastStep
-              ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
-              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
-            }
+            {isLastStep ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</> : <>Next<ChevronRight className="h-3.5 w-3.5" /></>}
           </Button>
         </div>
       </div>
 
-      {/* ════════════════════════ MOBILE ════════════════════════ */}
+      {/* MOBILE */}
       <div className="lg:hidden flex flex-col pb-24">
         <div className="mb-6">
           <div className="flex justify-center mb-4">
-            <StepIndicator
-              currentStep={currentStep}
-              onStepClick={(i) => i < currentStep && setCurrentStep(i)}
-              size="sm"
-            />
+            <StepIndicator currentStep={currentStep} onStepClick={(i) => i < currentStep && setCurrentStep(i)} size="sm" />
           </div>
           <div className="text-center space-y-0.5">
             <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
               Step {currentStep + 1} of {STEPS.length}
             </p>
             <h3 className="text-base font-bold tracking-tight">{STEPS[currentStep].title}</h3>
-            <p className="text-xs text-muted-foreground">{STEPS[currentStep].desc}</p>
+            <div className="flex justify-center pt-0.5">
+              <AutoSaveStatus status={autoSaveStatus} />
+            </div>
           </div>
         </div>
         <div className="min-h-[260px]">
           {currentStep === 0 && (
-            <StepCarriers
-              formData={formData}
-              onToggle={handleToggleCourier}
-              onNoteChange={handleCourierNoteChange}
-            />
+            <StepCarriers formData={formData} onToggle={handleToggleCourier} onNoteChange={handleCourierNoteChange} />
           )}
           {currentStep === 1 && (
-            <StepRates
-              formData={formData}
-              onFreeShippingChange={handleFreeShippingChange}
-              onDefaultCostChange={handleDefaultCostChange}
-            />
+            <StepRates formData={formData} onFreeShippingChange={handleFreeShippingChange} onDefaultCostChange={handleDefaultCostChange} />
           )}
         </div>
       </div>
 
-      {/* ── Mobile bottom nav ─────────────────────────────────────── */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
         <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
-          <Button
-            variant="outline" size="sm" onClick={handlePrev}
-            className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
-          >
+          <Button variant="outline" size="sm" onClick={handlePrev} className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}>
             <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
           <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
-            {isLastStep
-              ? <><Eye className="h-3.5 w-3.5" />Preview</>
-              : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
-            }
+            {isLastStep ? <><Eye className="h-3.5 w-3.5" />Preview</> : <>Next<ChevronRight className="h-3.5 w-3.5" /></>}
           </Button>
         </div>
       </div>
 
-      {/* ── Shipping Preview ───────────────────────────────────────── */}
       <PreviewPengiriman
         open={showPreview}
         onClose={() => setShowPreview(false)}
@@ -322,7 +268,6 @@ export default function PengirimanPage() {
         isSaving={isSaving}
         formData={formData}
       />
-
     </div>
   );
 }

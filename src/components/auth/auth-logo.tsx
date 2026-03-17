@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { siteConfig } from '@/config/site';
+import { siteConfig } from '@/constants/shared/site';
 
 // ==========================================
 // AUTH LOGO COMPONENT

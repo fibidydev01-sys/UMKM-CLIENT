@@ -4,15 +4,15 @@ import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { PreviewModal } from '@/components/settings';
-import { Hero1 } from '@/components/landing/blocks';
-import { generateThemeCSS } from '@/lib/theme';
+import { PreviewModal, AutoSaveStatus } from '@/components/dashboard/settings';
+import { Hero1 } from '@/components/public/store';
+import { generateThemeCSS } from '@/lib/shared';
 import { toast } from 'sonner';
-import { useTenant } from '@/hooks';
+import { useTenant, useAutoSave } from '@/hooks';
 import { tenantsApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import type { HeroFormData } from '@/types';
-import { StepIdentity, StepStory, StepAppearance } from '@/components/settings/hero-section';
+import { StepIdentity, StepStory, StepAppearance } from '@/components/dashboard/settings/hero-section';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 const THEME_COLORS = [
@@ -45,7 +45,6 @@ function StepIndicator({
       {STEPS.map((step, i) => (
         <div key={i} className="flex items-center">
           <div className="flex flex-col items-center gap-2">
-            {/* Dot / number */}
             <button
               type="button"
               onClick={() => i < currentStep && onStepClick?.(i)}
@@ -67,29 +66,21 @@ function StepIndicator({
                 i + 1
               )}
             </button>
-
-            {/* Label — desktop lg only */}
             {size === 'lg' && (
-              <span
-                className={cn(
-                  'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
-                  i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
-                )}
-              >
+              <span className={cn(
+                'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
+                i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
+              )}>
                 {step.title}
               </span>
             )}
           </div>
-
-          {/* Connector */}
           {i < STEPS.length - 1 && (
-            <div
-              className={cn(
-                'h-px mx-2 transition-colors duration-500',
-                size === 'lg' ? 'w-14 mb-[22px]' : 'w-8',
-                i < currentStep ? 'bg-primary' : 'bg-border'
-              )}
-            />
+            <div className={cn(
+              'h-px mx-2 transition-colors duration-500',
+              size === 'lg' ? 'w-14 mb-[22px]' : 'w-8',
+              i < currentStep ? 'bg-primary' : 'bg-border'
+            )} />
           )}
         </div>
       ))}
@@ -123,6 +114,22 @@ export default function HeroSectionPage() {
       });
     }
   }, [tenant, formData]);
+
+  // ─── Auto-save (exclude image fields) ──────────────────────────────────
+  const { logo, heroBackgroundImage, ...autoSaveFields } = formData ?? {} as HeroFormData;
+  const { status: autoSaveStatus } = useAutoSave(
+    formData
+      ? {
+        name: autoSaveFields.name,
+        description: autoSaveFields.description,
+        heroTitle: autoSaveFields.heroTitle,
+        heroSubtitle: autoSaveFields.heroSubtitle,
+        heroCtaText: autoSaveFields.heroCtaText,
+        category: autoSaveFields.category,
+        theme: { primaryColor: autoSaveFields.primaryColor },
+      }
+      : null
+  );
 
   const updateFormData = <K extends keyof HeroFormData>(key: K, value: HeroFormData[K]) => {
     if (formData) setFormData({ ...formData, [key]: value });
@@ -215,10 +222,7 @@ export default function HeroSectionPage() {
   const isLoading = tenant === null || formData === null;
   const isLastStep = currentStep === STEPS.length - 1;
 
-  const stepProps = {
-    formData: formData!,
-    updateFormData,
-  };
+  const stepProps = { formData: formData!, updateFormData };
 
   return (
     <div className="h-full flex flex-col">
@@ -249,7 +253,7 @@ export default function HeroSectionPage() {
           {/* ══════════════════════ DESKTOP ══════════════════════════ */}
           <div className="hidden lg:flex lg:flex-col lg:h-full">
 
-            {/* ── Header ─────────────────────────────────────────── */}
+            {/* Header */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
@@ -258,11 +262,8 @@ export default function HeroSectionPage() {
                 <h2 className="text-2xl font-bold tracking-tight leading-none">
                   {STEPS[currentStep].title}
                 </h2>
-                <p className="text-sm text-muted-foreground pt-0.5">
-                  {STEPS[currentStep].desc}
-                </p>
+                <AutoSaveStatus status={autoSaveStatus} className="pt-0.5" />
               </div>
-
               <div className="shrink-0 pt-0.5">
                 <StepIndicator
                   currentStep={currentStep}
@@ -272,7 +273,7 @@ export default function HeroSectionPage() {
               </div>
             </div>
 
-            {/* ── Body ──────────────────────────────────────────── */}
+            {/* Body */}
             <div className="flex-1 min-h-[340px]">
               {currentStep === 0 && (
                 <StepIdentity
@@ -282,9 +283,7 @@ export default function HeroSectionPage() {
                   isDesktop
                 />
               )}
-              {currentStep === 1 && (
-                <StepStory {...stepProps} isDesktop />
-              )}
+              {currentStep === 1 && <StepStory {...stepProps} isDesktop />}
               {currentStep === 2 && (
                 <StepAppearance
                   {...stepProps}
@@ -296,7 +295,7 @@ export default function HeroSectionPage() {
               )}
             </div>
 
-            {/* ── Footer nav ────────────────────────────────────── */}
+            {/* Footer nav */}
             <div className="flex items-center justify-between pt-6 border-t mt-8">
               <Button
                 variant="outline"
@@ -306,24 +305,15 @@ export default function HeroSectionPage() {
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Previous
               </Button>
-
-              {/* Progress pills */}
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'rounded-full transition-all duration-300',
-                      i === currentStep ? 'w-5 h-1.5 bg-primary' : i < currentStep ? 'w-1.5 h-1.5 bg-primary/40' : 'w-1.5 h-1.5 bg-border'
-                    )}
-                  />
+                  <div key={i} className={cn(
+                    'rounded-full transition-all duration-300',
+                    i === currentStep ? 'w-5 h-1.5 bg-primary' : i < currentStep ? 'w-1.5 h-1.5 bg-primary/40' : 'w-1.5 h-1.5 bg-border'
+                  )} />
                 ))}
               </div>
-
-              <Button
-                onClick={handleNext}
-                className="gap-1.5 min-w-[130px] h-9 text-sm"
-              >
+              <Button onClick={handleNext} className="gap-1.5 min-w-[130px] h-9 text-sm">
                 {isLastStep
                   ? <><Eye className="h-3.5 w-3.5" />Preview &amp; Save</>
                   : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
@@ -335,7 +325,7 @@ export default function HeroSectionPage() {
           {/* ══════════════════════ MOBILE ═══════════════════════════ */}
           <div className="lg:hidden flex flex-col pb-24">
 
-            {/* ── Header ── */}
+            {/* Header */}
             <div className="mb-6">
               <div className="flex justify-center mb-4">
                 <StepIndicator
@@ -351,13 +341,13 @@ export default function HeroSectionPage() {
                 <h3 className="text-base font-bold tracking-tight">
                   {STEPS[currentStep].title}
                 </h3>
-                <p className="text-xs text-muted-foreground">
-                  {STEPS[currentStep].desc}
-                </p>
+                <div className="flex justify-center pt-0.5">
+                  <AutoSaveStatus status={autoSaveStatus} />
+                </div>
               </div>
             </div>
 
-            {/* ── Body ── */}
+            {/* Body */}
             <div className="min-h-[300px]">
               {currentStep === 0 && (
                 <StepIdentity
@@ -366,9 +356,7 @@ export default function HeroSectionPage() {
                   isRemovingLogo={isRemovingLogo}
                 />
               )}
-              {currentStep === 1 && (
-                <StepStory {...stepProps} />
-              )}
+              {currentStep === 1 && <StepStory {...stepProps} />}
               {currentStep === 2 && (
                 <StepAppearance
                   {...stepProps}
@@ -382,23 +370,16 @@ export default function HeroSectionPage() {
         </>
       )}
 
-      {/* ── Mobile bottom nav ──────────────────────────────────────── */}
+      {/* Mobile bottom nav */}
       <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
         <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
           <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePrev}
+            variant="outline" size="sm" onClick={handlePrev}
             className={cn('gap-1 flex-1 h-9 text-xs font-medium', currentStep === 0 && 'invisible')}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            Previous
+            <ChevronLeft className="h-3.5 w-3.5" />Previous
           </Button>
-          <Button
-            size="sm"
-            onClick={handleNext}
-            className="gap-1 flex-1 h-9 text-xs font-medium"
-          >
+          <Button size="sm" onClick={handleNext} className="gap-1 flex-1 h-9 text-xs font-medium">
             {isLastStep
               ? <><Eye className="h-3.5 w-3.5" />Preview</>
               : <>Next<ChevronRight className="h-3.5 w-3.5" /></>
@@ -407,7 +388,7 @@ export default function HeroSectionPage() {
         </div>
       </div>
 
-      {/* ── Preview Modal ──────────────────────────────────────────── */}
+      {/* Preview Modal */}
       <PreviewModal
         open={showPreview}
         onClose={() => setShowPreview(false)}

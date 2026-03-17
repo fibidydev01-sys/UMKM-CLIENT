@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { tenantsApi } from '@/lib/api';
-import { normalizeTestimonials } from '@/lib/landing';
-import { TenantTestimonials } from '@/components/landing';
-import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
+import { normalizeTestimonials } from '@/lib/public';
+import { TenantTestimonials } from '@/components/public/store';
+import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/shared/seo';
 import type { PublicTenant, Testimonial } from '@/types';
 
 // ==========================================

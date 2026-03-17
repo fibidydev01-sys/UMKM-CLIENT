@@ -1,9 +1,9 @@
 // ==========================================
-// REGISTER STEPS - Barrel Export
+// AUTH REGISTER STEPS INDEX
 // ==========================================
 
-export { StepWelcome } from './step-welcome';
-export { StepCategory } from './step-category';
-export { StepStoreInfo } from './step-store-info';
 export { StepAccount } from './step-account';
+export { StepCategory } from './step-category';
 export { StepReview } from './step-review';
+export { StepStoreInfo } from './step-store-info';
+export { StepWelcome } from './step-welcome';

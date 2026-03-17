@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { tenantsApi } from '@/lib/api';
-import { TenantAbout } from '@/components/landing';
-import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/seo';
+import { TenantAbout } from '@/components/public/store';
+import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/shared/seo';
 import type { PublicTenant } from '@/types';
 
 // ==========================================

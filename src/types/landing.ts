@@ -127,9 +127,9 @@ export interface TenantLandingConfig {
 // ==========================================
 // DEFAULT CONFIG - Imported from @/lib/landing
 // ==========================================
-// DEFAULT_LANDING_CONFIG is now defined in @/lib/landing/defaults.ts
+// DEFAULT_LANDING_CONFIG is now defined in @/lib/public/landing-defaults.ts
 // Import it from there to avoid duplication!
 //
 // Example:
-// import { DEFAULT_LANDING_CONFIG } from '@/lib/landing';
+// import { DEFAULT_LANDING_CONFIG } from '@/lib/public';
 // ==========================================

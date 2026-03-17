@@ -26,10 +26,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { ImageUpload } from '@/components/upload';
+import { ImageUpload } from '@/components/shared/upload';
 import { toast } from 'sonner';
-import { cn } from '@/lib/utils';
-import { LANDING_CONSTANTS } from '@/lib/landing';
+import { cn } from '@/lib/shared/utils';
+import { LANDING_CONSTANTS } from '@/lib/public';
 import type { Testimonial } from '@/types';
 
 // ==========================================

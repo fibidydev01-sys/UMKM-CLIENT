@@ -1,9 +1,9 @@
 import { tenantsApi } from '@/lib/api';
-import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/store';
-import { LocalBusinessSchema } from '@/components/seo';
-import { TemplateProvider } from '@/lib/landing';
-import { generateThemeCSS } from '@/lib/theme';
-import { createTenantMetadata } from '@/lib/seo';
+import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/public/store';
+import { LocalBusinessSchema } from '@/components/shared/seo';
+import { TemplateProvider } from '@/lib/public';
+import { generateThemeCSS } from '@/lib/shared';
+import { createTenantMetadata } from '@/lib/shared/seo';
 import type { Metadata } from 'next';
 import type { PublicTenant } from '@/types';
 

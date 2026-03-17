@@ -1,43 +1,8 @@
 // ==========================================
-// HOOKS INDEX - Export all custom hooks
+// HOOKS ROOT INDEX
 // ==========================================
 
-// Auth Hooks
-export {
-  useAuth,
-  useLogin,
-  useRegister,
-  useLogout,
-  useCheckSlug,
-  useChangePassword,
-  useDeleteAccount,
-} from './use-auth';
-
-// Tenant Hooks
-export {
-  useTenant,
-  usePublicTenant,
-  useUpdateTenant,
-  useDashboardStats,
-} from './use-tenant';
-
-// Products Hooks
-export {
-  useProducts,
-  useProduct,
-  useCreateProduct,
-  useUpdateProduct,
-  useDeleteProduct,
-  useStoreProducts,
-} from './use-products';
-
-// Utility Hooks
-export { useDebounce, useDebouncedCallback } from './use-debounce';
-export { useMediaQuery, useIsMobile, useIsTablet, useIsDesktop, useIsLargeDesktop, breakpoints } from './use-media-query';
-export { useMounted, useIsClient } from './use-mounted';
-
-export { useLandingConfig } from './use-landing-config';
-export { useRegisterWizard } from './use-register-wizard';
-
-// Domain Hooks (Custom Domain)
-export { useDomainStatus, useDomainSetup } from './use-domain';
+export * from './auth';
+export * from './dashboard';
+export * from './shared';
+export * from './admin';

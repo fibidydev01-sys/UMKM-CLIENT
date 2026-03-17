@@ -37,7 +37,8 @@ import {
   type SubscriptionInfo,
   type PaymentHistory,
 } from '@/lib/api/subscription';
-import { useSnapPayment } from '@/hooks/use-snap-payment';
+// ✅ GANTI: useSnapPayment → useXenditPayment
+import { useXenditPayment } from '@/hooks/dashboard/use-xendit-payment';
 
 const PLAN_FEATURES: Array<{
   feature: string;
@@ -51,14 +52,16 @@ const PLAN_FEATURES: Array<{
     { feature: 'WhatsApp Integration', starter: 'Connect + Auto-reply', business: 'Connect + Auto-reply' },
   ];
 
-const PAYMENT_STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-  settlement: { label: 'Paid', variant: 'default' },
-  capture: { label: 'Paid', variant: 'default' },
+// ✅ GANTI: status labels Midtrans → Xendit
+const PAYMENT_STATUS_LABELS: Record<
+  string,
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+> = {
+  paid: { label: 'Paid', variant: 'default' },
+  settled: { label: 'Paid', variant: 'default' },
   pending: { label: 'Pending', variant: 'outline' },
-  expire: { label: 'Expired', variant: 'secondary' },
-  cancel: { label: 'Cancelled', variant: 'secondary' },
-  deny: { label: 'Declined', variant: 'destructive' },
-  failure: { label: 'Failed', variant: 'destructive' },
+  expired: { label: 'Expired', variant: 'secondary' },
+  failed: { label: 'Failed', variant: 'destructive' },
 };
 
 function formatDate(dateStr: string) {
@@ -81,12 +84,11 @@ export default function SubscriptionPage() {
   const [planInfo, setPlanInfo] = useState<SubscriptionInfo | null>(null);
   const [payments, setPayments] = useState<PaymentHistory[]>([]);
   const [loading, setLoading] = useState(true);
-  const [upgrading, setUpgrading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
 
-  const clientKey = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || '';
-  const isProduction = process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === 'true';
-  const { isLoaded, pay } = useSnapPayment({ clientKey, isProduction });
+  // ✅ GANTI: useSnapPayment → useXenditPayment
+  // Tidak butuh clientKey / isProduction env vars lagi
+  const { isPaying, pay } = useXenditPayment();
 
   const refreshData = async () => {
     const [plan, history] = await Promise.all([
@@ -101,51 +103,29 @@ export default function SubscriptionPage() {
     refreshData().catch(console.error).finally(() => setLoading(false));
   }, []);
 
+  // ✅ GANTI: handle redirect dari Xendit
+  // Backend set: success_redirect_url → ?payment=success
+  //              failure_redirect_url → ?payment=failure
+  // (Midtrans lama: finish / unfinish / error)
   useEffect(() => {
     const paymentStatus = searchParams.get('payment');
-    if (paymentStatus === 'finish') {
+    if (paymentStatus === 'success') {
       toast.success('Payment successful! Business plan is now active.');
       refreshData();
-    } else if (paymentStatus === 'unfinish') {
-      toast.info('Payment incomplete. You can try again anytime.');
-    } else if (paymentStatus === 'error') {
-      toast.error('Payment failed. Please try again.');
+    } else if (paymentStatus === 'failure') {
+      toast.error('Payment failed or cancelled. Please try again.');
     }
   }, [searchParams]);
 
+  // ✅ GANTI: handleUpgrade tidak perlu Snap popup callback
+  // Cukup panggil pay() → auto redirect ke Xendit
   const handleUpgrade = async () => {
-    if (!isLoaded) {
-      toast.error('Payment system is loading, please wait a moment...');
-      return;
-    }
-
-    setUpgrading(true);
     try {
-      const response = await subscriptionApi.createUpgradePayment();
-
-      pay(response.token, {
-        onSuccess: () => {
-          toast.success('Payment successful! Business plan is now active.');
-          refreshData();
-          setUpgrading(false);
-        },
-        onPending: () => {
-          toast.info('Complete your payment using the instructions provided.');
-          refreshData();
-          setUpgrading(false);
-        },
-        onError: () => {
-          toast.error('Payment failed. Please try again.');
-          setUpgrading(false);
-        },
-        onClose: () => {
-          setUpgrading(false);
-        },
-      });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to process payment';
-      toast.error(errorMessage);
-      setUpgrading(false);
+      await pay();
+      // Setelah pay() dipanggil, halaman redirect ke Xendit
+      // Tidak perlu handle onSuccess/onPending/onError di sini
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to process payment');
     }
   };
 
@@ -155,9 +135,8 @@ export default function SubscriptionPage() {
       await subscriptionApi.cancelSubscription();
       toast.success('Subscription cancelled. Business access remains active until the end of your billing period.');
       refreshData();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to cancel subscription';
-      toast.error(errorMessage);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to cancel subscription');
     } finally {
       setCancelling(false);
     }
@@ -181,7 +160,11 @@ export default function SubscriptionPage() {
   const isTrial = planInfo?.subscription.isTrial ?? false;
   const trialEndsAt = planInfo?.subscription.trialEndsAt;
   const periodEnd = planInfo?.subscription.currentPeriodEnd;
-  const daysRemaining = trialEndsAt ? getDaysRemaining(trialEndsAt) : periodEnd ? getDaysRemaining(periodEnd) : null;
+  const daysRemaining = trialEndsAt
+    ? getDaysRemaining(trialEndsAt)
+    : periodEnd
+      ? getDaysRemaining(periodEnd)
+      : null;
   const showUpgrade = isStarter || isExpired || (isBusiness && isTrial);
   const showCancel = isBusiness && isActive && !isTrial && !planInfo?.subscription.cancelledAt;
   const overLimitProducts = planInfo?.isOverLimit?.products ?? false;
@@ -209,8 +192,8 @@ export default function SubscriptionPage() {
                   Enjoy all Business features until <strong>{formatDate(trialEndsAt)}</strong>.
                   After your trial ends, your account will automatically revert to the Starter plan.
                 </p>
-                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
-                  {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={isPaying}>
+                  {isPaying && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   <Crown className="mr-2 h-3 w-3" />
                   Upgrade to Business — Rp 100,000/mo
                 </Button>
@@ -232,8 +215,8 @@ export default function SubscriptionPage() {
                   Your Business access remains active until <strong>{formatDate(periodEnd)}</strong>.
                   After that, your account will revert to the Starter plan.
                 </p>
-                <Button variant="outline" size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
-                  {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                <Button variant="outline" size="sm" className="mt-2" onClick={handleUpgrade} disabled={isPaying}>
+                  {isPaying && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   Renew subscription
                 </Button>
               </div>
@@ -257,10 +240,9 @@ export default function SubscriptionPage() {
                       ? `You have ${planInfo?.usage.products} products (limit ${planInfo?.limits.maxProducts}).`
                       : `You have ${planInfo?.usage.customers} customers (limit ${planInfo?.limits.maxCustomers}).`}
                   {' '}Your existing data is safe, but you can&apos;t add new entries.
-                  Upgrade to unlock your limits.
                 </p>
-                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={upgrading}>
-                  {upgrading && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                <Button size="sm" className="mt-2" onClick={handleUpgrade} disabled={isPaying}>
+                  {isPaying && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                   <Crown className="mr-2 h-3 w-3" />
                   Upgrade to Business — Rp 100,000/mo
                 </Button>
@@ -356,8 +338,8 @@ export default function SubscriptionPage() {
 
           {/* Upgrade Button */}
           {showUpgrade && (
-            <Button onClick={handleUpgrade} disabled={upgrading} className="w-full" size="lg">
-              {upgrading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button onClick={handleUpgrade} disabled={isPaying} className="w-full" size="lg">
+              {isPaying && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Crown className="mr-2 h-4 w-4" />
               {isTrial
                 ? 'Continue with Business'
@@ -423,7 +405,6 @@ export default function SubscriptionPage() {
                 <span className="text-center text-muted-foreground">Starter</span>
                 <span className="text-center text-primary">Business</span>
               </div>
-
               {PLAN_FEATURES.map((row) => (
                 <div
                   key={row.feature}
@@ -455,13 +436,13 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      {/* Payment Methods + Policy */}
+      {/* ✅ GANTI: label "Midtrans" → "Xendit" */}
       {showUpgrade && (
         <div className="space-y-2 text-center">
           <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
             <ShieldCheck className="h-4 w-4 text-green-500" />
             <span>
-              Bank Transfer, GoPay, ShopeePay, QRIS, Credit Card — securely processed by Midtrans
+              Bank Transfer, GoPay, OVO, DANA, ShopeePay, QRIS — securely processed by Xendit
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
@@ -482,7 +463,7 @@ export default function SubscriptionPage() {
           <CardContent>
             <div className="space-y-3">
               {payments.map((payment) => {
-                const statusInfo = PAYMENT_STATUS_LABELS[payment.paymentStatus] || {
+                const statusInfo = PAYMENT_STATUS_LABELS[payment.paymentStatus] ?? {
                   label: payment.paymentStatus,
                   variant: 'secondary' as const,
                 };
@@ -501,7 +482,8 @@ export default function SubscriptionPage() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(payment.createdAt).toLocaleDateString('en-US')}
-                        {payment.paymentType && ` — ${payment.paymentType}`}
+                        {/* ✅ GANTI: paymentType → paymentChannel */}
+                        {payment.paymentChannel && ` — ${payment.paymentChannel}`}
                       </p>
                     </div>
                     <div className="text-right">

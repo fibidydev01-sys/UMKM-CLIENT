@@ -6,7 +6,7 @@ import {
   CategoryList,
   ProductPagination,
   ProductGridSkeleton,
-} from '@/components/store';
+} from '@/components/public/store';
 import type { Metadata } from 'next';
 import type { Product, PaginatedResponse, PublicTenant } from '@/types';
 

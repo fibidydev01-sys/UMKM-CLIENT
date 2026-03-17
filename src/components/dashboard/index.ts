@@ -1,13 +1,17 @@
 // ==========================================
-// DASHBOARD COMPONENTS INDEX
+// DASHBOARD INDEX
 // ==========================================
 
-// Layout Components (Essential)
-export { DashboardLayout } from './dashboard-layout';
-export { DashboardSidebar } from './dashboard-sidebar';
-export { DashboardHeader } from './dashboard-header';
-export { DashboardNav } from './dashboard-nav';
 export { DashboardBreadcrumb } from './dashboard-breadcrumb';
-export { DashboardShell, PageHeader } from './dashboard-shell';
-export { MobileNavbar } from './mobile-navbar';
+export { DashboardHeader } from './dashboard-header';
+export { DashboardLayout } from './dashboard-layout';
+export { DashboardNav } from './dashboard-nav';
 export { DashboardQuickActions } from './dashboard-quick-actions';
+export { DashboardShell, PageHeader } from './dashboard-shell';
+export { DashboardSidebar } from './dashboard-sidebar';
+export { MobileNavbar } from './mobile-navbar';
+export { UpgradeModal } from './upgrade-modal';
+export * from './domain';
+export * from './onboarding';
+export * from './products';
+export * from './settings';

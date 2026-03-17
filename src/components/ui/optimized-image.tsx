@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
-import { getImageSource } from '@/lib/cloudinary';
+import { getImageSource } from '@/lib/shared';
 
 // Base64 blur placeholder
 const BLUR_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3C/svg%3E";

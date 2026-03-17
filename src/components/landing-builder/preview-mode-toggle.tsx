@@ -8,7 +8,7 @@
 
 import { Monitor, Tablet, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import type { DeviceMode } from './device-frame';
 
 interface PreviewModeToggleProps {

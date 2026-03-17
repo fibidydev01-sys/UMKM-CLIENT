@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/dashboard';
-import { ProductForm } from '@/components/products';
+import { ProductForm } from '@/components/dashboard/products';
 import { productsApi } from '@/lib/api';
 
 // ==========================================

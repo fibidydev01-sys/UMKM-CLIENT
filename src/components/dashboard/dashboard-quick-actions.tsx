@@ -9,7 +9,7 @@ import {
   Crown,
   Rocket,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import { useTenant } from '@/hooks';
 import { BentoGrid, BentoActionCard } from '@/components/ui/bento-grid';
 

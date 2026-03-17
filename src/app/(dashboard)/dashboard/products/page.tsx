@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { PageHeader } from '@/components/dashboard';
-import { ProductsTable, ProductsGrid, ProductsGridSkeleton } from '@/components/products';
+import { ProductsTable, ProductsGrid, ProductsGridSkeleton } from '@/components/dashboard/products';
 import { productsApi, getErrorMessage } from '@/lib/api';
 
 import type { Product } from '@/types';

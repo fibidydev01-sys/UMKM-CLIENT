@@ -6,17 +6,17 @@ import {
   ProductGallery,
   ProductInfo,
   ProductActions,
-  ShippingInfo,
+  PaymentShippingInfo,
   RelatedProducts,
   ProductGridSkeleton,
-} from '@/components/store';
+} from '@/components/public/store';
 import {
   ProductSchema,
   BreadcrumbSchema,
   SocialShare,
   generateProductBreadcrumbs,
-} from '@/components/seo';
-import { createProductMetadata } from '@/lib/seo';
+} from '@/components/shared/seo';
+import { createProductMetadata } from '@/lib/shared/seo';
 import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import type { PublicTenant, Product } from '@/types';
@@ -168,7 +168,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="space-y-6">
             <ProductInfo product={product} currency={currency} />
 
-            <ShippingInfo tenant={tenant} />
+            <PaymentShippingInfo tenant={tenant} />
 
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">

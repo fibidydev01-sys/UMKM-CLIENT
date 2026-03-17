@@ -2,7 +2,7 @@ import { ComponentPropsWithoutRef, ReactNode } from "react"
 import { ArrowRightIcon } from "@radix-ui/react-icons"
 import Link from "next/link"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/shared"
 import { Button } from "@/components/ui/button"
 
 // ==========================================

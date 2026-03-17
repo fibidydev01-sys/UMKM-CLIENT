@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { Home, FileText, MessageSquare, MapPin, Megaphone } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 // Import wizard pages as components
 import HeroSectionPage from '../hero-section/page';

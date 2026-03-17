@@ -1,4 +1,4 @@
-import { API_URL } from '@/config/constants';
+import { API_URL } from '@/constants/shared/constants';
 import type { ApiError } from '@/types';
 
 // ==========================================

@@ -1,6 +1,6 @@
 'use client';
 
-import { CustomDomainSetup } from '@/components/domain';
+import { CustomDomainSetup } from '@/components/dashboard/domain';
 
 export default function DomainSettingsPage() {
   return <CustomDomainSetup />;

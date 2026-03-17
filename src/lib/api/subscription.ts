@@ -1,4 +1,8 @@
 import { api } from './client';
+import type {
+  XenditPaymentMethod,
+  XenditPaymentChannel,
+} from '@/types/xendit-invoice';
 
 // ==========================================
 // TYPES
@@ -40,20 +44,31 @@ export interface SubscriptionInfo {
   };
 }
 
+// ✅ XENDIT: response dari POST /api/payment/subscribe
+// Ganti dari Midtrans { token, redirect_url } → Xendit { invoice_url, ... }
 export interface CreatePaymentResponse {
-  token: string;
-  redirect_url: string;
-  payment_id: string;
-  order_id: string;
+  invoice_url: string;        // URL hosted Xendit → frontend redirect ke sini
+  payment_id: string;         // ID internal DB
+  external_id: string;        // Format: SUB-{slug}-{timestamp}
+  xendit_invoice_id: string;  // ID dari Xendit
+  amount: number;
+  expires_at: string;         // ISO date — invoice expire 24 jam
 }
 
+// ✅ XENDIT: payment history item
 export interface PaymentHistory {
   id: string;
-  midtransOrderId: string;
+  // ✅ Renamed dari midtransOrderId → xenditExternalId
+  xenditExternalId: string;
+  xenditInvoiceId: string | null;
+  invoiceUrl: string | null;
   amount: number;
   currency: string;
-  paymentStatus: string;
-  paymentType: string | null;
+  // ✅ Status Xendit: pending | paid | settled | expired | failed
+  paymentStatus: 'pending' | 'paid' | 'settled' | 'expired' | 'failed';
+  // ✅ Renamed dari paymentType → paymentMethod + paymentChannel
+  paymentMethod: XenditPaymentMethod | null;
+  paymentChannel: XenditPaymentChannel | null;
   periodStart: string;
   periodEnd: string;
   paidAt: string | null;
@@ -78,10 +93,14 @@ export const subscriptionApi = {
   getPaymentHistory: () => api.get<PaymentHistory[]>('/subscription/payments'),
 
   /**
-   * Create payment for upgrade (trigger Midtrans Snap)
+   * Create Xendit Invoice untuk upgrade subscription
    * POST /api/payment/subscribe
+   * Response: invoice_url → frontend redirect ke sana
+   *
+   * ✅ Ganti dari Midtrans createUpgradePayment() yang return token
    */
-  createUpgradePayment: () => api.post<CreatePaymentResponse>('/payment/subscribe'),
+  createUpgradePayment: () =>
+    api.post<CreatePaymentResponse>('/payment/subscribe'),
 
   /**
    * Cancel subscription (no refund, access until period end)
@@ -91,8 +110,20 @@ export const subscriptionApi = {
     api.post('/subscription/cancel', reason ? { reason } : undefined),
 
   /**
-   * Get Midtrans client key
-   * GET /api/payment/client-key
+   * Get status payment terbaru (untuk polling setelah redirect balik dari Xendit)
+   * GET /api/payment/status
+   *
+   * ✅ BARU: menggantikan getClientKey() yang tidak relevan untuk Xendit
    */
-  getClientKey: () => api.get<{ clientKey: string }>('/payment/client-key'),
+  getPaymentStatus: () =>
+    api.get<{
+      payment_id: string;
+      external_id: string;
+      xendit_invoice_id: string | null;
+      invoice_url: string | null;
+      status: PaymentHistory['paymentStatus'];
+      amount: number;
+      paid_at: string | null;
+      period_end: string | null;
+    }>('/payment/status'),
 };

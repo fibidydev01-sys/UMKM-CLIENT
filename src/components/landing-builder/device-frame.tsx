@@ -6,7 +6,7 @@
 
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 export type DeviceMode = 'normal' | 'laptop' | 'tablet' | 'mobile';
 

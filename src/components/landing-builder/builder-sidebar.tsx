@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { Switch } from '@/components/ui/switch';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import {
   Sparkles,
   Info,

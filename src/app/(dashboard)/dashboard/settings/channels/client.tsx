@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { Search, CreditCard, Truck, Globe } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 
 // Import wizard pages as components
 import SeoPage from '../seo/page';

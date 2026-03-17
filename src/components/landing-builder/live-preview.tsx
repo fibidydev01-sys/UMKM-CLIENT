@@ -8,7 +8,7 @@
 // Pure responsive — no device frame, adapts to viewport naturally
 // ==========================================
 
-import { TemplateProvider } from '@/lib/landing';
+import { TemplateProvider } from '@/lib/public';
 import { EyeOff } from 'lucide-react';
 import {
   TenantHero,
@@ -17,7 +17,7 @@ import {
   TenantTestimonials,
   TenantContact,
   TenantCta,
-} from '@/components/landing';
+} from '@/components/public/store';
 import type { TenantLandingConfig, Product, Tenant, SectionKey } from '@/types';
 
 // ==========================================

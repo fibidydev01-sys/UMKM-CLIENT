@@ -3,8 +3,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Check, Palette } from 'lucide-react';
-import { getAllTemplates, useTemplate } from '@/lib/landing';
-import type { LandingTemplate } from '@/lib/landing';
+import { getAllTemplates, useTemplate } from '@/lib/public';
+import type { LandingTemplate } from '@/lib/public';
 
 /**
  * Template Selector Component

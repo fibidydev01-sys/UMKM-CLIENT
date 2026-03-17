@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { tenantsApi, productsApi } from '@/lib/api';
-import { normalizeTestimonials } from '@/lib/landing';
+import { normalizeTestimonials } from '@/lib/public';
 import {
   TenantHero,
   TenantAbout,
@@ -8,12 +8,12 @@ import {
   TenantTestimonials,
   TenantContact,
   TenantCta,
-} from '@/components/landing';
+} from '@/components/public/store';
 import {
   BreadcrumbSchema,
   ProductListSchema,
   generateTenantBreadcrumbs,
-} from '@/components/seo';
+} from '@/components/shared/seo';
 import type { PublicTenant, Product, Testimonial, SectionKey } from '@/types';
 
 export const dynamic = 'force-dynamic';

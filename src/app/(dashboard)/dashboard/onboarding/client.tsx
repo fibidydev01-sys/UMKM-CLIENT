@@ -8,13 +8,13 @@ import {
   IconAlertTriangle,
   IconTrophy,
 } from '@tabler/icons-react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/shared/utils';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useOnboarding } from '@/hooks/use-onboarding';
-import { CircularProgress } from '@/components/onboarding/circular-progress';
-import { OnboardingStepStatus } from '@/lib/onboarding';
+import { useOnboarding } from '@/hooks/dashboard/use-onboarding';
+import { CircularProgress } from '@/components/dashboard/onboarding/circular-progress';
+import { OnboardingStepStatus } from '@/lib/dashboard';
 
 // ============================================
 // STEP CARD COMPONENT

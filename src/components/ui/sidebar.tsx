@@ -5,8 +5,8 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { PanelLeftIcon } from "lucide-react"
 
-import { useMediaQuery } from "@/hooks/use-media-query"
-import { cn } from "@/lib/utils"
+import { useMediaQuery } from "@/hooks/shared"
+import { cn } from '@/lib/shared';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
