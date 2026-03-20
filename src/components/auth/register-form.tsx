@@ -34,7 +34,7 @@ function StepIndicator({
   onStepClick,
   size = 'sm',
 }: {
-  currentStep: number; // 0-based
+  currentStep: number;
   onStepClick?: (i: number) => void;
   size?: 'sm' | 'lg';
 }) {
@@ -43,7 +43,6 @@ function StepIndicator({
       {STEPS.map((step, i) => (
         <div key={i} className="flex items-center">
           <div className="flex flex-col items-center gap-2">
-            {/* Lingkaran step */}
             <button
               type="button"
               onClick={() => i < currentStep && onStepClick?.(i)}
@@ -66,7 +65,6 @@ function StepIndicator({
               )}
             </button>
 
-            {/* Label — hanya muncul di ukuran lg */}
             {size === 'lg' && (
               <span className={cn(
                 'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
@@ -77,7 +75,6 @@ function StepIndicator({
             )}
           </div>
 
-          {/* Konektor antar step */}
           {i < STEPS.length - 1 && (
             <div className={cn(
               'h-px mx-2 transition-colors duration-500',
@@ -99,12 +96,13 @@ export function RegisterForm() {
   const wizard = useRegisterWizard();
   const { register, isLoading, error } = useRegister();
 
-  // wizard.state.currentStep: 1 = Welcome, 2 = Category, 3 = StoreInfo, 4 = Account, 5 = Review
-  // 0-based index untuk step indicator, mulai dari step 2 (index 0)
+  // ── Agreement state — diupdate dari StepReview via callback ──
+  const [isAgreed, setIsAgreed] = useState(false);
+
   const isWelcome = wizard.state.currentStep === 1;
-  const indicatorStep = wizard.state.currentStep - 2; // 0-based, mulai dari step 2
+  const indicatorStep = wizard.state.currentStep - 2;
   const isLastStep = wizard.state.currentStep === 5;
-  const totalIndicatorSteps = STEPS.length; // 4
+  const totalIndicatorSteps = STEPS.length;
 
   const handleSubmit = async () => {
     try {
@@ -137,7 +135,6 @@ export function RegisterForm() {
             </p>
           </div>
 
-          {/* Preview langkah-langkah */}
           <div className="w-full max-w-xs space-y-2 text-left">
             {STEPS.map((step, i) => (
               <div
@@ -177,7 +174,6 @@ export function RegisterForm() {
   return (
     <div className="w-full max-w-2xl mx-auto h-full flex flex-col">
 
-      {/* Error */}
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>
@@ -240,6 +236,7 @@ export function RegisterForm() {
               onEdit={(step) => wizard.goToStep(step)}
               onSubmit={handleSubmit}
               isLoading={isLoading}
+              onAgreementChange={setIsAgreed}
             />
           )}
         </div>
@@ -278,7 +275,7 @@ export function RegisterForm() {
           {isLastStep ? (
             <Button
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isAgreed}
               className="gap-1.5 min-w-[130px] h-9 text-sm"
             >
               {isLoading ? 'Creating...' : 'Create my store'}
@@ -350,6 +347,7 @@ export function RegisterForm() {
               onEdit={(step) => wizard.goToStep(step)}
               onSubmit={handleSubmit}
               isLoading={isLoading}
+              onAgreementChange={setIsAgreed}
             />
           )}
         </div>
@@ -374,7 +372,7 @@ export function RegisterForm() {
             <Button
               size="sm"
               onClick={handleSubmit}
-              disabled={isLoading}
+              disabled={isLoading || !isAgreed}
               className="gap-1 flex-1 h-9 text-xs font-medium"
             >
               {isLoading ? 'Creating...' : 'Create my store'}

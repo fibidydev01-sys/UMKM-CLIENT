@@ -28,7 +28,7 @@ interface MarqueeProps extends ComponentPropsWithoutRef<"div"> {
   vertical?: boolean
   /**
    * Number of times to repeat the content
-   * @default 4
+   * @default 1
    */
   repeat?: number
 }
@@ -39,7 +39,7 @@ export function Marquee({
   pauseOnHover = false,
   children,
   vertical = false,
-  repeat = 4,
+  repeat = 1,
   ...props
 }: MarqueeProps) {
   return (

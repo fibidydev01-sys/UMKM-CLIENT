@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { getCategoryConfig } from '@/constants/shared/categories';
 import { Store, Mail, Lock, Phone, Edit2 } from 'lucide-react';
 
@@ -22,14 +24,21 @@ interface StepReviewProps {
   onEdit: (step: number) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  onAgreementChange?: (agreed: boolean) => void;
 }
 
 // ==========================================
 // COMPONENT — no header, no nav (handled by parent)
 // ==========================================
 
-export function StepReview({ data, onEdit }: StepReviewProps) {
+export function StepReview({ data, onEdit, onAgreementChange }: StepReviewProps) {
   const categoryConfig = data.category ? getCategoryConfig(data.category) : null;
+  const [isAgreed, setIsAgreed] = useState(false);
+
+  const handleAgreementChange = (checked: boolean) => {
+    setIsAgreed(checked);
+    onAgreementChange?.(checked);
+  };
 
   return (
     <div className="space-y-3 max-w-md">
@@ -97,13 +106,41 @@ export function StepReview({ data, onEdit }: StepReviewProps) {
         </div>
       </ReviewCard>
 
-      {/* Terms */}
-      <p className="text-xs text-muted-foreground pt-1">
-        By creating your store, you agree to our{' '}
-        <a href="/terms" className="text-primary hover:underline">Terms of Service</a>
-        {' '}and{' '}
-        <a href="/privacy" className="text-primary hover:underline">Privacy Policy</a>.
-      </p>
+      {/* ── AGREEMENT CHECKBOX ── */}
+      <div className="flex items-start gap-3 pt-2">
+        <Checkbox
+          id="agreement"
+          checked={isAgreed}
+          onCheckedChange={(checked) => handleAgreementChange(checked === true)}
+          className="mt-0.5 shrink-0"
+        />
+        <label
+          htmlFor="agreement"
+          className="text-xs text-muted-foreground leading-relaxed cursor-pointer select-none"
+        >
+          By creating your store, you agree to our{' '}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Terms of Service
+          </a>
+          {' '}and{' '}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Privacy Policy
+          </a>.
+        </label>
+      </div>
+
     </div>
   );
 }

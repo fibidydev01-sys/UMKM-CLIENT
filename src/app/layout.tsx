@@ -5,6 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { seoConfig } from '@/constants/shared/seo.config';
 import { getFullUrl } from '@/lib/shared/seo';
 import { OrganizationSchema } from '@/components/shared/seo';
+import { CookieConsent } from '@/components/shared/cookie';
 import './globals.css';
 
 // ==========================================
@@ -222,6 +223,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers>
           {children}
           <Toaster position="top-center" richColors />
+          <CookieConsent />
         </Providers>
       </body>
     </html>

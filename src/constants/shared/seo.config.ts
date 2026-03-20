@@ -1,6 +1,7 @@
 // ==========================================
 // SEO CONFIGURATION
 // Subdomain-Ready Architecture + Custom Domain Support
+// V12.0 — Fix sosmed, keywords, description
 // ==========================================
 
 // Environment
@@ -35,7 +36,6 @@ export const seoConfig = {
   getTenantUrl: (slug: string, path: string = '', customDomain?: string | null) => {
     const cleanPath = path.startsWith('/') ? path : path ? `/${path}` : '';
 
-    // If tenant has a verified custom domain, use it
     if (IS_PRODUCTION && customDomain) {
       return `https://${customDomain}${cleanPath}`;
     }
@@ -75,31 +75,29 @@ export const seoConfig = {
   // ==========================================
   // DEFAULT META
   // ==========================================
-  defaultTitle: 'Fibidy - Platform Toko Online untuk UMKM Indonesia',
+  defaultTitle: 'Fibidy — Platform Situs Online untuk UMKM Indonesia',
   titleTemplate: '%s | Fibidy',
   defaultDescription:
-    'Buat toko online profesional dalam hitungan menit. Kelola produk, terima pesanan via WhatsApp, dan tingkatkan penjualan UMKM Anda. Gratis!',
+    'Bikin situs online sendiri dalam hitungan menit. Kelola produk, atur tampilan, edit sesuka hati — dimanapun, kapanpun. Gratis mulai.',
 
   // ==========================================
   // KEYWORDS
   // ==========================================
   defaultKeywords: [
-    'toko online',
-    'umkm',
+    'situs online umkm',
+    'platform umkm indonesia',
     'jualan online',
-    'whatsapp order',
-    'buat toko online gratis',
-    'platform umkm',
+    'bikin situs online gratis',
     'toko online indonesia',
-    'jualan whatsapp',
     'e-commerce umkm',
-    'toko digital',
+    'situs digital umkm',
+    'fibidy',
   ] as string[],
 
   // ==========================================
   // SOCIAL
   // ==========================================
-  twitterHandle: '@fibidy_id',
+  twitterHandle: '@fibidy42581',
 
   // ==========================================
   // IMAGES
@@ -127,7 +125,7 @@ export const seoConfig = {
     legalName: 'Fibidy Indonesia',
     url: PROD_URL,
     logo: `${PROD_URL}/logo.png`,
-    foundingDate: '2024',
+    foundingDate: '2026',
     address: {
       addressCountry: 'ID',
     },
@@ -136,9 +134,9 @@ export const seoConfig = {
       availableLanguage: ['Indonesian', 'English'],
     },
     sameAs: [
-      'https://instagram.com/fibidy_id',
-      'https://twitter.com/fibidy_id',
-      'https://tiktok.com/@fibidy_id',
+      'https://instagram.com/fibidy_com',
+      'https://tiktok.com/@fibidy.com',
+      'https://twitter.com/fibidy42581',
     ],
   },
 } as const;

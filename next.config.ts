@@ -4,9 +4,6 @@ const nextConfig: NextConfig = {
   // ==========================================
   // TYPESCRIPT BUILD ERROR BYPASS
   // ==========================================
-  // TEMPORARY: Ignore TypeScript errors during build
-  // This allows deployment to Vercel even with type errors
-  // TODO: Remove this after fixing all TypeScript issues
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -14,30 +11,23 @@ const nextConfig: NextConfig = {
   // ==========================================
   // TURBOPACK CONFIG (Next.js 16+ default)
   // ==========================================
-  turbopack: {
-    // Empty config to acknowledge Turbopack usage
-    // Add rules here if needed in future
-  },
+  turbopack: {},
 
   // ==========================================
   // IMAGES CONFIGURATION
   // ==========================================
   images: {
-    // Remote patterns for external images
     remotePatterns: [
-      // Cloudinary
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
         pathname: '/**',
       },
-      // Unsplash (for seed/demo images)
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         pathname: '/**',
       },
-      // Placeholder images (development)
       {
         protocol: 'https',
         hostname: 'placehold.co',
@@ -48,28 +38,22 @@ const nextConfig: NextConfig = {
         hostname: 'via.placeholder.com',
         pathname: '/**',
       },
-      // UI Avatars (for fallback avatars)
       {
         protocol: 'https',
         hostname: 'ui-avatars.com',
         pathname: '/**',
       },
     ],
-    // Image formats
     formats: ['image/avif', 'image/webp'],
-    // Device sizes for responsive images
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
-    // Image sizes for srcset
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    // Minimum cache TTL (seconds)
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
+    minimumCacheTTL: 60 * 60 * 24,
   },
 
   // ==========================================
   // EXPERIMENTAL FEATURES
   // ==========================================
   experimental: {
-    // Optimize package imports
     optimizePackageImports: [
       'lucide-react',
       '@radix-ui/react-icons',
@@ -78,36 +62,18 @@ const nextConfig: NextConfig = {
   },
 
   // ==========================================
-  // HEADERS (Security + PWA + SEO Cache)
+  // HEADERS
   // ==========================================
   async headers() {
     return [
       {
-        // Apply to all routes
         source: '/:path*',
         headers: [
-          // Security headers
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
-          },
-          // ✅ TAMBAHAN: Permissions Policy
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'X-XSS-Protection', value: '1; mode=block' },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
@@ -115,94 +81,58 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Service Worker
         source: '/sw.js',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
-          },
-          {
-            key: 'Service-Worker-Allowed',
-            value: '/',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=0, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
         ],
       },
       {
-        // Manifest
         source: '/manifest.json',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=604800', // 1 week
-          },
+          { key: 'Cache-Control', value: 'public, max-age=604800' },
         ],
       },
-      // ✅ TAMBAHAN: Sitemap cache (explicit files, no wildcard)
       {
         source: '/sitemap.xml',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600, stale-while-revalidate=86400',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
         ],
       },
       {
         source: '/sitemap-0.xml',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600, stale-while-revalidate=86400',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=3600, stale-while-revalidate=86400' },
         ],
       },
-      // ✅ TAMBAHAN: robots.txt cache
       {
         source: '/robots.txt',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=86400',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=86400' },
         ],
       },
-      // ✅ TAMBAHAN: favicon cache 1 tahun
       {
         source: '/favicon.ico',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
         ],
       },
     ];
   },
 
   // ==========================================
-  // REDIRECTS (Optional)
+  // REDIRECTS
   // ==========================================
   async redirects() {
-    return [
-      // Add redirects here if needed
-    ];
+    return [];
   },
 
   // ==========================================
   // OTHER SETTINGS
   // ==========================================
-
-  // Strict mode for React
   reactStrictMode: true,
-
-  // Powered by header (disable for security)
   poweredByHeader: false,
-
-  // Trailing slash (false = /about, true = /about/)
   trailingSlash: false,
-
-  // Enable compression
   compress: true,
 };
 

@@ -1,14 +1,11 @@
 // ==========================================
 // SERVICE WORKER - FIBIDY PWA
-// Basic caching strategy for offline support
-// ✅ FIX: Correct icon paths + production domain + version bump
+// V4 — Production ready
 // ==========================================
 
-// ✅ VERSION BUMP - Force clear old cache
-const STATIC_CACHE = 'fibidy-static-v3';
-const DYNAMIC_CACHE = 'fibidy-dynamic-v3';
+const STATIC_CACHE = 'fibidy-static-v4';
+const DYNAMIC_CACHE = 'fibidy-dynamic-v4';
 
-// Static assets to cache
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -22,23 +19,20 @@ const STATIC_ASSETS = [
 function shouldSkipCache(url) {
   const pathname = url.pathname;
 
-  // ✅ Skip OG images (CRITICAL FIX!)
   if (pathname.includes('/opengraph-image') || pathname.includes('/twitter-image')) {
     return true;
   }
-
-  // ✅ Skip API requests
   if (pathname.startsWith('/api/')) {
     return true;
   }
-
-  // ✅ Skip Next.js internal routes
   if (pathname.startsWith('/_next/')) {
     return true;
   }
-
-  // ✅ Skip RSC (React Server Components) requests
   if (url.searchParams.has('_rsc')) {
+    return true;
+  }
+  // Skip dashboard & admin (private routes)
+  if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     return true;
   }
 
@@ -46,27 +40,24 @@ function shouldSkipCache(url) {
 }
 
 // ==========================================
-// INSTALL EVENT
+// INSTALL
 // ==========================================
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v3...');
-
+  console.log('[SW] Installing v4...');
   event.waitUntil(
     caches.open(STATIC_CACHE).then((cache) => {
       console.log('[SW] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
   );
-
   self.skipWaiting();
 });
 
 // ==========================================
-// ACTIVATE EVENT
+// ACTIVATE
 // ==========================================
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v3...');
-
+  console.log('[SW] Activating v4...');
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -79,37 +70,25 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-
   self.clients.claim();
 });
 
 // ==========================================
-// FETCH EVENT
+// FETCH — Network First
 // ==========================================
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
+  if (request.method !== 'GET') return;
+  if (url.origin !== location.origin) return;
 
-  // Skip external requests
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  // ✅ CRITICAL: Skip caching for OG images and other dynamic content
   if (shouldSkipCache(url)) {
     console.log('[SW] Skipping cache for:', url.pathname);
     event.respondWith(fetch(request));
     return;
   }
 
-  // ==========================================
-  // CACHING STRATEGY: Network First
-  // ==========================================
   event.respondWith(
     fetch(request)
       .then((response) => {
@@ -127,7 +106,6 @@ self.addEventListener('fetch', (event) => {
             console.log('[SW] Serving from cache:', url.pathname);
             return cachedResponse;
           }
-
           if (request.mode === 'navigate') {
             return caches.match('/').then((homePage) => {
               return homePage || new Response('Offline', {
@@ -137,7 +115,6 @@ self.addEventListener('fetch', (event) => {
               });
             });
           }
-
           return new Response('Offline', {
             status: 503,
             statusText: 'Service Unavailable',
@@ -157,7 +134,7 @@ self.addEventListener('push', (event) => {
   const data = event.data.json();
 
   const options = {
-    body: data.body || 'Anda memiliki notifikasi baru',
+    body: data.body || 'Kamu punya notifikasi baru.',
     icon: '/icons/apple-touch-icon-192x192.png',
     badge: '/icons/apple-touch-icon-72x72.png',
     vibrate: [100, 50, 100],
@@ -172,7 +149,7 @@ self.addEventListener('push', (event) => {
 });
 
 // ==========================================
-// NOTIFICATION CLICK HANDLER
+// NOTIFICATION CLICK
 // ==========================================
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
@@ -193,4 +170,4 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-console.log('[SW] Service Worker v3 loaded - Fibidy Production Ready 🚀');
+console.log('[SW] Service Worker v4 loaded - Fibidy Production Ready 🚀');

@@ -8,22 +8,31 @@ module.exports = {
   generateIndexSitemap: true,
   outDir: 'public',
   sitemapSize: 45000,
-  changefreq: 'daily',
+  changefreq: 'weekly',
   priority: 0.7,
 
   // ==========================================
   // EXCLUDE — semua yang bukan halaman publik
-  // Berdasarkan actual build output
+  // Public routes: / + (marketing) + (legal)
   // ==========================================
   exclude: [
+    // Auth
     '/login',
     '/register',
     '/forgot-password',
+    // Dashboard
     '/dashboard',
     '/dashboard/*',
-    '/api/*',
-    '/_not-found',
+    // Admin
+    '/admin',
+    '/admin/*',
+    // Store (tenant pages - punya sitemap sendiri)
+    '/store',
     '/store/*',
+    // API
+    '/api/*',
+    // Internal
+    '/_not-found',
     '/server-sitemap-index.xml',
     '/server-sitemap/*',
     '/opengraph-image',
@@ -40,11 +49,13 @@ module.exports = {
         allow: '/',
         disallow: [
           '/dashboard/',
+          '/admin/',
           '/api/',
           '/_next/',
           '/login',
           '/register',
           '/forgot-password',
+          '/store/',
         ],
       },
       {
@@ -52,11 +63,14 @@ module.exports = {
         allow: '/',
         disallow: [
           '/dashboard/',
+          '/admin/',
           '/api/',
           '/login',
           '/register',
+          '/store/',
         ],
       },
+      // Block scrapers
       { userAgent: 'AhrefsBot', disallow: '/' },
       { userAgent: 'SemrushBot', disallow: '/' },
       { userAgent: 'MJ12bot', disallow: '/' },
@@ -71,18 +85,54 @@ module.exports = {
   },
 
   // ==========================================
-  // TRANSFORM
+  // TRANSFORM — priority per route
   // ==========================================
   transform: async (config, path) => {
     let priority = config.priority;
     let changefreq = config.changefreq;
 
+    // Tier 1 — Landing utama
     if (path === '/') {
       priority = 1.0;
       changefreq = 'daily';
-    } else if (path === '/store') {
+    }
+
+    // Tier 2 — Marketing pages (konversi tinggi)
+    else if (path === '/about') {
       priority = 0.9;
-      changefreq = 'daily';
+      changefreq = 'weekly';
+    }
+    else if (path === '/features') {
+      priority = 0.9;
+      changefreq = 'weekly';
+    }
+    else if (path === '/pricing') {
+      priority = 0.9;
+      changefreq = 'weekly';
+    }
+    else if (path === '/how-it-works') {
+      priority = 0.8;
+      changefreq = 'weekly';
+    }
+
+    // Tier 3 — Supporting pages
+    else if (path === '/profile') {
+      priority = 0.7;
+      changefreq = 'monthly';
+    }
+    else if (path === '/faq') {
+      priority = 0.7;
+      changefreq = 'weekly';
+    }
+    else if (path === '/contact') {
+      priority = 0.6;
+      changefreq = 'monthly';
+    }
+
+    // Tier 4 — Legal (penting tapi bukan konversi)
+    else if (path === '/privacy' || path === '/terms') {
+      priority = 0.4;
+      changefreq = 'monthly';
     }
 
     return {

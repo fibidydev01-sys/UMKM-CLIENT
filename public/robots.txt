@@ -2,19 +2,23 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard/
+Disallow: /admin/
 Disallow: /api/
 Disallow: /_next/
 Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
+Disallow: /store/
 
 # Googlebot
 User-agent: Googlebot
 Allow: /
 Disallow: /dashboard/
+Disallow: /admin/
 Disallow: /api/
 Disallow: /login
 Disallow: /register
+Disallow: /store/
 
 # AhrefsBot
 User-agent: AhrefsBot
