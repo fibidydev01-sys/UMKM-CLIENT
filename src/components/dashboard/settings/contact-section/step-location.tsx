@@ -25,8 +25,8 @@ export function StepLocation({ formData, updateFormData, isDesktop = false }: St
         {/* Left — URL + toggle */}
         <div className="space-y-6 max-w-lg">
 
-          <div className="space-y-1.5">
-            <Label htmlFor="mapUrl-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-maps-url" className="space-y-1.5">
+            <Label htmlFor="mapUrl-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Google Maps Embed URL
             </Label>
             <Input
@@ -65,7 +65,7 @@ export function StepLocation({ formData, updateFormData, isDesktop = false }: St
 
         {/* Right — Preview */}
         <div className="flex flex-col items-center gap-2 pt-6">
-          <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground self-start">
+          <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground self-start">
             Map Preview
           </p>
           {hasValidUrl && formData.contactShowMap ? (
@@ -104,8 +104,8 @@ export function StepLocation({ formData, updateFormData, isDesktop = false }: St
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
           {/* URL */}
-          <div className="space-y-1.5">
-            <Label htmlFor="mapUrl-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-maps-url" className="space-y-1.5">
+            <Label htmlFor="mapUrl-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Google Maps Embed URL
             </Label>
             <Input
@@ -140,7 +140,7 @@ export function StepLocation({ formData, updateFormData, isDesktop = false }: St
             <>
               <div className="w-full border-t" />
               <div className="space-y-1.5">
-                <p className="text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+                <p className="text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
                   Map Preview
                 </p>
                 <div className="border rounded-lg overflow-hidden">

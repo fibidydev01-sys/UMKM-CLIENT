@@ -66,19 +66,6 @@ export function StepMedia({ form, productType }: StepMediaProps) {
         )}
       />
 
-      {/* ── Tips ─────────────────────────────────────────────────── */}
-      <div className="grid sm:grid-cols-3 gap-3">
-        {[
-          { emoji: '📐', tip: 'Square images (1:1) work best across all layouts' },
-          { emoji: '💡', tip: 'Natural lighting produces the most appealing results' },
-          { emoji: '🎨', tip: 'Consistent style across images builds brand trust' },
-        ].map(({ emoji, tip }) => (
-          <div key={tip} className="flex items-start gap-2.5 rounded-lg bg-muted/30 px-3 py-2.5">
-            <span className="text-base shrink-0 mt-px">{emoji}</span>
-            <p className="text-xs text-muted-foreground leading-relaxed">{tip}</p>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

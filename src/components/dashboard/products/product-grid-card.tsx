@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { Package } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { formatPrice } from '@/lib/shared/format';
 import type { Product } from '@/types';
 
 // ==========================================
@@ -20,18 +19,16 @@ export function ProductGridCardSkeleton() {
 
 // ==========================================
 // PRODUCT GRID CARD
-// Minimal card — nama muncul saat hover
+// Minimal card — foto saja, badge draft
 // ==========================================
 
 interface ProductGridCardProps {
   product: Product;
   onClick: (product: Product) => void;
-  currency: string;
 }
 
-export function ProductGridCard({ product, onClick, currency }: ProductGridCardProps) {
+export function ProductGridCard({ product, onClick }: ProductGridCardProps) {
   const imageUrl = product.images?.[0];
-  const showPrice = product.price > 0; // Sembunyikan jika harga belum diset
 
   return (
     <button
@@ -51,23 +48,6 @@ export function ProductGridCard({ product, onClick, currency }: ProductGridCardP
             <Package className="h-12 w-12 text-muted-foreground/40" />
           </div>
         )}
-
-        {/* Hover overlay dengan nama produk */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-            <h3 className="text-white font-medium text-sm line-clamp-2">
-              {product.name}
-            </h3>
-            {product.category && (
-              <p className="text-white/70 text-xs mt-1">{product.category}</p>
-            )}
-            {showPrice && (
-              <p className="text-white/90 text-xs mt-1 font-medium">
-                {formatPrice(product.price, currency)}
-              </p>
-            )}
-          </div>
-        </div>
 
         {/* Badge draft */}
         {!product.isActive && (

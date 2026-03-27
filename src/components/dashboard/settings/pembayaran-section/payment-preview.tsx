@@ -1,56 +1,18 @@
 'use client';
 
-import { Building2, Wallet, Banknote, Coins, CheckCircle2, XCircle } from 'lucide-react';
+import { Building2, Wallet, Banknote, CheckCircle2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/shared/utils';
 import { PreviewModal } from '@/components/dashboard/settings';
-import { getAseanCurrencyMeta } from '@/types';
 import type { PembayaranFormData } from '@/types';
 
 // ─── E-wallet color accents ────────────────────────────────────────────────
 const PROVIDER_COLORS: Record<string, string> = {
-  // Indonesia
   GoPay: 'text-emerald-600',
   OVO: 'text-purple-600',
   DANA: 'text-blue-600',
   ShopeePay: 'text-orange-600',
-  'ShopeePay MY': 'text-orange-600',
-  'ShopeePay TH': 'text-orange-600',
-  'ShopeePay PH': 'text-orange-600',
-  'ShopeePay VN': 'text-orange-600',
   LinkAja: 'text-red-600',
   QRIS: 'text-gray-700',
-  // Malaysia
-  'Touch n Go': 'text-blue-700',
-  'GrabPay MY': 'text-green-500',
-  Boost: 'text-red-500',
-  MAE: 'text-yellow-600',
-  // Singapore
-  PayNow: 'text-red-500',
-  'GrabPay SG': 'text-green-500',
-  'DBS PayLah': 'text-red-600',
-  NETS: 'text-blue-800',
-  // Thailand
-  TrueMoney: 'text-yellow-600',
-  PromptPay: 'text-blue-600',
-  'Rabbit LINE Pay': 'text-green-600',
-  // Philippines
-  GCash: 'text-blue-500',
-  Maya: 'text-green-600',
-  'GrabPay PH': 'text-green-500',
-  // Vietnam
-  MoMo: 'text-pink-600',
-  ZaloPay: 'text-blue-500',
-  VNPay: 'text-red-600',
-  // Brunei
-  'Progresif Pay': 'text-purple-500',
-  // Regional
-  GrabPay: 'text-green-500',
-  'Apple Pay': 'text-foreground',
-  'Google Pay': 'text-blue-500',
-  PayPal: 'text-blue-700',
-  Alipay: 'text-blue-600',
-  'WeChat Pay': 'text-green-600',
-  Other: 'text-muted-foreground',
 };
 
 // ─── Section Header ────────────────────────────────────────────────────────
@@ -151,11 +113,7 @@ export function PaymentPreview({
   isSaving,
   formData,
 }: PaymentPreviewProps) {
-  // ✅ Pakai getAseanCurrencyMeta — ada fallback kalau currency tidak dikenal
-  const currency = getAseanCurrencyMeta(formData.currency);
   const { bankAccounts, eWallets, cod } = formData.paymentMethods;
-  const enabledBanks = bankAccounts.filter((b) => b.enabled).length;
-  const enabledWallets = eWallets.filter((e) => e.enabled).length;
 
   return (
     <PreviewModal
@@ -166,46 +124,6 @@ export function PaymentPreview({
       title="Payment Settings Preview"
     >
       <div className="space-y-3 mt-5">
-
-        {/* ── Summary strip ──────────────────────────────────────── */}
-        <div className="grid grid-cols-4 gap-2 mb-1">
-          {[
-            { label: 'Currency', value: currency.code },
-            { label: 'Tax', value: formData.taxRate > 0 ? `${formData.taxRate}%` : '—' },
-            { label: 'Banks', value: `${enabledBanks}/${bankAccounts.length}` },
-            { label: 'Wallets', value: `${enabledWallets}/${eWallets.length}` },
-          ].map(({ label, value }) => (
-            <div
-              key={label}
-              className="rounded-lg bg-muted/40 border border-border/50 px-3 py-2.5 text-center"
-            >
-              <p className="text-[10px] text-muted-foreground mb-0.5 tracking-wide">{label}</p>
-              <p className="text-sm font-bold tabular-nums tracking-tight">{value}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Currency & Tax ─────────────────────────────────────── */}
-        <SectionCard>
-          <SectionHeader icon={Coins} title="Currency & Tax" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xl leading-none">{currency.flag}</span>
-              <div>
-                <p className="text-sm font-semibold leading-tight">{currency.code}</p>
-                <p className="text-xs text-muted-foreground leading-tight">{currency.name}</p>
-              </div>
-            </div>
-            {formData.taxRate > 0 ? (
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground">Tax</p>
-                <p className="text-sm font-bold text-primary">{formData.taxRate}%</p>
-              </div>
-            ) : (
-              <span className="text-xs text-muted-foreground/50 italic">No tax</span>
-            )}
-          </div>
-        </SectionCard>
 
         {/* ── Bank Accounts ──────────────────────────────────────── */}
         <SectionCard>
@@ -283,7 +201,7 @@ export function PaymentPreview({
                 </p>
               ) : (
                 <p className="text-xs text-muted-foreground/50 italic">
-                  {cod.enabled ? 'No note set' : 'Not available at checkout'}
+                  {cod.enabled ? 'No note added' : 'Not available at checkout'}
                 </p>
               )}
             </div>

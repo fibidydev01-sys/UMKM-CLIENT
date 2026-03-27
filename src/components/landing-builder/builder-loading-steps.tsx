@@ -1,20 +1,8 @@
-/**
- * ============================================================================
- * FILE: components/landing-builder/builder-loading-steps.tsx
- * ============================================================================
- * Multi-step loading screen for Landing Builder
- * Shows real loading progress based on actual data fetching status
- * ============================================================================
- */
 'use client';
 
 import { useEffect, useRef } from 'react';
 import { cn } from '@/lib/shared/utils';
 import { Check, Loader2 } from 'lucide-react';
-
-// ============================================================================
-// TYPES
-// ============================================================================
 
 export interface LoadingStates {
   tenantLoading: boolean;
@@ -27,10 +15,6 @@ interface BuilderLoadingStepsProps {
   onComplete?: () => void;
   className?: string;
 }
-
-// ============================================================================
-// LOADING STEPS
-// ============================================================================
 
 interface StepConfig {
   id: string;
@@ -75,10 +59,6 @@ const STEP_CONFIGS: StepConfig[] = [
   },
 ];
 
-// ============================================================================
-// COMPONENT
-// ============================================================================
-
 export function BuilderLoadingSteps({ loadingStates, onComplete, className }: BuilderLoadingStepsProps) {
   const steps = STEP_CONFIGS.map(config => ({
     ...config,
@@ -89,7 +69,6 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
   const progress = (completedCount / steps.length) * 100;
   const allComplete = steps.every(s => s.status === 'completed');
 
-  // Use useEffect to update ref instead of during render
   const onCompleteRef = useRef(onComplete);
   useEffect(() => {
     onCompleteRef.current = onComplete;
@@ -97,29 +76,20 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
 
   useEffect(() => {
     if (!allComplete) return;
-
     const timer = setTimeout(() => {
       onCompleteRef.current?.();
     }, 300);
-
     return () => clearTimeout(timer);
   }, [allComplete]);
 
   return (
-    <div className={cn(
-      'h-screen flex flex-col items-center justify-center bg-background',
-      className
-    )}>
+    <div className={cn('h-screen flex flex-col items-center justify-center bg-background', className)}>
       <div className="w-full max-w-md px-6 space-y-8">
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold">Landing Page Builder</h1>
-          <p className="text-muted-foreground text-sm">
-            Preparing your workspace
-          </p>
+          <p className="text-muted-foreground text-sm">Preparing your workspace</p>
         </div>
 
-        {/* Progress Bar */}
         <div className="space-y-2">
           <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
             <div
@@ -127,12 +97,9 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground text-right">
-            {Math.round(progress)}%
-          </p>
+          <p className="text-xs text-muted-foreground text-right">{Math.round(progress)}%</p>
         </div>
 
-        {/* Steps List */}
         <div className="space-y-3">
           {steps.map((step) => {
             const isCompleted = step.status === 'completed';
@@ -149,7 +116,6 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
                   isPending && 'opacity-30'
                 )}
               >
-                {/* Icon */}
                 <div className={cn(
                   'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center transition-all',
                   isCompleted && 'bg-primary text-primary-foreground',
@@ -165,7 +131,6 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
                   )}
                 </div>
 
-                {/* Label */}
                 <span className={cn(
                   'text-sm font-medium transition-colors',
                   isLoading && 'text-primary',
@@ -178,11 +143,6 @@ export function BuilderLoadingSteps({ loadingStates, onComplete, className }: Bu
             );
           })}
         </div>
-
-        {/* Footer Hint */}
-        <p className="text-center text-xs text-muted-foreground">
-          Tip: Drag and drop to reorder sections
-        </p>
       </div>
     </div>
   );

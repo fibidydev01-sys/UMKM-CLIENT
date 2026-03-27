@@ -1,8 +1,7 @@
 // ==========================================
-// SETTINGS PENGIRIMAN SECTION INDEX
+// PENGIRIMAN SECTION INDEX
 // ==========================================
 
+export { PengirimanSection } from './pengiriman-section';
 export { StepCarriers } from './step-carriers';
 export { PreviewPengiriman } from './step-preview';
-export { StepRates } from './step-rates';
-export { formatShippingCost } from './format-currency';

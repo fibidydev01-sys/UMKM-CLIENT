@@ -27,7 +27,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
         <div className="space-y-5">
 
           {/* Big toggle card */}
-          <div className={cn(
+          <div id="tour-cod" className={cn(
             'rounded-xl border-2 p-5 transition-all duration-300',
             isEnabled ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/10'
           )}>
@@ -69,7 +69,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
 
         {/* Col 2 — COD Note (conditional) */}
         <div className={cn('space-y-2 transition-opacity duration-300', isEnabled ? 'opacity-100' : 'opacity-30 pointer-events-none')}>
-          <Label htmlFor="cod-note-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <Label htmlFor="cod-note-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
             COD Note <span className="normal-case font-normal">(Optional)</span>
           </Label>
           <Input
@@ -108,7 +108,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
           {/* Toggle */}
-          <div className={cn(
+          <div id="tour-cod" className={cn(
             'rounded-xl border-2 p-4 transition-all',
             isEnabled ? 'border-primary/30 bg-primary/5' : 'border-border'
           )}>
@@ -137,7 +137,7 @@ export function StepCod({ formData, onToggleCod, onCodNoteChange, isDesktop = fa
             <>
               <div className="w-full border-t" />
               <div className="space-y-1.5">
-                <Label htmlFor="cod-note-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+                <Label htmlFor="cod-note-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
                   COD Note <span className="normal-case font-normal">(Optional)</span>
                 </Label>
                 <Input

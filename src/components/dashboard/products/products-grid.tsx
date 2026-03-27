@@ -8,13 +8,14 @@ import { ProductPreviewDrawer } from './product-preview-drawer';
 import { ProductDeleteDialog } from './product-delete-dialog';
 import { productsApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
-import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
 interface ProductsGridProps {
   products: Product[];
   isRefreshing?: boolean;
   onRefresh?: () => Promise<void>;
+  isAtLimit?: boolean;
+  onAtLimit?: () => void;
 }
 
 export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGridProps) {
@@ -23,9 +24,6 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const { tenant } = useTenant();
-  const currency = tenant?.currency || 'IDR';
 
   const refreshData = useCallback(async () => {
     if (onRefresh) {
@@ -97,7 +95,6 @@ export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGrid
             key={product.id}
             product={product}
             onClick={handleProductClick}
-            currency={currency}
           />
         ))}
       </div>

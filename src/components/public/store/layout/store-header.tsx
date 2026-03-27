@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, Store, Users, Mail } from 'lucide-react';
+import { Menu, Rocket, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
 import {
@@ -16,7 +16,6 @@ import {
   NavigationMenuContent,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
-import { CartSheet } from '../cart/cart-sheet';
 import { useStoreUrls } from '@/lib/public/store-url';
 import { cn } from '@/lib/shared/utils';
 import type { PublicTenant } from '@/types';
@@ -32,46 +31,25 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
 
   const navItems = [
     { label: 'Home', href: urls.home },
-    { label: 'About', href: urls.path('/about') },
+    { label: 'Featured', href: urls.path('/about') },
     { label: 'Products', href: urls.products() },
-    { label: 'Testimonials', href: urls.path('/testimonials') },
     { label: 'Contact', href: urls.path('/contact') },
   ];
 
   const contactInfo = [
     { label: 'WhatsApp', value: tenant.whatsapp, type: 'whatsapp' as const },
-    { label: 'Phone', value: tenant.phone, type: 'phone' as const },
-    { label: 'Email', value: 'email' in tenant ? tenant.email : undefined, type: 'email' as const },
     { label: 'Address', value: tenant.address, type: 'address' as const },
   ].filter(item => item.value);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-4">
-        <Link href={urls.home} className="flex items-center gap-3">
-          {tenant.logo ? (
-            <Image
-              src={tenant.logo}
-              alt={tenant.name}
-              width={40}
-              height={40}
-              className="rounded-full object-cover"
-            />
-          ) : (
-            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <span className="text-lg font-bold text-primary">
-                {tenant.name.charAt(0)}
-              </span>
-            </div>
-          )}
-          <span className="font-semibold text-lg hidden sm:block">
-            {tenant.name}
-          </span>
-        </Link>
 
+        {/* ── LEFT: Desktop Nav ── */}
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
-            {/* Home — dengan dropdown */}
+
+            {/* Home */}
             <NavigationMenuItem>
               <NavigationMenuTrigger
                 className={cn(pathname === urls.home && 'bg-primary/10 text-primary')}
@@ -84,148 +62,103 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                     <NavigationMenuLink asChild>
                       <Link
                         href={urls.home}
-                        className="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-gradient-to-b p-4 no-underline outline-none transition-colors select-none hover:bg-accent focus:shadow-md md:p-6"
+                        className="relative flex h-full w-full overflow-hidden rounded-md no-underline outline-none focus:shadow-md"
                       >
                         {tenant.logo ? (
                           <Image
                             src={tenant.logo}
                             alt={tenant.name}
-                            width={60}
-                            height={60}
-                            className="rounded-full object-cover mb-2"
+                            fill
+                            className="object-cover"
                           />
                         ) : (
-                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-                            <span className="text-2xl font-bold text-primary">
+                          <div className="h-full w-full bg-primary/10 flex items-center justify-center">
+                            <span className="text-4xl font-bold text-primary">
                               {tenant.name.charAt(0)}
                             </span>
                           </div>
                         )}
-                        <div className="mb-2 text-lg font-medium sm:mt-4">
-                          {tenant.name}
+                        <div className="absolute inset-0 bg-black/40" />
+                        <div className="absolute bottom-0 left-0 right-0 p-4">
+                          <p className="text-white text-sm font-medium leading-tight">
+                            {tenant.tagline || 'Welcome to our store'}
+                          </p>
                         </div>
-                        <p className="text-muted-foreground text-sm leading-tight">
-                          {tenant.tagline || 'Welcome to our store'}
-                        </p>
                       </Link>
                     </NavigationMenuLink>
                   </li>
-                  <ListItem href={urls.path('/about')} title="About Us" icon={<Users className="h-4 w-4" />}>
-                    Learn more about our business
-                  </ListItem>
-                  <ListItem href={urls.path('/testimonials')} title="Testimonials" icon={<Store className="h-4 w-4" />}>
-                    See what our customers say
-                  </ListItem>
-                  <ListItem href={urls.path('/contact')} title="Contact Us" icon={<Mail className="h-4 w-4" />}>
-                    Contact info and location
-                  </ListItem>
+                  <li className="p-3">
+                    <p className="text-xs text-muted-foreground mb-3">Reach us through:</p>
+                    <div className="grid gap-2">
+                      {contactInfo.map((info) => (
+                        <div key={info.label} className="flex items-start gap-2 p-2 rounded-lg hover:bg-accent transition-colors">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium">{info.label}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 break-words">
+                              {info.type === 'whatsapp' && (
+                                <a
+                                  href={`https://wa.me/${info.value.replace(/\D/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  {info.value}
+                                </a>
+                              )}
+                              {info.type === 'address' && info.value}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-3 pt-3 border-t">
+                      <Link href={urls.path('/contact')} className="text-sm text-primary hover:underline">
+                        View contact page →
+                      </Link>
+                    </div>
+                  </li>
                 </ul>
               </NavigationMenuContent>
             </NavigationMenuItem>
 
-            {/* Products */}
+            {/* Featured */}
             <NavigationMenuItem>
-              <NavigationMenuLink
-                asChild
+              <Link
+                href={urls.path('/about')}
                 className={cn(
                   navigationMenuTriggerStyle(),
+                  'flex items-center gap-2',
+                  pathname === urls.path('/about') && 'bg-primary/10 text-primary'
+                )}
+              >
+                <Rocket className="h-4 w-4" />
+                Featured
+              </Link>
+            </NavigationMenuItem>
+
+            {/* Products */}
+            <NavigationMenuItem>
+              <Link
+                href={urls.products()}
+                className={cn(
+                  navigationMenuTriggerStyle(),
+                  'flex items-center gap-2',
                   pathname.startsWith(urls.products()) && 'bg-primary/10 text-primary'
                 )}
               >
-                <Link href={urls.products()}>Products</Link>
-              </NavigationMenuLink>
+                <LayoutDashboard className="h-4 w-4" />
+                Products
+              </Link>
             </NavigationMenuItem>
 
-            {/* Contact — dengan dropdown */}
-            <NavigationMenuItem>
-              <NavigationMenuTrigger
-                className={cn(pathname === urls.path('/contact') && 'bg-primary/10 text-primary')}
-              >
-                Contact
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <div className="w-[400px] p-4">
-                  <div className="mb-4">
-                    <h3 className="text-sm font-semibold mb-1">{tenant.name}</h3>
-                    <p className="text-xs text-muted-foreground">
-                      Reach us through:
-                    </p>
-                  </div>
-
-                  <div className="grid gap-3">
-                    {contactInfo.map((info) => (
-                      <div
-                        key={info.label}
-                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-accent transition-colors"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium">{info.label}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 break-words">
-                            {info.type === 'whatsapp' && (
-                              <a
-                                href={`https://wa.me/${info.value.replace(/\D/g, '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="hover:text-primary transition-colors"
-                              >
-                                {info.value}
-                              </a>
-                            )}
-                            {info.type === 'phone' && (
-                              <a
-                                href={`tel:${info.value}`}
-                                className="hover:text-primary transition-colors"
-                              >
-                                {info.value}
-                              </a>
-                            )}
-                            {info.type === 'email' && (
-                              <a
-                                href={`mailto:${info.value}`}
-                                className="hover:text-primary transition-colors"
-                              >
-                                {info.value}
-                              </a>
-                            )}
-                            {info.type === 'address' && info.value}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-4 pt-4 border-t">
-                    <Link
-                      href={urls.path('/contact')}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      View contact page →
-                    </Link>
-                  </div>
-                </div>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex items-center gap-2">
-          <CartSheet tenant={tenant} />
-
-          {tenant.whatsapp && (
-            <Button asChild size="sm" className="hidden sm:flex">
-              <a
-                href={`https://wa.me/${tenant.whatsapp.replace(/\D/g, '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                WhatsApp
-              </a>
-            </Button>
-          )}
-
+        {/* ── RIGHT: Mobile Hamburger ── */}
+        <div className="md:hidden ml-auto">
           <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
+              <Button variant="ghost" size="icon">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Menu</span>
               </Button>
@@ -236,9 +169,9 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-4">
                 {navItems.map((item) => {
-                  const isActive = pathname === item.href ||
+                  const isActive =
+                    pathname === item.href ||
                     (item.href !== urls.home && pathname.startsWith(item.href));
-
                   return (
                     <Link
                       key={item.href}
@@ -255,53 +188,13 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                     </Link>
                   );
                 })}
-
-                {tenant.whatsapp && (
-                  <a
-                    href={`https://wa.me/${tenant.whatsapp.replace(/\D/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 px-4 py-3 bg-green-500 text-white text-center font-medium rounded-lg"
-                  >
-                    Chat on WhatsApp
-                  </a>
-                )}
               </nav>
             </SheetContent>
           </Sheet>
         </div>
+
       </div>
     </header>
   );
 }
 
-function ListItem({
-  title,
-  children,
-  href,
-  icon,
-  ...props
-}: React.ComponentPropsWithoutRef<"li"> & {
-  href: string;
-  title: string;
-  icon?: React.ReactNode;
-}) {
-  return (
-    <li {...props}>
-      <NavigationMenuLink asChild>
-        <Link
-          href={href}
-          className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-        >
-          <div className="flex items-center gap-2">
-            {icon}
-            <div className="text-sm font-medium leading-none">{title}</div>
-          </div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  );
-}

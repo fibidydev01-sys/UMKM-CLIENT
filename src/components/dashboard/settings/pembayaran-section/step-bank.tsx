@@ -87,7 +87,7 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
         {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+            <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Bank Accounts
             </p>
             {!isEmpty && (
@@ -96,7 +96,7 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
               </span>
             )}
           </div>
-          <Button size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
+          <Button id="tour-add-bank" size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Add Bank Account
           </Button>
         </div>
@@ -143,7 +143,7 @@ export function StepBank({ formData, onAdd, onEdit, onDelete, onToggle, isDeskto
   // ── MOBILE ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col items-center gap-4">
-      <Button size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
+      <Button id="tour-add-bank" size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
         <Plus className="h-3.5 w-3.5" />Add Bank Account
       </Button>
 

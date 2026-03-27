@@ -14,3 +14,5 @@ export {
   useDeleteProduct,
 } from './use-products';
 export { useXenditPayment } from './use-xendit-payment';
+
+export * from './use-tour';

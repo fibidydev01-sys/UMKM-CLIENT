@@ -26,6 +26,13 @@ const HINTS = {
   },
 } as const;
 
+// Tour ID per field
+const FIELD_TOUR_IDS: Record<string, string> = {
+  heroTitle: 'tour-hero-headline',
+  heroSubtitle: 'tour-hero-subheading',
+  description: 'tour-store-tagline',
+};
+
 const FIELDS = [
   {
     key: 'heroTitle' as const,
@@ -82,8 +89,9 @@ export function StepStory({ formData, updateFormData, isDesktop = false }: StepS
           <div className="grid grid-cols-3 gap-6">
             {FIELDS.map((field) => {
               const val = formData[field.key] as string;
+              const tourId = FIELD_TOUR_IDS[field.key];
               return (
-                <div key={field.key} className="flex flex-col gap-2">
+                <div id={tourId} key={field.key} className="flex flex-col gap-2">
 
                   {/* Label row */}
                   <div className="flex items-center gap-1.5">

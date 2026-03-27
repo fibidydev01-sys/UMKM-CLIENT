@@ -1,66 +1,46 @@
-// ══════════════════════════════════════════════════════════════
-// TOKO CLIENT - Sticky Tabs Wrapper for Wizard Pages
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
-import { useState } from 'react';
-import { Home, FileText, MessageSquare, MapPin, Megaphone } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Home, FileText, MapPin } from 'lucide-react';
 import { cn } from '@/lib/shared/utils';
+import { useTokoActiveTab } from '@/stores/tour-store';
+import { useTour } from '@/hooks/dashboard/use-tour';
+import { useNextStep } from 'nextstepjs';
+import { HeroSection } from '@/components/dashboard/settings/hero-section';
+import { AboutSection } from '@/components/dashboard/settings/about-section';
+import { ContactSection } from '@/components/dashboard/settings/contact-section';
 
-// Import wizard pages as components
-import HeroSectionPage from '../hero-section/page';
-import AboutPage from '../about/page';
-import TestimonialsPage from '../testimonials/page';
-import ContactPage from '../contact/page';
-import CtaPage from '../cta/page';
-
-// ══════════════════════════════════════════════════════════════
-// TYPES & CONSTANTS
-// ══════════════════════════════════════════════════════════════
-
-type TabType = 'hero-section' | 'about' | 'testimonials' | 'contact' | 'cta';
+type TabType = 'hero-section' | 'about' | 'contact';
 
 const TABS = [
-  {
-    id: 'hero-section' as const,
-    label: 'Hero Section',
-    icon: Home,
-  },
-  {
-    id: 'about' as const,
-    label: 'About',
-    icon: FileText,
-  },
-  {
-    id: 'testimonials' as const,
-    label: 'Testimonials',
-    icon: MessageSquare,
-  },
-  {
-    id: 'contact' as const,
-    label: 'Contact',
-    icon: MapPin,
-  },
-  {
-    id: 'cta' as const,
-    label: 'Call to Action',
-    icon: Megaphone,
-  },
+  { id: 'hero-section' as const, label: 'Bio', icon: Home },
+  { id: 'about' as const, label: 'Featured', icon: FileText },
+  { id: 'contact' as const, label: 'Contact', icon: MapPin },
 ];
-
-// ══════════════════════════════════════════════════════════════
-// MAIN CLIENT COMPONENT - WRAPPER ONLY
-// ══════════════════════════════════════════════════════════════
 
 export function TokoClient() {
   const [activeTab, setActiveTab] = useState<TabType>('hero-section');
 
+  const tourActiveTab = useTokoActiveTab();
+  const { shouldShowTour } = useTour('toko');
+  const { startNextStep } = useNextStep();
+
+  useEffect(() => {
+    if (tourActiveTab && TABS.some((t) => t.id === tourActiveTab)) {
+      setActiveTab(tourActiveTab as TabType);
+    }
+  }, [tourActiveTab]);
+
+  useEffect(() => {
+    if (!shouldShowTour) return;
+    const timer = setTimeout(() => startNextStep('toko'), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div>
-      {/* ════════════════════════════════════════════════════════ */}
-      {/* STICKY TABS                                             */}
-      {/* ════════════════════════════════════════════════════════ */}
+      {/* Sticky Tabs */}
       <div className="sticky top-0 z-20 bg-background border-b -mx-4 md:-mx-6 lg:-mx-8 mb-6">
         <div className="px-4 md:px-6 lg:px-8">
           <div className="flex overflow-x-auto">
@@ -83,16 +63,10 @@ export function TokoClient() {
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════ */}
-      {/* TAB CONTENT - Import wizard pages as components         */}
-      {/* ════════════════════════════════════════════════════════ */}
-      <div>
-        {activeTab === 'hero-section' && <HeroSectionPage />}
-        {activeTab === 'about' && <AboutPage />}
-        {activeTab === 'testimonials' && <TestimonialsPage />}
-        {activeTab === 'contact' && <ContactPage />}
-        {activeTab === 'cta' && <CtaPage />}
-      </div>
+      {/* Tab Content */}
+      {activeTab === 'hero-section' && <HeroSection />}
+      {activeTab === 'about' && <AboutSection />}
+      {activeTab === 'contact' && <ContactSection />}
     </div>
   );
 }

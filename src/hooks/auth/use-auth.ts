@@ -5,11 +5,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { authApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
+import { initTourState } from '@/hooks/dashboard/use-tour';
 import type { LoginInput, RegisterInput } from '@/types';
-
-// ==========================================
-// USE AUTH HOOK
-// ==========================================
 
 export function useAuth() {
   const store = useAuthStore();
@@ -23,10 +20,6 @@ export function useAuth() {
     reset: store.reset,
   };
 }
-
-// ==========================================
-// USE AUTH CHECK HOOK
-// ==========================================
 
 export function useAuthCheck() {
   const { setTenant, setChecked, isChecked } = useAuthStore();
@@ -55,10 +48,6 @@ export function useAuthCheck() {
 
   return { checkAuth };
 }
-
-// ==========================================
-// USE LOGIN HOOK
-// ==========================================
 
 export function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -103,10 +92,6 @@ export function useLogin() {
   return { login, isLoading, error, reset };
 }
 
-// ==========================================
-// USE REGISTER HOOK
-// ==========================================
-
 export function useRegister() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,6 +108,9 @@ export function useRegister() {
 
         setTenant(response.tenant);
         setChecked(true);
+
+        // ✅ Init tour state — semua tour = false (user baru)
+        initTourState();
 
         toast.success('Registration successful!', 'Your store is ready to use');
         router.push('/dashboard');
@@ -147,10 +135,6 @@ export function useRegister() {
   return { register, isLoading, error, reset };
 }
 
-// ==========================================
-// USE LOGOUT HOOK
-// ==========================================
-
 export function useLogout() {
   const { reset } = useAuthStore();
   const router = useRouter();
@@ -169,10 +153,6 @@ export function useLogout() {
 
   return { logout };
 }
-
-// ==========================================
-// USE CHECK SLUG HOOK
-// ==========================================
 
 export function useCheckSlug() {
   const [isChecking, setIsChecking] = useState(false);
@@ -202,10 +182,6 @@ export function useCheckSlug() {
 
   return { checkSlug, isChecking, isAvailable, reset };
 }
-
-// ==========================================
-// PLACEHOLDER HOOKS
-// ==========================================
 
 export function useChangePassword() {
   const [isLoading, setIsLoading] = useState(false);

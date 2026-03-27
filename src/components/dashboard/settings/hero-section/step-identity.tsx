@@ -30,7 +30,7 @@ export function StepIdentity({
 
         {/* Left — Logo */}
         <div className="flex flex-col items-center gap-3">
-          <div className="w-full">
+          <div id="tour-logo-upload" className="w-full">
             <ImageUpload
               value={formData.logo}
               onChange={(url) => updateFormData('logo', url ?? '')}
@@ -50,7 +50,7 @@ export function StepIdentity({
         <div className="space-y-6">
 
           {/* Store Name */}
-          <div className="space-y-1.5 max-w-md">
+          <div id="tour-store-name" className="space-y-1.5 max-w-md">
             <Label htmlFor="name-desktop" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Store Name
             </Label>
@@ -70,7 +70,7 @@ export function StepIdentity({
           <div className="border-t max-w-md" />
 
           {/* Category */}
-          <div className="space-y-1.5">
+          <div id="tour-category" className="space-y-1.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Category
             </p>
@@ -105,7 +105,7 @@ export function StepIdentity({
 
           {/* Logo */}
           <div className="flex flex-col items-center gap-2">
-            <div className="w-[108px]">
+            <div id="tour-logo-upload" className="w-[108px]">
               <ImageUpload
                 value={formData.logo}
                 onChange={(url) => updateFormData('logo', url ?? '')}
@@ -124,7 +124,7 @@ export function StepIdentity({
           <div className="w-full border-t" />
 
           {/* Store Name */}
-          <div className="w-full space-y-1.5">
+          <div id="tour-store-name" className="w-full space-y-1.5">
             <Label htmlFor="name-mobile" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Store Name
             </Label>
@@ -140,7 +140,7 @@ export function StepIdentity({
           <div className="w-full border-t" />
 
           {/* Category */}
-          <div className="w-full flex flex-col items-center gap-2">
+          <div id="tour-category" className="w-full flex flex-col items-center gap-2">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Category
             </p>

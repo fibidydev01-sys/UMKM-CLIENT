@@ -1,7 +1,7 @@
 'use client';
 
 // ─── Step 1: Details ───────────────────────────────────────────────────────
-// Toggle tipe listing, nama, deskripsi, category combobox, SKU
+// Toggle tipe listing, nama, deskripsi, category combobox
 
 import { useState } from 'react';
 import { Package, Wrench, Check, ChevronsUpDown } from 'lucide-react';
@@ -50,7 +50,6 @@ export function StepDetails({
   const isService = productType === 'service';
   const watchCategory = form.watch('category');
 
-  // ── State category dikelola di sini ──
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [categorySearch, setCategorySearch] = useState('');
 
@@ -115,8 +114,8 @@ export function StepDetails({
         </div>
         <p className="text-xs text-muted-foreground">
           {isService
-            ? 'Service mode — inventory & SKU fields are hidden automatically.'
-            : 'Product mode — all fields including inventory & SKU are available.'}
+            ? 'Service mode — inventory fields are hidden automatically.'
+            : 'Product mode — all fields including inventory are available.'}
         </p>
       </div>
 
@@ -173,113 +172,86 @@ export function StepDetails({
         )}
       />
 
-      {/* ── Category + SKU ───────────────────────────────────────── */}
-      <div className={cn('grid gap-4', !isService ? 'sm:grid-cols-2' : 'grid-cols-1')}>
-
-        {/* Category */}
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel className="text-sm font-semibold">Category</FormLabel>
-              <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={categoryOpen}
-                      className={cn(
-                        'h-11 w-full justify-between font-normal',
-                        !field.value && 'text-muted-foreground'
-                      )}
-                    >
-                      {field.value || 'Select or create a category'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] p-0" align="start">
-                  <Command shouldFilter={false}>
-                    <CommandInput
-                      placeholder="Search or create category..."
-                      value={categorySearch}
-                      onValueChange={setCategorySearch}
-                    />
-                    <CommandList>
-                      <CommandEmpty className="py-3 px-4 text-sm text-muted-foreground">
-                        {categorySearch
-                          ? <span>No category &quot;{categorySearch}&quot; found</span>
-                          : <span>Type to search or create a new category</span>
-                        }
-                      </CommandEmpty>
-                      {filteredCategories.length > 0 && (
-                        <CommandGroup heading="Categories">
-                          {filteredCategories.map((cat) => (
-                            <CommandItem
-                              key={cat}
-                              value={cat}
-                              onSelect={() => handleSelectCategory(cat)}
-                            >
-                              <Check
-                                className={cn(
-                                  'mr-2 h-4 w-4',
-                                  watchCategory === cat ? 'opacity-100' : 'opacity-0'
-                                )}
-                              />
-                              {cat}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      )}
-                      {isNewCategory && (
-                        <CommandGroup heading="Create new">
-                          <CommandItem
-                            value={`__create__${categorySearch}`}
-                            onSelect={handleCreateCategory}
-                            className="text-primary font-medium"
-                          >
-                            <span className="mr-2 text-base leading-none">+</span>
-                            Create &quot;{categorySearch}&quot;
-                          </CommandItem>
-                        </CommandGroup>
-                      )}
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                Choose an existing category or type to create a new one.
-              </FormDescription>
-            </FormItem>
-          )}
-        />
-
-        {/* SKU — Product only */}
-        {!isService && (
-          <FormField
-            control={form.control}
-            name="sku"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-sm font-semibold">SKU</FormLabel>
+      {/* ── Category ─────────────────────────────────────────────── */}
+      <FormField
+        control={form.control}
+        name="category"
+        render={({ field }) => (
+          <FormItem className="flex flex-col">
+            <FormLabel className="text-sm font-semibold">Category</FormLabel>
+            <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+              <PopoverTrigger asChild>
                 <FormControl>
-                  <Input
-                    placeholder="e.g. PROD-001"
-                    className="h-11"
-                    {...field}
-                  />
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={categoryOpen}
+                    className={cn(
+                      'h-11 w-full justify-between font-normal',
+                      !field.value && 'text-muted-foreground'
+                    )}
+                  >
+                    {field.value || 'Select or create a category'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
                 </FormControl>
-                <FormDescription>
-                  Stock keeping unit for internal tracking.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command shouldFilter={false}>
+                  <CommandInput
+                    placeholder="Search or create category..."
+                    value={categorySearch}
+                    onValueChange={setCategorySearch}
+                  />
+                  <CommandList>
+                    <CommandEmpty className="py-3 px-4 text-sm text-muted-foreground">
+                      {categorySearch
+                        ? <span>No category &quot;{categorySearch}&quot; found</span>
+                        : <span>Type to search or create a new category</span>
+                      }
+                    </CommandEmpty>
+                    {filteredCategories.length > 0 && (
+                      <CommandGroup heading="Categories">
+                        {filteredCategories.map((cat) => (
+                          <CommandItem
+                            key={cat}
+                            value={cat}
+                            onSelect={() => handleSelectCategory(cat)}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                watchCategory === cat ? 'opacity-100' : 'opacity-0'
+                              )}
+                            />
+                            {cat}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    )}
+                    {isNewCategory && (
+                      <CommandGroup heading="Create new">
+                        <CommandItem
+                          value={`__create__${categorySearch}`}
+                          onSelect={handleCreateCategory}
+                          className="text-primary font-medium"
+                        >
+                          <span className="mr-2 text-base leading-none">+</span>
+                          Create &quot;{categorySearch}&quot;
+                        </CommandItem>
+                      </CommandGroup>
+                    )}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            <FormDescription>
+              Choose an existing category or type to create a new one.
+            </FormDescription>
+          </FormItem>
         )}
-      </div>
+      />
+
     </div>
   );
 }

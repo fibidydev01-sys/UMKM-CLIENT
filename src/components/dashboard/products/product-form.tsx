@@ -2,8 +2,6 @@
 
 // ============================================================
 // PRODUCT FORM — Wizard Orchestrator
-// Multi-step wizard pattern
-// Mendukung Product & Service dengan smart step skip logic
 // ============================================================
 
 import { useState } from 'react';
@@ -20,7 +18,6 @@ import {
   StepDetails,
   StepMedia,
   StepPricing,
-  StepInventory,
   StepPublish,
   PreviewProduct,
   PRODUCT_STEPS,
@@ -29,7 +26,8 @@ import {
 } from './product-form-section';
 import type { Product } from '@/types';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
+const VIEW_MODE_KEY = 'products_view_mode';
+
 function getProductType(product?: Product): ProductType {
   const meta = product?.metadata as Record<string, unknown> | null | undefined;
   return meta?.type === 'service' ? 'service' : 'product';
@@ -41,7 +39,6 @@ function getShowPrice(product?: Product): boolean {
   return true;
 }
 
-// ─── Step Indicator ───────────────────────────────────────────────────────
 interface WizardStep {
   id: number;
   title: string;
@@ -107,13 +104,11 @@ function StepIndicator({
   );
 }
 
-// ─── Props ────────────────────────────────────────────────────────────────
 interface ProductFormProps {
   product?: Product;
   categories?: string[];
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────
 export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const router = useRouter();
   const isEditing = !!product;
@@ -125,71 +120,43 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
-  // ── Wizard state ───────────────────────────────────────────
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
-  // ── Product type state ─────────────────────────────────────
   const [productType, setProductType] = useState<ProductType>(getProductType(product));
   const isService = productType === 'service';
 
-  // ── Price display state ────────────────────────────────────
   const [showPrice, setShowPrice] = useState<boolean>(getShowPrice(product));
 
-  // ── Steps (dinamis berdasarkan tipe) ───────────────────────
   const STEPS = isService ? SERVICE_STEPS : PRODUCT_STEPS;
   const isLastStep = currentStep === STEPS.length - 1;
 
-  // ── Form ───────────────────────────────────────────────────
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || '',
       description: product?.description || '',
       category: product?.category || '',
-      sku: product?.sku || '',
       price: product?.price || 0,
       comparePrice: product?.comparePrice || undefined,
-      costPrice: product?.costPrice || undefined,
-      stock: product?.stock || undefined,
-      minStock: product?.minStock || 5,
-      trackStock: product?.trackStock ?? true,
-      unit: product?.unit || 'pcs',
       images: product?.images || [],
       isActive: product?.isActive ?? true,
-      isFeatured: product?.isFeatured ?? false,
     },
   });
 
-  // ── Type change handler ────────────────────────────────────
   const handleTypeChange = (type: ProductType) => {
     setProductType(type);
-    if (type === 'service') {
-      form.setValue('trackStock', false);
-      form.setValue('stock', undefined);
-      form.setValue('minStock', undefined);
-      form.setValue('sku', '');
-      form.setValue('costPrice', undefined);
-      form.setValue('unit', 'hour');
-    } else {
-      form.setValue('trackStock', true);
-      form.setValue('unit', 'pcs');
-    }
-    // Reset ke step pertama saat tipe berubah — menghindari index mismatch
     setCurrentStep(0);
   };
 
-  // ── Show price change handler ──────────────────────────────
   const handleShowPriceChange = (checked: boolean) => {
     setShowPrice(checked);
     if (!checked) {
       form.setValue('price', 0);
       form.setValue('comparePrice', undefined);
-      form.setValue('costPrice', undefined);
     }
   };
 
-  // ── Navigasi ───────────────────────────────────────────────
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep((p) => p + 1);
@@ -202,32 +169,26 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
     if (currentStep > 0) setCurrentStep((p) => p - 1);
   };
 
-  // ── Simpan ─────────────────────────────────────────────────
+  const redirectToProducts = () => {
+    const savedView =
+      typeof window !== 'undefined'
+        ? localStorage.getItem(VIEW_MODE_KEY) || 'grid'
+        : 'grid';
+    router.push(`/dashboard/products?view=${savedView}`);
+  };
+
   const handleSave = async () => {
     const data = form.getValues();
     try {
-      const payload: ProductFormData = {
+      const payload = {
         ...data,
         price: showPrice ? data.price : 0,
-        ...(!showPrice && {
-          comparePrice: undefined,
-          costPrice: undefined,
-        }),
+        ...(!showPrice && { comparePrice: undefined }),
         metadata: {
-          ...(typeof data.metadata === 'object' && data.metadata !== null
-            ? data.metadata
-            : {}),
           type: productType,
           showPrice,
         },
-        ...(isService && {
-          sku: undefined,
-          trackStock: false,
-          stock: undefined,
-          minStock: undefined,
-          costPrice: undefined,
-        }),
-      };
+      } as ProductFormData & { metadata: Record<string, unknown> };
 
       if (isEditing) {
         await updateProduct(product.id, payload);
@@ -235,15 +196,13 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
         await createProduct(payload);
       }
 
-      router.push('/dashboard/products');
+      redirectToProducts();
     } catch {
-      // Error ditangani di hook (toast, dll.)
+      // Error handled in hook
     }
   };
 
-  // ── Step renderer ──────────────────────────────────────────
   const renderStep = () => {
-    // Cocokkan berdasarkan judul step agar aman terhadap perubahan index
     const stepTitle = STEPS[currentStep].title;
 
     switch (stepTitle) {
@@ -273,8 +232,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
             currency={currency}
           />
         );
-      case 'Inventory':
-        return <StepInventory form={form} />;
       case 'Publish':
         return (
           <StepPublish
@@ -291,7 +248,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
 
   return (
     <>
-      {/* ── Preview Sheet ──────────────────────────────────────── */}
       <PreviewProduct
         open={showPreview}
         onClose={() => setShowPreview(false)}
@@ -310,7 +266,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           {/* ══════════════════ DESKTOP ══════════════════════════ */}
           <div className="hidden lg:flex lg:flex-col lg:h-full">
 
-            {/* Header */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
@@ -333,12 +288,10 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </div>
             </div>
 
-            {/* Body */}
             <div className="flex-1 min-h-[300px]">
               {renderStep()}
             </div>
 
-            {/* Footer nav */}
             <div className="flex items-center justify-between pt-6 border-t mt-8">
               <Button
                 type="button"
@@ -353,7 +306,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
                 Previous
               </Button>
 
-              {/* Progress dots */}
               <div className="flex items-center gap-1.5">
                 {STEPS.map((_, i) => (
                   <div
@@ -393,7 +345,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           {/* ══════════════════ MOBILE ════════════════════════════ */}
           <div className="lg:hidden flex flex-col pb-24">
 
-            {/* Step header */}
             <div className="mb-6">
               <div className="flex justify-center mb-4">
                 <StepIndicator
@@ -416,7 +367,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </div>
             </div>
 
-            {/* Step body */}
             <div className="min-h-[260px]">
               {renderStep()}
             </div>

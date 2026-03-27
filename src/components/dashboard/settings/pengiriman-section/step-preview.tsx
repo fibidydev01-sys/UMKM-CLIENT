@@ -1,7 +1,6 @@
 'use client';
 
 import { PreviewModal } from '@/components/dashboard/settings';
-import { formatShippingCost } from './format-currency';
 import type { PengirimanFormData } from '@/types';
 
 // ─── Props ─────────────────────────────────────────────────────────────────
@@ -23,9 +22,6 @@ export function PreviewPengiriman({
 }: PreviewPengirimanProps) {
   const activeCouriers = formData.shippingMethods.couriers.filter((c) => c.enabled);
 
-  // ✅ FIX: Pakai currency dari formData (bukan hardcoded IDR)
-  const fmt = (value: number | null) => formatShippingCost(value, formData.currency);
-
   return (
     <PreviewModal
       open={open}
@@ -35,29 +31,6 @@ export function PreviewPengiriman({
       title="Shipping Settings Preview"
     >
       <div className="space-y-5 mt-4">
-
-        {/* ── Shipping Rates ── */}
-        <div className="space-y-2">
-          <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-            Shipping Rates
-          </p>
-          <div className="rounded-lg border p-4 bg-muted/20 grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-0.5">Free Shipping From</p>
-              <p className="text-sm font-semibold">
-                {formData.freeShippingThreshold
-                  ? fmt(formData.freeShippingThreshold)
-                  : 'Disabled'}
-              </p>
-            </div>
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-0.5">Flat Rate</p>
-              <p className="text-sm font-semibold">
-                {fmt(formData.defaultShippingCost)}
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* ── Active Carriers ── */}
         <div className="space-y-2">

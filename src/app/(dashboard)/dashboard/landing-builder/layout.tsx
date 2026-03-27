@@ -1,10 +1,3 @@
-/**
- * Landing Builder Layout
- *
- * Minimal layout for full-screen builder experience
- * Protected with AuthGuard - requires authentication
- */
-
 'use client';
 
 import { useEffect } from 'react';
@@ -15,11 +8,12 @@ export default function LandingBuilderLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Add class to body to override global overflow-y: scroll
   useEffect(() => {
     document.body.classList.add('landing-builder-active');
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.classList.remove('landing-builder-active');
+      document.body.style.overflow = '';
     };
   }, []);
 

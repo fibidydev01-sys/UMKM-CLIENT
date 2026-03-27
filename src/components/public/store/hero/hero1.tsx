@@ -35,13 +35,13 @@ export function Hero1({
   eyebrow,
 }: Hero1Props) {
   return (
-    <section className="relative min-h-screen overflow-hidden bg-background flex flex-col">
+    <section className="relative h-full overflow-hidden bg-background flex flex-col">
 
       {/* ── Main Split Grid ── */}
-      <div className="flex flex-1 flex-col lg:grid lg:grid-cols-2 min-h-screen">
+      <div className="flex flex-1 flex-col lg:grid lg:grid-cols-2 h-full">
 
         {/* ── LEFT — Card Image ── */}
-        <div className="flex items-center justify-center px-8 sm:px-10 lg:px-12 py-12 lg:py-16 order-2 lg:order-1">
+        <div className="flex items-center justify-center px-8 sm:px-10 lg:px-12 pb-12 lg:pb-16 pt-4 lg:pt-4 order-2 lg:order-1">
           <div className="w-full max-w-sm lg:max-w-none">
             <div className="overflow-hidden border border-border rounded-2xl">
               <div className="aspect-[3/4] relative w-full">
@@ -73,7 +73,7 @@ export function Hero1({
         </div>
 
         {/* ── RIGHT — Text Content ── */}
-        <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 py-16 lg:py-24 order-1 lg:order-2">
+        <div className="flex flex-col justify-center px-8 sm:px-12 lg:px-16 pb-16 lg:pb-24 pt-8 lg:pt-8 order-1 lg:order-2">
 
           {/* Logo + Store Badge */}
           {(storeName || logo) && (

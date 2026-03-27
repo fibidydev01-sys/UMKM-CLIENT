@@ -1,9 +1,9 @@
 'use client';
 
 // ─── Step 3: Pricing ───────────────────────────────────────────────────────
-// Sale price, compare-at price, cost per item, price-on-request toggle
+// Sale price, compare-at price, price-on-request toggle
 
-import { MessageCircle, Tag, TrendingDown, DollarSign } from 'lucide-react';
+import { MessageCircle, Tag, TrendingDown } from 'lucide-react';
 import {
   FormControl,
   FormDescription,
@@ -67,7 +67,6 @@ export function StepPricing({
   currency,
 }: StepPricingProps) {
   const isService = productType === 'service';
-  const showCostPrice = !isService && showPrice;
 
   return (
     <div className="space-y-6">
@@ -123,10 +122,7 @@ export function StepPricing({
 
       {/* ── Price fields ─────────────────────────────────────────── */}
       {showPrice && (
-        <div className={cn(
-          'grid gap-4',
-          showCostPrice ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
-        )}>
+        <div className="grid sm:grid-cols-2 gap-4">
 
           {/* Sale price */}
           <FormField
@@ -183,100 +179,9 @@ export function StepPricing({
             )}
           />
 
-          {/* Cost per item — Product only */}
-          {showCostPrice && (
-            <FormField
-              control={form.control}
-              name="costPrice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
-                    Cost per item
-                  </FormLabel>
-                  <FormControl>
-                    <CurrencyInput
-                      currency={currency}
-                      placeholder="0"
-                      field={field}
-                      value={field.value as number | undefined}
-                      onChange={(v) => field.onChange(v)}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Your cost — used to calculate profit margin
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
         </div>
       )}
 
-      {/* ── Margin preview ───────────────────────────────────────── */}
-      {showPrice && !isService && (
-        <MarginPreview form={form} currency={currency} />
-      )}
-    </div>
-  );
-}
-
-// ─── Margin preview widget ────────────────────────────────────────────────
-function MarginPreview({
-  form,
-  currency,
-}: {
-  form: UseFormReturn<ProductFormData>;
-  currency: string;
-}) {
-  const price = form.watch('price') || 0;
-  const comparePrice = form.watch('comparePrice');
-  const costPrice = form.watch('costPrice');
-
-  const hasMarginData = price > 0 && costPrice && costPrice > 0;
-  const margin = hasMarginData ? ((price - costPrice) / price) * 100 : null;
-  const profit = hasMarginData ? price - costPrice : null;
-  const discount = comparePrice && comparePrice > price
-    ? ((comparePrice - price) / comparePrice) * 100
-    : null;
-
-  if (!hasMarginData && !discount) return null;
-
-  return (
-    <div className="rounded-xl border bg-muted/30 px-4 py-3.5 space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-        Margin preview
-      </p>
-      <div className="flex flex-wrap gap-4">
-        {margin !== null && profit !== null && (
-          <>
-            <div>
-              <p className="text-xs text-muted-foreground">Margin</p>
-              <p className={cn(
-                'text-sm font-bold tabular-nums',
-                margin >= 30 ? 'text-emerald-600' : margin >= 10 ? 'text-amber-600' : 'text-destructive'
-              )}>
-                {margin.toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground">Profit</p>
-              <p className="text-sm font-bold tabular-nums text-foreground">
-                {currency} {profit.toLocaleString()}
-              </p>
-            </div>
-          </>
-        )}
-        {discount !== null && (
-          <div>
-            <p className="text-xs text-muted-foreground">Discount shown</p>
-            <p className="text-sm font-bold tabular-nums text-primary">
-              {discount.toFixed(0)}% off
-            </p>
-          </div>
-        )}
-      </div>
     </div>
   );
 }

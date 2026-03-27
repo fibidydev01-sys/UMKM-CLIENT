@@ -5,11 +5,9 @@ import Image from 'next/image';
 import { Drawer } from 'vaul';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import {
-  Package,
   Tag,
   DollarSign,
   Box,
-  BarChart3,
   Calendar,
   Edit,
   Trash2,
@@ -18,11 +16,9 @@ import {
   ImageIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/shared/utils';
 import { formatPrice, formatDateShort } from '@/lib/shared/format';
-import { useTenant } from '@/hooks';
 import type { Product } from '@/types';
 
 interface ProductPreviewDrawerProps {
@@ -46,9 +42,7 @@ export function ProductPreviewDrawer({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
-
-  const { tenant } = useTenant();
-  const currency = tenant?.currency || 'IDR';
+  const currency = 'IDR';
 
   const prevProductIdRef = useRef(product?.id);
   useEffect(() => {
@@ -146,7 +140,7 @@ export function ProductPreviewDrawer({
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
 
-          {/* Sticky Header */}
+          {/* Sticky Header — judul terpusat */}
           <div
             className={cn(
               'px-4 pb-4 border-b shrink-0 transition-shadow duration-200',
@@ -154,25 +148,9 @@ export function ProductPreviewDrawer({
               isHeaderSticky && 'shadow-md'
             )}
           >
-            <div className="flex items-center justify-between min-w-0">
-              <div className="min-w-0 flex-1">
-                <h2 className="font-semibold text-base truncate">{product.name}</h2>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  {product.sku && <span>SKU: {product.sku}</span>}
-                  {product.category && (
-                    <>
-                      <span>·</span>
-                      <span>{product.category}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                  {product.isActive ? 'Active' : 'Inactive'}
-                </Badge>
-              </div>
-            </div>
+            <h2 className="font-semibold text-base text-center truncate">
+              {product.name}
+            </h2>
           </div>
 
           {/* Scrollable Content */}
@@ -232,7 +210,6 @@ export function ProductPreviewDrawer({
               {/* Harga */}
               {!isCustomPrice && (
                 <div className="mb-6">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2">Price</h3>
                   <div className="flex items-baseline gap-3">
                     <span className="text-2xl font-bold">
                       {formatPrice(product.price, currency)}
@@ -264,16 +241,6 @@ export function ProductPreviewDrawer({
                     <div>
                       <p className="text-xs text-muted-foreground">Category</p>
                       <p className="text-sm font-medium">{product.category}</p>
-                    </div>
-                  </div>
-                )}
-
-                {product.sku && (
-                  <div className="flex items-start gap-3">
-                    <Package className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">SKU</p>
-                      <p className="text-sm font-medium font-mono">{product.sku}</p>
                     </div>
                   </div>
                 )}
@@ -310,16 +277,6 @@ export function ProductPreviewDrawer({
                     <p className="text-sm font-medium">{formatDateShort(product.createdAt)}</p>
                   </div>
                 </div>
-
-                {product.isFeatured && (
-                  <div className="flex items-start gap-3">
-                    <BarChart3 className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Status</p>
-                      <Badge variant="secondary" className="mt-1">Featured</Badge>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <Separator className="my-6" />

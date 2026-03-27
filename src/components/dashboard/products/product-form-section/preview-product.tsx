@@ -1,16 +1,11 @@
 'use client';
 
 // ─── Preview Product Sheet ─────────────────────────────────────────────────
-// Shopify-style sheet that slides in before final save
-// Shows a summary of all fields for review before committing
 
 import {
   Package,
   Wrench,
   Eye,
-  EyeOff,
-  Star,
-  Tag,
   MessageCircle,
   Image as ImageIcon,
   Check,
@@ -30,7 +25,6 @@ import { cn } from '@/lib/shared/utils';
 import type { ProductFormData } from '@/lib/shared/validations';
 import type { ProductType } from './types';
 
-// ─── Props ────────────────────────────────────────────────────────────────
 interface PreviewProductProps {
   open: boolean;
   onClose: () => void;
@@ -43,7 +37,6 @@ interface PreviewProductProps {
   isEditing: boolean;
 }
 
-// ─── Section Header ───────────────────────────────────────────────────────
 function PreviewSection({
   label,
   children,
@@ -61,7 +54,6 @@ function PreviewSection({
   );
 }
 
-// ─── Field row ────────────────────────────────────────────────────────────
 function PreviewRow({
   label,
   value,
@@ -85,7 +77,6 @@ function PreviewRow({
   );
 }
 
-// ─── Status badge ─────────────────────────────────────────────────────────
 function StatusBadge({
   active,
   activeLabel,
@@ -111,7 +102,6 @@ function StatusBadge({
   );
 }
 
-// ─── Component ────────────────────────────────────────────────────────────
 export function PreviewProduct({
   open,
   onClose,
@@ -136,7 +126,6 @@ export function PreviewProduct({
         side="right"
         className="w-full sm:max-w-md flex flex-col gap-0 p-0 overflow-hidden"
       >
-        {/* ── Header ───────────────────────────────────────────── */}
         <SheetHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <SheetTitle className="text-base font-bold">
             {isEditing ? 'Review changes' : 'Review & publish'}
@@ -146,7 +135,6 @@ export function PreviewProduct({
           </SheetDescription>
         </SheetHeader>
 
-        {/* ── Scrollable content ───────────────────────────────── */}
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
           {/* Thumbnail + type badge */}
@@ -198,7 +186,6 @@ export function PreviewProduct({
             <div className="rounded-xl border bg-card overflow-hidden px-3 py-1">
               <PreviewRow label="Name" value={formData.name} missing="No name set" />
               <PreviewRow label="Category" value={formData.category} missing="No category" />
-              {!isService && <PreviewRow label="SKU" value={formData.sku} missing="No SKU" />}
               <PreviewRow
                 label="Description"
                 value={formData.description ? `${formData.description.slice(0, 60)}${formData.description.length > 60 ? '…' : ''}` : null}
@@ -235,13 +222,6 @@ export function PreviewProduct({
                     value={formatPrice(formData.comparePrice)}
                     missing="—"
                   />
-                  {!isService && (
-                    <PreviewRow
-                      label="Cost per item"
-                      value={formatPrice(formData.costPrice)}
-                      missing="—"
-                    />
-                  )}
                 </>
               ) : (
                 <div className="flex items-center gap-2 py-2.5">
@@ -252,59 +232,19 @@ export function PreviewProduct({
             </div>
           </PreviewSection>
 
-          {/* Inventory — Product only */}
-          {!isService && (
-            <PreviewSection label="Inventory">
-              <div className="rounded-xl border bg-card overflow-hidden px-3 py-1">
-                <PreviewRow
-                  label="Track inventory"
-                  value={formData.trackStock ? 'Enabled' : 'Disabled'}
-                  valueClass={formData.trackStock ? 'text-emerald-600' : undefined}
-                />
-                {formData.trackStock && (
-                  <>
-                    <PreviewRow
-                      label="Quantity in stock"
-                      value={formData.stock != null ? String(formData.stock) : null}
-                      missing="Not set"
-                    />
-                    <PreviewRow
-                      label="Low stock alert"
-                      value={formData.minStock != null ? `≤ ${formData.minStock}` : null}
-                      missing="Not set"
-                    />
-                  </>
-                )}
-                <PreviewRow label="Unit" value={formData.unit ?? 'pcs'} />
-              </div>
-            </PreviewSection>
-          )}
-
           {/* Publish */}
           <PreviewSection label="Publish settings">
             <div className="flex items-center gap-2 flex-wrap">
               <StatusBadge
-                active={formData.isActive}
+                active={formData.isActive ?? false}
                 activeLabel="Visible"
                 inactiveLabel="Hidden"
               />
-              <StatusBadge
-                active={formData.isFeatured}
-                activeLabel="Featured"
-                inactiveLabel="Not featured"
-              />
-              {isService && formData.unit && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-blue-500/10 text-blue-600">
-                  <Wrench className="w-2.5 h-2.5" />
-                  {formData.unit}
-                </span>
-              )}
             </div>
           </PreviewSection>
 
         </div>
 
-        {/* ── Footer ───────────────────────────────────────────── */}
         <SheetFooter className="px-6 py-4 border-t bg-muted/30 shrink-0 flex-row gap-2">
           <Button
             variant="outline"

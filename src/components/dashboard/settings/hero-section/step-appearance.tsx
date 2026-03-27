@@ -95,7 +95,7 @@ export function StepAppearance({
       <div className="grid grid-cols-3 gap-8 items-start">
 
         {/* Col 1 — Brand Color */}
-        <div className="space-y-3">
+        <div id="tour-brand-color" className="space-y-3">
           <div className="space-y-0.5">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Brand Color
@@ -129,7 +129,7 @@ export function StepAppearance({
             </p>
           </div>
 
-          <div className="w-[160px]">
+          <div id="tour-hero-bg" className="w-[160px]">
             <ImageUpload
               value={formData.heroBackgroundImage}
               onChange={(url) => updateFormData('heroBackgroundImage', url ?? '')}
@@ -147,7 +147,7 @@ export function StepAppearance({
         </div>
 
         {/* Col 3 — Button Label */}
-        <div className="space-y-3">
+        <div id="tour-cta-button-label" className="space-y-3">
           <div className="space-y-0.5">
             <Label htmlFor="cta-desktop" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Button Label
@@ -211,7 +211,7 @@ export function StepAppearance({
         <CardContent className="pt-6 pb-6 flex flex-col items-center gap-5">
 
           {/* Brand Color */}
-          <div className="w-full space-y-2.5">
+          <div id="tour-brand-color" className="w-full space-y-2.5">
             <p className="text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Brand Color
             </p>
@@ -231,7 +231,7 @@ export function StepAppearance({
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Background Image
             </p>
-            <div className="w-[140px]">
+            <div id="tour-hero-bg" className="w-[140px]">
               <ImageUpload
                 value={formData.heroBackgroundImage}
                 onChange={(url) => updateFormData('heroBackgroundImage', url ?? '')}
@@ -250,7 +250,7 @@ export function StepAppearance({
           <div className="w-full border-t" />
 
           {/* Button Label */}
-          <div className="w-full space-y-2">
+          <div id="tour-cta-button-label" className="w-full space-y-2">
             <Label htmlFor="cta-mobile" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Button Label
             </Label>

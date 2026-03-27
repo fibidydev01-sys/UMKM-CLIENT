@@ -22,8 +22,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
         {/* Col 1 — Section heading + address */}
         <div className="space-y-5">
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contactTitle-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-contact-title" className="space-y-1.5">
+            <Label htmlFor="contactTitle-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Section Title
             </Label>
             <Input
@@ -37,7 +37,7 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="contactSubtitle-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+            <Label htmlFor="contactSubtitle-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Section Subheading
             </Label>
             <Input
@@ -50,8 +50,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
             <p className="text-xs text-muted-foreground">Supporting line shown below the title</p>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="contactAddress-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-address" className="space-y-1.5">
+            <Label htmlFor="contactAddress-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Full Address
             </Label>
             <Textarea
@@ -69,8 +69,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
         <div className="space-y-5">
 
           {/* WhatsApp */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactWa-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-whatsapp" className="space-y-1.5">
+            <Label htmlFor="contactWa-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               WhatsApp <span className="text-destructive normal-case font-normal">*required</span>
             </Label>
             <Input
@@ -87,8 +87,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           </div>
 
           {/* Phone Number */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactPhone-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-phone" className="space-y-1.5">
+            <Label htmlFor="contactPhone-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Phone Number <span className="normal-case font-normal text-muted-foreground">(Optional)</span>
             </Label>
             <Input
@@ -120,8 +120,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
           {/* Section Title */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactTitle-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-contact-title" className="space-y-1.5">
+            <Label htmlFor="contactTitle-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Section Title
             </Label>
             <Input
@@ -137,7 +137,7 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
 
           {/* Section Subheading */}
           <div className="space-y-1.5">
-            <Label htmlFor="contactSubtitle-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+            <Label htmlFor="contactSubtitle-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Section Subheading
             </Label>
             <Input
@@ -152,8 +152,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           <div className="w-full border-t" />
 
           {/* Phone Number */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactPhone-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-phone" className="space-y-1.5">
+            <Label htmlFor="contactPhone-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Phone Number
             </Label>
             <Input
@@ -166,8 +166,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           </div>
 
           {/* WhatsApp */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactWa-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-whatsapp" className="space-y-1.5">
+            <Label htmlFor="contactWa-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               WhatsApp <span className="text-destructive">*</span>
             </Label>
             <Input
@@ -185,8 +185,8 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           <div className="w-full border-t" />
 
           {/* Full Address */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactAddress-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+          <div id="tour-address" className="space-y-1.5">
+            <Label htmlFor="contactAddress-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
               Full Address
             </Label>
             <Textarea

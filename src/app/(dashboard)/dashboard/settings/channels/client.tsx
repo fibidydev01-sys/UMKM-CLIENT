@@ -1,60 +1,46 @@
-// ══════════════════════════════════════════════════════════════
-// CHANNELS CLIENT - Sticky Tabs Wrapper for Wizard Pages
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
-import { useState } from 'react';
-import { Search, CreditCard, Truck, Globe } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CreditCard, Truck, Share2 } from 'lucide-react';
 import { cn } from '@/lib/shared/utils';
+import { useChannelsActiveTab } from '@/stores/tour-store';
+import { useTour } from '@/hooks/dashboard/use-tour';
+import { useNextStep } from 'nextstepjs';
+import { PembayaranSection } from '@/components/dashboard/settings/pembayaran-section';
+import { PengirimanSection } from '@/components/dashboard/settings/pengiriman-section';
+import { SocialSection } from '@/components/dashboard/settings/social-section';
 
-// Import wizard pages as components
-import SeoPage from '../seo/page';
-import PembayaranPage from '../pembayaran/page';
-import PengirimanPage from '../pengiriman/page';
-import DomainPage from '../domain/page';
-
-// ══════════════════════════════════════════════════════════════
-// TYPES & CONSTANTS
-// ══════════════════════════════════════════════════════════════
-
-type TabType = 'pencarian' | 'pembayaran' | 'pengiriman' | 'domain';
+type TabType = 'pembayaran' | 'pengiriman' | 'social';
 
 const TABS = [
-  {
-    id: 'pencarian' as const,
-    label: 'Pencarian',
-    icon: Search,
-  },
-  {
-    id: 'pembayaran' as const,
-    label: 'Pembayaran',
-    icon: CreditCard,
-  },
-  {
-    id: 'pengiriman' as const,
-    label: 'Pengiriman',
-    icon: Truck,
-  },
-  {
-    id: 'domain' as const,
-    label: 'Domain',
-    icon: Globe,
-  },
+  { id: 'pembayaran' as const, label: 'Payment', icon: CreditCard },
+  { id: 'pengiriman' as const, label: 'Shipping', icon: Truck },
+  { id: 'social' as const, label: 'Social', icon: Share2 },
 ];
 
-// ══════════════════════════════════════════════════════════════
-// MAIN CLIENT COMPONENT - WRAPPER ONLY
-// ══════════════════════════════════════════════════════════════
-
 export function ChannelsClient() {
-  const [activeTab, setActiveTab] = useState<TabType>('pencarian');
+  const [activeTab, setActiveTab] = useState<TabType>('pembayaran');
+
+  const tourActiveTab = useChannelsActiveTab();
+  const { shouldShowTour } = useTour('channels');
+  const { startNextStep } = useNextStep();
+
+  useEffect(() => {
+    if (tourActiveTab && TABS.some((t) => t.id === tourActiveTab)) {
+      setActiveTab(tourActiveTab as TabType);
+    }
+  }, [tourActiveTab]);
+
+  useEffect(() => {
+    if (!shouldShowTour) return;
+    const timer = setTimeout(() => startNextStep('channels'), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
-      {/* ════════════════════════════════════════════════════════ */}
-      {/* STICKY TABS                                             */}
-      {/* ════════════════════════════════════════════════════════ */}
+      {/* Sticky Tabs */}
       <div className="sticky top-0 z-20 bg-background border-b -mx-4 md:-mx-6 lg:-mx-8 mb-6">
         <div className="px-4 md:px-6 lg:px-8">
           <div className="flex overflow-x-auto">
@@ -77,15 +63,10 @@ export function ChannelsClient() {
         </div>
       </div>
 
-      {/* ════════════════════════════════════════════════════════ */}
-      {/* TAB CONTENT                                             */}
-      {/* ════════════════════════════════════════════════════════ */}
-      <div>
-        {activeTab === 'pencarian' && <SeoPage />}
-        {activeTab === 'pembayaran' && <PembayaranPage />}
-        {activeTab === 'pengiriman' && <PengirimanPage />}
-        {activeTab === 'domain' && <DomainPage />}
-      </div>
+      {/* Tab Content */}
+      {activeTab === 'pembayaran' && <PembayaranSection />}
+      {activeTab === 'pengiriman' && <PengirimanSection />}
+      {activeTab === 'social' && <SocialSection />}
     </div>
   );
 }
