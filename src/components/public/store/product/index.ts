@@ -12,5 +12,4 @@ export { ProductGallery } from './product-gallery';
 export { ProductGrid } from './product-grid';
 export { ProductInfo } from './product-info';
 export { ProductPagination } from './product-pagination';
-export { ProductShare } from './product-share';
 export { RelatedProducts } from './related-products';

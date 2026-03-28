@@ -1,72 +1,84 @@
 'use client';
 
-import { lazy, Suspense, ComponentType } from 'react';
-import { extractAboutData, useAboutBlock } from '@/lib/public';
-import type { TenantLandingConfig, Tenant, PublicTenant, FeatureItem } from '@/types';
+import Image from 'next/image';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@/components/ui/carousel';
 
-interface TenantAboutProps {
-  config?: TenantLandingConfig['about'];
-  tenant: Tenant | PublicTenant;
-}
-
-// Define the props that About components expect
-interface AboutComponentProps {
-  title: string;
-  subtitle: string;
-  content: string;
-  image: string | undefined;
-  features: FeatureItem[];
-}
-
-/**
- * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
- *
- * NO MANUAL IMPORTS! Just add about201.tsx and it works!
- *
- * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
- * - title → tenant.aboutTitle
- * - subtitle → tenant.aboutSubtitle
- * - content → tenant.aboutContent
- * - image → tenant.aboutImage
- * - features → tenant.aboutFeatures
- *
- * 🚀 SUPPORTS ALL BLOCKS: about1, about2, about3, ..., about200, about9999!
- */
-export function TenantAbout({ config, tenant }: TenantAboutProps) {
-  const templateBlock = useAboutBlock();
-  const block = config?.block || templateBlock;
-
-  // Extract about data directly from tenant (Data Contract fields)
-  const aboutData = extractAboutData(tenant, config ? { about: config } : undefined);
-
-  const commonProps: AboutComponentProps = {
-    title: aboutData.title,
-    subtitle: aboutData.subtitle,
-    content: aboutData.content,
-    image: aboutData.image,
-    features: aboutData.features,
-  };
-
-  // 🚀 SMART: Dynamic component loading with proper typing
-  const blockNumber = block.replace('about', '');
-  const AboutComponent = lazy<ComponentType<AboutComponentProps>>(() =>
-    import(`./about${blockNumber}`)
-      .then((mod) => ({ default: mod[`About${blockNumber}`] }))
-      .catch(() => import('./about1').then((mod) => ({ default: mod.About1 })))
+export function TenantAbout({ features = [] }: { features: any[] }) {
+  const validFeatures = features.filter(
+    (f) => f && typeof f === 'object' && !Array.isArray(f) && (f.title || f.icon)
   );
 
-  // Render with Suspense for lazy loading
-  return (
-    <Suspense fallback={<AboutSkeleton />}>
-      <AboutComponent {...commonProps} />
-    </Suspense>
-  );
-}
+  if (validFeatures.length === 0) return null;
 
-function AboutSkeleton() {
   return (
-    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
-      <div className="text-muted-foreground">Loading...</div>
-    </div>
+    <section id="about" className="bg-background py-16 md:py-24">
+      <div className="container mx-auto px-8 md:px-16 lg:px-20">
+        <div className="relative">
+          <Carousel
+            opts={{
+              align: 'center',
+              loop: false,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-3 md:-ml-4">
+              {validFeatures.map((feature, index) => (
+                <CarouselItem
+                  key={index}
+                  className="pl-3 md:pl-4 basis-[280px] md:basis-[320px]"
+                >
+                  <div className="flex flex-col gap-3">
+                    {feature.icon && (
+                      <div className="overflow-hidden rounded-xl border border-border">
+                        <AspectRatio ratio={3 / 4}>
+                          <Image
+                            src={feature.icon}
+                            alt={feature.title ?? ''}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 280px, 320px"
+                          />
+                        </AspectRatio>
+                      </div>
+                    )}
+                    <p className="text-sm font-semibold text-foreground leading-tight">
+                      {feature.title}
+                    </p>
+                    {feature.description && (
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        {feature.description}
+                      </p>
+                    )}
+                  </div>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+
+            {/* Desktop — arrow di luar kiri & kanan */}
+            {validFeatures.length > 1 && (
+              <>
+                <CarouselPrevious className="hidden md:flex -left-10 lg:-left-12" />
+                <CarouselNext className="hidden md:flex -right-10 lg:-right-12" />
+              </>
+            )}
+
+            {/* Mobile — arrow di bawah tengah */}
+            {validFeatures.length > 1 && (
+              <div className="flex md:hidden justify-center gap-3 mt-6">
+                <CarouselPrevious className="static translate-y-0 translate-x-0" />
+                <CarouselNext className="static translate-y-0 translate-x-0" />
+              </div>
+            )}
+          </Carousel>
+        </div>
+      </div>
+    </section>
   );
 }

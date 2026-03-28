@@ -1,20 +1,14 @@
 import { Suspense } from 'react';
-import { tenantsApi, productsApi } from '@/lib/api';
+import { productsApi } from '@/lib/api';
 import {
-  ProductGrid,
-  ProductFilters,
   CategoryList,
+  ProductFilters,
+  ProductGrid,
   ProductPagination,
   ProductGridSkeleton,
 } from '@/components/public/store';
 import type { Metadata } from 'next';
-import type { Product, PaginatedResponse, PublicTenant } from '@/types';
-
-// ══════════════════════════════════════════════════════════════
-// STORE PRODUCTS PAGE - v2.3 (MULTI-CURRENCY + SORT BUG FIX)
-// ✅ FIX: sort key 'price-low'/'price-high' selaras dengan product-filters.tsx
-// ✅ FIX: fetch tenant untuk dapat currency, pass ke ProductGrid
-// ══════════════════════════════════════════════════════════════
+import type { Product, PaginatedResponse } from '@/types';
 
 interface ProductsPageProps {
   params: Promise<{ slug: string }>;
@@ -25,14 +19,6 @@ export const metadata: Metadata = {
   title: 'Semua Produk',
 };
 
-async function getTenant(slug: string): Promise<PublicTenant | null> {
-  try {
-    return await tenantsApi.getBySlug(slug);
-  } catch {
-    return null;
-  }
-}
-
 async function getProducts(
   slug: string,
   searchParams: { [key: string]: string | string[] | undefined }
@@ -40,36 +26,6 @@ async function getProducts(
   const page = Number(searchParams.page) || 1;
   const search = searchParams.search as string | undefined;
   const category = searchParams.category as string | undefined;
-  const sort = (searchParams.sort as string) || 'newest';
-
-  let sortBy: 'name' | 'price' | 'createdAt' | 'stock' | 'updatedAt' = 'createdAt';
-  let sortOrder: 'asc' | 'desc' = 'desc';
-
-  switch (sort) {
-    case 'oldest':
-      sortBy = 'createdAt';
-      sortOrder = 'asc';
-      break;
-    // ✅ FIX: gunakan 'price-low' / 'price-high' agar selaras dengan product-filters.tsx
-    // (sebelumnya salah: 'price-asc' / 'price-desc' — tidak pernah match!)
-    case 'price-low':
-      sortBy = 'price';
-      sortOrder = 'asc';
-      break;
-    case 'price-high':
-      sortBy = 'price';
-      sortOrder = 'desc';
-      break;
-    case 'name-asc':
-      sortBy = 'name';
-      sortOrder = 'asc';
-      break;
-    case 'name-desc':
-      sortBy = 'name';
-      sortOrder = 'desc';
-      break;
-    // default: newest → createdAt desc (sudah di-set di atas)
-  }
 
   try {
     return await productsApi.getByStore(slug, {
@@ -77,8 +33,8 @@ async function getProducts(
       limit: 12,
       search,
       category,
-      sortBy,
-      sortOrder,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
       isActive: true,
     });
   } catch {
@@ -112,9 +68,7 @@ export default async function ProductsPage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
 
-  // ✅ FIX: fetch tenant sekaligus untuk dapat currency
-  const [tenant, productsResponse, categories] = await Promise.all([
-    getTenant(slug),
+  const [productsResponse, categories] = await Promise.all([
     getProducts(slug, resolvedSearchParams),
     getCategories(slug),
   ]);
@@ -122,20 +76,16 @@ export default async function ProductsPage({
   const { data: products, meta } = productsResponse;
   const currentCategory = resolvedSearchParams.category as string | undefined;
 
-  // ✅ FIX: currency dari tenant, fallback IDR
-  const currency = tenant?.currency || 'IDR';
-
   return (
     <div className="container px-4 py-8">
       {/* Page Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">Semua Produk</h1>
-        <p className="text-muted-foreground">{meta.total} produk tersedia</p>
+        <h1 className="text-2xl font-bold">Semua Produk</h1>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6">
-        <ProductFilters storeSlug={slug} categories={categories} />
+      {/* Search */}
+      <div className="mb-4">
+        <ProductFilters storeSlug={slug} />
       </div>
 
       {/* Category List */}
@@ -149,12 +99,10 @@ export default async function ProductsPage({
         </div>
       )}
 
-      {/* ✅ FIX: pass currency ke ProductGrid */}
       <Suspense fallback={<ProductGridSkeleton count={12} />}>
         <ProductGrid
           products={products}
           storeSlug={slug}
-          currency={currency}
         />
       </Suspense>
 

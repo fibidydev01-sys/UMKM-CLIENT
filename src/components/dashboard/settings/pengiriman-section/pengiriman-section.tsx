@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AutoSaveStatus } from '@/components/dashboard/settings/shared';
 import { toast } from 'sonner';
 import { useTenant, useAutoSave } from '@/hooks';
@@ -87,88 +86,7 @@ export function PengirimanSection() {
     }
   };
 
-  const isLoading = tenant === null;
-
-  if (isLoading) {
-    return (
-      <div className="h-full flex flex-col">
-
-        {/* ── DESKTOP SKELETON ─────────────────────────────────────────── */}
-        <div className="hidden lg:flex lg:flex-col lg:h-full">
-
-          {/* Header row: AutoSaveStatus + title (no StepIndicator) */}
-          <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="w-3.5 h-3.5 rounded-sm" />
-                <Skeleton className="h-[11px] w-16 rounded-full" />
-              </div>
-              <Skeleton className="h-8 w-44 rounded-md" />
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 pb-20 min-h-[280px]">
-            <div className="space-y-5">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-[11px] w-36 rounded-full" />
-                <Skeleton className="h-5 w-20 rounded-full" />
-              </div>
-              <div className="grid grid-cols-2 gap-2.5">
-                {Array.from({ length: 9 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[52px] w-full rounded-lg" />
-                ))}
-              </div>
-              <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5 space-y-1">
-                <Skeleton className="h-3 w-full max-w-md rounded-full" />
-                <Skeleton className="h-3 w-3/4 max-w-sm rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── MOBILE SKELETON ──────────────────────────────────────────── */}
-        <div className="lg:hidden flex flex-col pb-24">
-          <div className="mb-6 text-center space-y-0.5">
-            <div className="flex justify-center">
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="w-3.5 h-3.5 rounded-sm" />
-                <Skeleton className="h-[11px] w-14 rounded-full" />
-              </div>
-            </div>
-            <Skeleton className="h-5 w-36 rounded-md mx-auto" />
-          </div>
-          <div className="flex flex-col items-center gap-3 min-h-[260px]">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-[11px] w-10 rounded-full" />
-              <Skeleton className="h-5 w-20 rounded-full" />
-            </div>
-            <div className="w-full max-w-sm space-y-2">
-              {Array.from({ length: 9 }).map((_, i) => (
-                <Skeleton key={i} className="h-[46px] w-full rounded-lg" />
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── FIXED BOTTOM DESKTOP */}
-        <div
-          className="hidden lg:flex fixed bottom-0 right-0 z-40 items-center justify-end px-8 py-4 bg-background/90 backdrop-blur-sm border-t"
-          style={{ left: 'var(--sidebar-width)' }}
-        >
-          <Skeleton className="h-9 w-44 rounded-md" />
-        </div>
-
-        {/* ── FIXED BOTTOM MOBILE */}
-        <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-sm border-t">
-          <div className="px-4 py-3 flex items-center justify-end">
-            <Skeleton className="h-9 w-24 rounded-md" />
-          </div>
-        </div>
-
-      </div>
-    );
-  }
+  if (!tenant) return null;
 
   return (
     <div className="h-full flex flex-col">

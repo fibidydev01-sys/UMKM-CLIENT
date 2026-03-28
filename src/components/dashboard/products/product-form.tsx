@@ -104,6 +104,26 @@ function StepIndicator({
   );
 }
 
+function StepDots({ steps, currentStep }: { steps: WizardStep[]; currentStep: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {steps.map((_, i) => (
+        <div
+          key={i}
+          className={cn(
+            'rounded-full transition-all duration-300',
+            i === currentStep
+              ? 'w-5 h-1.5 bg-primary'
+              : i < currentStep
+                ? 'w-1.5 h-1.5 bg-primary/40'
+                : 'w-1.5 h-1.5 bg-border'
+          )}
+        />
+      ))}
+    </div>
+  );
+}
+
 interface ProductFormProps {
   product?: Product;
   categories?: string[];
@@ -212,7 +232,6 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
             form={form}
             productType={productType}
             onTypeChange={handleTypeChange}
-            categories={categories}
           />
         );
       case 'Media':
@@ -236,9 +255,8 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
         return (
           <StepPublish
             form={form}
-            productType={productType}
-            showPrice={showPrice}
             isEditing={isEditing}
+            categories={categories}
           />
         );
       default:
@@ -266,6 +284,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           {/* ══════════════════ DESKTOP ══════════════════════════ */}
           <div className="hidden lg:flex lg:flex-col lg:h-full">
 
+            {/* Header: title kiri, StepIndicator kanan */}
             <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
               <div className="space-y-1">
                 <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
@@ -288,63 +307,16 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
               </div>
             </div>
 
-            <div className="flex-1 min-h-[300px]">
+            {/* Content */}
+            <div className="flex-1 min-h-[300px] pb-20">
               {renderStep()}
-            </div>
-
-            <div className="flex items-center justify-between pt-6 border-t mt-8">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handlePrev}
-                className={cn(
-                  'gap-1.5 min-w-[130px] h-9 text-sm',
-                  currentStep === 0 && 'invisible'
-                )}
-              >
-                <ChevronLeft className="h-3.5 w-3.5" />
-                Previous
-              </Button>
-
-              <div className="flex items-center gap-1.5">
-                {STEPS.map((_, i) => (
-                  <div
-                    key={i}
-                    className={cn(
-                      'rounded-full transition-all duration-300',
-                      i === currentStep
-                        ? 'w-5 h-1.5 bg-primary'
-                        : i < currentStep
-                          ? 'w-1.5 h-1.5 bg-primary/40'
-                          : 'w-1.5 h-1.5 bg-border'
-                    )}
-                  />
-                ))}
-              </div>
-
-              <Button
-                type="button"
-                onClick={handleNext}
-                className="gap-1.5 min-w-[130px] h-9 text-sm"
-              >
-                {isLastStep ? (
-                  <>
-                    <Eye className="h-3.5 w-3.5" />
-                    Review &amp; {isEditing ? 'Save' : 'Publish'}
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </>
-                )}
-              </Button>
             </div>
           </div>
 
           {/* ══════════════════ MOBILE ════════════════════════════ */}
           <div className="lg:hidden flex flex-col pb-24">
 
+            {/* StepIndicator (sm) di tengah atas */}
             <div className="mb-6">
               <div className="flex justify-center mb-4">
                 <StepIndicator
@@ -372,40 +344,77 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
             </div>
           </div>
 
-          {/* ── Mobile bottom nav (fixed) ─────────────────────── */}
-          <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40">
-            <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
+          {/* ══════════════════ DESKTOP — Fixed bottom nav ═══════ */}
+          <div
+            className="hidden lg:flex fixed bottom-0 right-0 z-40 items-center justify-between px-8 py-4 bg-background/90 backdrop-blur-sm border-t"
+            style={{ left: 'var(--sidebar-width)' }}
+          >
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handlePrev}
+              className={cn('gap-1.5 min-w-[130px] h-9 text-sm', currentStep === 0 && 'invisible')}
+            >
+              <ChevronLeft className="h-3.5 w-3.5" />
+              Previous
+            </Button>
+
+            <StepDots steps={STEPS} currentStep={currentStep} />
+
+            <Button
+              type="button"
+              onClick={handleNext}
+              className="gap-1.5 min-w-[130px] h-9 text-sm"
+            >
+              {isLastStep ? (
+                <>
+                  <Eye className="h-3.5 w-3.5" />
+                  Review &amp; {isEditing ? 'Save' : 'Publish'}
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* ══════════════════ MOBILE — Fixed bottom nav ════════ */}
+          <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-sm border-t">
+            <div className="px-4 py-3 flex items-center justify-between gap-3">
+
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="icon"
                 onClick={handlePrev}
-                className={cn(
-                  'gap-1 flex-1 h-9 text-xs font-medium',
-                  currentStep === 0 && 'invisible'
-                )}
+                className={cn('h-9 w-9 shrink-0', currentStep === 0 && 'invisible')}
               >
-                <ChevronLeft className="h-3.5 w-3.5" />
-                Previous
+                <ChevronLeft className="h-4 w-4" />
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleNext}
-                className="gap-1 flex-1 h-9 text-xs font-medium"
-              >
-                {isLastStep ? (
-                  <>
-                    <Eye className="h-3.5 w-3.5" />
-                    Review
-                  </>
-                ) : (
-                  <>
-                    Next
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </>
-                )}
-              </Button>
+
+              <StepDots steps={STEPS} currentStep={currentStep} />
+
+              {isLastStep ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleNext}
+                  className="h-9 px-4 text-xs font-medium shrink-0"
+                >
+                  Review
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="icon"
+                  onClick={handleNext}
+                  className="h-9 w-9 shrink-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
             </div>
           </div>
 

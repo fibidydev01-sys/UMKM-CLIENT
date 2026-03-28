@@ -1,41 +1,20 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// PRODUCT CARD - v2.3 (MULTI-CURRENCY FIX)
-// ✅ FIX: currency diterima sebagai prop dari parent
-// ✅ FIX: formatPrice selalu pakai currency dinamis, tidak hardcode IDR
-// ══════════════════════════════════════════════════════════════
-
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 import Link from 'next/link';
-import { ShoppingCart, Plus, Check } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
+import { Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useCartStore, useItemQty } from '@/stores';
 import { formatPrice } from '@/lib/shared/format';
-import { cn } from '@/lib/shared/utils';
 import { productUrl } from '@/lib/public/store-url';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
   product: Product;
   storeSlug: string;
-  currency: string;          // ✅ FIX: wajib diterima dari parent
-  showAddToCart?: boolean;
 }
 
-export function ProductCard({
-  product,
-  storeSlug,
-  currency,                  // ✅ FIX: pakai currency dari prop
-  showAddToCart = true,
-}: ProductCardProps) {
-  const [isAdding, setIsAdding] = useState(false);
-  const addItem = useCartStore((state) => state.addItem);
-  const itemQty = useItemQty(product.id);
-
+export function ProductCard({ product, storeSlug }: ProductCardProps) {
   const { hasDiscount, discountPercent, isOutOfStock, isCustomPrice } = useMemo(() => {
     const isCustomPrice = product.price === 0;
     const hasDiscount =
@@ -47,8 +26,7 @@ export function ProductCard({
       hasDiscount,
       discountPercent: hasDiscount
         ? Math.round(
-          ((product.comparePrice! - product.price) / product.comparePrice!) *
-          100
+          ((product.comparePrice! - product.price) / product.comparePrice!) * 100
         )
         : 0,
       isOutOfStock: product.trackStock && (product.stock ?? 0) <= 0,
@@ -56,35 +34,12 @@ export function ProductCard({
   }, [product.comparePrice, product.price, product.trackStock, product.stock]);
 
   const imageUrl = product.images?.[0];
-  const url = useMemo(
-    () => productUrl(storeSlug, product.id),
-    [storeSlug, product.id]
-  );
-
-  const handleAddToCart = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (isOutOfStock) return;
-
-      setIsAdding(true);
-      addItem({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images?.[0],
-        unit: product.unit || undefined,
-        maxStock: product.trackStock ? (product.stock ?? undefined) : undefined,
-      });
-
-      setTimeout(() => setIsAdding(false), 500);
-    },
-    [isOutOfStock, addItem, product]
-  );
+  const url = useMemo(() => productUrl(storeSlug, product.id), [storeSlug, product.id]);
 
   return (
     <div className="group overflow-hidden transition-shadow hover:shadow-md rounded-xl border border-border/50 bg-card h-full flex flex-col">
       <Link href={url} className="flex flex-col flex-1">
+
         {/* Image */}
         <div className="relative aspect-square overflow-hidden bg-muted">
           <OptimizedImage
@@ -97,7 +52,7 @@ export function ProductCard({
             className="object-cover transition-transform group-hover:scale-105"
             fallback={
               <div className="flex h-full items-center justify-center">
-                <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
+                <Package className="h-10 w-10 text-muted-foreground/30" />
               </div>
             }
           />
@@ -117,29 +72,7 @@ export function ProductCard({
           {/* Out of Stock Overlay */}
           {isOutOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <Badge variant="secondary" className="text-sm">
-                Stok Habis
-              </Badge>
-            </div>
-          )}
-
-          {/* Quick Add — desktop hover, sembunyikan jika custom price */}
-          {showAddToCart && !isOutOfStock && !isCustomPrice && (
-            <div className="hidden md:block absolute bottom-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button
-                size="icon"
-                className={cn(
-                  'h-8 w-8 rounded-full shadow-lg',
-                  isAdding && 'bg-green-500 hover:bg-green-500'
-                )}
-                onClick={handleAddToCart}
-              >
-                {isAdding ? (
-                  <Check className="h-3.5 w-3.5" />
-                ) : (
-                  <Plus className="h-3.5 w-3.5" />
-                )}
-              </Button>
+              <Badge variant="secondary" className="text-sm">Stok Habis</Badge>
             </div>
           )}
         </div>
@@ -155,59 +88,20 @@ export function ProductCard({
             {product.name}
           </h3>
 
-          {/* ✅ FIX: Semua formatPrice pakai currency dari prop */}
           {!isCustomPrice && (
-            <>
-              <div className="mt-1.5 flex items-baseline gap-1.5">
-                <span className="font-semibold text-sm text-primary">
-                  {formatPrice(product.price, currency)}
+            <div className="mt-1.5 flex items-baseline gap-1.5">
+              <span className="font-semibold text-sm text-primary">
+                {formatPrice(product.price)}
+              </span>
+              {hasDiscount && (
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPrice(product.comparePrice!)}
                 </span>
-                {hasDiscount && (
-                  <span className="text-xs text-muted-foreground line-through">
-                    {formatPrice(product.comparePrice!, currency)}
-                  </span>
-                )}
-              </div>
-              {product.unit && (
-                <p className="text-xs text-muted-foreground leading-none mt-1">
-                  per {product.unit}
-                </p>
               )}
-            </>
-          )}
-
-          {itemQty > 0 && !isCustomPrice && (
-            <div className="mt-1.5 flex items-center gap-1 text-xs text-primary">
-              <ShoppingCart className="h-3 w-3" />
-              <span>{itemQty} di keranjang</span>
             </div>
           )}
         </div>
       </Link>
-
-      {/* Mobile Add to Cart — sembunyikan jika custom price */}
-      {showAddToCart && !isOutOfStock && !isCustomPrice && (
-        <div className="px-3 pb-2.5 md:hidden">
-          <Button
-            size="sm"
-            variant="outline"
-            className="w-full h-8 text-xs"
-            onClick={handleAddToCart}
-          >
-            {isAdding ? (
-              <>
-                <Check className="h-3.5 w-3.5 mr-1.5" />
-                Ditambahkan
-              </>
-            ) : (
-              <>
-                <Plus className="h-3.5 w-3.5 mr-1.5" />
-                Tambah
-              </>
-            )}
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

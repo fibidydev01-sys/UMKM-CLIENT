@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ImageUpload } from '@/components/shared/upload';
+import { Lock } from 'lucide-react';
 import type { HeroFormData } from '@/types';
 
 interface StepIdentityProps {
@@ -13,6 +14,8 @@ interface StepIdentityProps {
   onRemoveLogo: () => void;
   isRemovingLogo: boolean;
   isDesktop?: boolean;
+  tenantEmail?: string;
+  tenantSlug?: string;
 }
 
 export function StepIdentity({
@@ -21,6 +24,8 @@ export function StepIdentity({
   onRemoveLogo,
   isRemovingLogo,
   isDesktop = false,
+  tenantEmail = '',
+  tenantSlug = '',
 }: StepIdentityProps) {
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
@@ -66,7 +71,6 @@ export function StepIdentity({
             </p>
           </div>
 
-          {/* Divider */}
           <div className="border-t max-w-md" />
 
           {/* Category */}
@@ -82,6 +86,39 @@ export function StepIdentity({
             <p className="text-xs text-muted-foreground">
               Set during registration · cannot be changed
             </p>
+          </div>
+
+          <div className="border-t max-w-md" />
+
+          {/* Email + Store Domain */}
+          <div className="grid grid-cols-2 gap-6 max-w-md">
+
+            <div className="space-y-1.5">
+              <Label htmlFor="tenantEmail-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
+                Email
+                <Lock className="h-3 w-3 text-muted-foreground/50" />
+              </Label>
+              <Input
+                id="tenantEmail-d"
+                value={tenantEmail}
+                disabled
+                className="h-11 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="tenantDomain-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground flex items-center gap-1.5">
+                Store Domain
+                <Lock className="h-3 w-3 text-muted-foreground/50" />
+              </Label>
+              <Input
+                id="tenantDomain-d"
+                value={`${tenantSlug}.fibidy.com`}
+                disabled
+                className="h-11 text-sm font-mono bg-muted/30 text-muted-foreground cursor-not-allowed"
+              />
+            </div>
+
           </div>
 
           {/* Tip box */}
@@ -150,6 +187,32 @@ export function StepIdentity({
             <p className="text-[11px] text-muted-foreground text-center">
               Set during registration · cannot be changed
             </p>
+          </div>
+
+          <div className="w-full border-t" />
+
+          {/* Email */}
+          <div className="w-full space-y-1.5">
+            <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+              Email
+            </Label>
+            <Input
+              value={tenantEmail}
+              disabled
+              className="text-center h-10 text-sm bg-muted/30 text-muted-foreground cursor-not-allowed"
+            />
+          </div>
+
+          {/* Store Domain */}
+          <div className="w-full space-y-1.5">
+            <Label className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
+              Store Domain
+            </Label>
+            <Input
+              value={`${tenantSlug}.fibidy.com`}
+              disabled
+              className="text-center h-10 text-sm font-mono bg-muted/30 text-muted-foreground cursor-not-allowed"
+            />
           </div>
 
         </CardContent>

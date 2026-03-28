@@ -2,15 +2,6 @@
 
 // ─── Preview Product Sheet ─────────────────────────────────────────────────
 
-import {
-  Package,
-  Wrench,
-  Eye,
-  MessageCircle,
-  Image as ImageIcon,
-  Check,
-  Loader2,
-} from 'lucide-react';
 import Image from 'next/image';
 import {
   Sheet,
@@ -77,31 +68,6 @@ function PreviewRow({
   );
 }
 
-function StatusBadge({
-  active,
-  activeLabel,
-  inactiveLabel,
-}: {
-  active: boolean;
-  activeLabel: string;
-  inactiveLabel: string;
-}) {
-  return (
-    <span className={cn(
-      'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full',
-      active
-        ? 'bg-emerald-500/10 text-emerald-600'
-        : 'bg-muted text-muted-foreground'
-    )}>
-      {active
-        ? <Check className="w-2.5 h-2.5" />
-        : <span className="w-2 h-2 rounded-full bg-current opacity-40" />
-      }
-      {active ? activeLabel : inactiveLabel}
-    </span>
-  );
-}
-
 export function PreviewProduct({
   open,
   onClose,
@@ -137,7 +103,7 @@ export function PreviewProduct({
 
         <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-          {/* Thumbnail + type badge */}
+          {/* Thumbnail + type */}
           <div className="flex items-start gap-4">
             <div className="relative w-20 h-20 rounded-xl overflow-hidden border bg-muted shrink-0">
               {firstImage ? (
@@ -150,7 +116,7 @@ export function PreviewProduct({
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <ImageIcon className="h-7 w-7 text-muted-foreground/30" />
+                  <p className="text-[10px] text-muted-foreground/40">No image</p>
                 </div>
               )}
               {images.length > 1 && (
@@ -160,19 +126,13 @@ export function PreviewProduct({
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                {isService
-                  ? <Wrench className="h-3.5 w-3.5 text-blue-500 shrink-0" />
-                  : <Package className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                }
-                <span className={cn(
-                  'text-[11px] font-semibold',
-                  isService ? 'text-blue-600' : 'text-emerald-600'
-                )}>
-                  {isService ? 'Service' : 'Product'}
-                </span>
-              </div>
-              <p className="text-base font-bold leading-tight truncate">
+              <span className={cn(
+                'text-[11px] font-semibold',
+                isService ? 'text-blue-600' : 'text-emerald-600'
+              )}>
+                {isService ? 'Service' : 'Product'}
+              </span>
+              <p className="text-base font-bold leading-tight truncate mt-0.5">
                 {formData.name || <span className="text-muted-foreground font-normal italic text-sm">No name</span>}
               </p>
               {formData.category && (
@@ -224,8 +184,7 @@ export function PreviewProduct({
                   />
                 </>
               ) : (
-                <div className="flex items-center gap-2 py-2.5">
-                  <MessageCircle className="h-3.5 w-3.5 text-orange-500 shrink-0" />
+                <div className="py-2.5">
                   <p className="text-xs font-medium text-orange-600">Price on request</p>
                 </div>
               )}
@@ -234,11 +193,11 @@ export function PreviewProduct({
 
           {/* Publish */}
           <PreviewSection label="Publish settings">
-            <div className="flex items-center gap-2 flex-wrap">
-              <StatusBadge
-                active={formData.isActive ?? false}
-                activeLabel="Visible"
-                inactiveLabel="Hidden"
+            <div className="rounded-xl border bg-card px-3 py-1">
+              <PreviewRow
+                label="Visibility"
+                value={formData.isActive ? 'Visible' : 'Hidden'}
+                valueClass={formData.isActive ? 'text-emerald-600' : 'text-muted-foreground'}
               />
             </div>
           </PreviewSection>
@@ -255,23 +214,14 @@ export function PreviewProduct({
             Back to edit
           </Button>
           <Button
-            className="flex-1 gap-2"
+            className="flex-1"
             onClick={onSave}
             disabled={isSaving}
           >
-            {isSaving ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {isEditing ? 'Saving...' : 'Publishing...'}
-              </>
-            ) : (
-              <>
-                {isEditing
-                  ? <><Check className="h-4 w-4" />Save changes</>
-                  : <><Eye className="h-4 w-4" />Publish listing</>
-                }
-              </>
-            )}
+            {isSaving
+              ? (isEditing ? 'Saving...' : 'Publishing...')
+              : (isEditing ? 'Save changes' : 'Publish listing')
+            }
           </Button>
         </SheetFooter>
       </SheetContent>

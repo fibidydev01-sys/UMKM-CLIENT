@@ -4,9 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, Rocket, LayoutDashboard } from 'lucide-react';
+import { Menu, Rocket, LayoutDashboard, ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader } from '@/components/ui/sheet';
 import {
   NavigationMenu,
   NavigationMenuList,
@@ -80,8 +80,14 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                         )}
                         <div className="absolute inset-0 bg-black/40" />
                         <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <p className="text-white text-sm font-medium leading-tight">
-                            {tenant.tagline || 'Welcome to our store'}
+                          {tenant.heroTitle && (
+                            <p className="text-white/70 text-xs mb-1 line-clamp-1">
+                              {tenant.heroTitle}
+                            </p>
+                          )}
+                          <p className="text-white text-sm font-semibold leading-tight flex items-center gap-1">
+                            {tenant.name}
+                            <ArrowUpRight className="h-4 w-4 text-white" />
                           </p>
                         </div>
                       </Link>
@@ -97,7 +103,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                             <p className="text-xs text-muted-foreground mt-0.5 break-words">
                               {info.type === 'whatsapp' && (
                                 <a
-                                  href={`https://wa.me/${info.value.replace(/\D/g, '')}`}
+                                  href={`https://wa.me/${info.value!.replace(/\D/g, '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="hover:text-primary transition-colors"
@@ -113,7 +119,7 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
                     </div>
                     <div className="mt-3 pt-3 border-t">
                       <Link href={urls.path('/contact')} className="text-sm text-primary hover:underline">
-                        View contact page →
+                        View contact page
                       </Link>
                     </div>
                   </li>
@@ -165,7 +171,6 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
             </SheetTrigger>
             <SheetContent side="right" className="w-[280px] sm:w-[350px]">
               <SheetHeader>
-                <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col gap-2 mt-4">
                 {navItems.map((item) => {
@@ -197,4 +202,3 @@ export function StoreHeader({ tenant }: StoreHeaderProps) {
     </header>
   );
 }
-

@@ -1,19 +1,10 @@
 'use client';
 
-import { Wallet, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Wallet, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/shared/utils';
 import type { EWallet, PembayaranFormData } from '@/types';
-
-interface StepEwalletProps {
-  formData: PembayaranFormData;
-  onAdd: () => void;
-  onEdit: (ewallet: EWallet) => void;
-  onDelete: (id: string) => void;
-  onToggle: (id: string) => void;
-  isDesktop?: boolean;
-}
 
 const PROVIDER_COLORS: Record<string, string> = {
   GoPay: 'text-emerald-600',
@@ -24,15 +15,21 @@ const PROVIDER_COLORS: Record<string, string> = {
   QRIS: 'text-gray-700',
 };
 
+interface StepEwalletProps {
+  formData: PembayaranFormData;
+  onAdd: () => void;
+  onDelete: (id: string) => void;
+  onToggle: (id: string) => void;
+  isDesktop?: boolean;
+}
+
 function EwalletCard({
   ewallet,
-  onEdit,
   onDelete,
   onToggle,
   compact = false,
 }: {
   ewallet: EWallet;
-  onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
   compact?: boolean;
@@ -50,65 +47,37 @@ function EwalletCard({
           onCheckedChange={onToggle}
           className="shrink-0"
         />
-        <div className="min-w-0">
-          <p className={cn(
-            'font-semibold tracking-tight truncate',
-            compact ? 'text-sm' : 'text-base',
-            providerColor
-          )}>
-            {ewallet.provider}
-          </p>
-          <p className="text-xs text-muted-foreground font-mono truncate">
-            {ewallet.number}
-            {ewallet.name && (
-              <><span className="font-sans mx-1">·</span>{ewallet.name}</>
-            )}
-          </p>
-        </div>
+        <p className={cn(
+          'font-semibold tracking-tight truncate',
+          compact ? 'text-sm' : 'text-base',
+          providerColor
+        )}>
+          {ewallet.provider}
+        </p>
       </div>
-      <div className="flex items-center gap-0.5 shrink-0 ml-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-foreground"
-          onClick={onEdit}
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-muted-foreground hover:text-destructive"
-          onClick={onDelete}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </Button>
-      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-muted-foreground hover:text-destructive shrink-0 ml-2"
+        onClick={onDelete}
+      >
+        <Trash2 className="h-3.5 w-3.5" />
+      </Button>
     </div>
   );
 }
 
-export function StepEwallet({
-  formData,
-  onAdd,
-  onEdit,
-  onDelete,
-  onToggle,
-  isDesktop = false,
-}: StepEwalletProps) {
+export function StepEwallet({ formData, onAdd, onDelete, onToggle, isDesktop = false }: StepEwalletProps) {
   const ewallets = formData.paymentMethods.eWallets;
   const isEmpty = ewallets.length === 0;
   const enabled = ewallets.filter((e) => e.enabled).length;
 
-  // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
     return (
       <div className="space-y-5 max-w-xl">
-
-        {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <p className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               E-Wallets
             </p>
             {!isEmpty && (
@@ -122,7 +91,6 @@ export function StepEwallet({
           </Button>
         </div>
 
-        {/* Empty state */}
         {isEmpty ? (
           <div
             onClick={onAdd}
@@ -132,9 +100,7 @@ export function StepEwallet({
             <p className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               No e-wallets yet
             </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Click to add an e-wallet
-            </p>
+            <p className="text-xs text-muted-foreground mt-0.5">Click to add an e-wallet</p>
           </div>
         ) : (
           <div className="space-y-2.5">
@@ -142,7 +108,6 @@ export function StepEwallet({
               <EwalletCard
                 key={ew.id}
                 ewallet={ew}
-                onEdit={() => onEdit(ew)}
                 onDelete={() => onDelete(ew.id)}
                 onToggle={() => onToggle(ew.id)}
               />
@@ -161,7 +126,6 @@ export function StepEwallet({
     );
   }
 
-  // ── MOBILE ───────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col items-center gap-4">
       <Button id="tour-add-ewallet" size="sm" onClick={onAdd} className="gap-1.5 h-8 text-xs">
@@ -180,7 +144,6 @@ export function StepEwallet({
             <EwalletCard
               key={ew.id}
               ewallet={ew}
-              onEdit={() => onEdit(ew)}
               onDelete={() => onDelete(ew.id)}
               onToggle={() => onToggle(ew.id)}
               compact

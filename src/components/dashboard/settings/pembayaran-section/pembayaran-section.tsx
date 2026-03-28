@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AutoSaveStatus, StepIndicator, StepDots } from '@/components/dashboard/settings/shared';
 import { toast } from 'sonner';
 import { useTenant, useAutoSave } from '@/hooks';
@@ -34,8 +33,6 @@ export function PembayaranSection() {
   const [formData, setFormData] = useState<PembayaranFormData | null>(null);
   const [bankDialogOpen, setBankDialogOpen] = useState(false);
   const [ewalletDialogOpen, setEwalletDialogOpen] = useState(false);
-  const [editingBank, setEditingBank] = useState<BankAccount | null>(null);
-  const [editingEwallet, setEditingEwallet] = useState<EWallet | null>(null);
 
   useEffect(() => {
     if (tenant && formData === null) {
@@ -55,13 +52,14 @@ export function PembayaranSection() {
 
   const handleSaveBank = (bank: BankAccount) => {
     if (!formData) return;
-    const exists = formData.paymentMethods.bankAccounts.find((b) => b.id === bank.id);
-    const updated = exists
-      ? formData.paymentMethods.bankAccounts.map((b) => b.id === bank.id ? bank : b)
-      : [...formData.paymentMethods.bankAccounts, { ...bank, id: generateId() }];
-    setFormData({ ...formData, paymentMethods: { ...formData.paymentMethods, bankAccounts: updated } });
+    setFormData({
+      ...formData,
+      paymentMethods: {
+        ...formData.paymentMethods,
+        bankAccounts: [...formData.paymentMethods.bankAccounts, { ...bank, id: generateId() }],
+      },
+    });
     setBankDialogOpen(false);
-    setEditingBank(null);
   };
 
   const handleDeleteBank = (id: string) =>
@@ -72,13 +70,14 @@ export function PembayaranSection() {
 
   const handleSaveEwallet = (ewallet: EWallet) => {
     if (!formData) return;
-    const exists = formData.paymentMethods.eWallets.find((e) => e.id === ewallet.id);
-    const updated = exists
-      ? formData.paymentMethods.eWallets.map((e) => e.id === ewallet.id ? ewallet : e)
-      : [...formData.paymentMethods.eWallets, { ...ewallet, id: generateId() }];
-    setFormData({ ...formData, paymentMethods: { ...formData.paymentMethods, eWallets: updated } });
+    setFormData({
+      ...formData,
+      paymentMethods: {
+        ...formData.paymentMethods,
+        eWallets: [...formData.paymentMethods.eWallets, { ...ewallet, id: generateId() }],
+      },
+    });
     setEwalletDialogOpen(false);
-    setEditingEwallet(null);
   };
 
   const handleDeleteEwallet = (id: string) =>
@@ -120,132 +119,42 @@ export function PembayaranSection() {
     }
   };
 
-  const isLoading = tenant === null || formData === null;
   const isLastStep = currentStep === STEPS.length - 1;
+
+  const usedBanks = formData?.paymentMethods.bankAccounts.map((b) => b.bank) ?? [];
+  const usedProviders = formData?.paymentMethods.eWallets.map((e) => e.provider) ?? [];
 
   const bankProps = {
     formData: formData!,
-    onAdd: () => { setEditingBank(null); setBankDialogOpen(true); },
-    onEdit: (bank: BankAccount) => { setEditingBank(bank); setBankDialogOpen(true); },
+    onAdd: () => setBankDialogOpen(true),
     onDelete: handleDeleteBank,
     onToggle: handleToggleBank,
   };
 
   const ewalletProps = {
     formData: formData!,
-    onAdd: () => { setEditingEwallet(null); setEwalletDialogOpen(true); },
-    onEdit: (ew: EWallet) => { setEditingEwallet(ew); setEwalletDialogOpen(true); },
+    onAdd: () => setEwalletDialogOpen(true),
     onDelete: handleDeleteEwallet,
     onToggle: handleToggleEwallet,
   };
 
-  if (isLoading) {
-    return (
-      <div className="h-full flex flex-col">
-
-        {/* ── DESKTOP SKELETON ─────────────────────────────────────────── */}
-        <div className="hidden lg:flex lg:flex-col lg:h-full">
-
-          {/* Header row */}
-          <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="w-3.5 h-3.5 rounded-sm" />
-                <Skeleton className="h-[11px] w-16 rounded-full" />
-              </div>
-              <Skeleton className="h-8 w-40 rounded-md" />
-            </div>
-            <div className="shrink-0 pt-0.5 flex items-start">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="flex items-start">
-                  <div className="flex flex-col items-center gap-2">
-                    <Skeleton className="w-8 h-8 rounded-full" />
-                    <Skeleton className="h-[11px] w-20 rounded-full" />
-                  </div>
-                  {i < 2 && <Skeleton className="w-14 h-px mx-2 mt-4" />}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Content area */}
-          <div className="flex-1 min-h-[280px] pb-20">
-            <div className="space-y-5 max-w-xl">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-[11px] w-28 rounded-full" />
-                <Skeleton className="h-8 w-36 rounded-md" />
-              </div>
-              <Skeleton className="h-[176px] w-full rounded-lg" />
-              <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5">
-                <Skeleton className="h-[11px] w-64 rounded-full" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── MOBILE SKELETON ──────────────────────────────────────────── */}
-        <div className="lg:hidden flex flex-col pb-24">
-          <div className="mb-6">
-            <div className="flex justify-center mb-4">
-              <div className="flex items-center">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="flex items-center">
-                    <Skeleton className="w-6 h-6 rounded-full" />
-                    {i < 2 && <Skeleton className="w-8 h-px mx-2" />}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center gap-1.5">
-                <Skeleton className="w-3.5 h-3.5 rounded-sm" />
-                <Skeleton className="h-[11px] w-14 rounded-full" />
-              </div>
-              <Skeleton className="h-5 w-32 rounded-md" />
-            </div>
-          </div>
-          <div className="min-h-[260px] flex flex-col items-center gap-4">
-            <Skeleton className="h-8 w-36 rounded-md" />
-            <Skeleton className="h-[176px] w-full max-w-sm rounded-lg" />
-          </div>
-        </div>
-
-        {/* ── FIXED BOTTOM DESKTOP */}
-        <div
-          className="hidden lg:flex fixed bottom-0 right-0 z-40 items-center justify-between px-8 py-4 bg-background/90 backdrop-blur-sm border-t"
-          style={{ left: 'var(--sidebar-width)' }}
-        >
-          <div className="min-w-[130px] h-9 invisible" />
-          <div className="flex items-center gap-1.5">
-            <Skeleton className="w-5 h-1.5 rounded-full" />
-            <Skeleton className="w-1.5 h-1.5 rounded-full" />
-            <Skeleton className="w-1.5 h-1.5 rounded-full" />
-          </div>
-          <Skeleton className="min-w-[130px] h-9 rounded-md" />
-        </div>
-
-        {/* ── FIXED BOTTOM MOBILE */}
-        <div className="lg:hidden fixed bottom-16 md:bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-sm border-t">
-          <div className="px-4 py-3 flex items-center justify-between gap-3">
-            <div className="h-9 w-9 invisible" />
-            <div className="flex items-center gap-1.5">
-              <Skeleton className="w-5 h-1.5 rounded-full" />
-              <Skeleton className="w-1.5 h-1.5 rounded-full" />
-              <Skeleton className="w-1.5 h-1.5 rounded-full" />
-            </div>
-            <Skeleton className="h-9 w-9 rounded-md" />
-          </div>
-        </div>
-
-      </div>
-    );
-  }
+  if (!tenant || !formData) return null;
 
   return (
     <div className="h-full flex flex-col">
 
-      <BankAccountDialog open={bankDialogOpen} onOpenChange={setBankDialogOpen} bank={editingBank} onSave={handleSaveBank} />
-      <EwalletDialog open={ewalletDialogOpen} onOpenChange={setEwalletDialogOpen} ewallet={editingEwallet} onSave={handleSaveEwallet} />
+      <BankAccountDialog
+        open={bankDialogOpen}
+        onOpenChange={setBankDialogOpen}
+        usedBanks={usedBanks}
+        onSave={handleSaveBank}
+      />
+      <EwalletDialog
+        open={ewalletDialogOpen}
+        onOpenChange={setEwalletDialogOpen}
+        usedProviders={usedProviders}
+        onSave={handleSaveEwallet}
+      />
 
       {/* DESKTOP */}
       <div className="hidden lg:flex lg:flex-col lg:h-full">
@@ -264,7 +173,7 @@ export function PembayaranSection() {
         <div className="flex-1 min-h-[280px] pb-20">
           {currentStep === 0 && <StepBank {...bankProps} isDesktop />}
           {currentStep === 1 && <StepEwallet {...ewalletProps} isDesktop />}
-          {currentStep === 2 && <StepCod formData={formData!} onToggleCod={handleToggleCod} onCodNoteChange={handleCodNoteChange} isDesktop />}
+          {currentStep === 2 && <StepCod formData={formData} onToggleCod={handleToggleCod} onCodNoteChange={handleCodNoteChange} isDesktop />}
         </div>
       </div>
 
@@ -284,7 +193,7 @@ export function PembayaranSection() {
         <div className="min-h-[260px]">
           {currentStep === 0 && <StepBank {...bankProps} />}
           {currentStep === 1 && <StepEwallet {...ewalletProps} />}
-          {currentStep === 2 && <StepCod formData={formData!} onToggleCod={handleToggleCod} onCodNoteChange={handleCodNoteChange} />}
+          {currentStep === 2 && <StepCod formData={formData} onToggleCod={handleToggleCod} onCodNoteChange={handleCodNoteChange} />}
         </div>
       </div>
 

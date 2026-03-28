@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
-  viewportFit: 'cover', // For notch devices
+  viewportFit: 'cover',
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: seoConfig.themeColor },
     { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
@@ -39,43 +39,24 @@ export const viewport: Viewport = {
 // ==========================================
 
 export const metadata: Metadata = {
-  // ==========================================
-  // BASIC META
-  // ==========================================
   title: {
     default: seoConfig.defaultTitle,
     template: seoConfig.titleTemplate,
   },
   description: seoConfig.defaultDescription,
-  keywords: [...seoConfig.defaultKeywords], // Spread to fix readonly
-
-  // ==========================================
-  // SITE INFO
-  // ==========================================
+  keywords: [...seoConfig.defaultKeywords],
   applicationName: seoConfig.siteName,
   authors: [{ name: seoConfig.siteName, url: seoConfig.siteUrl }],
   creator: seoConfig.siteName,
   publisher: seoConfig.siteName,
   generator: 'Next.js',
-
-  // ==========================================
-  // BASE URL
-  // ==========================================
   metadataBase: new URL(seoConfig.siteUrl),
-
-  // ==========================================
-  // CANONICAL & LANGUAGES
-  // ==========================================
   alternates: {
     canonical: '/',
     languages: {
       'id-ID': '/',
     },
   },
-
-  // ==========================================
-  // ROBOTS
-  // ==========================================
   robots: {
     index: true,
     follow: true,
@@ -89,10 +70,6 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-
-  // ==========================================
-  // ICONS
-  // ==========================================
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -101,15 +78,7 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
     shortcut: '/favicon.ico',
   },
-
-  // ==========================================
-  // MANIFEST (PWA)
-  // ==========================================
   manifest: '/manifest.json',
-
-  // ==========================================
-  // OPEN GRAPH
-  // ==========================================
   openGraph: {
     type: 'website',
     locale: seoConfig.locale,
@@ -126,10 +95,6 @@ export const metadata: Metadata = {
       },
     ],
   },
-
-  // ==========================================
-  // TWITTER
-  // ==========================================
   twitter: {
     card: 'summary_large_image',
     title: seoConfig.defaultTitle,
@@ -138,35 +103,19 @@ export const metadata: Metadata = {
     creator: seoConfig.twitterHandle,
     images: [getFullUrl(seoConfig.defaultOgImage)],
   },
-
-  // ==========================================
-  // VERIFICATION
-  // ==========================================
   verification: {
     google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || '',
   },
-
-  // ==========================================
-  // APPLE MOBILE WEB APP (PWA)
-  // ==========================================
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: seoConfig.siteName,
   },
-
-  // ==========================================
-  // FORMAT DETECTION
-  // ==========================================
   formatDetection: {
     telephone: false,
     email: false,
     address: false,
   },
-
-  // ==========================================
-  // CATEGORY
-  // ==========================================
   category: 'technology',
 };
 
@@ -184,11 +133,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head>
         {/* Preconnect for performance */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://res.cloudinary.com" />
 
         {/* DNS Prefetch */}
@@ -219,6 +164,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <OrganizationSchema />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
+        {/* Staging Banner */}
+        <div className="w-full bg-yellow-400 text-yellow-900 text-center text-xs font-semibold py-1.5 px-4 sticky top-0 z-[9999]">
+          ⚠️ Staging Environment — Data may not reflect production
+        </div>
+
         {/* Unified Providers (Theme + Hydration + PWA) */}
         <Providers>
           {children}

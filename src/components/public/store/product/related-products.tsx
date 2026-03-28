@@ -8,14 +8,9 @@ import type { Product } from '@/types';
 interface RelatedProductsProps {
   products: Product[];
   storeSlug: string;
-  currency: string;
 }
 
-export function RelatedProducts({
-  products,
-  storeSlug,
-  currency,
-}: RelatedProductsProps) {
+export function RelatedProducts({ products, storeSlug }: RelatedProductsProps) {
   if (products.length === 0) {
     return null;
   }
@@ -26,7 +21,6 @@ export function RelatedProducts({
       <ProductGrid
         products={products}
         storeSlug={storeSlug}
-        currency={currency}
         columns={4}
       />
     </section>

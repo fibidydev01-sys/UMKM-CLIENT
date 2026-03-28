@@ -1,19 +1,12 @@
 import { notFound } from 'next/navigation';
-import type { Metadata } from 'next';
 import { tenantsApi } from '@/lib/api';
-import { TenantContact } from '@/components/public/store';
-import { BreadcrumbSchema, generateTenantBreadcrumbs } from '@/components/shared/seo';
-import type { PublicTenant } from '@/types';
-
-// ==========================================
-// CONTACT PAGE
-// ==========================================
+import { TenantContact } from '@/components/public/store/contact/tenant-contact';
 
 interface ContactPageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getTenant(slug: string): Promise<PublicTenant | null> {
+async function getTenant(slug: string) {
   try {
     return await tenantsApi.getBySlug(slug);
   } catch {
@@ -21,53 +14,18 @@ async function getTenant(slug: string): Promise<PublicTenant | null> {
   }
 }
 
-export async function generateMetadata({ params }: ContactPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: ContactPageProps) {
   const { slug } = await params;
   const tenant = await getTenant(slug);
-
-  if (!tenant) {
-    return { title: 'Not Found' };
-  }
-
-  const description = `Contact ${tenant.name}.${tenant.address ? ` Address: ${tenant.address}.` : ''}${tenant.whatsapp ? ` WhatsApp: ${tenant.whatsapp}` : ''}`;
-
-  return {
-    title: `Contact | ${tenant.name}`,
-    description: description.slice(0, 160),
-    openGraph: {
-      title: `Contact ${tenant.name}`,
-      description,
-      images: tenant.heroBackgroundImage ? [tenant.heroBackgroundImage] : tenant.logo ? [tenant.logo] : [],
-    },
-  };
+  if (!tenant) return { title: 'Not Found' };
+  return { title: `Contact | ${tenant.name}` };
 }
 
 export default async function ContactPage({ params }: ContactPageProps) {
   const { slug } = await params;
   const tenant = await getTenant(slug);
 
-  if (!tenant) {
-    notFound();
-  }
+  if (!tenant) notFound();
 
-  const landingConfig = tenant.landingConfig;
-  const contactConfig = landingConfig?.contact;
-
-  const breadcrumbs = [
-    ...generateTenantBreadcrumbs({ name: tenant.name, slug: tenant.slug }),
-    { name: 'Contact', url: `/store/${slug}/contact` },
-  ];
-
-  return (
-    <>
-      <BreadcrumbSchema items={breadcrumbs} />
-
-      <div className="container px-4 py-8">
-        <TenantContact
-          config={contactConfig}
-          tenant={tenant}
-        />
-      </div>
-    </>
-  );
+  return <TenantContact tenant={tenant!} />;
 }

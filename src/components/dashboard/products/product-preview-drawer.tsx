@@ -42,7 +42,6 @@ export function ProductPreviewDrawer({
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
-  const currency = 'IDR';
 
   const prevProductIdRef = useRef(product?.id);
   useEffect(() => {
@@ -140,7 +139,7 @@ export function ProductPreviewDrawer({
             <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
           </div>
 
-          {/* Sticky Header — judul terpusat */}
+          {/* Sticky Header */}
           <div
             className={cn(
               'px-4 pb-4 border-b shrink-0 transition-shadow duration-200',
@@ -212,11 +211,11 @@ export function ProductPreviewDrawer({
                 <div className="mb-6">
                   <div className="flex items-baseline gap-3">
                     <span className="text-2xl font-bold">
-                      {formatPrice(product.price, currency)}
+                      {formatPrice(product.price)}
                     </span>
                     {product.comparePrice && product.comparePrice > product.price && (
                       <span className="text-sm text-muted-foreground line-through">
-                        {formatPrice(product.comparePrice, currency)}
+                        {formatPrice(product.comparePrice)}
                       </span>
                     )}
                   </div>
@@ -264,7 +263,7 @@ export function ProductPreviewDrawer({
                     <div>
                       <p className="text-xs text-muted-foreground">Cost price</p>
                       <p className="text-sm font-medium">
-                        {formatPrice(product.costPrice, currency)}
+                        {formatPrice(product.costPrice)}
                       </p>
                     </div>
                   </div>

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { PreviewModal, AutoSaveStatus, StepIndicator, StepDots } from '@/components/dashboard/settings/shared';
 import { Hero1 } from '@/components/public/store';
 import { generateThemeCSS } from '@/lib/shared';
@@ -155,32 +154,17 @@ export function HeroSection() {
     }
   };
 
-  const isLoading = tenant === null || formData === null;
   const isLastStep = currentStep === STEPS.length - 1;
   const stepProps = { formData: formData!, updateFormData };
+  const identityProps = {
+    ...stepProps,
+    onRemoveLogo: handleRemoveLogo,
+    isRemovingLogo,
+    tenantEmail: tenant?.email || '',
+    tenantSlug: tenant?.slug || '',
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 space-y-6 py-6">
-        <div className="hidden lg:flex items-center justify-between pb-6 border-b">
-          <div className="space-y-2"><Skeleton className="h-4 w-28" /><Skeleton className="h-7 w-44" /></div>
-          <div className="flex items-center gap-3">
-            {[0, 1, 2].map(i => (
-              <div key={i} className="flex items-center gap-3">
-                <Skeleton className="w-8 h-8 rounded-full" />
-                {i < 2 && <Skeleton className="w-14 h-px" />}
-              </div>
-            ))}
-          </div>
-        </div>
-        <Skeleton className="hidden lg:block h-[360px] w-full rounded-lg" />
-        <div className="lg:hidden space-y-4">
-          <div className="flex justify-center gap-3">{[0, 1, 2].map(i => <Skeleton key={i} className="w-6 h-6 rounded-full" />)}</div>
-          <Skeleton className="h-[300px] w-full max-w-sm mx-auto rounded-lg" />
-        </div>
-      </div>
-    );
-  }
+  if (!tenant || !formData) return null;
 
   return (
     <div className="h-full flex flex-col">
@@ -189,7 +173,6 @@ export function HeroSection() {
       <div className="hidden lg:flex lg:flex-col lg:h-full">
         <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
           <div className="space-y-1">
-            {/* ✅ AutoSaveStatus di atas judul */}
             <AutoSaveStatus status={autoSaveStatus} />
             <h2 className="text-2xl font-bold tracking-tight leading-none">
               {STEPS[currentStep].title}
@@ -201,7 +184,7 @@ export function HeroSection() {
         </div>
 
         <div className="flex-1 min-h-[340px] pb-20">
-          {currentStep === 0 && <StepIdentity {...stepProps} onRemoveLogo={handleRemoveLogo} isRemovingLogo={isRemovingLogo} isDesktop />}
+          {currentStep === 0 && <StepIdentity {...identityProps} isDesktop />}
           {currentStep === 1 && <StepStory {...stepProps} isDesktop />}
           {currentStep === 2 && <StepAppearance {...stepProps} onRemoveHeroBg={handleRemoveHeroBg} isRemovingHeroBg={isRemovingHeroBg} onCtaTextChange={handleCtaTextChange} isDesktop />}
         </div>
@@ -214,7 +197,6 @@ export function HeroSection() {
             <StepIndicator steps={STEPS} currentStep={currentStep} onStepClick={setCurrentStep} size="sm" />
           </div>
           <div className="text-center space-y-0.5">
-            {/* ✅ AutoSaveStatus di atas judul */}
             <div className="flex justify-center">
               <AutoSaveStatus status={autoSaveStatus} />
             </div>
@@ -222,7 +204,7 @@ export function HeroSection() {
           </div>
         </div>
         <div className="min-h-[300px]">
-          {currentStep === 0 && <StepIdentity {...stepProps} onRemoveLogo={handleRemoveLogo} isRemovingLogo={isRemovingLogo} />}
+          {currentStep === 0 && <StepIdentity {...identityProps} />}
           {currentStep === 1 && <StepStory {...stepProps} />}
           {currentStep === 2 && <StepAppearance {...stepProps} onRemoveHeroBg={handleRemoveHeroBg} isRemovingHeroBg={isRemovingHeroBg} onCtaTextChange={handleCtaTextChange} />}
         </div>

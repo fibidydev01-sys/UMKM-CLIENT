@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ChevronRight, Home } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,7 +15,6 @@ import { useStoreUrls } from '@/lib/public/store-url';
 
 // ==========================================
 // STORE BREADCRUMB COMPONENT
-// Menggunakan store-url helper untuk subdomain routing
 // ==========================================
 
 interface BreadcrumbItemData {
@@ -34,7 +33,6 @@ export function StoreBreadcrumb({
   storeSlug,
   storeName,
 }: StoreBreadcrumbProps) {
-  // URL dinamis berdasarkan subdomain/slug
   const urls = useStoreUrls(storeSlug);
 
   return (
@@ -43,10 +41,7 @@ export function StoreBreadcrumb({
         {/* Home */}
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <Link href={urls.home} className="flex items-center gap-1">
-              <Home className="h-4 w-4" />
-              <span className="hidden sm:inline">{storeName}</span>
-            </Link>
+            <Link href={urls.home}>{storeName}</Link>
           </BreadcrumbLink>
         </BreadcrumbItem>
 

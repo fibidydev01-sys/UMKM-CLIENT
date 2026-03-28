@@ -49,11 +49,14 @@ export const PROVIDER_COLORS: Record<string, string> = {
 function EWalletCombobox({
   value,
   onValueChange,
+  usedProviders,
 }: {
   value: EWalletProvider;
   onValueChange: (v: EWalletProvider) => void;
+  usedProviders: EWalletProvider[];
 }) {
   const [open, setOpen] = useState(false);
+  const available = EWALLET_LIST.filter((e) => !usedProviders.includes(e.value));
   const selected = EWALLET_LIST.find((e) => e.value === value);
   const accentColor = selected ? (PROVIDER_COLORS[selected.value] ?? '') : '';
 
@@ -81,9 +84,9 @@ function EWalletCombobox({
         <Command>
           <CommandInput placeholder="Search e-wallet..." />
           <CommandList className="max-h-64">
-            <CommandEmpty>No e-wallet found.</CommandEmpty>
+            <CommandEmpty>No e-wallet available.</CommandEmpty>
             <CommandGroup heading="Indonesia">
-              {EWALLET_LIST.map((e) => (
+              {available.map((e) => (
                 <CommandItem
                   key={e.value}
                   value={`${e.value} ${e.label}`}
@@ -106,31 +109,30 @@ function EWalletCombobox({
 interface EwalletDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  ewallet: EWallet | null;
+  usedProviders: EWalletProvider[];
   onSave: (ewallet: EWallet) => void;
 }
 
 function EwalletForm({
-  ewallet,
   onSave,
   onCancel,
+  usedProviders,
 }: {
-  ewallet: EWallet | null;
   onSave: (ewallet: EWallet) => void;
   onCancel: () => void;
+  usedProviders: EWalletProvider[];
 }) {
+  const available = EWALLET_LIST.filter((e) => !usedProviders.includes(e.value));
   const [selectedProvider, setSelectedProvider] = useState<EWalletProvider>(
-    ewallet?.provider || 'GoPay'
+    available[0]?.value ?? 'GoPay'
   );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: ewallet?.id || '',
+      id: '',
       provider: selectedProvider,
-      number: ewallet?.number || '',
-      name: ewallet?.name || '',
-      enabled: ewallet?.enabled ?? true,
+      enabled: true,
     });
   };
 
@@ -138,7 +140,11 @@ function EwalletForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>Provider</Label>
-        <EWalletCombobox value={selectedProvider} onValueChange={setSelectedProvider} />
+        <EWalletCombobox
+          value={selectedProvider}
+          onValueChange={setSelectedProvider}
+          usedProviders={usedProviders}
+        />
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
@@ -148,20 +154,20 @@ function EwalletForm({
   );
 }
 
-export function EwalletDialog({ open, onOpenChange, ewallet, onSave }: EwalletDialogProps) {
+export function EwalletDialog({ open, onOpenChange, usedProviders, onSave }: EwalletDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{ewallet ? 'Edit E-Wallet' : 'Add E-Wallet'}</DialogTitle>
+          <DialogTitle>Add E-Wallet</DialogTitle>
           <DialogDescription>Select an e-wallet to receive digital payments.</DialogDescription>
         </DialogHeader>
         {open && (
           <EwalletForm
-            key={ewallet?.id ?? 'new'}
-            ewallet={ewallet}
+            key={usedProviders.join(',')}
             onSave={onSave}
             onCancel={() => onOpenChange(false)}
+            usedProviders={usedProviders}
           />
         )}
       </DialogContent>

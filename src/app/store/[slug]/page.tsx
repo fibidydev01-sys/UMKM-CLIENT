@@ -1,20 +1,15 @@
 import { notFound } from 'next/navigation';
 import { tenantsApi, productsApi } from '@/lib/api';
-import { normalizeTestimonials } from '@/lib/public';
 import {
   TenantHero,
-  TenantAbout,
   TenantProducts,
-  TenantTestimonials,
-  TenantContact,
-  TenantCta,
 } from '@/components/public/store';
 import {
   BreadcrumbSchema,
   ProductListSchema,
   generateTenantBreadcrumbs,
 } from '@/components/shared/seo';
-import type { PublicTenant, Product, Testimonial, SectionKey } from '@/types';
+import type { PublicTenant, Product, SectionKey } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,40 +55,20 @@ export default async function StorePage({ params }: StorePageProps) {
   const productLimit = (landingConfig?.products?.config?.limit as number) || 8;
   const products = await getProducts(slug, productLimit);
 
-  const testimonialItems = normalizeTestimonials(tenant.testimonials as Testimonial[] | undefined);
-  const testimonialsEnabled = landingConfig?.testimonials?.enabled === true;
-  const hasTestimonials = testimonialsEnabled && testimonialItems.length > 0;
-
-  const defaultOrder: SectionKey[] = ['hero', 'about', 'products', 'testimonials', 'cta', 'contact'];
+  const defaultOrder: SectionKey[] = ['hero', 'products'];
   const sectionOrder = landingConfig?.sectionOrder || defaultOrder;
 
   const heroEnabled = true;
-  const aboutEnabled = landingConfig?.about?.enabled === true;
-  const productsEnabled = landingConfig?.products?.enabled === true && products.length > 0;
-  const ctaEnabled = landingConfig?.cta?.enabled === true;
-  const contactEnabled = landingConfig?.contact?.enabled === true;
+  const productsEnabled = products.length > 0;
 
-  const hasAnySectionEnabled =
-    heroEnabled || aboutEnabled || productsEnabled || hasTestimonials || ctaEnabled || contactEnabled;
+  const hasAnySectionEnabled = heroEnabled || productsEnabled;
 
   const sectionComponents: Record<SectionKey, React.ReactNode> = {
     hero: heroEnabled ? (
       <TenantHero key="hero" config={landingConfig?.hero} tenant={tenant} />
     ) : null,
-    about: aboutEnabled ? (
-      <TenantAbout key="about" config={landingConfig?.about} tenant={tenant} />
-    ) : null,
     products: productsEnabled ? (
       <TenantProducts key="products" products={products} config={landingConfig?.products} storeSlug={slug} />
-    ) : null,
-    testimonials: hasTestimonials ? (
-      <TenantTestimonials key="testimonials" config={landingConfig?.testimonials} tenant={tenant} />
-    ) : null,
-    cta: ctaEnabled ? (
-      <TenantCta key="cta" config={landingConfig?.cta} tenant={tenant} />
-    ) : null,
-    contact: contactEnabled ? (
-      <TenantContact key="contact" config={landingConfig?.contact} tenant={tenant} />
     ) : null,
   };
 

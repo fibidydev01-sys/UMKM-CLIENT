@@ -1,63 +1,132 @@
 'use client';
 
 // ==========================================
-// SHIPPING INFO
+// PAYMENT & SHIPPING INFO — Accordion
 // ==========================================
 
-import { Truck } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { formatPrice } from '@/lib/shared/format';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { cn } from '@/lib/shared/utils';
 import type { PublicTenant } from '@/types';
 
-interface ShippingInfoProps {
+const PROVIDER_COLORS: Record<string, string> = {
+  GoPay: 'text-emerald-600',
+  OVO: 'text-purple-600',
+  DANA: 'text-blue-600',
+  ShopeePay: 'text-orange-600',
+  LinkAja: 'text-red-600',
+  QRIS: 'text-gray-700',
+};
+
+interface PaymentShippingInfoProps {
   tenant: PublicTenant;
 }
 
-export function PaymentShippingInfo({ tenant }: ShippingInfoProps) {
-  const { freeShippingThreshold, defaultShippingCost } = tenant;
+export function PaymentShippingInfo({ tenant }: PaymentShippingInfoProps) {
+  const methods = tenant.paymentMethods;
+  const activeCouriers = (tenant.shippingMethods?.couriers ?? []).filter((c) => c.enabled);
 
-  // Currency dari tenant
-  const currency = tenant?.currency || 'IDR';
-  const fmt = (value: number) => formatPrice(value, currency);
+  const activeBanks = (methods?.bankAccounts ?? []).filter((b) => b.enabled);
+  const activeWallets = (methods?.eWallets ?? []).filter((e) => e.enabled);
+  const codEnabled = methods?.cod?.enabled === true;
 
-  // Jika tidak ada konfigurasi pengiriman, sembunyikan komponen
-  if (!freeShippingThreshold && !defaultShippingCost) {
-    return null;
-  }
+  const hasPayment = activeBanks.length > 0 || activeWallets.length > 0 || codEnabled;
+  const hasShipping = activeCouriers.length > 0;
+
+  if (!hasPayment && !hasShipping) return null;
 
   return (
-    <Card className="border-dashed">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
-          <div className="rounded-lg bg-primary/10 p-2">
-            <Truck className="h-5 w-5 text-primary" />
-          </div>
-          <div className="flex-1 space-y-1">
-            <h4 className="font-medium text-sm">Shipping</h4>
+    <Accordion type="multiple" >
 
-            {freeShippingThreshold && freeShippingThreshold > 0 ? (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-primary">Free shipping</span>{' '}
-                on orders over {fmt(freeShippingThreshold)}
-              </p>
-            ) : null}
+      {/* ── Payment Methods ── */}
+      {hasPayment && (
+        <AccordionItem value="payment">
+          <AccordionTrigger className="text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:no-underline py-3">
+            Payment Methods
+          </AccordionTrigger>
+          <AccordionContent className="space-y-4 pb-3">
 
-            {defaultShippingCost && defaultShippingCost > 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Flat shipping rate: {fmt(defaultShippingCost)}
-              </p>
-            ) : null}
+            {/* Bank Transfer */}
+            {activeBanks.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">Bank Transfer</p>
+                <div className="flex flex-wrap gap-2">
+                  {activeBanks.map((bank) => (
+                    <span key={bank.id} className="text-sm font-semibold">
+                      {bank.bank}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {(!freeShippingThreshold || freeShippingThreshold === 0) &&
-              (!defaultShippingCost || defaultShippingCost === 0) ? (
-              <p className="text-sm text-muted-foreground">
-                <span className="font-medium text-primary">Free shipping</span>{' '}
-                on all orders
-              </p>
-            ) : null}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+            {activeBanks.length > 0 && (activeWallets.length > 0 || codEnabled) && (
+              <div className="border-t border-dashed" />
+            )}
+
+            {/* E-Wallets */}
+            {activeWallets.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground">E-Wallet</p>
+                <div className="flex flex-wrap gap-2">
+                  {activeWallets.map((ew) => (
+                    <span
+                      key={ew.id}
+                      className={cn(
+                        'text-sm font-semibold',
+                        PROVIDER_COLORS[ew.provider] ?? 'text-foreground'
+                      )}
+                    >
+                      {ew.provider}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(activeBanks.length > 0 || activeWallets.length > 0) && codEnabled && (
+              <div className="border-t border-dashed" />
+            )}
+
+            {/* COD */}
+            {codEnabled && (
+              <div className="space-y-0.5">
+                <p className="text-sm font-semibold">Cash on Delivery</p>
+                {methods?.cod?.note && (
+                  <p className="text-xs text-muted-foreground">{methods.cod.note}</p>
+                )}
+              </div>
+            )}
+
+          </AccordionContent>
+        </AccordionItem>
+      )}
+
+      {/* ── Shipping Couriers ── */}
+      {hasShipping && (
+        <AccordionItem value="shipping" className="last:border-b-0">
+          <AccordionTrigger className="text-xs font-semibold uppercase tracking-widest text-muted-foreground hover:no-underline py-3">
+            Shipping Couriers
+          </AccordionTrigger>
+          <AccordionContent className="pb-3">
+            <div className="flex flex-wrap gap-x-4 gap-y-2">
+              {activeCouriers.map((courier) => (
+                <div key={courier.id} className="flex items-baseline gap-1.5">
+                  <span className="text-sm font-semibold">{courier.name}</span>
+                  {courier.note && (
+                    <span className="text-xs text-muted-foreground">{courier.note}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      )}
+
+    </Accordion>
   );
 }

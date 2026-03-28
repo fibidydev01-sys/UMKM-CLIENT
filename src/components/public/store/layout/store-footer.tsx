@@ -1,15 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import { Phone, MapPin, MessageCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { formatPhone } from '@/lib/shared/format';
-import { siteConfig } from '@/constants/shared/site';
-import { useStoreUrls } from '@/lib/public/store-url';
 import type { PublicTenant } from '@/types';
 
 // ==========================================
@@ -59,7 +53,7 @@ const SocialIcons = {
   ),
   linkedin: () => (
     <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
     </svg>
   ),
   behance: () => (
@@ -82,7 +76,11 @@ const SocialIcons = {
       <path d="M23.977 6.416c-.105 2.338-1.739 5.543-4.894 9.609-3.268 4.247-6.026 6.37-8.29 6.37-1.409 0-2.578-1.294-3.553-3.881L5.322 11.4C4.603 8.816 3.834 7.522 3.01 7.522c-.179 0-.806.378-1.881 1.132L0 7.197c1.185-1.044 2.351-2.084 3.501-3.128C5.08 2.701 6.266 1.984 7.055 1.91c1.867-.18 3.016 1.1 3.447 3.838.465 2.953.789 4.789.971 5.507.539 2.45 1.131 3.674 1.776 3.674.502 0 1.256-.796 2.265-2.385 1.004-1.589 1.54-2.797 1.612-3.628.144-1.371-.395-2.061-1.614-2.061-.574 0-1.167.121-1.777.391 1.186-3.868 3.434-5.757 6.762-5.637 2.473.06 3.628 1.664 3.48 4.807z" />
     </svg>
   ),
-};
+} as const;
+
+// ==========================================
+// SOCIAL CONFIG
+// ==========================================
 
 const SOCIAL_CONFIG = [
   { key: 'instagram', label: 'Instagram', color: 'hover:text-pink-500' },
@@ -100,146 +98,108 @@ const SOCIAL_CONFIG = [
   { key: 'vimeo', label: 'Vimeo', color: 'hover:text-cyan-500' },
 ] as const;
 
+// ==========================================
+// PROPS
+// ==========================================
+
 interface StoreFooterProps {
   tenant: PublicTenant;
 }
 
+// ==========================================
+// STORE FOOTER
+// ==========================================
+
 export function StoreFooter({ tenant }: StoreFooterProps) {
   const currentYear = new Date().getFullYear();
-  const urls = useStoreUrls(tenant.slug);
+
+  const whatsappLink = tenant.whatsapp
+    ? `https://wa.me/${tenant.whatsapp}?text=${encodeURIComponent(`Halo ${tenant.name}, saya tertarik dengan produk Anda.`)}`
+    : null;
+
+  const hasSocial = SOCIAL_CONFIG.some(
+    ({ key }) => !!tenant.socialLinks?.[key as keyof typeof tenant.socialLinks]
+  );
 
   const activeSocialLinks = SOCIAL_CONFIG.filter(
-    ({ key }) => tenant.socialLinks?.[key as keyof typeof tenant.socialLinks]
+    ({ key }) => !!tenant.socialLinks?.[key as keyof typeof tenant.socialLinks]
   );
+
+  if (!hasSocial && !whatsappLink) return null;
 
   return (
     <footer className="border-t bg-muted/30">
       <div className="container px-4 py-8 md:py-12">
-        <div className={`grid gap-6 md:grid-cols-2 ${activeSocialLinks.length > 0 ? 'lg:grid-cols-4' : 'lg:grid-cols-3'}`}>
 
-          {/* Col 1 - Store Info */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">{tenant.name}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {tenant.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {tenant.description}
+        <div className="grid md:grid-cols-2 gap-6 items-stretch">
+
+          {/* KIRI — Hubungi Langsung */}
+          {whatsappLink && (
+            <div className="border-2 border-foreground rounded-2xl p-8 md:p-10 flex flex-col gap-6">
+              <div className="space-y-2">
+                <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+                  Hubungi Langsung
                 </p>
-              )}
-              <Button asChild size="sm" className="w-full">
-                <a href={`https://wa.me/${tenant.whatsapp}`} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  Contact Us
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Col 2 - Menu */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Menu</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                <li>
-                  <Link href={urls.home} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    Home
-                  </Link>
-                </li>
-                <li>
-                  <Link href={urls.products()} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    All Products
-                  </Link>
-                </li>
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Col 3 - Contact */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">Contact</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {tenant.whatsapp && (
-                  <li>
-                    <a href={`https://wa.me/${tenant.whatsapp}`} target="_blank" rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Phone className="h-4 w-4" />
-                      {formatPhone(tenant.whatsapp)}
-                    </a>
-                  </li>
-                )}
-                {tenant.phone && tenant.phone !== tenant.whatsapp && (
-                  <li>
-                    <a href={`tel:${tenant.phone}`}
-                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <Phone className="h-4 w-4" />
-                      {formatPhone(tenant.phone)}
-                    </a>
-                  </li>
-                )}
-                {tenant.address && (
-                  <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                    <span>{tenant.address}</span>
-                  </li>
-                )}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Col 4 - Social Media */}
-          {activeSocialLinks.length > 0 && (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Social Media</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-52 px-4 pb-4">
-                  <div className="space-y-0">
-                    {activeSocialLinks.map(({ key, label, color }, index) => {
-                      const Icon = SocialIcons[key as keyof typeof SocialIcons];
-                      const url = tenant.socialLinks?.[key as keyof typeof tenant.socialLinks];
-                      if (!Icon || !url) return null;
-                      return (
-                        <React.Fragment key={key}>
-                          {index > 0 && <Separator />}
-                          <a
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`flex items-center gap-2.5 px-1 py-2.5 text-sm text-muted-foreground transition-colors duration-200 hover:bg-muted rounded-sm ${color}`}
-                          >
-                            <span className="w-4 h-4 flex-shrink-0"><Icon /></span>
-                            <span>{label}</span>
-                          </a>
-                        </React.Fragment>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Respon cepat via WhatsApp. Kami siap membantu pertanyaan Anda.
+                </p>
+              </div>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 text-sm font-medium text-foreground hover:text-foreground/60 transition-colors duration-200"
+              >
+                <span className="border-b border-foreground/30 group-hover:border-transparent transition-colors duration-200 pb-px">
+                  Chat via WhatsApp
+                </span>
+                <span className="inline-flex items-center justify-center w-8 h-8 rounded-full border border-foreground/20 transition-all duration-200 group-hover:bg-foreground group-hover:border-foreground group-hover:text-background">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </a>
+            </div>
           )}
+
+          {/* KANAN — Social Links */}
+          {hasSocial && (
+            <div className="border border-border rounded-2xl p-6 md:p-8">
+              <p className="text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground mb-4">
+                Social Media
+              </p>
+              <ScrollArea className="h-52">
+                <div className="space-y-0">
+                  {activeSocialLinks.map(({ key, label, color }, index) => {
+                    const Icon = SocialIcons[key as keyof typeof SocialIcons];
+                    const url = tenant.socialLinks?.[key as keyof typeof tenant.socialLinks];
+                    if (!Icon || !url) return null;
+                    return (
+                      <React.Fragment key={key}>
+                        {index > 0 && <Separator />}
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex items-center gap-2.5 px-1 py-2.5 text-sm text-muted-foreground transition-colors duration-200 hover:bg-muted rounded-sm ${color}`}
+                        >
+                          <span className="w-4 h-4 flex-shrink-0"><Icon /></span>
+                          <span>{label}</span>
+                        </a>
+                      </React.Fragment>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
         </div>
 
         <Separator className="my-8" />
 
-        {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="text-center text-sm text-muted-foreground">
           <p>© {currentYear} {tenant.name}. All rights reserved.</p>
-          <p>
-            Powered by{' '}
-            <Link href="/" className="font-medium text-primary hover:underline">
-              {siteConfig.name}
-            </Link>
-          </p>
         </div>
+
       </div>
     </footer>
   );

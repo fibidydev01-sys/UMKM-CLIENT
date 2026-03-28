@@ -1,10 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronLeft, ChevronRight, ZoomIn, Package, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, ZoomIn, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogTitle } from '@/components/ui/dialog';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { cn } from '@/lib/shared/utils';
 import { OptimizedImage } from '@/components/ui/optimized-image';
 
@@ -29,11 +27,17 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
     setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!hasMultipleImages) return;
-    if (e.key === 'ArrowLeft') goToPrevious();
-    if (e.key === 'ArrowRight') goToNext();
-  };
+  useEffect(() => {
+    if (!zoomOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setZoomOpen(false);
+      if (!hasMultipleImages) return;
+      if (e.key === 'ArrowLeft') goToPrevious();
+      if (e.key === 'ArrowRight') goToNext();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [zoomOpen, hasMultipleImages]);
 
   return (
     <div className="space-y-4">
@@ -125,57 +129,20 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
         </div>
       )}
 
-      {/* Full-screen zoom modal */}
-      <Dialog open={zoomOpen} onOpenChange={setZoomOpen}>
-        <DialogPrimitive.Portal>
-          {/* Dark overlay */}
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      {/* Full-screen zoom */}
+      {zoomOpen && (
+        <>
+          {/* Backdrop — klik nutup */}
+          <div
+            className="fixed inset-0 z-50 bg-black/95"
+            onClick={() => setZoomOpen(false)}
+          />
 
-          <DialogPrimitive.Content
-            className="fixed inset-0 z-50 flex items-center justify-center outline-none"
-            onKeyDown={handleKeyDown}
-          >
-            {/* Hidden title for accessibility */}
-            <DialogTitle className="sr-only">
-              {productName} — image {selectedIndex + 1}
-            </DialogTitle>
+          {/* Content — pointer-events-none biar klik tembus ke backdrop, kecuali elemen interaktif */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
 
-            {/* Close button */}
-            <DialogPrimitive.Close asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-50 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white"
-              >
-                <X className="h-5 w-5" />
-                <span className="sr-only">Close</span>
-              </Button>
-            </DialogPrimitive.Close>
-
-            {/* Navigation */}
-            {hasMultipleImages && (
-              <>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white h-12 w-12"
-                  onClick={goToPrevious}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white h-12 w-12"
-                  onClick={goToNext}
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
-              </>
-            )}
-
-            {/* Image container */}
-            <div className="relative w-[90vw] h-[90vh] flex items-center justify-center">
+            {/* Image */}
+            <div className="relative w-[90vw] h-[90vh]">
               {currentImage && (
                 <OptimizedImage
                   src={currentImage}
@@ -188,15 +155,37 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
               )}
             </div>
 
+            {/* Navigation */}
+            {hasMultipleImages && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="pointer-events-auto absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white h-12 w-12"
+                  onClick={goToPrevious}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="pointer-events-auto absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/10 text-white hover:bg-white/20 hover:text-white h-12 w-12"
+                  onClick={goToNext}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
+
             {/* Counter */}
             {hasMultipleImages && (
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-4 py-2 text-sm text-white">
                 {selectedIndex + 1} / {images.length}
               </div>
             )}
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </Dialog>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -21,9 +21,17 @@ import { Separator } from '@/components/ui/separator';
 import type { Metadata } from 'next';
 import type { PublicTenant, Product } from '@/types';
 
+// ==========================================
+// TYPES
+// ==========================================
+
 interface ProductPageProps {
   params: Promise<{ slug: string; id: string }>;
 }
+
+// ==========================================
+// DATA FETCHING
+// ==========================================
 
 async function getTenant(slug: string): Promise<PublicTenant | null> {
   try {
@@ -33,10 +41,7 @@ async function getTenant(slug: string): Promise<PublicTenant | null> {
   }
 }
 
-async function getProduct(
-  slug: string,
-  productId: string
-): Promise<Product | null> {
+async function getProduct(slug: string, productId: string): Promise<Product | null> {
   try {
     return await productsApi.getByStoreAndId(slug, productId);
   } catch {
@@ -61,14 +66,13 @@ async function getRelatedProducts(
   }
 }
 
-export async function generateMetadata({
-  params,
-}: ProductPageProps): Promise<Metadata> {
+// ==========================================
+// METADATA
+// ==========================================
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug, id } = await params;
-  const [tenant, product] = await Promise.all([
-    getTenant(slug),
-    getProduct(slug, id),
-  ]);
+  const [tenant, product] = await Promise.all([getTenant(slug), getProduct(slug, id)]);
 
   if (!tenant || !product) {
     return {
@@ -95,32 +99,24 @@ export async function generateMetadata({
   });
 }
 
+// ==========================================
+// PAGE
+// ==========================================
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug, id } = await params;
 
-  const [tenant, product] = await Promise.all([
-    getTenant(slug),
-    getProduct(slug, id),
-  ]);
+  const [tenant, product] = await Promise.all([getTenant(slug), getProduct(slug, id)]);
 
-  if (!tenant || !product) {
-    notFound();
-  }
+  if (!tenant || !product) notFound();
 
   const relatedProducts = await getRelatedProducts(slug, id, product.category);
+  const productUrl = `https://www.fibidy.com/store/${tenant.slug}/products/${product.id}`;
 
   const breadcrumbs = generateProductBreadcrumbs(
     { name: tenant.name, slug: tenant.slug },
-    {
-      name: product.name,
-      id: product.id,
-      slug: product.slug,
-      category: product.category,
-    }
+    { name: product.name, id: product.id, slug: product.slug, category: product.category }
   );
-
-  const productUrl = `https://www.fibidy.com/store/${tenant.slug}/products/${product.id}`;
-  const currency = tenant.currency || 'IDR';
 
   return (
     <>
@@ -147,6 +143,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       />
 
       <div className="container px-4 py-8">
+
         {/* Breadcrumb */}
         <div className="mb-6">
           <StoreBreadcrumb
@@ -159,28 +156,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
           />
         </div>
 
-        {/* Product detail */}
+        {/* Product Detail */}
         <div className="grid gap-8 lg:grid-cols-2">
-          <div>
-            <ProductGallery images={product.images} productName={product.name} />
-          </div>
+          <ProductGallery images={product.images} productName={product.name} />
 
           <div className="space-y-6">
-            <ProductInfo product={product} currency={currency} />
-
+            <ProductInfo product={product} />
             <PaymentShippingInfo tenant={tenant} />
 
+            {/* Share */}
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">
-                Share this product:
-              </span>
+              <span className="text-sm text-muted-foreground">Share this product:</span>
               <SocialShare
                 url={productUrl}
                 title={`${product.name} - ${tenant.name}`}
-                description={
-                  product.description ||
-                  `Buy ${product.name} at ${tenant.name}`
-                }
+                description={product.description || `Buy ${product.name} at ${tenant.name}`}
                 variant="buttons"
               />
             </div>
@@ -190,25 +180,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Description */}
-        {product.description && (
-          <section className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">Product description</h2>
-            <div className="prose prose-gray max-w-none">
-              <p className="whitespace-pre-wrap text-muted-foreground">
-                {product.description}
-              </p>
-            </div>
-          </section>
-        )}
-
+        {/* Related Products */}
         <Suspense fallback={<ProductGridSkeleton count={4} />}>
-          <RelatedProducts
-            products={relatedProducts}
-            storeSlug={slug}
-            currency={currency}
-          />
+          <RelatedProducts products={relatedProducts} storeSlug={slug} />
         </Suspense>
+
       </div>
     </>
   );

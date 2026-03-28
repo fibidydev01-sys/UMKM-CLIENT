@@ -1,15 +1,7 @@
 'use client';
 
-import { Separator } from '@/components/ui/separator';
-import { AddToCartButton } from '../cart/add-to-cart-button';
 import { WhatsAppOrderButton } from '../checkout/whatsapp-order-button';
-import { ProductShare } from './product-share';
 import type { Product, PublicTenant } from '@/types';
-
-// ==========================================
-// PRODUCT ACTIONS COMPONENT
-// Cart + WhatsApp + Share
-// ==========================================
 
 interface ProductActionsProps {
   product: Product;
@@ -19,20 +11,21 @@ interface ProductActionsProps {
 export function ProductActions({ product, tenant }: ProductActionsProps) {
   return (
     <div className="space-y-4">
-      {/* Add to Cart */}
-      <AddToCartButton product={product} />
-
-      {/* WhatsApp Order */}
       <WhatsAppOrderButton
         product={product}
         tenant={tenant}
         className="w-full"
       />
 
-      <Separator />
-
-      {/* Share */}
-      <ProductShare product={product} tenant={tenant} />
+      {/* Description */}
+      {product.description && (
+        <div className="space-y-1">
+          <p className="text-sm font-semibold">Product description</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {product.description}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

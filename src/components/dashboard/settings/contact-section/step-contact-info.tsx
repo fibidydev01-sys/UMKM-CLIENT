@@ -12,46 +12,41 @@ interface StepContactInfoProps {
   isDesktop?: boolean;
 }
 
+// Helper: strip leading 62 or 0 so stored value is always 62xxx
+// User types local number (e.g. 89123...), we prepend 62 on save.
+function toLocalInput(stored: string): string {
+  if (!stored) return '';
+  if (stored.startsWith('62')) return stored.slice(2);
+  return stored;
+}
+
+function toStoredValue(local: string): string {
+  // Remove any non-digit chars
+  const digits = local.replace(/\D/g, '');
+  if (!digits) return '';
+  return `62${digits}`;
+}
+
 export function StepContactInfo({ formData, updateFormData, isDesktop = false }: StepContactInfoProps) {
+
+  const localWa = toLocalInput(formData.whatsapp);
+
+  const handleWaChange = (raw: string) => {
+    // Strip non-digits
+    const digits = raw.replace(/\D/g, '');
+    updateFormData('whatsapp', toStoredValue(digits));
+  };
 
   // ── DESKTOP ──────────────────────────────────────────────────────────────
   if (isDesktop) {
     return (
       <div className="grid grid-cols-2 gap-8">
 
-        {/* Col 1 — Section heading + address */}
+        {/* Col 1 — Address */}
         <div className="space-y-5">
 
-          <div id="tour-contact-title" className="space-y-1.5">
-            <Label htmlFor="contactTitle-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-              Section Title
-            </Label>
-            <Input
-              id="contactTitle-d"
-              placeholder="Contact Us"
-              value={formData.contactTitle}
-              onChange={(e) => updateFormData('contactTitle', e.target.value)}
-              className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
-            <p className="text-xs text-muted-foreground">Main heading shown in your Contact section</p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="contactSubtitle-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-              Section Subheading
-            </Label>
-            <Input
-              id="contactSubtitle-d"
-              placeholder="We're here to help"
-              value={formData.contactSubtitle}
-              onChange={(e) => updateFormData('contactSubtitle', e.target.value)}
-              className="h-11 text-base font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
-            <p className="text-xs text-muted-foreground">Supporting line shown below the title</p>
-          </div>
-
           <div id="tour-address" className="space-y-1.5">
-            <Label htmlFor="contactAddress-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactAddress-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Full Address
             </Label>
             <Textarea
@@ -63,6 +58,7 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
               className="resize-none text-sm font-medium leading-relaxed placeholder:font-normal placeholder:text-muted-foreground/50"
             />
           </div>
+
         </div>
 
         {/* Col 2 — Contact details */}
@@ -70,25 +66,31 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
 
           {/* WhatsApp */}
           <div id="tour-whatsapp" className="space-y-1.5">
-            <Label htmlFor="contactWa-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactWa-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               WhatsApp <span className="text-destructive normal-case font-normal">*required</span>
             </Label>
-            <Input
-              id="contactWa-d"
-              placeholder="6281234567890"
-              value={formData.whatsapp}
-              onChange={(e) => updateFormData('whatsapp', e.target.value)}
-              className="h-11 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
+            <div className="flex h-11 rounded-md border border-input overflow-hidden focus-within:ring-1 focus-within:ring-ring">
+              <div className="flex items-center px-3 bg-muted/50 border-r border-input shrink-0">
+                <span className="text-sm font-semibold text-muted-foreground select-none">+62</span>
+              </div>
+              <Input
+                id="contactWa-d"
+                placeholder="89123456789"
+                value={localWa}
+                onChange={(e) => handleWaChange(e.target.value)}
+                className="border-0 rounded-none focus-visible:ring-0 h-full text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
+                inputMode="numeric"
+              />
+            </div>
             <p className="text-xs text-muted-foreground">
-              No + sign — e.g.{' '}
-              <code className="font-mono text-[11px]">6281234567890</code>
+              Ketik tanpa 0 atau 62 — e.g.{' '}
+              <code className="font-mono text-[11px]">89123456789</code>
             </p>
           </div>
 
           {/* Phone Number */}
           <div id="tour-phone" className="space-y-1.5">
-            <Label htmlFor="contactPhone-d" className="text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactPhone-d" className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Phone Number <span className="normal-case font-normal text-muted-foreground">(Optional)</span>
             </Label>
             <Input
@@ -104,7 +106,7 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
           <div className="border-l-2 border-muted-foreground/20 pl-4 py-0.5 mt-2">
             <p className="text-xs text-muted-foreground leading-relaxed">
               <span className="font-medium text-foreground">Tip:</span>{' '}
-              Make sure your WhatsApp number is active — customers will be connected directly when they tap the contact button.
+              Pastikan nomor WhatsApp aktif — pelanggan akan langsung terhubung saat tap tombol kontak.
             </p>
           </div>
         </div>
@@ -119,41 +121,9 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
       <Card className="w-full max-w-sm border shadow-none">
         <CardContent className="pt-6 pb-6 flex flex-col gap-5">
 
-          {/* Section Title */}
-          <div id="tour-contact-title" className="space-y-1.5">
-            <Label htmlFor="contactTitle-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-              Section Title
-            </Label>
-            <Input
-              id="contactTitle-m"
-              placeholder="Contact Us"
-              value={formData.contactTitle}
-              onChange={(e) => updateFormData('contactTitle', e.target.value)}
-              className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
-          </div>
-
-          <div className="w-full border-t" />
-
-          {/* Section Subheading */}
-          <div className="space-y-1.5">
-            <Label htmlFor="contactSubtitle-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
-              Section Subheading
-            </Label>
-            <Input
-              id="contactSubtitle-m"
-              placeholder="We're here to help"
-              value={formData.contactSubtitle}
-              onChange={(e) => updateFormData('contactSubtitle', e.target.value)}
-              className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
-          </div>
-
-          <div className="w-full border-t" />
-
           {/* Phone Number */}
           <div id="tour-phone" className="space-y-1.5">
-            <Label htmlFor="contactPhone-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactPhone-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Phone Number
             </Label>
             <Input
@@ -167,18 +137,24 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
 
           {/* WhatsApp */}
           <div id="tour-whatsapp" className="space-y-1.5">
-            <Label htmlFor="contactWa-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactWa-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               WhatsApp <span className="text-destructive">*</span>
             </Label>
-            <Input
-              id="contactWa-m"
-              placeholder="6281234567890"
-              value={formData.whatsapp}
-              onChange={(e) => updateFormData('whatsapp', e.target.value)}
-              className="text-center h-10 text-sm font-semibold tracking-tight placeholder:font-normal placeholder:text-muted-foreground/50"
-            />
+            <div className="flex h-10 rounded-md border border-input overflow-hidden focus-within:ring-1 focus-within:ring-ring">
+              <div className="flex items-center px-3 bg-muted/50 border-r border-input shrink-0">
+                <span className="text-sm font-semibold text-muted-foreground select-none">+62</span>
+              </div>
+              <Input
+                id="contactWa-m"
+                placeholder="89123456789"
+                value={localWa}
+                onChange={(e) => handleWaChange(e.target.value)}
+                className="border-0 rounded-none focus-visible:ring-0 h-full text-sm font-semibold tracking-tight text-center placeholder:font-normal placeholder:text-muted-foreground/50"
+                inputMode="numeric"
+              />
+            </div>
             <p className="text-[11px] text-muted-foreground text-center">
-              No + sign — e.g. <code className="font-mono text-primary">6281234567890</code>
+              Tanpa 0 atau 62 — e.g. <code className="font-mono text-primary">89123456789</code>
             </p>
           </div>
 
@@ -186,7 +162,7 @@ export function StepContactInfo({ formData, updateFormData, isDesktop = false }:
 
           {/* Full Address */}
           <div id="tour-address" className="space-y-1.5">
-            <Label htmlFor="contactAddress-m" className="block text-center text-[11px] font-medium tracking-widests uppercase text-muted-foreground">
+            <Label htmlFor="contactAddress-m" className="block text-center text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
               Full Address
             </Label>
             <Textarea

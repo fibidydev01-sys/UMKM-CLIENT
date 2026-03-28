@@ -8,17 +8,15 @@ export interface WizardStep {
   desc: string;
 }
 
-// Steps for Product
 export const PRODUCT_STEPS: WizardStep[] = [
-  { id: 0, title: 'Details', desc: 'Name, description & category' },
+  { id: 0, title: 'Details', desc: 'Name & description' },
   { id: 1, title: 'Media', desc: 'Photos & portfolio images' },
   { id: 2, title: 'Pricing', desc: 'Sale price & compare-at' },
   { id: 3, title: 'Publish', desc: 'Visibility & listing status' },
 ] as const;
 
-// Steps for Service
 export const SERVICE_STEPS: WizardStep[] = [
-  { id: 0, title: 'Details', desc: 'Name, description & category' },
+  { id: 0, title: 'Details', desc: 'Name & description' },
   { id: 1, title: 'Media', desc: 'Portfolio & work samples' },
   { id: 2, title: 'Pricing', desc: 'Rate & price display' },
   { id: 3, title: 'Publish', desc: 'Visibility & listing status' },

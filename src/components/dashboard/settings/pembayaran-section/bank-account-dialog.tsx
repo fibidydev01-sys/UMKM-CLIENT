@@ -51,11 +51,14 @@ const BANK_LIST: { value: BankName; label: string }[] = [
 function BankCombobox({
   value,
   onValueChange,
+  usedBanks,
 }: {
   value: BankName;
   onValueChange: (v: BankName) => void;
+  usedBanks: BankName[];
 }) {
   const [open, setOpen] = useState(false);
+  const available = BANK_LIST.filter((b) => !usedBanks.includes(b.value));
   const selected = BANK_LIST.find((b) => b.value === value);
 
   return (
@@ -77,9 +80,9 @@ function BankCombobox({
         <Command>
           <CommandInput placeholder="Search bank..." />
           <CommandList className="max-h-64">
-            <CommandEmpty>No bank found.</CommandEmpty>
+            <CommandEmpty>No bank available.</CommandEmpty>
             <CommandGroup heading="Indonesia">
-              {BANK_LIST.map((b) => (
+              {available.map((b) => (
                 <CommandItem
                   key={b.value}
                   value={`${b.value} ${b.label}`}
@@ -101,29 +104,28 @@ function BankCombobox({
 interface BankAccountDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  bank: BankAccount | null;
+  usedBanks: BankName[];
   onSave: (bank: BankAccount) => void;
 }
 
 function BankForm({
-  bank,
   onSave,
   onCancel,
+  usedBanks,
 }: {
-  bank: BankAccount | null;
   onSave: (bank: BankAccount) => void;
   onCancel: () => void;
+  usedBanks: BankName[];
 }) {
-  const [selectedBank, setSelectedBank] = useState<BankName>(bank?.bank || 'BCA');
+  const available = BANK_LIST.filter((b) => !usedBanks.includes(b.value));
+  const [selectedBank, setSelectedBank] = useState<BankName>(available[0]?.value ?? 'BCA');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
-      id: bank?.id || '',
+      id: '',
       bank: selectedBank,
-      accountNumber: bank?.accountNumber || '',
-      accountName: bank?.accountName || '',
-      enabled: bank?.enabled ?? true,
+      enabled: true,
     });
   };
 
@@ -131,7 +133,7 @@ function BankForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>Bank</Label>
-        <BankCombobox value={selectedBank} onValueChange={setSelectedBank} />
+        <BankCombobox value={selectedBank} onValueChange={setSelectedBank} usedBanks={usedBanks} />
       </div>
       <DialogFooter>
         <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
@@ -141,16 +143,21 @@ function BankForm({
   );
 }
 
-export function BankAccountDialog({ open, onOpenChange, bank, onSave }: BankAccountDialogProps) {
+export function BankAccountDialog({ open, onOpenChange, usedBanks, onSave }: BankAccountDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{bank ? 'Edit Bank Account' : 'Add Bank Account'}</DialogTitle>
+          <DialogTitle>Add Bank Account</DialogTitle>
           <DialogDescription>Select a bank to receive transfer payments.</DialogDescription>
         </DialogHeader>
         {open && (
-          <BankForm key={bank?.id ?? 'new'} bank={bank} onSave={onSave} onCancel={() => onOpenChange(false)} />
+          <BankForm
+            key={usedBanks.join(',')}
+            onSave={onSave}
+            onCancel={() => onOpenChange(false)}
+            usedBanks={usedBanks}
+          />
         )}
       </DialogContent>
     </Dialog>
