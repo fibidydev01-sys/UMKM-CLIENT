@@ -1,23 +1,19 @@
-// ══════════════════════════════════════════════════════════════
-// FULL PREVIEW DRAWER
-// Shows complete landing page preview in a drawer
-// ══════════════════════════════════════════════════════════════
-
 'use client';
 
 import { useRef, useEffect } from 'react';
 import { Drawer } from 'vaul';
 import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { cn } from '@/lib/shared/utils';
+import { ExternalLink } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { LivePreview } from './live-preview';
-import type { TenantLandingConfig, Product, Tenant } from '@/types';
+import type { TenantLandingConfig, Tenant } from '@/types';
 
 interface FullPreviewDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   config: TenantLandingConfig;
   tenant: Tenant;
-  products: Product[];
 }
 
 export function FullPreviewDrawer({
@@ -28,7 +24,6 @@ export function FullPreviewDrawer({
 }: FullPreviewDrawerProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Scroll to top when drawer opens
   useEffect(() => {
     if (open && scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
@@ -60,9 +55,26 @@ export function FullPreviewDrawer({
             </VisuallyHidden.Root>
           </Drawer.Description>
 
-          {/* Drag Handle */}
-          <div className="flex justify-center pt-3 pb-2 shrink-0">
-            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          {/* Top bar — drag handle kiri, Open Landing Page kanan */}
+          <div className="flex items-center justify-between px-4 pt-3 pb-2 shrink-0">
+            <div className="flex-1 flex justify-center">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="gap-1.5 h-8 text-xs shrink-0"
+            >
+              <a
+                href={`/store/${tenant.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open Landing Page
+              </a>
+            </Button>
           </div>
 
           {/* Scrollable Content */}

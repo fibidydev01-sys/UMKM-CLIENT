@@ -8,7 +8,7 @@ import { getCategoryConfig } from '@/constants/shared/categories';
 import { Store, Mail, Lock, Phone, Edit2 } from 'lucide-react';
 
 // ==========================================
-// TYPES
+// TYPES — onSubmit & isLoading dihapus (handled by parent)
 // ==========================================
 
 interface StepReviewProps {
@@ -22,8 +22,6 @@ interface StepReviewProps {
     whatsapp?: string;
   };
   onEdit: (step: number) => void;
-  onSubmit: () => void;
-  isLoading: boolean;
   onAgreementChange?: (agreed: boolean) => void;
 }
 
@@ -44,10 +42,7 @@ export function StepReview({ data, onEdit, onAgreementChange }: StepReviewProps)
     <div className="space-y-3 max-w-md">
 
       {/* Business Type */}
-      <ReviewCard
-        label="Business type"
-        onEdit={() => onEdit(2)}
-      >
+      <ReviewCard label="Business type" onEdit={() => onEdit(2)}>
         <p className="text-sm font-medium">
           {categoryConfig?.label ?? data.category ?? '—'}
         </p>
@@ -106,7 +101,7 @@ export function StepReview({ data, onEdit, onAgreementChange }: StepReviewProps)
         </div>
       </ReviewCard>
 
-      {/* ── AGREEMENT CHECKBOX ── */}
+      {/* Agreement */}
       <div className="flex items-start gap-3 pt-2">
         <Checkbox
           id="agreement"

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Check, X } from 'lucide-react';
+import { cn } from '@/lib/shared/utils';
 
 // ==========================================
 // TYPES
@@ -15,6 +16,107 @@ interface StepAccountProps {
   password: string;
   whatsapp: string;
   onUpdate: (data: { email?: string; password?: string; whatsapp?: string }) => void;
+}
+
+// ==========================================
+// PASSWORD STRENGTH
+// ==========================================
+
+interface PasswordRule {
+  label: string;
+  test: (pw: string) => boolean;
+}
+
+const PASSWORD_RULES: PasswordRule[] = [
+  { label: 'At least 8 characters', test: (pw) => pw.length >= 8 },
+  { label: 'One uppercase letter (A–Z)', test: (pw) => /[A-Z]/.test(pw) },
+  { label: 'One number (0–9)', test: (pw) => /[0-9]/.test(pw) },
+  { label: 'One symbol (e.g. !@#$%)', test: (pw) => /[^A-Za-z0-9]/.test(pw) },
+];
+
+type StrengthLevel = 0 | 1 | 2 | 3 | 4;
+
+interface StrengthInfo {
+  level: StrengthLevel;
+  label: string;
+  color: string;
+  textColor: string;
+}
+
+function getStrength(password: string): StrengthInfo {
+  if (!password) {
+    return { level: 0, label: '', color: 'bg-border', textColor: 'text-muted-foreground' };
+  }
+
+  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
+
+  if (passed <= 1) return { level: 1, label: 'Weak', color: 'bg-red-500', textColor: 'text-red-500' };
+  if (passed === 2) return { level: 2, label: 'Fair', color: 'bg-orange-400', textColor: 'text-orange-400' };
+  if (passed === 3) return { level: 3, label: 'Good', color: 'bg-yellow-400', textColor: 'text-yellow-500' };
+  return { level: 4, label: 'Strong', color: 'bg-green-500', textColor: 'text-green-600' };
+}
+
+// ==========================================
+// PASSWORD STRENGTH UI
+// ==========================================
+
+function PasswordStrength({ password }: { password: string }) {
+  const strength = useMemo(() => getStrength(password), [password]);
+  const rules = useMemo(() =>
+    PASSWORD_RULES.map((r) => ({ ...r, passed: r.test(password) })),
+    [password]
+  );
+
+  return (
+    <div className="space-y-3 pt-1">
+
+      {/* Bar — hanya muncul saat user mulai ketik */}
+      {password && (
+        <div className="space-y-1.5">
+          <div className="flex gap-1">
+            {([1, 2, 3, 4] as StrengthLevel[]).map((seg) => (
+              <div
+                key={seg}
+                className={cn(
+                  'h-1 flex-1 rounded-full transition-all duration-300',
+                  strength.level >= seg ? strength.color : 'bg-border'
+                )}
+              />
+            ))}
+          </div>
+          {strength.label && (
+            <p className={cn('text-[11px] font-semibold tracking-wide', strength.textColor)}>
+              {strength.label}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Rules checklist — selalu tampil */}
+      <div className="space-y-1">
+        {rules.map((rule) => (
+          <div key={rule.label} className="flex items-center gap-2">
+            <span className={cn(
+              'flex items-center justify-center w-3.5 h-3.5 rounded-full shrink-0 transition-colors',
+              rule.passed ? 'bg-green-500' : 'bg-border'
+            )}>
+              {rule.passed
+                ? <Check className="w-2 h-2 text-white" strokeWidth={3} />
+                : <X className="w-2 h-2 text-muted-foreground" strokeWidth={3} />
+              }
+            </span>
+            <span className={cn(
+              'text-xs transition-colors',
+              rule.passed ? 'text-foreground' : 'text-muted-foreground'
+            )}>
+              {rule.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
 }
 
 // ==========================================
@@ -67,7 +169,7 @@ export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccount
           <Input
             id="acc-password"
             type={showPassword ? 'text' : 'password'}
-            placeholder="Min. 6 characters"
+            placeholder="Create a strong password"
             autoComplete="new-password"
             value={localPassword}
             onChange={(e) => { setLocalPassword(e.target.value); onUpdate({ password: e.target.value }); }}
@@ -86,7 +188,9 @@ export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccount
             }
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">Minimum 6 characters</p>
+
+        {/* Strength indicator */}
+        <PasswordStrength password={localPassword} />
       </div>
 
       <div className="border-t" />
@@ -113,6 +217,7 @@ export function StepAccount({ email, password, whatsapp, onUpdate }: StepAccount
           Used to receive order notifications via WhatsApp
         </p>
       </div>
+
     </div>
   );
 }

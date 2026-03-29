@@ -16,8 +16,6 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Users,
-  CreditCard,
-  Ticket,
   ScrollText,
   Menu,
   Moon,
@@ -58,16 +56,6 @@ const navigation: NavItem[] = [
     title: 'Dashboard',
     href: '/admin',
     icon: LayoutDashboard,
-  },
-  {
-    title: 'Subscriptions',
-    href: '/admin/subscriptions',
-    icon: CreditCard,
-  },
-  {
-    title: 'Redeem Codes',
-    href: '/admin/redeem-codes',
-    icon: Ticket,
   },
   {
     title: 'Tenants',

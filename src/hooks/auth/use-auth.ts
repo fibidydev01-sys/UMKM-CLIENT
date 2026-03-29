@@ -111,7 +111,7 @@ export function useRegister() {
         // ✅ Init tour state — semua tour = false (user baru)
 
         toast.success('Registration successful!', 'Your store is ready to use');
-        router.push('/dashboard');
+        router.push('/dashboard/landing-builder');
 
         return response;
       } catch (err) {

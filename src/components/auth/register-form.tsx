@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRegisterWizard, useRegister } from '@/hooks';
@@ -11,8 +11,11 @@ import {
   StepStoreInfo,
   StepAccount,
   StepReview,
+  StepWelcome,
 } from './register-steps';
+import { StepIndicator, StepDots } from '@/components/dashboard/settings/shared';
 import { cn } from '@/lib/shared/utils';
+import { toast } from 'sonner';
 
 // ==========================================
 // KONFIGURASI STEPS
@@ -26,65 +29,15 @@ const STEPS = [
 ] as const;
 
 // ==========================================
-// STEP INDICATOR
+// PASSWORD VALIDATION — harus sama dengan step-account
 // ==========================================
 
-function StepIndicator({
-  currentStep,
-  onStepClick,
-  size = 'sm',
-}: {
-  currentStep: number;
-  onStepClick?: (i: number) => void;
-  size?: 'sm' | 'lg';
-}) {
+function isPasswordStrong(password: string): boolean {
   return (
-    <div className="flex items-center">
-      {STEPS.map((step, i) => (
-        <div key={i} className="flex items-center">
-          <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={() => i < currentStep && onStepClick?.(i)}
-              className={cn(
-                'flex items-center justify-center rounded-full font-semibold transition-all duration-300 focus-visible:outline-none',
-                size === 'lg' ? 'w-8 h-8 text-xs' : 'w-6 h-6 text-[11px]',
-                i < currentStep
-                  ? 'bg-primary text-primary-foreground cursor-pointer hover:opacity-75'
-                  : i === currentStep
-                    ? 'bg-primary text-primary-foreground ring-[3px] ring-primary/25 cursor-default'
-                    : 'bg-muted text-muted-foreground/60 cursor-default'
-              )}
-            >
-              {i < currentStep ? (
-                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                i + 1
-              )}
-            </button>
-
-            {size === 'lg' && (
-              <span className={cn(
-                'text-[11px] font-medium tracking-wide whitespace-nowrap transition-colors',
-                i === currentStep ? 'text-foreground' : 'text-muted-foreground/60'
-              )}>
-                {step.title}
-              </span>
-            )}
-          </div>
-
-          {i < STEPS.length - 1 && (
-            <div className={cn(
-              'h-px mx-2 transition-colors duration-500',
-              size === 'lg' ? 'w-14 mb-[22px]' : 'w-8',
-              i < currentStep ? 'bg-primary' : 'bg-border'
-            )} />
-          )}
-        </div>
-      ))}
-    </div>
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[0-9]/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
   );
 }
 
@@ -95,16 +48,74 @@ function StepIndicator({
 export function RegisterForm() {
   const wizard = useRegisterWizard();
   const { register, isLoading, error } = useRegister();
-
-  // ── Agreement state — diupdate dari StepReview via callback ──
   const [isAgreed, setIsAgreed] = useState(false);
 
   const isWelcome = wizard.state.currentStep === 1;
   const indicatorStep = wizard.state.currentStep - 2;
   const isLastStep = wizard.state.currentStep === 5;
-  const totalIndicatorSteps = STEPS.length;
+
+  // ==========================================
+  // BLOCKING VALIDATION PER STEP
+  // ==========================================
+
+  const validateCurrentStep = (): boolean => {
+    switch (wizard.state.currentStep) {
+      case 2: // Business Type
+        if (!wizard.state.category) {
+          toast.error('Please select a business type to continue');
+          return false;
+        }
+        return true;
+
+      case 3: // Store Details
+        if (!wizard.state.name?.trim()) {
+          toast.error('Store name is required');
+          return false;
+        }
+        if (!wizard.state.slug?.trim()) {
+          toast.error('Store URL is required');
+          return false;
+        }
+        return true;
+
+      case 4: // Account
+        if (!wizard.state.email?.trim()) {
+          toast.error('Email address is required');
+          return false;
+        }
+        if (!wizard.state.password) {
+          toast.error('Password is required');
+          return false;
+        }
+        if (!isPasswordStrong(wizard.state.password)) {
+          toast.error('Password must meet all requirements');
+          return false;
+        }
+        if (!wizard.state.whatsapp || wizard.state.whatsapp === '62') {
+          toast.error('WhatsApp number is required');
+          return false;
+        }
+        return true;
+
+      case 5: // Review
+        if (!isAgreed) {
+          toast.error('Please agree to the Terms of Service to continue');
+          return false;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
+  const handleNext = () => {
+    if (!validateCurrentStep()) return;
+    wizard.nextStep();
+  };
 
   const handleSubmit = async () => {
+    if (!validateCurrentStep()) return;
     try {
       await register({
         name: wizard.state.name!,
@@ -124,48 +135,13 @@ export function RegisterForm() {
   if (isWelcome) {
     return (
       <div className="w-full max-w-2xl mx-auto">
-        <div className="flex flex-col items-center text-center space-y-8 py-8">
-          <div className="space-y-3 max-w-sm">
-            <h1 className="text-3xl font-bold tracking-tight">
-              Set up your online store
-            </h1>
-            <p className="text-muted-foreground leading-relaxed">
-              Get your store up and running in minutes. Manage products,
-              orders, and customers — all in one place.
-            </p>
-          </div>
-
-          <div className="w-full max-w-xs space-y-2 text-left">
-            {STEPS.map((step, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 px-3 py-2.5 rounded-md bg-muted/50"
-              >
-                <span className="text-[11px] font-mono font-semibold text-muted-foreground tabular-nums">
-                  0{i + 1}
-                </span>
-                <span className="text-sm text-foreground">{step.title}</span>
-              </div>
-            ))}
-          </div>
-
-          <Button
-            type="button"
-            size="lg"
-            onClick={wizard.nextStep}
-            className="w-full max-w-xs group"
-          >
-            Get started
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
-
-          <p className="text-sm text-muted-foreground">
-            Already have a store?{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">
-              Sign in
-            </Link>
-          </p>
-        </div>
+        <StepWelcome onNext={wizard.nextStep} />
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Already have a store?{' '}
+          <Link href="/login" className="text-primary hover:underline font-medium">
+            Sign in
+          </Link>
+        </p>
       </div>
     );
   }
@@ -187,7 +163,7 @@ export function RegisterForm() {
         <div className="flex items-start justify-between gap-8 pb-6 border-b mb-8">
           <div className="space-y-1">
             <p className="text-[11px] font-medium tracking-widest uppercase text-muted-foreground">
-              Step {wizard.state.currentStep - 1} of {totalIndicatorSteps}
+              Step {wizard.state.currentStep - 1} of {STEPS.length}
             </p>
             <h2 className="text-2xl font-bold tracking-tight leading-none">
               {STEPS[indicatorStep]?.title}
@@ -196,9 +172,9 @@ export function RegisterForm() {
               {STEPS[indicatorStep]?.desc}
             </p>
           </div>
-
           <div className="shrink-0 pt-0.5">
             <StepIndicator
+              steps={STEPS}
               currentStep={indicatorStep}
               onStepClick={(i) => wizard.goToStep(i + 2)}
               size="lg"
@@ -207,7 +183,7 @@ export function RegisterForm() {
         </div>
 
         {/* Body */}
-        <div className="flex-1 min-h-[340px]">
+        <div className="flex-1 min-h-[340px] pb-20">
           {wizard.state.currentStep === 2 && (
             <StepCategory
               selectedCategory={wizard.state.category || ''}
@@ -234,15 +210,13 @@ export function RegisterForm() {
             <StepReview
               data={wizard.state}
               onEdit={(step) => wizard.goToStep(step)}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
               onAgreementChange={setIsAgreed}
             />
           )}
         </div>
 
-        {/* Footer nav */}
-        <div className="flex items-center justify-between pt-6 border-t mt-8">
+        {/* Desktop — fixed bottom nav */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 hidden lg:flex items-center justify-between px-8 py-4 bg-background/90 backdrop-blur-sm border-t">
           <Button
             variant="outline"
             onClick={wizard.prevStep}
@@ -255,34 +229,19 @@ export function RegisterForm() {
             Previous
           </Button>
 
-          {/* Progress pills */}
-          <div className="flex items-center gap-1.5">
-            {STEPS.map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  'rounded-full transition-all duration-300',
-                  i === indicatorStep
-                    ? 'w-5 h-1.5 bg-primary'
-                    : i < indicatorStep
-                      ? 'w-1.5 h-1.5 bg-primary/40'
-                      : 'w-1.5 h-1.5 bg-border'
-                )}
-              />
-            ))}
-          </div>
+          <StepDots steps={STEPS} currentStep={indicatorStep} />
 
           {isLastStep ? (
             <Button
               onClick={handleSubmit}
-              disabled={isLoading || !isAgreed}
+              disabled={isLoading}
               className="gap-1.5 min-w-[130px] h-9 text-sm"
             >
               {isLoading ? 'Creating...' : 'Create my store'}
             </Button>
           ) : (
             <Button
-              onClick={wizard.nextStep}
+              onClick={handleNext}
               className="gap-1.5 min-w-[130px] h-9 text-sm"
             >
               Next
@@ -299,6 +258,7 @@ export function RegisterForm() {
         <div className="mb-6">
           <div className="flex justify-center mb-4">
             <StepIndicator
+              steps={STEPS}
               currentStep={indicatorStep}
               onStepClick={(i) => wizard.goToStep(i + 2)}
               size="sm"
@@ -306,7 +266,7 @@ export function RegisterForm() {
           </div>
           <div className="text-center space-y-0.5">
             <p className="text-[10px] font-medium tracking-widest uppercase text-muted-foreground">
-              Step {wizard.state.currentStep - 1} of {totalIndicatorSteps}
+              Step {wizard.state.currentStep - 1} of {STEPS.length}
             </p>
             <h3 className="text-base font-bold tracking-tight">
               {STEPS[indicatorStep]?.title}
@@ -345,52 +305,51 @@ export function RegisterForm() {
             <StepReview
               data={wizard.state}
               onEdit={(step) => wizard.goToStep(step)}
-              onSubmit={handleSubmit}
-              isLoading={isLoading}
               onAgreementChange={setIsAgreed}
             />
           )}
         </div>
       </div>
 
-      {/* Mobile bottom nav */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
-        <div className="bg-background/90 backdrop-blur-sm border-t px-4 py-3 flex items-center gap-2.5">
+      {/* Mobile — fixed bottom nav */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-background/90 backdrop-blur-sm border-t">
+        <div className="px-4 py-3 flex items-center justify-between gap-3">
           <Button
             variant="outline"
-            size="sm"
+            size="icon"
             onClick={wizard.prevStep}
             className={cn(
-              'gap-1 flex-1 h-9 text-xs font-medium',
+              'h-9 w-9 shrink-0',
               wizard.state.currentStep === 2 && 'invisible'
             )}
           >
-            <ChevronLeft className="h-3.5 w-3.5" />
-            Previous
+            <ChevronLeft className="h-4 w-4" />
           </Button>
+
+          <StepDots steps={STEPS} currentStep={indicatorStep} />
+
           {isLastStep ? (
             <Button
               size="sm"
               onClick={handleSubmit}
-              disabled={isLoading || !isAgreed}
-              className="gap-1 flex-1 h-9 text-xs font-medium"
+              disabled={isLoading}
+              className="h-9 px-4 text-xs font-medium shrink-0"
             >
-              {isLoading ? 'Creating...' : 'Create my store'}
+              {isLoading ? 'Creating...' : 'Create store'}
             </Button>
           ) : (
             <Button
-              size="sm"
-              onClick={wizard.nextStep}
-              className="gap-1 flex-1 h-9 text-xs font-medium"
+              size="icon"
+              onClick={handleNext}
+              className="h-9 w-9 shrink-0"
             >
-              Next
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
       </div>
 
-      {/* Link sign in */}
+      {/* Sign in link — desktop only */}
       <p className="hidden lg:block text-center text-sm text-muted-foreground mt-4">
         Already have a store?{' '}
         <Link href="/login" className="text-primary hover:underline font-medium">

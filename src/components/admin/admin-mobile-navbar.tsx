@@ -6,7 +6,7 @@
 //
 // Pattern IDENTIK dengan mobile-navbar.tsx:
 // - Fixed bottom nav
-// - 4 nav items + hamburger Menu
+// - Nav items sesuai desktop sidebar (Dashboard, Tenants, Audit Logs) + hamburger Menu
 // - Dropdown: theme toggle + sign out
 // - backdrop-blur + border-t
 // ==========================================
@@ -17,8 +17,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   Users,
-  CreditCard,
-  Ticket,
+  ScrollText,
   Menu,
   Sun,
   Moon,
@@ -35,8 +34,7 @@ import {
 import { useAdminLogout } from '@/hooks/admin';
 
 // ==========================================
-// NAV ITEMS — 4 item yang paling penting
-// Audit Logs diakses via hamburger kalau perlu
+// NAV ITEMS — sama persis dengan desktop sidebar
 // ==========================================
 
 const navItems = [
@@ -46,19 +44,14 @@ const navItems = [
     label: 'Dashboard',
   },
   {
-    href: '/admin/subscriptions',
-    icon: CreditCard,
-    label: 'Subs',
-  },
-  {
-    href: '/admin/redeem-codes',
-    icon: Ticket,
-    label: 'Codes',
-  },
-  {
     href: '/admin/tenants',
     icon: Users,
     label: 'Tenants',
+  },
+  {
+    href: '/admin/logs',
+    icon: ScrollText,
+    label: 'Audit Logs',
   },
 ];
 

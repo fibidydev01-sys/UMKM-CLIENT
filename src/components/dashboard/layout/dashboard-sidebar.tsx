@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
   Layout,
@@ -38,6 +38,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useLogout } from '@/hooks';
+import { useBuilderStore } from '@/stores/use-builder-store';
 
 interface NavItem {
   title: string;
@@ -56,43 +57,29 @@ const navigation: NavGroup[] = [
   {
     title: 'Main',
     items: [
-      {
-        title: 'Dashboard',
-        href: '/dashboard',
-        icon: LayoutDashboard,
-      },
-      {
-        title: 'Tambah Produk',
-        href: '/dashboard/products/new',
-        icon: PlusSquare,
-      },
-      {
-        title: 'Landing Builder',
-        href: '/dashboard/landing-builder',
-        icon: Layout,
-      },
+      { title: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+      { title: 'Tambah Produk', href: '/dashboard/products/new', icon: PlusSquare },
+      { title: 'Landing Builder', href: '/dashboard/landing-builder', icon: Layout },
     ],
   },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { logout } = useLogout();
   const [isDark, setIsDark] = useState(false);
+
+  const { hasUnsavedChanges, onNavigateAway } = useBuilderStore();
+  const isInBuilder = pathname.startsWith('/dashboard/landing-builder');
 
   useEffect(() => {
     const updateTheme = () => {
       setIsDark(document.documentElement.classList.contains('dark'));
     };
-
     updateTheme();
-
     const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
-    });
-
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     return () => observer.disconnect();
   }, []);
 
@@ -104,10 +91,24 @@ export function DashboardSidebar() {
   };
 
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard';
-    }
+    if (href === '/dashboard') return pathname === '/dashboard';
     return pathname.startsWith(href);
+  };
+
+  // ── Intercept nav klik saat di landing-builder dengan unsaved changes ──
+  const handleNavClick = (e: React.MouseEvent, href: string) => {
+    if (isInBuilder && hasUnsavedChanges && onNavigateAway) {
+      e.preventDefault();
+      onNavigateAway(href);
+    }
+  };
+
+  const handleDropdownNavClick = (href: string) => {
+    if (isInBuilder && hasUnsavedChanges && onNavigateAway) {
+      onNavigateAway(href);
+    } else {
+      router.push(href);
+    }
   };
 
   return (
@@ -121,12 +122,7 @@ export function DashboardSidebar() {
 
                 if (item.children) {
                   return (
-                    <Collapsible
-                      key={item.href}
-                      asChild
-                      defaultOpen={active}
-                      className="group/collapsible"
-                    >
+                    <Collapsible key={item.href} asChild defaultOpen={active} className="group/collapsible">
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton isActive={active}>
@@ -140,7 +136,7 @@ export function DashboardSidebar() {
                             {item.children.map((child) => (
                               <SidebarMenuSubItem key={child.href}>
                                 <SidebarMenuSubButton asChild isActive={pathname === child.href}>
-                                  <Link href={child.href}>
+                                  <Link href={child.href} onClick={(e) => handleNavClick(e, child.href)}>
                                     <span>{child.title}</span>
                                   </Link>
                                 </SidebarMenuSubButton>
@@ -156,7 +152,7 @@ export function DashboardSidebar() {
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton asChild isActive={active}>
-                      <Link href={item.href}>
+                      <Link href={item.href} onClick={(e) => handleNavClick(e, item.href)}>
                         <item.icon className="h-5 w-5" />
                         <span>{item.title}</span>
                         {item.badge !== undefined && item.badge > 0 && (
@@ -184,43 +180,26 @@ export function DashboardSidebar() {
                   <span>Menu</span>
                 </SidebarMenuButton>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-56 rounded-lg"
-                side="top"
-                align="start"
-                sideOffset={4}
-              >
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings/toko">
-                    <Settings className="mr-3 h-5 w-5" />
-                    Store Settings
-                  </Link>
+              <DropdownMenuContent className="w-56 rounded-lg" side="top" align="start" sideOffset={4}>
+                <DropdownMenuItem onClick={() => handleDropdownNavClick('/dashboard/settings/toko')}>
+                  <Settings className="mr-3 h-5 w-5" />
+                  Store Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/settings/channels">
-                    <Radio className="mr-3 h-5 w-5" />
-                    Channels
-                  </Link>
+                <DropdownMenuItem onClick={() => handleDropdownNavClick('/dashboard/settings/channels')}>
+                  <Radio className="mr-3 h-5 w-5" />
+                  Channels
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/dashboard/subscription">
-                    <Crown className="mr-3 h-5 w-5" />
-                    Subscription
-                  </Link>
+                <DropdownMenuItem onClick={() => handleDropdownNavClick('/dashboard/subscription')}>
+                  <Crown className="mr-3 h-5 w-5" />
+                  Subscription
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={toggleTheme}>
                   {isDark ? (
-                    <>
-                      <Sun className="mr-3 h-5 w-5" />
-                      Light mode
-                    </>
+                    <><Sun className="mr-3 h-5 w-5" />Light mode</>
                   ) : (
-                    <>
-                      <Moon className="mr-3 h-5 w-5" />
-                      Dark mode
-                    </>
+                    <><Moon className="mr-3 h-5 w-5" />Dark mode</>
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
