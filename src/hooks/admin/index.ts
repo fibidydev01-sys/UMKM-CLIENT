@@ -11,9 +11,5 @@ export {
   useAdminTenants,
   useAdminTenantDetail,
   useSuspendTenant,
-  useAdminSubscriptions,
-  useExtendSubscription,
-  useRedeemCodes,
-  useCreateRedeemCodes,
   useAdminLogs,
 } from './use-admin';

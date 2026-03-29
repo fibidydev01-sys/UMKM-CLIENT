@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Home, FileText, MapPin } from 'lucide-react';
 import { cn } from '@/lib/shared/utils';
-import { useTokoActiveTab } from '@/stores/tour-store';
-import { useTour } from '@/hooks/dashboard/use-tour';
-import { useNextStep } from 'nextstepjs';
 import { HeroSection } from '@/components/dashboard/settings/hero-section';
 import { AboutSection } from '@/components/dashboard/settings/about-section';
 import { ContactSection } from '@/components/dashboard/settings/contact-section';
@@ -20,23 +17,6 @@ const TABS = [
 
 export function TokoClient() {
   const [activeTab, setActiveTab] = useState<TabType>('hero-section');
-
-  const tourActiveTab = useTokoActiveTab();
-  const { shouldShowTour } = useTour('toko');
-  const { startNextStep } = useNextStep();
-
-  useEffect(() => {
-    if (tourActiveTab && TABS.some((t) => t.id === tourActiveTab)) {
-      setActiveTab(tourActiveTab as TabType);
-    }
-  }, [tourActiveTab]);
-
-  useEffect(() => {
-    if (!shouldShowTour) return;
-    const timer = setTimeout(() => startNextStep('toko'), 800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div>

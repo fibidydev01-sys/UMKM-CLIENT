@@ -1,14 +1,6 @@
 import { seoConfig } from '@/constants/shared';
 import { getFullUrl, getTenantUrl } from '@/lib/shared';
 
-// ==========================================
-// SCHEMA.ORG GENERATORS
-// ==========================================
-
-/**
- * Organization Schema (Platform level)
- * https://schema.org/Organization
- */
 export function generateOrganizationSchema() {
   return {
     '@context': 'https://schema.org',
@@ -37,10 +29,6 @@ export function generateOrganizationSchema() {
   };
 }
 
-/**
- * WebSite Schema with SearchAction
- * https://schema.org/WebSite
- */
 export function generateWebSiteSchema() {
   return {
     '@context': 'https://schema.org',
@@ -66,10 +54,6 @@ export function generateWebSiteSchema() {
   };
 }
 
-/**
- * LocalBusiness Schema (Tenant level)
- * https://schema.org/LocalBusiness
- */
 export function generateLocalBusinessSchema(tenant: {
   name: string;
   slug: string;
@@ -98,7 +82,6 @@ export function generateLocalBusinessSchema(tenant: {
   } | null;
 }) {
   const tenantUrl = getTenantUrl(tenant.slug);
-
   const sameAs: string[] = Object.values(tenant.socialLinks ?? {}).filter(Boolean) as string[];
 
   return {
@@ -134,10 +117,6 @@ export function generateLocalBusinessSchema(tenant: {
   };
 }
 
-/**
- * Product Schema
- * https://schema.org/Product
- */
 export function generateProductSchema(
   product: {
     id: string;
@@ -148,9 +127,6 @@ export function generateProductSchema(
     comparePrice?: number | null;
     images?: string[];
     category?: string | null;
-    sku?: string | null;
-    stock?: number | null;
-    trackStock?: boolean;
   },
   tenant: {
     name: string;
@@ -161,7 +137,6 @@ export function generateProductSchema(
   const productPath = product.slug ? `/p/${product.slug}` : `/product/${product.id}`;
   const productUrl = getTenantUrl(tenant.slug, productPath);
   const tenantUrl = getTenantUrl(tenant.slug);
-  const inStock = product.trackStock ? (product.stock ?? 0) > 0 : true;
 
   const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
     .toISOString()
@@ -175,7 +150,6 @@ export function generateProductSchema(
     description: product.description || `${product.name} dari ${tenant.name}`,
     url: productUrl,
     image: product.images?.[0] || getFullUrl(seoConfig.defaultOgImage),
-    sku: product.sku || product.id,
     category: product.category || undefined,
     brand: {
       '@type': 'Brand',
@@ -191,9 +165,7 @@ export function generateProductSchema(
       priceCurrency: 'IDR',
       price: product.price,
       priceValidUntil: priceValidUntil,
-      availability: inStock
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
+      availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
       seller: {
         '@type': 'Organization',
@@ -204,17 +176,9 @@ export function generateProductSchema(
   };
 }
 
-/**
- * BreadcrumbList Schema
- * https://schema.org/BreadcrumbList
- *
- * ✅ FIX: Filter items dengan url undefined/null/empty
- * sebelum map — mencegah TypeError .startsWith pada undefined
- */
 export function generateBreadcrumbSchema(
   items: Array<{ name: string; url: string }>
 ) {
-  // Filter items yang valid — url harus ada dan berupa string
   const validItems = items.filter(
     (item) => item && typeof item.name === 'string' && typeof item.url === 'string' && item.url.length > 0
   );
@@ -231,10 +195,6 @@ export function generateBreadcrumbSchema(
   };
 }
 
-/**
- * ItemList Schema (Product List)
- * https://schema.org/ItemList
- */
 export function generateProductListSchema(
   products: Array<{
     id: string;
@@ -267,10 +227,6 @@ export function generateProductListSchema(
   };
 }
 
-/**
- * FAQPage Schema
- * https://schema.org/FAQPage
- */
 export function generateFAQSchema(
   faqs: Array<{ question: string; answer: string }>
 ) {
@@ -288,10 +244,6 @@ export function generateFAQSchema(
   };
 }
 
-/**
- * WebPage Schema
- * https://schema.org/WebPage
- */
 export function generateWebPageSchema(page: {
   name: string;
   description: string;
@@ -306,22 +258,14 @@ export function generateWebPageSchema(page: {
     name: page.name,
     description: page.description,
     url: getFullUrl(page.url),
-    isPartOf: {
-      '@id': `${seoConfig.siteUrl}/#website`,
-    },
-    about: {
-      '@id': `${seoConfig.siteUrl}/#organization`,
-    },
+    isPartOf: { '@id': `${seoConfig.siteUrl}/#website` },
+    about: { '@id': `${seoConfig.siteUrl}/#organization` },
     datePublished: page.datePublished,
     dateModified: page.dateModified,
     inLanguage: seoConfig.language,
   };
 }
 
-/**
- * CollectionPage Schema
- * https://schema.org/CollectionPage
- */
 export function generateCollectionPageSchema(
   page: {
     name: string;
@@ -338,9 +282,7 @@ export function generateCollectionPageSchema(
     description: page.description,
     url: getFullUrl(page.url),
     numberOfItems: numberOfItems,
-    isPartOf: {
-      '@id': `${seoConfig.siteUrl}/#website`,
-    },
+    isPartOf: { '@id': `${seoConfig.siteUrl}/#website` },
     inLanguage: seoConfig.language,
   };
 }

@@ -5,7 +5,6 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { DashboardSidebar } from './dashboard-sidebar';
 import { DashboardShell } from './dashboard-shell';
 import { MobileNavbar } from './mobile-navbar';
-import { NextStepWrapper } from '../shared/nextstep-wrapper';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -16,7 +15,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const isLandingBuilder = pathname?.includes('/landing-builder');
 
   return (
-    <NextStepWrapper>
       <SidebarProvider>
         <DashboardSidebar />
         {isLandingBuilder ? (
@@ -33,6 +31,5 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         )}
         <MobileNavbar />
       </SidebarProvider>
-    </NextStepWrapper>
   );
 }

@@ -18,7 +18,11 @@ interface ProductsGridProps {
   onAtLimit?: () => void;
 }
 
-export function ProductsGrid({ products, isRefreshing, onRefresh }: ProductsGridProps) {
+export function ProductsGrid({
+  products,
+  isRefreshing,
+  onRefresh,
+}: ProductsGridProps) {
   const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -249,8 +249,8 @@ feat_settings_channels() {
     cfolder_r "$SRC/components/dashboard/settings/pembayaran-section"
     sec "COMPONENTS — Pengiriman Section"
     cfolder_r "$SRC/components/dashboard/settings/pengiriman-section"
-    sec "COMPONENTS — Social Section"
-    cfolder_r "$SRC/components/dashboard/settings/social-section"
+    sec "COMPONENTS — Social Links Section"
+    cfolder_r "$SRC/components/dashboard/settings/social-links-section"
     sec "COMPONENTS — Settings Shared"
     cfolder_r "$SRC/components/dashboard/settings/shared"
     done_msg
@@ -276,8 +276,8 @@ feat_settings_pengiriman() {
 
 feat_settings_social() {
     init_file "SETTINGS-SOCIAL-LINKS"
-    sec "COMPONENTS — Social Section"
-    cfolder_r "$SRC/components/dashboard/settings/social-section"
+    sec "COMPONENTS — Social Links Section"
+    cfolder_r "$SRC/components/dashboard/settings/social-links-section"
     sec "COMPONENTS — Settings Shared"
     cfolder_r "$SRC/components/dashboard/settings/shared"
     done_msg
@@ -292,7 +292,6 @@ feat_store_home() {
     sec "APP — Pages"
     cf "$SRC/app/store/[slug]/layout.tsx"
     cf "$SRC/app/store/[slug]/page.tsx"
-    cf "$SRC/app/store/[slug]/opengraph-image.tsx"
     sec "COMPONENTS — Store Layout"
     cfolder_r "$SRC/components/public/store/layout"
     sec "COMPONENTS — Hero"
@@ -441,6 +440,8 @@ feat_admin() {
     cf "$SRC/app/(admin)/layout.tsx"
     cf "$SRC/app/(admin)/admin/page.tsx"
     cf "$SRC/app/(admin)/admin/logs/page.tsx"
+    cf "$SRC/app/(admin)/admin/redeem-codes/page.tsx"
+    cf "$SRC/app/(admin)/admin/subscriptions/page.tsx"
     cf "$SRC/app/(admin)/admin/tenants/page.tsx"
     cf "$SRC/app/(admin)/admin/tenants/[id]/page.tsx"
     sec "COMPONENTS"
@@ -449,21 +450,18 @@ feat_admin() {
 }
 
 # ================================================================
-# SHARED COMPONENTS
+# DISCOVER (PUBLIC)
 # ================================================================
 
-feat_shared() {
-    init_file "SHARED-COMPONENTS"
-    sec "COMPONENTS — Upload"
-    cfolder_r "$SRC/components/shared/upload"
-    sec "COMPONENTS — Cloudinary"
-    cfolder_r "$SRC/components/shared/cloudinary"
-    sec "COMPONENTS — Cookie"
-    cfolder_r "$SRC/components/shared/cookie"
-    sec "COMPONENTS — PWA"
-    cfolder_r "$SRC/components/shared/pwa"
-    sec "COMPONENTS — SEO"
-    cfolder_r "$SRC/components/shared/seo"
+feat_discover() {
+    init_file "DISCOVER"
+    sec "APP — Pages"
+    cf "$SRC/app/(public)/discover/page.tsx"
+    cf "$SRC/app/(public)/discover/client.tsx"
+    cf "$SRC/app/(public)/discover/[category]/page.tsx"
+    cf "$SRC/app/(public)/discover/[category]/client.tsx"
+    sec "COMPONENTS"
+    cfolder "$SRC/components/public/discover"
     done_msg
 }
 
@@ -499,28 +497,28 @@ show_menu() {
     echo "  12) Hero Section"
     echo "  13) About"
     echo "  14) Contact"
-    echo "  15) Channels (tabs: pembayaran, pengiriman, social)"
+    echo "  15) Channels (tabs: pembayaran, pengiriman, social links)"
     echo "  16) Pembayaran"
     echo "  17) Pengiriman"
-    echo "  18) Social Links"
+    echo "  28) Social Links"
     echo ""
     echo "  ── STORE (PUBLIC) ──────────────────────────────────────────"
-    echo "  19) Home"
-    echo "  20) Products List"
-    echo "  21) Product Detail"
-    echo "  22) About"
-    echo "  23) Contact"
-    echo "  24) Testimonials"
+    echo "  18) Home"
+    echo "  19) Products List"
+    echo "  20) Product Detail"
+    echo "  21) About"
+    echo "  22) Contact"
+    echo "  23) Testimonials"
     echo ""
     echo "  ── LANDING ─────────────────────────────────────────────────"
-    echo "  25) Builder"
-    echo "  26) Blocks (semua variants)"
+    echo "  24) Builder"
+    echo "  25) Blocks (semua variants)"
     echo ""
     echo "  ── ADMIN ───────────────────────────────────────────────────"
-    echo "  27) Admin"
+    echo "  26) Admin"
     echo ""
-    echo "  ── SHARED COMPONENTS ───────────────────────────────────────"
-    echo "  28) Shared (upload, cloudinary, cookie, pwa, seo)"
+    echo "  ── PUBLIC ──────────────────────────────────────────────────"
+    echo "  27) Discover"
     echo ""
     echo "   0) Exit        all) Semua feat"
     echo "================================================================"
@@ -546,17 +544,17 @@ run_choice() {
         15) feat_settings_channels ;;
         16) feat_settings_pembayaran ;;
         17) feat_settings_pengiriman ;;
-        18) feat_settings_social ;;
-        19) feat_store_home ;;
-        20) feat_store_products ;;
-        21) feat_store_product_detail ;;
-        22) feat_store_about ;;
-        23) feat_store_contact ;;
-        24) feat_store_testimonials ;;
-        25) feat_landing_builder ;;
-        26) feat_landing_blocks ;;
-        27) feat_admin ;;
-        28) feat_shared ;;
+        18) feat_store_home ;;
+        19) feat_store_products ;;
+        20) feat_store_product_detail ;;
+        21) feat_store_about ;;
+        22) feat_store_contact ;;
+        23) feat_store_testimonials ;;
+        24) feat_landing_builder ;;
+        25) feat_landing_blocks ;;
+        26) feat_admin ;;
+        27) feat_discover ;;
+        28) feat_settings_social ;;
          *) echo "  ⚠ Unknown: $1" ;;
     esac
 }
@@ -568,7 +566,7 @@ while true; do
     [ -z "$choices" ] && continue
 
     if [ "$choices" = "all" ]; then
-        for i in $(seq 1 28); do run_choice $i; done
+        for i in $(seq 1 27) 28; do run_choice $i; done
     else
         for c in $choices; do run_choice "$c"; done
     fi

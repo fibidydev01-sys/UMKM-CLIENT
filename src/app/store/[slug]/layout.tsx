@@ -1,7 +1,6 @@
 import { tenantsApi } from '@/lib/api';
 import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/public/store';
 import { LocalBusinessSchema } from '@/components/shared/seo';
-import { TemplateProvider } from '@/lib/public';
 import { generateThemeCSS } from '@/lib/shared';
 import { createTenantMetadata } from '@/lib/shared/seo';
 import type { Metadata } from 'next';
@@ -64,8 +63,6 @@ export default async function StoreLayout({
   }
 
   const primaryHex = tenant.theme?.primaryColor || '';
-  const landingConfig = tenant.landingConfig as { template?: string } | null;
-  const templateId = landingConfig?.template || 'suspended-minimalist';
 
   return (
     <>
@@ -90,9 +87,7 @@ export default async function StoreLayout({
         <StoreHeader tenant={tenant} />
 
         <main className="flex-1">
-          <TemplateProvider initialTemplateId={templateId}>
-            {children}
-          </TemplateProvider>
+          {children}
         </main>
 
         <StoreFooter tenant={tenant} />

@@ -1,5 +1,5 @@
 // ============================================================================
-// FILE: src/hooks/use-landing-config.ts
+// FILE: src/hooks/dashboard/use-landing-config.ts
 // PURPOSE: Custom hook for managing Landing Page configuration
 // ============================================================================
 
@@ -8,12 +8,31 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { tenantsApi, ApiRequestError, getErrorMessage } from '@/lib/api';
-import {
-  DEFAULT_LANDING_CONFIG,
-  mergeLandingConfig,
-  prepareConfigForSave,
-} from '@/lib/public';
 import type { TenantLandingConfig } from '@/types';
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const DEFAULT_LANDING_CONFIG: TenantLandingConfig = {
+  enabled: false,
+  hero: {
+    enabled: false,
+    title: '',
+    subtitle: '',
+    config: {
+      ctaText: 'Lihat Produk',
+      ctaLink: '/products',
+    },
+  },
+  products: {
+    enabled: false,
+    config: {
+      limit: 8,
+      showViewAll: false,
+    },
+  },
+};
 
 // ============================================================================
 // TYPES
@@ -39,29 +58,44 @@ interface UseLandingConfigReturn {
 }
 
 // ============================================================================
-// HELPER: Extract all error messages
+// HELPERS
 // ============================================================================
 
-function getAllErrorMessages(error: unknown): string[] {
+function deepClone<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function mergeLandingConfig(
+  tenant?: Partial<TenantLandingConfig> | null
+): TenantLandingConfig {
+  const dHero = DEFAULT_LANDING_CONFIG.hero!;
+  const dProducts = DEFAULT_LANDING_CONFIG.products!;
+
+  if (!tenant) return deepClone(DEFAULT_LANDING_CONFIG);
+
+  return {
+    enabled: tenant.enabled ?? DEFAULT_LANDING_CONFIG.enabled,
+    hero: {
+      enabled: tenant.hero?.enabled ?? dHero.enabled,
+      title: tenant.hero?.title ?? dHero.title,
+      subtitle: tenant.hero?.subtitle ?? dHero.subtitle,
+      block: tenant.hero?.block,
+      config: { ...dHero.config, ...(tenant.hero?.config ?? {}) },
+    },
+    products: {
+      enabled: tenant.products?.enabled ?? dProducts.enabled,
+      block: tenant.products?.block,
+      config: { ...dProducts.config, ...(tenant.products?.config ?? {}) },
+    },
+  };
+}
+
+function extractErrorMessages(error: unknown): string[] {
   if (error instanceof ApiRequestError) {
-    const errors: string[] = [];
-
-    if (error.message) {
-      errors.push(error.message);
-    }
-
-    if (error.errors && error.errors.length > 0) {
-      errors.push(...error.errors);
-    }
-
-    // Remove duplicates
-    return [...new Set(errors)];
+    const messages = [error.message, ...(error.errors ?? [])].filter(Boolean);
+    return [...new Set(messages)];
   }
-
-  if (error instanceof Error) {
-    return [error.message];
-  }
-
+  if (error instanceof Error) return [error.message];
   return ['An unknown error occurred'];
 }
 
@@ -74,95 +108,64 @@ export function useLandingConfig({
   onSaveSuccess,
   onValidationError,
 }: UseLandingConfigOptions): UseLandingConfigReturn {
-  // Merge initial config with defaults
   const mergedInitial = mergeLandingConfig(initialConfig);
 
-  // Current working config (local edits)
   const [config, setConfig] = useState<TenantLandingConfig>(mergedInitial);
-
-  // Last saved config (from server)
   const [savedConfig, setSavedConfig] = useState<TenantLandingConfig>(mergedInitial);
-
-  // Track if initialized
+  const [isSaving, setIsSaving] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const isInitialized = useRef(false);
 
-  // Saving state
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Validation errors state
-  const [validationErrors, setValidationErrors] = useState<string[]>([]);
-
-  // ==========================================================================
-  // SYNC WITH INITIAL CONFIG (when tenant data loads)
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Sync when initial config loads
+  // --------------------------------------------------------------------------
   useEffect(() => {
     if (initialConfig && !isInitialized.current) {
       const merged = mergeLandingConfig(initialConfig);
       setConfig(merged);
-      setSavedConfig(JSON.parse(JSON.stringify(merged)));
+      setSavedConfig(deepClone(merged));
       isInitialized.current = true;
     }
   }, [initialConfig]);
 
-  // ==========================================================================
-  // CHECK FOR UNSAVED CHANGES
-  // ==========================================================================
   const hasUnsavedChanges = JSON.stringify(config) !== JSON.stringify(savedConfig);
 
-  // ==========================================================================
-  // UPDATE CONFIG (local only, no auto-save)
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Update config locally (no auto-save)
+  // --------------------------------------------------------------------------
   const updateConfig = useCallback((newConfig: TenantLandingConfig) => {
     setConfig(newConfig);
-    // Clear validation errors when user makes changes
     setValidationErrors([]);
   }, []);
 
-  // ==========================================================================
-  // CLEAR VALIDATION ERRORS
-  // ==========================================================================
-  const clearValidationErrors = useCallback(() => {
-    setValidationErrors([]);
-  }, []);
+  const clearValidationErrors = useCallback(() => setValidationErrors([]), []);
 
-  // ==========================================================================
-  // PUBLISH CHANGES (save to server)
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Publish to server
+  // --------------------------------------------------------------------------
   const publishChanges = useCallback(async (): Promise<boolean> => {
     setIsSaving(true);
     setValidationErrors([]);
 
     try {
-      const preparedConfig = prepareConfigForSave(config);
+      await tenantsApi.update({ landingConfig: { ...config } });
 
-      // Save to server
-      const response = await tenantsApi.update({ landingConfig: preparedConfig });
-
-      // Update saved config reference
-      setSavedConfig(JSON.parse(JSON.stringify(preparedConfig)));
-      setConfig(preparedConfig);
-
+      setSavedConfig(deepClone(config));
       toast.success('Landing page published!');
       onSaveSuccess?.();
-
       return true;
     } catch (error) {
       console.error('[useLandingConfig] Publish error:', error);
 
       if (error instanceof ApiRequestError && error.isValidationError()) {
-        const errors = getAllErrorMessages(error);
+        const errors = extractErrorMessages(error);
         setValidationErrors(errors);
         onValidationError?.(errors);
-
-        if (errors.length === 1) {
-          toast.error('Validation failed', {
-            description: errors[0],
-          });
-        } else {
-          toast.error('Validation failed', {
-            description: `${errors.length} errors found. Please review your settings.`,
-          });
-        }
+        toast.error('Validation failed', {
+          description: errors.length === 1
+            ? errors[0]
+            : `${errors.length} errors found. Please review your settings.`,
+        });
       } else {
         toast.error('Failed to save landing page', {
           description: getErrorMessage(error),
@@ -175,47 +178,39 @@ export function useLandingConfig({
     }
   }, [config, onSaveSuccess, onValidationError]);
 
-  // ==========================================================================
-  // DISCARD CHANGES (revert to saved)
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Discard local changes
+  // --------------------------------------------------------------------------
   const discardChanges = useCallback(() => {
-    setConfig(JSON.parse(JSON.stringify(savedConfig)));
+    setConfig(deepClone(savedConfig));
     setValidationErrors([]);
     toast.info('Changes discarded');
   }, [savedConfig]);
 
-  // ==========================================================================
-  // RESET TO DEFAULTS (all sections disabled)
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Reset to defaults
+  // --------------------------------------------------------------------------
   const resetToDefaults = useCallback(async (): Promise<boolean> => {
     setIsSaving(true);
     setValidationErrors([]);
 
     try {
-      const resetConfig: TenantLandingConfig = JSON.parse(
-        JSON.stringify(DEFAULT_LANDING_CONFIG)
-      );
-
-      // Save to server
+      const resetConfig = deepClone(DEFAULT_LANDING_CONFIG);
       await tenantsApi.update({ landingConfig: resetConfig });
 
-      // Update local state
       setConfig(resetConfig);
-      setSavedConfig(JSON.parse(JSON.stringify(resetConfig)));
+      setSavedConfig(deepClone(resetConfig));
 
       toast.success('Landing page reset to defaults');
       onSaveSuccess?.();
-
       return true;
     } catch (error) {
       console.error('[useLandingConfig] Reset error:', error);
 
       if (error instanceof ApiRequestError && error.isValidationError()) {
-        const errors = getAllErrorMessages(error);
+        const errors = extractErrorMessages(error);
         setValidationErrors(errors);
-        toast.error('Failed to reset landing page', {
-          description: errors[0],
-        });
+        toast.error('Failed to reset landing page', { description: errors[0] });
       } else {
         toast.error('Failed to reset landing page', {
           description: getErrorMessage(error),
@@ -228,9 +223,9 @@ export function useLandingConfig({
     }
   }, [onSaveSuccess]);
 
-  // ==========================================================================
-  // RETURN
-  // ==========================================================================
+  // --------------------------------------------------------------------------
+  // Return
+  // --------------------------------------------------------------------------
   return {
     config,
     savedConfig,

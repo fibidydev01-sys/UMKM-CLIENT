@@ -8,6 +8,5 @@ export { DashboardShell, PageHeader } from './layout/dashboard-shell';
 export { DashboardSidebar } from './layout/dashboard-sidebar';
 export { MobileNavbar } from './layout/mobile-navbar';
 export { UpgradeModal } from './shared/upgrade-modal';
-export * from './onboarding';
 export * from './products';
 export * from './settings';

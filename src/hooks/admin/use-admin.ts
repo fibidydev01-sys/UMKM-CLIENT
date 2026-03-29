@@ -1,35 +1,18 @@
 'use client';
 
-// ==========================================
-// ADMIN HOOKS
-// File: src/hooks/admin/use-admin.ts
-//
-// Pattern identik dengan src/hooks/auth/use-auth.ts
-// ==========================================
-
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminStore } from '@/stores/admin-store';
 import { adminApi } from '@/lib/api/admin';
 import { getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
-import type {
-  TenantQueryParams,
-  SubscriptionQueryParams,
-  RedeemCodeQueryParams,
-} from '@/types/admin';
-
-// ============================================================
-// USE ADMIN AUTH CHECK
-// Dipanggil di AdminGuard untuk verify session
-// ============================================================
+import type { TenantQueryParams } from '@/types/admin';
 
 export function useAdminAuthCheck() {
   const { setAdmin, setChecked, isChecked } = useAdminStore();
 
   const checkAuth = useCallback(async () => {
     if (isChecked) return;
-
     try {
       const admin = await adminApi.me();
       setAdmin(admin);
@@ -40,16 +23,10 @@ export function useAdminAuthCheck() {
     }
   }, [isChecked, setAdmin, setChecked]);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  useEffect(() => { checkAuth(); }, [checkAuth]);
 
   return { checkAuth };
 }
-
-// ============================================================
-// USE ADMIN LOGIN
-// ============================================================
 
 export function useAdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -61,16 +38,12 @@ export function useAdminLogin() {
     async (email: string, password: string) => {
       setIsLoading(true);
       setError(null);
-
       try {
         const response = await adminApi.login(email, password);
-
         setAdmin(response.admin);
         setChecked(true);
-
         toast.success('Login berhasil', `Selamat datang, ${response.admin.name ?? response.admin.email}`);
         router.push('/admin');
-
         return response;
       } catch (err) {
         const message = getErrorMessage(err);
@@ -87,10 +60,6 @@ export function useAdminLogin() {
   return { login, isLoading, error };
 }
 
-// ============================================================
-// USE ADMIN LOGOUT
-// ============================================================
-
 export function useAdminLogout() {
   const { reset } = useAdminStore();
   const router = useRouter();
@@ -99,9 +68,8 @@ export function useAdminLogout() {
     try {
       await adminApi.logout();
     } catch {
-      // Ignore error — tetap logout
+      // Ignore error
     }
-
     reset();
     toast.success('Logout berhasil');
     router.push('/admin/login');
@@ -109,10 +77,6 @@ export function useAdminLogout() {
 
   return { logout };
 }
-
-// ============================================================
-// USE ADMIN STATS
-// ============================================================
 
 export function useAdminStats() {
   const [stats, setStats] = useState<Awaited<ReturnType<typeof adminApi.getStats>> | null>(null);
@@ -122,7 +86,6 @@ export function useAdminStats() {
   const fetchStats = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const data = await adminApi.getStats();
       setStats(data);
@@ -138,10 +101,6 @@ export function useAdminStats() {
   return { stats, isLoading, error, refetch: fetchStats };
 }
 
-// ============================================================
-// USE ADMIN TENANTS
-// ============================================================
-
 export function useAdminTenants(params: TenantQueryParams = {}) {
   const [result, setResult] = useState<Awaited<ReturnType<typeof adminApi.getTenants>> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -150,7 +109,6 @@ export function useAdminTenants(params: TenantQueryParams = {}) {
   const fetchTenants = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const data = await adminApi.getTenants(params);
       setResult(data);
@@ -167,10 +125,6 @@ export function useAdminTenants(params: TenantQueryParams = {}) {
   return { result, isLoading, error, refetch: fetchTenants };
 }
 
-// ============================================================
-// USE ADMIN TENANT DETAIL
-// ============================================================
-
 export function useAdminTenantDetail(id: string) {
   const [tenant, setTenant] = useState<Awaited<ReturnType<typeof adminApi.getTenantDetail>> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -179,7 +133,6 @@ export function useAdminTenantDetail(id: string) {
   const fetchTenant = useCallback(async () => {
     if (!id) return;
     setIsLoading(true);
-
     try {
       const data = await adminApi.getTenantDetail(id);
       setTenant(data);
@@ -194,10 +147,6 @@ export function useAdminTenantDetail(id: string) {
 
   return { tenant, isLoading, error, refetch: fetchTenant };
 }
-
-// ============================================================
-// USE SUSPEND TENANT
-// ============================================================
 
 export function useSuspendTenant() {
   const [isLoading, setIsLoading] = useState(false);
@@ -233,132 +182,6 @@ export function useSuspendTenant() {
   return { suspend, unsuspend, isLoading };
 }
 
-// ============================================================
-// USE ADMIN SUBSCRIPTIONS
-// ============================================================
-
-export function useAdminSubscriptions(params: SubscriptionQueryParams = {}) {
-  const [result, setResult] = useState<Awaited<ReturnType<typeof adminApi.getSubscriptions>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchSubs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await adminApi.getSubscriptions(params);
-      setResult(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.page, params.limit, params.status, params.plan]);
-
-  useEffect(() => { fetchSubs(); }, [fetchSubs]);
-
-  return { result, isLoading, error, refetch: fetchSubs };
-}
-
-// ============================================================
-// USE EXTEND SUBSCRIPTION
-// ============================================================
-
-export function useExtendSubscription() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const extend = useCallback(async (id: string, days: number, reason: string) => {
-    setIsLoading(true);
-    try {
-      const res = await adminApi.extendSubscription(id, days, reason);
-      toast.success('Subscription di-extend', res.message);
-      return res;
-    } catch (err) {
-      toast.error('Gagal extend', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  return { extend, isLoading };
-}
-
-// ============================================================
-// USE REDEEM CODES
-// ============================================================
-
-export function useRedeemCodes(params: RedeemCodeQueryParams = {}) {
-  const [result, setResult] = useState<Awaited<ReturnType<typeof adminApi.getRedeemCodes>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCodes = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await adminApi.getRedeemCodes(params);
-      setResult(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.page, params.limit, params.isUsed]);
-
-  useEffect(() => { fetchCodes(); }, [fetchCodes]);
-
-  return { result, isLoading, error, refetch: fetchCodes };
-}
-
-// ============================================================
-// USE CREATE REDEEM CODES
-// ============================================================
-
-export function useCreateRedeemCodes() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const create = useCallback(async (data: {
-    plan: string;
-    durationDay: number;
-    quantity: number;
-    expiresAt?: string;
-  }) => {
-    setIsLoading(true);
-    try {
-      const res = await adminApi.createRedeemCodes(data);
-      toast.success(`${res.count} kode berhasil dibuat`);
-      return res;
-    } catch (err) {
-      toast.error('Gagal buat kode', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  const deleteCode = useCallback(async (id: string) => {
-    try {
-      const res = await adminApi.deleteRedeemCode(id);
-      toast.success('Kode dihapus', res.message);
-      return res;
-    } catch (err) {
-      toast.error('Gagal hapus kode', getErrorMessage(err));
-      throw err;
-    }
-  }, []);
-
-  return { create, deleteCode, isLoading };
-}
-
-// ============================================================
-// USE ADMIN LOGS
-// ============================================================
-
 export function useAdminLogs(params: {
   page?: number;
   limit?: number;
@@ -373,7 +196,6 @@ export function useAdminLogs(params: {
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-
     try {
       const data = await adminApi.getLogs(params);
       setResult(data);

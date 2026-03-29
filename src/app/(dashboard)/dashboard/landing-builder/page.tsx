@@ -5,7 +5,6 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 import {
   LivePreview, LandingErrorBoundary,
   BlockDrawer, BuilderLoadingSteps, FullPreviewDrawer,
@@ -16,14 +15,10 @@ import { useTenant } from '@/hooks';
 import { useLandingConfig } from '@/hooks/dashboard/use-landing-config';
 import { useSubscriptionPlan } from '@/hooks/dashboard/use-subscription-plan';
 import { productsApi } from '@/lib/api';
-import { mergeWithTemplateDefaults, type TemplateId } from '@/lib/public';
 import { hasProBlocks } from '@/components/landing-builder/block-options';
 import type { TenantLandingConfig, Product } from '@/types';
 
 export default function LandingBuilderPage() {
-  const searchParams = useSearchParams();
-  const initialTemplateParam = searchParams.get('template');
-
   const { tenant, refresh } = useTenant();
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -72,19 +67,6 @@ export default function LandingBuilderPage() {
     };
     fetchProducts();
   }, [tenant]);
-
-  // Apply initial template
-  useEffect(() => {
-    if (!tenant || !initialTemplateParam) return;
-    if (landingConfig?.template === initialTemplateParam) return;
-    const mergedConfig = mergeWithTemplateDefaults(
-      landingConfig,
-      initialTemplateParam as TemplateId,
-      { name: tenant.name, category: tenant.category }
-    );
-    setLandingConfig(mergedConfig as TenantLandingConfig);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialTemplateParam, tenant?.name, tenant?.category]);
 
   const handleBlockSelect = useCallback((block: string) => {
     if (!landingConfig) return;

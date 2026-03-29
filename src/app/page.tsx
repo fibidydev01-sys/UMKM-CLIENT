@@ -9,6 +9,6 @@ export default async function HomePage() {
   if (token) {
     redirect('/dashboard');
   } else {
-    redirect('/about');
+    redirect('/login');
   }
 }

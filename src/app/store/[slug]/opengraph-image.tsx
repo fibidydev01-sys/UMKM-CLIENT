@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from 'next/og';
+import { getApiUrl } from '@/lib/public';
 
 // ==========================================
 // TENANT STORE OPEN GRAPH IMAGE
@@ -8,55 +9,13 @@ import { ImageResponse } from 'next/og';
 
 export const runtime = 'edge';
 export const alt = 'Toko Online';
-export const size = {
-  width: 1200,
-  height: 630,
-};
+export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// ==========================================
-// INLINE HELPERS
-// ==========================================
-
-const COLORS = {
-  primary: '#FF1F6D',       // ✅ FIX: Fibidy pink
-  primaryDark: '#cc1257',   // ✅ FIX: Fibidy pink dark
-  text: '#111827',
-  textLight: '#6b7280',
-  backgroundGray: '#f3f4f6',
-};
-
-function truncateText(text: string, maxLength: number): string {
-  if (text.length <= maxLength) return text;
-  return text.substring(0, maxLength) + '...';
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((word) => word[0])
-    .join('')
-    .toUpperCase()
-    .substring(0, 2);
-}
-
-function getApiUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}/api`;
-  }
-  return 'http://localhost:8000/api';
-}
-
-// ==========================================
-// FALLBACK IMAGE
-// ==========================================
 function createFallbackImage(message: string) {
   return new ImageResponse(
     (
@@ -67,9 +26,9 @@ function createFallbackImage(message: string) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: COLORS.backgroundGray,
-          fontSize: '48px',
-          color: COLORS.textLight,
+          background: '#ffffff',
+          fontSize: '32px',
+          color: '#9ca3af',
         }}
       >
         {message}
@@ -79,24 +38,16 @@ function createFallbackImage(message: string) {
   );
 }
 
-// ==========================================
-// FETCH TENANT
-// ==========================================
 async function getTenant(slug: string): Promise<any | null> {
   const apiUrl = getApiUrl();
-  const endpoint = `${apiUrl}/tenants/by-slug/${slug}`;
-
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(`${apiUrl}/tenants/by-slug/${slug}`, {
       next: { revalidate: 3600 },
       signal: controller.signal,
     });
-
     clearTimeout(timeoutId);
-
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -104,27 +55,16 @@ async function getTenant(slug: string): Promise<any | null> {
   }
 }
 
-// ==========================================
-// MAIN COMPONENT
-// ==========================================
 export default async function TenantOgImage({ params }: Props) {
   try {
     const { slug } = await params;
-
-    if (!slug) {
-      return createFallbackImage('Invalid Request');
-    }
+    if (!slug) return createFallbackImage('Invalid Request');
 
     const tenant = await getTenant(slug);
-
-    if (!tenant) {
-      return createFallbackImage('Toko Tidak Ditemukan');
-    }
+    if (!tenant) return createFallbackImage('Toko Tidak Ditemukan');
 
     const productCount = tenant._count?.products || 0;
-
-    // ✅ Logo Fibidy untuk header bar
-    const fibidyLogoUrl = new URL('/apple-touch-icon.png', 'https://www.fibidy.com').toString();
+    const category = tenant.category || null;
 
     return new ImageResponse(
       (
@@ -133,176 +73,191 @@ export default async function TenantOgImage({ params }: Props) {
             width: '100%',
             height: '100%',
             display: 'flex',
-            flexDirection: 'column',
-            background: 'white',
+            background: '#ffffff',
+            padding: '80px',
           }}
         >
-          {/* ✅ Header Bar — pink + logo Fibidy asli */}
+          {/* Left — Store Logo */}
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '30px 50px',
-              background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
+              alignItems: 'flex-start',
+              justifyContent: 'flex-start',
+              marginRight: '64px',
+              paddingTop: '8px',
             }}
           >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                color: 'white',
-              }}
-            >
-              {/* ✅ Logo Fibidy dari public */}
+            {tenant.logo ? (
               <div
                 style={{
-                  width: '44px',
-                  height: '44px',
-                  borderRadius: '10px',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '16px',
                   overflow: 'hidden',
-                  background: 'white',
+                  border: '1px solid #e5e7eb',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
-                <img
-                  src={fibidyLogoUrl}
-                  alt="Fibidy"
-                  width={40}
-                  height={40}
-                  style={{ objectFit: 'contain' }}
-                />
-              </div>
-              <div style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex' }}>
-                Fibidy
-              </div>
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '20px', display: 'flex' }}>
-              {slug}.fibidy.com
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div
-            style={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              padding: '50px',
-              gap: '50px',
-            }}
-          >
-            {/* Logo/Avatar Toko */}
-            <div
-              style={{
-                width: '200px',
-                height: '200px',
-                borderRadius: '24px',
-                background: tenant.logo
-                  ? 'white'
-                  : `linear-gradient(135deg, ${COLORS.primary}, ${COLORS.primaryDark})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                border: tenant.logo ? '4px solid #f1f5f9' : 'none',
-                overflow: 'hidden',
-              }}
-            >
-              {tenant.logo ? (
                 <img
                   src={tenant.logo}
                   alt={tenant.name}
-                  width="200"
-                  height="200"
+                  width="120"
+                  height="120"
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
-              ) : (
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '16px',
+                  background: '#f3f4f6',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: '1px solid #e5e7eb',
+                }}
+              >
                 <div
                   style={{
-                    fontSize: '80px',
-                    color: 'white',
+                    fontSize: '48px',
                     fontWeight: 'bold',
+                    color: '#111827',
                     display: 'flex',
                   }}
                 >
-                  {getInitials(tenant.name)}
+                  {tenant.name.charAt(0).toUpperCase()}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Right — Content */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flex: 1,
+              justifyContent: 'space-between',
+            }}
+          >
+            {/* Top */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {category && (
+                <div
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#9ca3af',
+                    letterSpacing: '0.2em',
+                    textTransform: 'uppercase',
+                    marginBottom: '20px',
+                    display: 'flex',
+                  }}
+                >
+                  {category}
+                </div>
+              )}
+
+              <div
+                style={{
+                  fontSize: '72px',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  lineHeight: 1.0,
+                  letterSpacing: '-0.02em',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                }}
+              >
+                {tenant.name}
+              </div>
+
+              {tenant.description && (
+                <div
+                  style={{
+                    fontSize: '24px',
+                    color: '#6b7280',
+                    lineHeight: 1.5,
+                    marginTop: '20px',
+                    display: 'flex',
+                    maxWidth: '600px',
+                  }}
+                >
+                  {tenant.description.length > 100
+                    ? tenant.description.substring(0, 100) + '...'
+                    : tenant.description}
                 </div>
               )}
             </div>
 
-            {/* Info */}
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-                flex: 1,
-              }}
-            >
-              {/* Store Name */}
+            {/* Bottom */}
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Separator */}
               <div
                 style={{
-                  fontSize: '56px',
-                  fontWeight: 'bold',
-                  color: COLORS.text,
-                  lineHeight: 1.1,
+                  width: '100%',
+                  height: '1px',
+                  background: '#e5e7eb',
+                  marginBottom: '28px',
                   display: 'flex',
                 }}
-              >
-                {truncateText(tenant.name, 30)}
-              </div>
+              />
 
-              {/* Description */}
-              {tenant.description && (
-                <div
-                  style={{
-                    fontSize: '28px',
-                    color: COLORS.textLight,
-                    lineHeight: 1.4,
-                    display: 'flex',
-                  }}
-                >
-                  {truncateText(tenant.description, 80)}
-                </div>
-              )}
-
-              {/* Stats Row */}
               <div
                 style={{
                   display: 'flex',
-                  gap: '30px',
-                  marginTop: '20px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
                 }}
               >
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '22px',
-                    color: COLORS.textLight,
-                  }}
-                >
-                  <div style={{ fontSize: '24px' }}>📦</div>
-                  <div style={{ display: 'flex' }}>{productCount}+ Produk</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                  <div
+                    style={{
+                      fontSize: '18px',
+                      color: '#9ca3af',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      display: 'flex',
+                    }}
+                  >
+                    {slug}.fibidy.com
+                  </div>
+                  <div
+                    style={{
+                      width: '4px',
+                      height: '4px',
+                      borderRadius: '50%',
+                      background: '#d1d5db',
+                      display: 'flex',
+                    }}
+                  />
+                  <div
+                    style={{
+                      fontSize: '18px',
+                      color: '#9ca3af',
+                      letterSpacing: '0.1em',
+                      textTransform: 'uppercase',
+                      display: 'flex',
+                    }}
+                  >
+                    {productCount} Produk
+                  </div>
                 </div>
 
                 <div
                   style={{
+                    fontSize: '18px',
+                    color: '#d1d5db',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '22px',
-                    color: '#25D366',
                   }}
                 >
-                  <div style={{ fontSize: '24px' }}>💬</div>
-                  <div style={{ display: 'flex' }}>WhatsApp Order</div>
+                  fibidy.com
                 </div>
               </div>
             </div>
@@ -313,6 +268,6 @@ export default async function TenantOgImage({ params }: Props) {
     );
   } catch (error: any) {
     console.error('[OG-Tenant] Error:', error.message);
-    return createFallbackImage('Error Generating Image');
+    return createFallbackImage('Error');
   }
 }

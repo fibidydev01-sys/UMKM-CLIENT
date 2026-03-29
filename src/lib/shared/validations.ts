@@ -1,12 +1,5 @@
 import { z } from 'zod';
 
-// ==========================================
-// VALIDATION SCHEMAS (ZOD)
-// ==========================================
-
-/**
- * Login form schema
- */
 export const loginSchema = z.object({
   email: z
     .string()
@@ -19,9 +12,6 @@ export const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-/**
- * Register form schema
- */
 export const registerSchema = z.object({
   slug: z
     .string()
@@ -53,9 +43,6 @@ export const registerSchema = z.object({
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-/**
- * Change password schema
- */
 export const changePasswordSchema = z.object({
   currentPassword: z
     .string()
@@ -73,9 +60,6 @@ export const changePasswordSchema = z.object({
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
 
-/**
- * Product form schema
- */
 export const productSchema = z.object({
   name: z
     .string()
@@ -89,10 +73,6 @@ export const productSchema = z.object({
     .string()
     .max(100, 'Kategori maksimal 100 karakter')
     .optional(),
-  sku: z
-    .string()
-    .max(50, 'SKU maksimal 50 karakter')
-    .optional(),
   price: z
     .number()
     .min(0, 'Harga tidak boleh negatif'),
@@ -100,89 +80,12 @@ export const productSchema = z.object({
     .number()
     .min(0, 'Harga coret tidak boleh negatif')
     .optional(),
-  costPrice: z
-    .number()
-    .min(0, 'Harga modal tidak boleh negatif')
-    .optional(),
-  stock: z
-    .number()
-    .min(0, 'Stok tidak boleh negatif')
-    .optional(),
-  minStock: z
-    .number()
-    .min(0, 'Stok minimum tidak boleh negatif')
-    .optional(),
-  trackStock: z.boolean().optional(),
-  unit: z
-    .string()
-    .max(20, 'Satuan maksimal 20 karakter')
-    .optional(),
   images: z.array(z.string()).optional(),
   isActive: z.boolean().optional(),
-  isFeatured: z.boolean().optional(),
 });
 
 export type ProductFormData = z.infer<typeof productSchema>;
 
-/**
- * Customer form schema
- * ✅ Phone validation untuk format TANPA prefix (81234567890)
- * ✅ Notes field REMOVED (not supported by backend yet)
- */
-export const customerSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nama pelanggan tidak boleh kosong')
-    .max(100, 'Nama maksimal 100 karakter'),
-  phone: z
-    .string()
-    .min(9, 'Nomor telepon minimal 9 digit')
-    .max(13, 'Nomor telepon maksimal 13 digit')
-    .regex(/^[0-9]{9,13}$/, 'Format nomor telepon tidak valid (contoh: 81234567890)'),
-  email: z
-    .string()
-    .email('Format email tidak valid')
-    .optional()
-    .or(z.literal('')),
-  address: z
-    .string()
-    .max(300, 'Alamat maksimal 300 karakter')
-    .optional(),
-  // notes - REMOVED (backend tidak support)
-});
-
-export type CustomerFormData = z.infer<typeof customerSchema>;
-
-/**
- * Order item schema
- */
-export const orderItemSchema = z.object({
-  productId: z.string().optional(),
-  name: z.string().min(1, 'Nama item tidak boleh kosong'),
-  price: z.number().min(0, 'Harga tidak boleh negatif'),
-  qty: z.number().min(1, 'Jumlah minimal 1'),
-  notes: z.string().optional(),
-});
-
-/**
- * Order form schema
- */
-export const orderSchema = z.object({
-  customerId: z.string().optional(),
-  customerName: z.string().optional(),
-  customerPhone: z.string().optional(),
-  items: z.array(orderItemSchema).min(1, 'Minimal 1 item dalam order'),
-  discount: z.number().min(0).optional(),
-  tax: z.number().min(0).optional(),
-  paymentMethod: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-export type OrderFormData = z.infer<typeof orderSchema>;
-
-/**
- * Store settings schema
- */
 export const storeSettingsSchema = z.object({
   name: z
     .string()

@@ -12,8 +12,9 @@ import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Form } from '@/components/ui/form';
 import { cn } from '@/lib/shared/utils';
-import { useCreateProduct, useUpdateProduct, useTenant } from '@/hooks';
+import { useCreateProduct, useUpdateProduct, useTenant, useSubscriptionPlan } from '@/hooks';
 import { productSchema, type ProductFormData } from '@/lib/shared/validations';
+import { UpgradeModal } from '@/components/dashboard/shared/upgrade-modal';
 import {
   StepDetails,
   StepMedia,
@@ -26,7 +27,11 @@ import {
 } from './product-form-section';
 import type { Product } from '@/types';
 
-const VIEW_MODE_KEY = 'products_view_mode';
+
+// STARTER = 3, BUSINESS = 5
+function getMaxImages(isBusiness: boolean): number {
+  return isBusiness ? 5 : 3;
+}
 
 function getProductType(product?: Product): ProductType {
   const meta = product?.metadata as Record<string, unknown> | null | undefined;
@@ -140,6 +145,11 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   const { tenant } = useTenant();
   const currency = tenant?.currency || 'IDR';
 
+  // ── Subscription plan ─────────────────────────────────────
+  const { isBusiness } = useSubscriptionPlan();
+  const maxImages = getMaxImages(isBusiness);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+
   const [currentStep, setCurrentStep] = useState(0);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -190,11 +200,7 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
   };
 
   const redirectToProducts = () => {
-    const savedView =
-      typeof window !== 'undefined'
-        ? localStorage.getItem(VIEW_MODE_KEY) || 'grid'
-        : 'grid';
-    router.push(`/dashboard/products?view=${savedView}`);
+    router.push('/dashboard');
   };
 
   const handleSave = async () => {
@@ -239,6 +245,9 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
           <StepMedia
             form={form}
             productType={productType}
+            maxImages={maxImages}
+            isBusiness={isBusiness}
+            onUpgrade={() => setUpgradeModalOpen(true)}
           />
         );
       case 'Pricing':
@@ -276,6 +285,13 @@ export function ProductForm({ product, categories = [] }: ProductFormProps) {
         showPrice={showPrice}
         currency={currency}
         isEditing={isEditing}
+      />
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        title="Upgrade untuk lebih banyak foto"
+        description="Business Plan memungkinkan upload hingga 5 foto per produk. Tampilkan produk dari berbagai sudut untuk meningkatkan penjualan."
       />
 
       <Form {...form}>

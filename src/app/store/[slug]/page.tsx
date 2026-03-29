@@ -9,7 +9,7 @@ import {
   ProductListSchema,
   generateTenantBreadcrumbs,
 } from '@/components/shared/seo';
-import type { PublicTenant, Product, SectionKey } from '@/types';
+import type { PublicTenant, Product } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,22 +55,9 @@ export default async function StorePage({ params }: StorePageProps) {
   const productLimit = (landingConfig?.products?.config?.limit as number) || 8;
   const products = await getProducts(slug, productLimit);
 
-  const defaultOrder: SectionKey[] = ['hero', 'products'];
-  const sectionOrder = landingConfig?.sectionOrder || defaultOrder;
-
-  const heroEnabled = true;
+  const heroEnabled = landingConfig?.hero?.enabled === true;
   const productsEnabled = products.length > 0;
-
   const hasAnySectionEnabled = heroEnabled || productsEnabled;
-
-  const sectionComponents: Record<SectionKey, React.ReactNode> = {
-    hero: heroEnabled ? (
-      <TenantHero key="hero" config={landingConfig?.hero} tenant={tenant} />
-    ) : null,
-    products: productsEnabled ? (
-      <TenantProducts key="products" products={products} config={landingConfig?.products} storeSlug={slug} />
-    ) : null,
-  };
 
   return (
     <>
@@ -90,7 +77,17 @@ export default async function StorePage({ params }: StorePageProps) {
       )}
 
       <div className="container px-4 py-8 space-y-8">
-        {sectionOrder.map((sectionKey) => sectionComponents[sectionKey]).filter(Boolean)}
+        {heroEnabled && (
+          <TenantHero config={landingConfig?.hero} tenant={tenant} />
+        )}
+        {productsEnabled && (
+          <TenantProducts
+            products={products}
+            config={landingConfig?.products}
+            storeSlug={slug}
+            tenant={tenant}
+          />
+        )}
 
         {!hasAnySectionEnabled && (
           <div className="text-center py-12 bg-muted/30 rounded-lg">
@@ -98,7 +95,7 @@ export default async function StorePage({ params }: StorePageProps) {
               Landing page not configured yet
             </p>
             <p className="text-sm text-muted-foreground">
-              Enable sections in Dashboard &gt; Settings &gt; Store
+              Enable sections in Dashboard &gt; Landing Builder
             </p>
           </div>
         )}

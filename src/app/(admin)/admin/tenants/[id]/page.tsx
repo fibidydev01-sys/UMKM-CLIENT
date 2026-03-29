@@ -3,9 +3,6 @@
 // ==========================================
 // ADMIN TENANT DETAIL PAGE
 // File: src/app/(admin)/admin/tenants/[id]/page.tsx
-//
-// ✅ UPDATED: Tambah OverrideSubscriptionDialog
-// Admin bisa edit plan, status, period end, reset cancellation
 // ==========================================
 
 import { useState } from 'react';
@@ -16,7 +13,7 @@ import {
   ShieldOff,
   ShieldCheck,
   Loader2,
-  Pencil,
+  CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,9 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,20 +33,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { useAdminTenantDetail, useSuspendTenant } from '@/hooks/admin';
 import { adminApi } from '@/lib/api/admin';
 import { toast } from '@/providers';
@@ -61,197 +42,18 @@ import { getErrorMessage } from '@/lib/api';
 // INFO ROW
 // ==========================================
 
-function InfoRow({ label, value }: { label: string; value?: string | number | null }) {
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | null;
+}) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="text-sm font-medium">{value ?? '—'}</span>
     </div>
-  );
-}
-
-// ==========================================
-// OVERRIDE SUBSCRIPTION DIALOG
-// ==========================================
-
-interface OverrideSubDialogProps {
-  subscription: NonNullable<ReturnType<typeof useAdminTenantDetail>['tenant']>['subscription'];
-  open: boolean;
-  onClose: () => void;
-  onSuccess: () => void;
-}
-
-function OverrideSubscriptionDialog({
-  subscription,
-  open,
-  onClose,
-  onSuccess,
-}: OverrideSubDialogProps) {
-  const [plan, setPlan] = useState(subscription?.plan ?? 'STARTER');
-  const [status, setStatus] = useState(subscription?.status ?? 'ACTIVE');
-  const [periodEnd, setPeriodEnd] = useState(
-    subscription?.currentPeriodEnd
-      ? new Date(subscription.currentPeriodEnd).toISOString().split('T')[0]
-      : '',
-  );
-  const [resetCancellation, setResetCancellation] = useState(false);
-  const [isTrial, setIsTrial] = useState(subscription?.isTrial ?? false);
-  const [reason, setReason] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSave = async () => {
-    if (!subscription?.id || !reason.trim()) return;
-
-    setIsLoading(true);
-    try {
-      await adminApi.overrideSubscription(subscription.id, {
-        plan,
-        status,
-        currentPeriodEnd: periodEnd || undefined,
-        resetCancellation,
-        isTrial,
-        reason,
-      });
-      toast.success('Subscription diupdate');
-      onSuccess();
-      onClose();
-    } catch (err) {
-      toast.error('Gagal update subscription', getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    setReason('');
-    setResetCancellation(false);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Override Subscription</DialogTitle>
-        </DialogHeader>
-
-        <div className="space-y-4 py-2">
-          {/* Current state info */}
-          <div className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground space-y-1">
-            <p>Current: <strong>{subscription?.plan}</strong> · <strong>{subscription?.status}</strong></p>
-            {subscription?.currentPeriodEnd && (
-              <p>Aktif sampai: {new Date(subscription.currentPeriodEnd).toLocaleDateString('id-ID')}</p>
-            )}
-            {subscription?.cancelledAt && (
-              <p>Dibatalkan: {new Date(subscription.cancelledAt).toLocaleDateString('id-ID')}</p>
-            )}
-          </div>
-
-          {/* Plan */}
-          <div className="space-y-1.5">
-            <Label>Plan</Label>
-            <Select value={plan} onValueChange={(v) => setPlan(v as 'STARTER' | 'BUSINESS')}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="STARTER">STARTER</SelectItem>
-                <SelectItem value="BUSINESS">BUSINESS</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Status */}
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v as 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAST_DUE')}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ACTIVE">ACTIVE</SelectItem>
-                <SelectItem value="EXPIRED">EXPIRED</SelectItem>
-                <SelectItem value="CANCELLED">CANCELLED</SelectItem>
-                <SelectItem value="PAST_DUE">PAST_DUE</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Period End */}
-          <div className="space-y-1.5">
-            <Label htmlFor="period-end">
-              Aktif Sampai <span className="text-muted-foreground">(opsional)</span>
-            </Label>
-            <Input
-              id="period-end"
-              type="date"
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-            />
-          </div>
-
-          {/* isTrial */}
-          <div className="flex items-center justify-between rounded-md border px-3 py-2.5">
-            <div>
-              <p className="text-sm font-medium">Trial</p>
-              <p className="text-xs text-muted-foreground">
-                Aktifkan/nonaktifkan flag trial
-              </p>
-            </div>
-            <Switch
-              checked={isTrial}
-              onCheckedChange={setIsTrial}
-            />
-          </div>
-
-          {/* Reset Cancellation */}
-          {subscription?.cancelledAt && (
-            <div className="flex items-center justify-between rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-3 py-2.5">
-              <div>
-                <p className="text-sm font-medium">Reset Cancellation</p>
-                <p className="text-xs text-muted-foreground">
-                  Clear cancelledAt + cancelReason
-                </p>
-              </div>
-              <Switch
-                checked={resetCancellation}
-                onCheckedChange={setResetCancellation}
-              />
-            </div>
-          )}
-
-          {/* Reason */}
-          <div className="space-y-1.5">
-            <Label htmlFor="reason">
-              Alasan <span className="text-destructive">*</span>
-            </Label>
-            <Textarea
-              id="reason"
-              placeholder="Contoh: Manual activation for testing, customer request..."
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              rows={3}
-            />
-          </div>
-        </div>
-
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose} disabled={isLoading}>
-            Batal
-          </Button>
-          <Button
-            onClick={handleSave}
-            disabled={isLoading || !reason.trim()}
-          >
-            {isLoading ? (
-              <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
-            ) : (
-              'Simpan'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -268,7 +70,7 @@ export default function AdminTenantDetailPage() {
   const { suspend, unsuspend, isLoading: isActing } = useSuspendTenant();
 
   const [suspendReason, setSuspendReason] = useState('');
-  const [overrideSubOpen, setOverrideSubOpen] = useState(false);
+  const [isApproving, setIsApproving] = useState(false);
 
   const handleSuspend = async () => {
     if (!suspendReason.trim()) return;
@@ -280,6 +82,19 @@ export default function AdminTenantDetailPage() {
   const handleUnsuspend = async () => {
     await unsuspend(id);
     refetch();
+  };
+
+  const handleApprove = async () => {
+    setIsApproving(true);
+    try {
+      const result = await adminApi.approveSubscription(id);
+      toast.success(result.message || 'Subscription approved!');
+      refetch();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setIsApproving(false);
+    }
   };
 
   if (isLoading) {
@@ -303,6 +118,9 @@ export default function AdminTenantDetailPage() {
   }
 
   const isSuspended = tenant.status === 'SUSPENDED';
+  const hasPendingPayment = tenant.subscription?.payments?.some(
+    (p) => p.paymentStatus === 'pending',
+  );
 
   return (
     <div className="space-y-6">
@@ -334,14 +152,47 @@ export default function AdminTenantDetailPage() {
             </a>
           </Button>
 
+          {/* Approve Button — muncul kalau ada pending payment */}
+          {hasPendingPayment && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" disabled={isApproving}>
+                  {isApproving ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                  )}
+                  Approve
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Approve Subscription?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tenant <strong>{tenant.name}</strong> akan di-upgrade ke
+                    Business Plan selama 30 hari. Payment pending akan otomatis
+                    jadi Paid.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleApprove}>
+                    Ya, Approve
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+
           {isSuspended ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" disabled={isActing}>
-                  {isActing
-                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    : <ShieldCheck className="mr-2 h-4 w-4" />
-                  }
+                  {isActing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                  )}
                   Unsuspend
                 </Button>
               </AlertDialogTrigger>
@@ -349,7 +200,8 @@ export default function AdminTenantDetailPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Unsuspend Tenant?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Tenant <strong>{tenant.name}</strong> akan diaktifkan kembali.
+                    Tenant <strong>{tenant.name}</strong> akan diaktifkan
+                    kembali.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -364,10 +216,11 @@ export default function AdminTenantDetailPage() {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={isActing}>
-                  {isActing
-                    ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    : <ShieldOff className="mr-2 h-4 w-4" />
-                  }
+                  {isActing ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ShieldOff className="mr-2 h-4 w-4" />
+                  )}
                   Suspend
                 </Button>
               </AlertDialogTrigger>
@@ -375,12 +228,14 @@ export default function AdminTenantDetailPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Suspend Tenant?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Tenant <strong>{tenant.name}</strong> tidak bisa login setelah di-suspend.
+                    Tenant <strong>{tenant.name}</strong> tidak bisa login
+                    setelah di-suspend.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="px-6 pb-2">
                   <Label htmlFor="reason" className="text-sm">
-                    Alasan suspend <span className="text-destructive">*</span>
+                    Alasan suspend{' '}
+                    <span className="text-destructive">*</span>
                   </Label>
                   <Textarea
                     id="reason"
@@ -422,23 +277,19 @@ export default function AdminTenantDetailPage() {
             <InfoRow label="Telepon" value={tenant.phone} />
             <InfoRow label="Total Produk" value={tenant._count.products} />
             <InfoRow
-              label="Custom Domain"
-              value={
-                tenant.customDomain
-                  ? `${tenant.customDomain} (${tenant.customDomainVerified ? '✓ verified' : 'pending'})`
-                  : undefined
-              }
-            />
-            <InfoRow
               label="Bergabung"
               value={new Date(tenant.createdAt).toLocaleDateString('id-ID', {
-                day: 'numeric', month: 'long', year: 'numeric',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
               })}
             />
             <InfoRow
               label="Diupdate"
               value={new Date(tenant.updatedAt).toLocaleDateString('id-ID', {
-                day: 'numeric', month: 'long', year: 'numeric',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
               })}
             />
           </CardContent>
@@ -447,20 +298,7 @@ export default function AdminTenantDetailPage() {
         {/* Subscription Info */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Subscription</CardTitle>
-              {/* ✅ Edit button — hanya tampil kalau ada subscription */}
-              {tenant.subscription && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOverrideSubOpen(true)}
-                >
-                  <Pencil className="mr-2 h-3 w-3" />
-                  Edit
-                </Button>
-              )}
-            </div>
+            <CardTitle className="text-base">Subscription</CardTitle>
           </CardHeader>
           <CardContent>
             {tenant.subscription ? (
@@ -469,14 +307,12 @@ export default function AdminTenantDetailPage() {
                   <InfoRow label="Plan" value={tenant.subscription.plan} />
                   <InfoRow label="Status" value={tenant.subscription.status} />
                   <InfoRow
-                    label="Trial"
-                    value={tenant.subscription.isTrial ? 'Ya' : 'Tidak'}
-                  />
-                  <InfoRow
                     label="Aktif Sampai"
                     value={
                       tenant.subscription.currentPeriodEnd
-                        ? new Date(tenant.subscription.currentPeriodEnd).toLocaleDateString('id-ID')
+                        ? new Date(
+                          tenant.subscription.currentPeriodEnd,
+                        ).toLocaleDateString('id-ID')
                         : undefined
                     }
                   />
@@ -486,14 +322,6 @@ export default function AdminTenantDetailPage() {
                       tenant.subscription.priceAmount === 0
                         ? 'Gratis'
                         : `Rp ${tenant.subscription.priceAmount.toLocaleString('id-ID')}`
-                    }
-                  />
-                  <InfoRow
-                    label="Dibatalkan"
-                    value={
-                      tenant.subscription.cancelledAt
-                        ? new Date(tenant.subscription.cancelledAt).toLocaleDateString('id-ID')
-                        : undefined
                     }
                   />
                 </div>
@@ -513,14 +341,18 @@ export default function AdminTenantDetailPage() {
                             className="flex items-center justify-between text-sm"
                           >
                             <span className="text-muted-foreground">
-                              {new Date(p.createdAt).toLocaleDateString('id-ID')}
+                              {new Date(p.createdAt).toLocaleDateString(
+                                'id-ID',
+                              )}
                             </span>
-                            <span>Rp {p.amount.toLocaleString('id-ID')}</span>
+                            <span>
+                              Rp {p.amount.toLocaleString('id-ID')}
+                            </span>
                             <Badge
                               variant={
-                                p.paymentStatus === 'paid' || p.paymentStatus === 'settled'
+                                p.paymentStatus === 'paid'
                                   ? 'default'
-                                  : 'secondary'
+                                  : 'outline'
                               }
                               className="text-xs"
                             >
@@ -541,16 +373,6 @@ export default function AdminTenantDetailPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Override Subscription Dialog */}
-      {tenant.subscription && (
-        <OverrideSubscriptionDialog
-          subscription={tenant.subscription}
-          open={overrideSubOpen}
-          onClose={() => setOverrideSubOpen(false)}
-          onSuccess={refetch}
-        />
-      )}
     </div>
   );
 }

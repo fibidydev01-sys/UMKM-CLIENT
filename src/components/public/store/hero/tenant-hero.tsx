@@ -1,7 +1,6 @@
 'use client';
 
 import { lazy, Suspense, ComponentType } from 'react';
-import { extractHeroData, useHeroBlock } from '@/lib/public';
 import type { TenantLandingConfig, Tenant, PublicTenant } from '@/types';
 
 interface TenantHeroProps {
@@ -20,49 +19,35 @@ interface HeroComponentProps {
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
-  eyebrow?: string;
 }
 
 /**
  * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
- *
  * NO MANUAL IMPORTS! Just add hero201.tsx and it works!
  *
- * 🎯 DATA SOURCE (from LANDING-DATA-CONTRACT.md):
- * - title       → tenant.heroTitle (fallback: tenant.name)
- * - subtitle    → tenant.heroSubtitle (fallback: tenant.description)
- * - description → tenant.description
- * - category    → tenant.category
- * - ctaText     → tenant.heroCtaText
- * - ctaLink     → tenant.heroCtaLink
- * - backgroundImage → tenant.heroBackgroundImage
- * - logo        → tenant.logo
- * - storeName   → tenant.name
- *
- * 🚀 SUPPORTS ALL BLOCKS: hero1, hero2, hero3, ..., hero200, hero9999!
+ * 🎯 DATA SOURCE:
+ * Priority: tenant fields > landingConfig > defaults
  */
 export function TenantHero({ config, tenant }: TenantHeroProps) {
-  const templateBlock = useHeroBlock();
-  const block = config?.block || templateBlock;
-
-  // Extract hero data directly from tenant (Data Contract fields)
-  const heroData = extractHeroData(tenant, config ? { hero: config } : undefined);
+  const block = config?.block;
+  const heroConfig = config;
+  const heroConfigSettings = heroConfig?.config;
 
   const commonProps: HeroComponentProps = {
-    title: heroData.title,
-    subtitle: heroData.subtitle,
-    description: 'description' in tenant ? tenant.description || undefined : undefined,
-    category: 'category' in tenant ? tenant.category || undefined : undefined,
-    ctaText: heroData.ctaText,
-    ctaLink: heroData.ctaLink,
+    title: tenant.heroTitle || heroConfig?.title || tenant.name || '',
+    subtitle: tenant.heroSubtitle || heroConfig?.subtitle || tenant.description || '',
+    ctaText: tenant.heroCtaText || heroConfigSettings?.ctaText || 'Lihat Produk',
+    ctaLink: tenant.heroCtaLink || heroConfigSettings?.ctaLink || '/products',
+    backgroundImage: tenant.heroBackgroundImage || undefined,
+    description: tenant.description || undefined,
+    category: tenant.category || undefined,
     showCta: true,
-    backgroundImage: heroData.backgroundImage,
     logo: tenant.logo || undefined,
     storeName: tenant.name,
   };
 
   // 🚀 SMART: Dynamic component loading
-  const blockNumber = block.replace('hero', '');
+  const blockNumber = block?.replace('hero', '');
   const HeroComponent = lazy(() =>
     import(`./hero${blockNumber}`)
       .then((mod) => ({ default: mod[`Hero${blockNumber}`] as ComponentType<HeroComponentProps> }))
@@ -80,9 +65,6 @@ export function TenantHero({ config, tenant }: TenantHeroProps) {
   );
 }
 
-/**
- * Loading skeleton while hero component loads
- */
 function HeroSkeleton() {
   return (
     <div className="h-screen w-full animate-pulse bg-muted flex items-center justify-center">

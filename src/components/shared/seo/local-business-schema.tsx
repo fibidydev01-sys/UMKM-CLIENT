@@ -17,7 +17,7 @@ interface LocalBusinessSchemaProps {
     email?: string | null;
     address?: string | null;
     logo?: string | null;
-    banner?: string | null;
+    heroBackgroundImage?: string | null;
     socialLinks?: {
       instagram?: string;
       facebook?: string;

@@ -1,6 +1,5 @@
 'use client';
 
-import { TemplateProvider } from '@/lib/public';
 import { EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TenantHero } from '@/components/public/store';
@@ -16,33 +15,31 @@ export function LivePreview({ config, tenant, onEnableHero }: LivePreviewProps) 
   const heroEnabled = config?.hero?.enabled === true;
 
   return (
-    <TemplateProvider initialTemplateId={config.template || 'suspended-minimalist'}>
-      <div className="h-full overflow-hidden">
-        {heroEnabled ? (
-          <TenantHero config={config.hero} tenant={tenant} />
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="p-4 rounded-full bg-muted/50 mb-4">
-              <EyeOff className="h-8 w-8 text-muted-foreground/50" />
-            </div>
-            <p className="text-muted-foreground font-medium">
-              &quot;Hero&quot; section is not active
-            </p>
-            <p className="text-sm text-muted-foreground/70 mt-1">
-              Enable it to see a preview
-            </p>
-            {onEnableHero && (
-              <Button
-                className="mt-4"
-                size="sm"
-                onClick={onEnableHero}
-              >
-                Enable
-              </Button>
-            )}
+    <div className="h-full overflow-hidden">
+      {heroEnabled ? (
+        <TenantHero config={config.hero} tenant={tenant} />
+      ) : (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="p-4 rounded-full bg-muted/50 mb-4">
+            <EyeOff className="h-8 w-8 text-muted-foreground/50" />
           </div>
-        )}
-      </div>
-    </TemplateProvider>
+          <p className="text-muted-foreground font-medium">
+            &quot;Hero&quot; section is not active
+          </p>
+          <p className="text-sm text-muted-foreground/70 mt-1">
+            Enable it to see a preview
+          </p>
+          {onEnableHero && (
+            <Button
+              className="mt-4"
+              size="sm"
+              onClick={onEnableHero}
+            >
+              Enable
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
   );
 }

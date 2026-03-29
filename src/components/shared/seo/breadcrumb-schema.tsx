@@ -32,12 +32,12 @@ export interface BreadcrumbItem {
  * Generate breadcrumb items for tenant/store pages
  */
 export function generateTenantBreadcrumbs(
-  tenantName: string,
-  storeUrl: string,
+  tenant: { name: string; slug: string },
   currentPage?: string
 ): BreadcrumbItem[] {
+  const storeUrl = `https://www.fibidy.com/store/${tenant.slug}`;
   const items: BreadcrumbItem[] = [
-    { name: 'Home', url: storeUrl },
+    { name: tenant.name, url: storeUrl },
   ];
   if (currentPage) {
     items.push({ name: currentPage, url: `${storeUrl}/${currentPage.toLowerCase()}` });
@@ -54,7 +54,7 @@ export function generateProductBreadcrumbs(
 ): BreadcrumbItem[] {
   const storeUrl = `https://www.fibidy.com/store/${tenant.slug}`;
   return [
-    { name: 'Home', url: storeUrl },
+    { name: tenant.name, url: storeUrl },
     { name: 'Products', url: `${storeUrl}/products` },
     { name: product.name, url: `${storeUrl}/products/${product.id}` },
   ];

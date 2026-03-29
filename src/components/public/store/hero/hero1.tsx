@@ -18,7 +18,6 @@ interface Hero1Props {
   backgroundImage?: string;
   logo?: string;
   storeName?: string;
-  eyebrow?: string;
 }
 
 export function Hero1({
@@ -32,7 +31,6 @@ export function Hero1({
   backgroundImage,
   logo,
   storeName,
-  eyebrow,
 }: Hero1Props) {
   return (
     <section className="relative h-full overflow-hidden bg-background flex flex-col">
@@ -99,12 +97,12 @@ export function Hero1({
             </div>
           )}
 
-          {/* Eyebrow — prioritas: eyebrow prop, fallback: category */}
-          {(eyebrow || category) && (
+          {/* Category */}
+          {category && (
             <div className="mb-5 flex items-center gap-3 max-w-[260px]">
               <Separator className="flex-1 bg-border" />
               <span className="text-[11px] uppercase tracking-[0.28em] text-muted-foreground whitespace-nowrap font-medium">
-                {eyebrow ?? category}
+                {category}
               </span>
               <Separator className="flex-1 bg-border" />
             </div>

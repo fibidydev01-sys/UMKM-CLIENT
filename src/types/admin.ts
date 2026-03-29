@@ -1,6 +1,5 @@
 // ==========================================
 // ADMIN TYPES
-// File: src/types/admin.ts
 // ==========================================
 
 // ==========================================
@@ -24,13 +23,10 @@ export interface AdminStats {
   totalTenants: number;
   activeTenants: number;
   suspendedTenants: number;
-  activeSubscriptions: number;
-  expiredSubscriptions: number;
+  businessSubscriptions: number;
+  newTenantsThisMonth: number;
   totalRevenue: number;
   revenueThisMonth: number;
-  newTenantsThisMonth: number;
-  totalRedeemCodes: number;
-  usedRedeemCodes: number;
 }
 
 // ==========================================
@@ -43,91 +39,58 @@ export interface AdminTenant {
   name: string;
   email: string;
   category: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  status: 'ACTIVE' | 'SUSPENDED';
   createdAt: string;
   subscription?: {
     plan: 'STARTER' | 'BUSINESS';
-    status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAST_DUE';
+    status: 'ACTIVE' | 'PAST_DUE';
     currentPeriodEnd: string | null;
-    isTrial: boolean;
   };
   _count: { products: number };
 }
 
-export interface AdminTenantDetail extends AdminTenant {
+export interface AdminTenantDetail extends Omit<AdminTenant, 'subscription'> {
   description?: string;
   whatsapp?: string;
   phone?: string;
   address?: string;
   logo?: string;
   updatedAt: string;
-  customDomain?: string | null;
-  customDomainVerified?: boolean;
   subscription?: {
     id: string;
     plan: 'STARTER' | 'BUSINESS';
-    status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAST_DUE';
-    isTrial: boolean;
+    status: 'ACTIVE' | 'PAST_DUE';
     currentPeriodStart: string | null;
     currentPeriodEnd: string | null;
-    trialEndsAt: string | null;
     priceAmount: number;
-    cancelledAt: string | null;
     payments: AdminPaymentHistory[];
   };
 }
 
 // ==========================================
-// SUBSCRIPTION (admin view)
+// PAYMENT
 // ==========================================
 
-export interface AdminSubscription {
+export interface AdminPaymentHistory {
   id: string;
-  plan: 'STARTER' | 'BUSINESS';
-  status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'PAST_DUE';
-  isTrial: boolean;
-  currentPeriodStart: string | null;
-  currentPeriodEnd: string | null;
-  trialEndsAt: string | null;
-  priceAmount: number;
-  cancelledAt: string | null;
+  amount: number;
+  paymentStatus: 'pending' | 'paid';
+  paymentMethod: string | null;
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface AdminPendingPayment {
+  id: string;
+  tenantId: string;
+  amount: number;
+  currency: string;
   createdAt: string;
   tenant: {
     id: string;
     name: string;
     email: string;
     slug: string;
-    status: string;
-  };
-}
-
-export interface AdminPaymentHistory {
-  id: string;
-  xenditExternalId: string;
-  amount: number;
-  paymentStatus: string;
-  paymentMethod: string | null;
-  paidAt: string | null;
-  createdAt: string;
-}
-
-// ==========================================
-// REDEEM CODE
-// ==========================================
-
-export interface RedeemCode {
-  id: string;
-  code: string;
-  plan: 'STARTER' | 'BUSINESS';
-  durationDay: number;
-  isUsed: boolean;
-  usedBy: string | null;
-  usedAt: string | null;
-  expiresAt: string | null;
-  createdAt: string;
-  createdBy: {
-    name: string | null;
-    email: string;
   };
 }
 
@@ -139,7 +102,7 @@ export interface AdminLog {
   id: string;
   action: string;
   targetId: string | null;
-  details: Record<string, any> | null;
+  details: Record<string, unknown> | null;
   ipAddress: string | null;
   createdAt: string;
   admin: {
@@ -150,9 +113,6 @@ export interface AdminLog {
 
 // ==========================================
 // PAGINATION
-// Pakai nama AdminPaginatedResponse untuk
-// menghindari konflik dengan PaginatedResponse
-// yang sudah ada di types/api.ts
 // ==========================================
 
 export interface AdminPaginatedResponse<T> {
@@ -171,17 +131,4 @@ export interface TenantQueryParams {
   limit?: number;
   search?: string;
   status?: string;
-}
-
-export interface SubscriptionQueryParams {
-  page?: number;
-  limit?: number;
-  status?: string;
-  plan?: string;
-}
-
-export interface RedeemCodeQueryParams {
-  page?: number;
-  limit?: number;
-  isUsed?: boolean;
 }

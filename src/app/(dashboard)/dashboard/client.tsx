@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { Store } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -131,14 +131,20 @@ function ProductsTabContent({
 }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const hasFetched = useRef(false);
   const isMounted = useRef(true);
 
-  const fetchData = async () => {
+  // silent=true → pakai isRefreshing (grid dim), tidak blank screen
+  const fetchData = useCallback(async (silent = false) => {
     if (!isMounted.current) return;
-    setIsLoading(true);
+
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
     setError(null);
 
     try {
@@ -151,20 +157,22 @@ function ProductsTabContent({
     } finally {
       if (isMounted.current) {
         setIsLoading(false);
+        setIsRefreshing(false);
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     isMounted.current = true;
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchData();
-    }
+    fetchData();
     return () => {
       isMounted.current = false;
     };
-  }, []);
+  }, [fetchData]);
+
+  // Callback yang di-pass ke ProductsGrid sebagai onRefresh
+  // Saat delete/toggle selesai, ini yang dipanggil → re-fetch tanpa blank screen
+  const handleRefresh = useCallback(() => fetchData(true), [fetchData]);
 
   if (isLoading) {
     return <ProductsGridSkeleton />;
@@ -182,6 +190,8 @@ function ProductsTabContent({
   return (
     <ProductsGrid
       products={products}
+      isRefreshing={isRefreshing}
+      onRefresh={handleRefresh}
       isAtLimit={isAtLimit}
       onAtLimit={onAtLimit}
     />

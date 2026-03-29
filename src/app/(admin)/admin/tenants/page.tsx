@@ -145,12 +145,9 @@ export default function AdminTenantsPage() {
                   <TableCell className="text-sm">{tenant.email}</TableCell>
                   <TableCell>
                     {tenant.subscription ? (
-                      <div className="text-sm">
-                        <span className="font-medium">{tenant.subscription.plan}</span>
-                        {tenant.subscription.isTrial && (
-                          <span className="ml-1 text-xs text-muted-foreground">(trial)</span>
-                        )}
-                      </div>
+                      <span className="text-sm font-medium">
+                        {tenant.subscription.plan}
+                      </span>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
                     )}

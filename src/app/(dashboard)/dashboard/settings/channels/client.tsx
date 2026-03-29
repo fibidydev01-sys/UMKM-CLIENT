@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { CreditCard, Truck, Share2 } from 'lucide-react';
 import { cn } from '@/lib/shared/utils';
-import { useChannelsActiveTab } from '@/stores/tour-store';
-import { useTour } from '@/hooks/dashboard/use-tour';
-import { useNextStep } from 'nextstepjs';
+
 import { PembayaranSection } from '@/components/dashboard/settings/pembayaran-section';
 import { PengirimanSection } from '@/components/dashboard/settings/pengiriman-section';
 import { SocialSection } from '@/components/dashboard/settings/social-section';
@@ -21,22 +19,6 @@ const TABS = [
 export function ChannelsClient() {
   const [activeTab, setActiveTab] = useState<TabType>('pembayaran');
 
-  const tourActiveTab = useChannelsActiveTab();
-  const { shouldShowTour } = useTour('channels');
-  const { startNextStep } = useNextStep();
-
-  useEffect(() => {
-    if (tourActiveTab && TABS.some((t) => t.id === tourActiveTab)) {
-      setActiveTab(tourActiveTab as TabType);
-    }
-  }, [tourActiveTab]);
-
-  useEffect(() => {
-    if (!shouldShowTour) return;
-    const timer = setTimeout(() => startNextStep('channels'), 800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div>

@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthStore } from '@/stores';
 import { authApi, getErrorMessage } from '@/lib/api';
 import { toast } from '@/providers';
-import { initTourState } from '@/hooks/dashboard/use-tour';
 import type { LoginInput, RegisterInput } from '@/types';
 
 export function useAuth() {
@@ -110,7 +109,6 @@ export function useRegister() {
         setChecked(true);
 
         // ✅ Init tour state — semua tour = false (user baru)
-        initTourState();
 
         toast.success('Registration successful!', 'Your store is ready to use');
         router.push('/dashboard');

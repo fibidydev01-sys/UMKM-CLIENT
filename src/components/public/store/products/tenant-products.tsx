@@ -1,124 +1,98 @@
 'use client';
 
-// ══════════════════════════════════════════════════════════════
-// TENANT PRODUCTS - v2.2
-// ✅ FIX: Tambah currency prop, masuk ke commonProps
-// ✅ FIX: TS2559 — cast lazy component ke ComponentType<ProductsBlockProps>
-//         agar TypeScript tahu props yang diterima component dinamis
-// ══════════════════════════════════════════════════════════════
-
-import { lazy, Suspense, type ComponentType } from 'react';
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
+import { ProductCard } from '@/components/public/store/product/product-card';
 import { useStoreUrls } from '@/lib/public/store-url';
-import { extractSectionText, getProductsConfig } from '@/lib/public';
-import { LANDING_CONSTANTS, useProductsBlock } from '@/lib/public';
 import type { Product, TenantLandingConfig } from '@/types';
-
-// ── Shared props type untuk semua Products block (products1-5, dst) ───────
-// Harus sinkron dengan interface di masing-masing products block
-interface ProductsBlockProps {
-  products: Product[];
-  title: string;
-  subtitle?: string;
-  showViewAll?: boolean;
-  productsLink?: string;
-  storeSlug?: string;
-  currency?: string;
-  limit?: number;
-}
-
-// ==========================================
-// TENANT PRODUCTS COMPONENT - Decoupled
-// ==========================================
 
 interface TenantProductsProps {
   products: Product[];
   config?: TenantLandingConfig['products'];
   storeSlug?: string;
-  currency?: string;       // ✅ FIX: currency dari tenant
-  fallbacks?: {
-    title?: string;
-    subtitle?: string;
-    productsLink?: string;
+  tenant: {
+    contactTitle?: string;
+    contactSubtitle?: string;
   };
 }
 
-/**
- * 🚀 SMART DYNAMIC LOADING - AUTO-DISCOVERY ENABLED!
- *
- * NO MANUAL IMPORTS! Just add products201.tsx and it works!
- *
- * 🎯 BLOCK PRIORITY:
- * 1. config.block (user override)
- * 2. template variant (from TemplateProvider)
- *
- * 🚀 SUPPORTS ALL BLOCKS: products1, products2, ..., products200, products9999!
- */
 export function TenantProducts({
   products,
   config,
   storeSlug,
-  currency = 'IDR',       // ✅ FIX: default fallback IDR
-  fallbacks = {},
+  tenant,
 }: TenantProductsProps) {
-  const templateBlock = useProductsBlock();
-  const block = config?.block || templateBlock;
+  const limit = config?.config?.limit || 8;
+  const showViewAll = config?.config?.showViewAll ?? true;
 
-  const { title, subtitle } = extractSectionText(config, {
-    title: fallbacks.title || LANDING_CONSTANTS.SECTION_TITLES.PRODUCTS,
-    subtitle: fallbacks.subtitle || LANDING_CONSTANTS.SECTION_SUBTITLES.PRODUCTS,
-  });
-
-  const productsConfig = getProductsConfig(config);
-  const showViewAll = productsConfig?.showViewAll ?? true;
-  const limit = productsConfig?.limit || LANDING_CONSTANTS.PRODUCT_LIMIT_DEFAULT;
-
-  // Smart URL routing
-  // Hook must be called unconditionally (React Hooks rules)
   const urls = useStoreUrls(storeSlug || '');
-  const productsLink = storeSlug
-    ? (urls?.products() || '/products')
-    : (fallbacks.productsLink || '/products');
+  const productsLink = storeSlug ? (urls?.products() || '/products') : '/products';
 
-  // ✅ FIX: currency masuk ke commonProps → diteruskan ke Products1-5 → ProductCard
-  const commonProps: ProductsBlockProps = {
-    products,
-    title,
-    subtitle,
-    showViewAll,
-    productsLink,
-    storeSlug: storeSlug || '',
-    currency,              // ✅ currency sekarang ada di sini
-    limit,
-  };
+  const displayProducts = products.slice(0, limit);
+  if (displayProducts.length === 0) return null;
 
-  // 🚀 SMART: Dynamic component loading
-  // ✅ FIX TS2559: cast ke ComponentType<ProductsBlockProps> agar TypeScript
-  //    tahu shape props yang diterima — tanpa ini TS anggap component = IntrinsicAttributes
-  const blockNumber = block.replace('products', '');
-  const ProductsComponent = lazy(() =>
-    import(`./products${blockNumber}`)
-      .then((mod) => ({
-        default: mod[`Products${blockNumber}`] as ComponentType<ProductsBlockProps>,
-      }))
-      .catch(() =>
-        import('./products1').then((mod) => ({
-          default: mod.Products1 as ComponentType<ProductsBlockProps>,
-        }))
-      )
-  );
-
-  // Render with Suspense for lazy loading
   return (
-    <Suspense fallback={<ProductsSkeleton />}>
-      <ProductsComponent {...commonProps} />
-    </Suspense>
-  );
-}
+    <section id="products" className="py-20 md:py-28">
 
-function ProductsSkeleton() {
-  return (
-    <div className="min-h-screen w-full animate-pulse bg-muted flex items-center justify-center">
-      <div className="text-muted-foreground">Loading...</div>
-    </div>
+      {/* ── Centered Header ── */}
+      {(tenant.contactTitle || tenant.contactSubtitle) && (
+        <div className="text-center mb-12 md:mb-16 space-y-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-border
+                          text-[10px] font-mono tracking-[0.2em] uppercase text-muted-foreground">
+            <span className="w-1 h-1 rounded-full bg-foreground/40 inline-block" />
+            Koleksi
+          </div>
+
+          {tenant.contactTitle && (
+            <h2 className="text-[36px] sm:text-[42px] lg:text-[52px] font-black leading-[1.0] tracking-tight text-foreground">
+              {tenant.contactTitle}
+            </h2>
+          )}
+
+          {tenant.contactSubtitle && (
+            <p className="text-sm text-muted-foreground leading-relaxed max-w-lg mx-auto">
+              {tenant.contactSubtitle}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Spotlight Grid ── */}
+      <div className="group/grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        {displayProducts.map((product) => (
+          <div
+            key={product.id}
+            className="transition-all duration-300 ease-out rounded-xl
+                       group-hover/grid:opacity-60
+                       hover:!opacity-100 hover:-translate-y-1
+                       hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+          >
+            <ProductCard product={product} storeSlug={storeSlug || ''} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Bottom CTA ── */}
+      {showViewAll && (
+        <div className="flex items-center justify-center mt-12 md:mt-16 gap-6">
+          <div className="h-px flex-1 max-w-[80px] bg-border" />
+          <Link
+            href={productsLink}
+            className="group/cta inline-flex items-center gap-2.5 text-sm font-medium
+                       text-foreground hover:text-foreground/70 transition-colors duration-200"
+          >
+            Lihat Semua Produk
+            <span className="inline-flex items-center justify-center w-7 h-7 rounded-full
+                             border border-foreground/20 group-hover/cta:border-foreground/50
+                             group-hover/cta:bg-foreground group-hover/cta:text-background
+                             transition-all duration-200">
+              <ArrowRight className="h-3 w-3" />
+            </span>
+          </Link>
+          <div className="h-px flex-1 max-w-[80px] bg-border" />
+        </div>
+      )}
+
+    </section>
   );
 }
