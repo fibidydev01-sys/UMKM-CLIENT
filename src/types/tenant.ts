@@ -61,20 +61,16 @@ export type CourierName =
 export interface BankAccount {
   id: string;
   bank: BankName;
-  accountNumber: string;
-  accountName: string;
   enabled: boolean;
 }
 
 export interface EWallet {
   id: string;
   provider: EWalletProvider;
-  number: string;
-  name?: string;
   enabled: boolean;
 }
 
-export interface CodSettings {
+interface CodSettings {
   enabled: boolean;
   note?: string;
 }
@@ -108,7 +104,7 @@ interface BaseTenant {
   id: string;
   slug: string;
   name: string;
-  email: string;        // used in tenant-contact.tsx storefront
+  email: string;
   category: string;
   description?: string;
   whatsapp?: string;
@@ -129,13 +125,13 @@ interface BaseTenant {
   heroTitle?: string;
   heroSubtitle?: string;
   heroCtaText?: string;
-  heroCtaLink?: string;       // ← FIX: was missing, used in extractHeroData
+  heroCtaLink?: string;
   heroBackgroundImage?: string;
   // About Section
   aboutFeatures?: FeatureItem[];
   // Contact Section
-  contactTitle?: string;      // used as Products section header in storefront
-  contactSubtitle?: string;   // used as Products section subtitle in storefront
+  contactTitle?: string;
+  contactSubtitle?: string;
   contactMapUrl?: string;
   contactShowMap?: boolean;
   contactShowForm?: boolean;
@@ -199,7 +195,7 @@ export interface HeroFormData {
   heroTitle: string;
   heroSubtitle: string;
   heroCtaText: string;
-  heroCtaLink: string;        // ← FIX: was missing
+  heroCtaLink: string;
   heroBackgroundImage: string;
   logo: string;
   primaryColor: string;
@@ -227,6 +223,10 @@ export interface PembayaranFormData {
 
 export interface PengirimanFormData {
   shippingMethods: ShippingMethods;
+}
+
+export interface SocialFormData {
+  socialLinks: SocialLinks;
 }
 
 // ==========================================

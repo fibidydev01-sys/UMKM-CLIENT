@@ -2,10 +2,23 @@
 
 import Image from 'next/image';
 import { CldImage } from 'next-cloudinary';
-import { getImageSource } from '@/lib/shared';
 
 // Base64 blur placeholder
 const BLUR_DATA_URL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Crect width='400' height='400' fill='%23f3f4f6'/%3E%3C/svg%3E";
+
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ?? '';
+
+function getImageType(src: string | undefined | null): { type: 'cloudinary' | 'external' | 'none'; src: string } {
+  if (!src) return { type: 'none', src: '' };
+  if (
+    src.startsWith('http://res.cloudinary.com') ||
+    src.startsWith('https://res.cloudinary.com') ||
+    (!src.startsWith('http') && !src.startsWith('/') && CLOUDINARY_CLOUD_NAME)
+  ) {
+    return { type: 'cloudinary', src };
+  }
+  return { type: 'external', src };
+}
 
 interface OptimizedImageProps {
   src: string | undefined | null;
@@ -38,15 +51,13 @@ export function OptimizedImage({
   fetchPriority,
   fallback,
 }: OptimizedImageProps) {
-  const { type, src: imageSrc } = getImageSource(src);
+  const { type, src: imageSrc } = getImageType(src);
 
-  // No image
   if (type === 'none' || !imageSrc) {
     if (fallback) return <>{fallback}</>;
     return null;
   }
 
-  // ✅ CLOUDINARY → use CldImage
   if (type === 'cloudinary') {
     return (
       <CldImage
@@ -66,7 +77,6 @@ export function OptimizedImage({
     );
   }
 
-  // ✅ EXTERNAL URL → use next/image
   return (
     <Image
       src={imageSrc}

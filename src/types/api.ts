@@ -3,11 +3,13 @@
 // ==========================================
 
 /**
- * Standard API response wrapper
+ * Pagination metadata
  */
-export interface ApiResponse<T> {
-  data: T;
-  message?: string;
+interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 /**
@@ -19,31 +21,10 @@ export interface PaginatedResponse<T> {
 }
 
 /**
- * Pagination metadata
- */
-export interface PaginationMeta {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-/**
  * API Error response
  */
 export interface ApiError {
   statusCode: number;
   message: string | string[];
   error?: string;
-}
-
-/**
- * Query parameters for list endpoints
- */
-export interface QueryParams {
-  search?: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
 }

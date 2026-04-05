@@ -1,9 +1,9 @@
 import { ImageResponse } from 'next/og';
-import { getApiUrl } from '@/lib/public';
+import { getApiUrl, optimizeImageUrl, createFallbackImage, getInitials } from '@/components/dashboard/shared/og-image';
 
 // ==========================================
-// PRODUCT OPEN GRAPH IMAGE
-// Route: /store/[slug]/products/[id]/opengraph-image
+// STORE OPEN GRAPH IMAGE
+// Route: /store/[slug]/opengraph-image
 // ==========================================
 
 export const runtime = 'edge';
@@ -15,50 +15,20 @@ interface Props {
   params: Promise<{ slug: string; id: string }>;
 }
 
-function optimizeImageUrl(url: string | null): string | null {
-  if (!url) return null;
-  try {
-    if (url.includes('cloudinary.com') && url.includes('/upload/')) {
-      return url.replace('/upload/', '/upload/w_600,h_600,c_limit,q_80,f_auto/');
-    }
-    if (url.includes('images.unsplash.com')) {
-      const urlObj = new URL(url);
-      urlObj.searchParams.set('w', '600');
-      urlObj.searchParams.set('h', '600');
-      urlObj.searchParams.set('fit', 'crop');
-      urlObj.searchParams.set('q', '80');
-      urlObj.searchParams.set('auto', 'format');
-      return urlObj.toString();
-    }
-    return url;
-  } catch {
-    return null;
-  }
+// ── Minimal types untuk OG image — tidak butuh full Product type ──
+interface OgProduct {
+  name?: string;
+  price?: number;
+  comparePrice?: number | null;
+  category?: string | null;
+  images?: Array<string | { url?: string; secure_url?: string }>;
 }
 
-function createFallbackImage(message: string) {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#ffffff',
-          fontSize: '32px',
-          color: '#9ca3af',
-        }}
-      >
-        {message}
-      </div>
-    ),
-    { width: 1200, height: 630 }
-  );
+interface OgTenant {
+  name?: string;
 }
 
-async function getProduct(id: string): Promise<any | null> {
+async function getProduct(id: string): Promise<OgProduct | null> {
   const apiUrl = getApiUrl();
   try {
     const controller = new AbortController();
@@ -69,13 +39,13 @@ async function getProduct(id: string): Promise<any | null> {
     });
     clearTimeout(timeoutId);
     if (!res.ok) return null;
-    return await res.json();
+    return await res.json() as OgProduct;
   } catch {
     return null;
   }
 }
 
-async function getTenant(slug: string): Promise<any | null> {
+async function getTenant(slug: string): Promise<OgTenant | null> {
   const apiUrl = getApiUrl();
   try {
     const controller = new AbortController();
@@ -86,7 +56,7 @@ async function getTenant(slug: string): Promise<any | null> {
     });
     clearTimeout(timeoutId);
     if (!res.ok) return null;
-    return await res.json();
+    return await res.json() as OgTenant;
   } catch {
     return null;
   }
@@ -115,12 +85,11 @@ export default async function ProductOgImage({ params }: Props) {
     const rawImageUrl =
       typeof product?.images?.[0] === 'string'
         ? product.images[0]
-        : product?.images?.[0]?.url || product?.images?.[0]?.secure_url || null;
+        : (product?.images?.[0] as { url?: string; secure_url?: string } | undefined)?.url
+        ?? (product?.images?.[0] as { url?: string; secure_url?: string } | undefined)?.secure_url
+        ?? null;
 
     const productImage = optimizeImageUrl(rawImageUrl);
-
-    const getInitials = (name: string) =>
-      name.split(' ').map((w: string) => w[0]).join('').toUpperCase().substring(0, 2);
 
     return new ImageResponse(
       (
@@ -238,7 +207,6 @@ export default async function ProductOgImage({ params }: Props) {
                   : productName}
               </div>
 
-              {/* Short Separator */}
               <div
                 style={{
                   width: '48px',
@@ -279,7 +247,6 @@ export default async function ProductOgImage({ params }: Props) {
 
             {/* Bottom — Store Info */}
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {/* Full Separator */}
               <div
                 style={{
                   width: '100%',
@@ -363,8 +330,9 @@ export default async function ProductOgImage({ params }: Props) {
       ),
       { width: 1200, height: 630 }
     );
-  } catch (error: any) {
-    console.error('[OG-Product] Error:', error.message);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[OG-Store] Error:', message);
     return createFallbackImage('Error');
   }
 }

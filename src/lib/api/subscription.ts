@@ -4,9 +4,15 @@ import { api } from './client';
 // TYPES
 // ==========================================
 
-export interface PlanLimits {
+interface PlanLimits {
   maxProducts: number;
   componentBlockVariants: number;
+}
+
+interface RequestUpgradeResponse {
+  payment: PaymentHistory;
+  waUrl: string;
+  alreadyPending: boolean;
 }
 
 export interface SubscriptionInfo {
@@ -44,34 +50,17 @@ export interface PaymentHistory {
   createdAt: string;
 }
 
-export interface RequestUpgradeResponse {
-  payment: PaymentHistory;
-  waUrl: string;
-  alreadyPending: boolean;
-}
-
 // ==========================================
 // API
 // ==========================================
 
 export const subscriptionApi = {
-  /**
-   * Get plan info + usage
-   * GET /api/subscription/me
-   */
-  getMyPlan: () => api.get<SubscriptionInfo>('/subscription/me'),
+  getMyPlan: (headers?: HeadersInit) =>
+    api.get<SubscriptionInfo>('/subscription/me', { headers }),
 
-  /**
-   * Get payment history
-   * GET /api/subscription/payments
-   */
-  getPaymentHistory: () => api.get<PaymentHistory[]>('/subscription/payments'),
+  getPaymentHistory: (headers?: HeadersInit) =>
+    api.get<PaymentHistory[]>('/subscription/payments', { headers }),
 
-  /**
-   * User klik "Contact Sales" → buat PENDING record + return WA URL
-   * Kalau sudah ada pending → return yang lama
-   * POST /api/subscription/request-upgrade
-   */
   requestUpgrade: () =>
     api.post<RequestUpgradeResponse>('/subscription/request-upgrade'),
 };

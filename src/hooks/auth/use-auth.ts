@@ -1,52 +1,17 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuthStore } from '@/stores';
-import { authApi, getErrorMessage } from '@/lib/api';
-import { toast } from '@/providers';
-import type { LoginInput, RegisterInput } from '@/types';
+import { useAuthStore } from '@/stores/auth-store';
+import { getErrorMessage } from '@/lib/api/client';
+import { authApi, } from '@/lib/api/auth';
+import { tenantsApi } from '@/lib/api/tenants';
+import { toast } from '@/lib/providers/root-provider';
+import type { LoginInput, RegisterInput } from '@/types/auth';
 
-export function useAuth() {
-  const store = useAuthStore();
-
-  return {
-    tenant: store.tenant,
-    isAuthenticated: !!store.tenant,
-    isLoading: store.isLoading,
-    isChecked: store.isChecked,
-    setTenant: store.setTenant,
-    reset: store.reset,
-  };
-}
-
-export function useAuthCheck() {
-  const { setTenant, setChecked, isChecked } = useAuthStore();
-
-  const checkAuth = useCallback(async () => {
-    if (isChecked) return;
-
-    try {
-      const response = await authApi.status();
-
-      if (response.authenticated && response.tenant) {
-        setTenant(response.tenant);
-      } else {
-        setTenant(null);
-      }
-    } catch {
-      setTenant(null);
-    } finally {
-      setChecked(true);
-    }
-  }, [isChecked, setTenant, setChecked]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
-
-  return { checkAuth };
-}
+// ==========================================
+// USE LOGIN
+// ==========================================
 
 export function useLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +34,7 @@ export function useLogin() {
         toast.success('Logged in!', `Welcome back, ${response.tenant.name}`);
 
         const from = searchParams.get('from');
-        router.push(from || '/dashboard');
+        router.push(from || '/dashboard/products');
 
         return response;
       } catch (err) {
@@ -84,12 +49,14 @@ export function useLogin() {
     [setTenant, setChecked, router, searchParams],
   );
 
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+  const reset = useCallback(() => setError(null), []);
 
   return { login, isLoading, error, reset };
 }
+
+// ==========================================
+// USE REGISTER
+// ==========================================
 
 export function useRegister() {
   const [isLoading, setIsLoading] = useState(false);
@@ -108,10 +75,8 @@ export function useRegister() {
         setTenant(response.tenant);
         setChecked(true);
 
-        // ✅ Init tour state — semua tour = false (user baru)
-
         toast.success('Registration successful!', 'Your store is ready to use');
-        router.push('/dashboard/landing-builder');
+        router.push('/dashboard/studio');
 
         return response;
       } catch (err) {
@@ -126,12 +91,14 @@ export function useRegister() {
     [setTenant, setChecked, router],
   );
 
-  const reset = useCallback(() => {
-    setError(null);
-  }, []);
+  const reset = useCallback(() => setError(null), []);
 
   return { register, isLoading, error, reset };
 }
+
+// ==========================================
+// USE LOGOUT
+// ==========================================
 
 export function useLogout() {
   const { reset } = useAuthStore();
@@ -152,6 +119,11 @@ export function useLogout() {
   return { logout };
 }
 
+// ==========================================
+// USE CHECK SLUG
+// ✅ Pindah ke tenantsApi → GET /tenants/check-slug/:slug
+// ==========================================
+
 export function useCheckSlug() {
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
@@ -165,7 +137,7 @@ export function useCheckSlug() {
     setIsChecking(true);
 
     try {
-      const response = await authApi.checkSlug(slug);
+      const response = await tenantsApi.checkSlug(slug);
       setIsAvailable(response.available);
     } catch {
       setIsAvailable(null);
@@ -174,61 +146,7 @@ export function useCheckSlug() {
     }
   }, []);
 
-  const reset = useCallback(() => {
-    setIsAvailable(null);
-  }, []);
+  const reset = useCallback(() => setIsAvailable(null), []);
 
   return { checkSlug, isChecking, isAvailable, reset };
-}
-
-export function useChangePassword() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const changePassword = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async (_currentPassword: string, _newPassword: string) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        toast.success('Password updated');
-        return true;
-      } catch (err) {
-        const message = getErrorMessage(err);
-        setError(message);
-        toast.error('Failed to update password', message);
-        return false;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
-
-  return { changePassword, isLoading, error };
-}
-
-export function useDeleteAccount() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const deleteAccount = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      toast.success('Account deleted');
-      return true;
-    } catch (err) {
-      const message = getErrorMessage(err);
-      setError(message);
-      toast.error('Failed to delete account', message);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  return { deleteAccount, isLoading, error };
 }

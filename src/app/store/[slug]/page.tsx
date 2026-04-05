@@ -1,15 +1,13 @@
 import { notFound } from 'next/navigation';
-import { tenantsApi, productsApi } from '@/lib/api';
-import {
-  TenantHero,
-  TenantProducts,
-} from '@/components/public/store';
-import {
-  BreadcrumbSchema,
-  ProductListSchema,
-  generateTenantBreadcrumbs,
-} from '@/components/shared/seo';
-import type { PublicTenant, Product } from '@/types';
+import { tenantsApi } from '@/lib/api/tenants';
+import { productsApi } from '@/lib/api/products';
+import { TenantHero } from '@/components/dashboard/blocks/block';
+import { TenantProducts } from '@/components/store/products/tenant-products';
+import { BreadcrumbSchema } from '@/components/store/shared/breadcrumb-schema';
+import { ProductListSchema } from '@/components/store/shared/product-list-schema';
+import { generateTenantBreadcrumbs } from '@/lib/shared/seo';
+import type { PublicTenant } from '@/types/tenant';
+import type { Product } from '@/types/product';
 
 export const dynamic = 'force-dynamic';
 

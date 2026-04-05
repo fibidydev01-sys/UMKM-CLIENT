@@ -21,8 +21,8 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AdminGuestGuard } from '@/components/admin';
-import { useAdminLogin } from '@/hooks/admin';
+import { AdminGuestGuard } from '@/components/layout/admin/admin-guard';
+import { useAdminLogin } from '@/hooks/admin/use-admin';
 
 const loginSchema = z.object({
   email: z.string().email('Format email tidak valid'),

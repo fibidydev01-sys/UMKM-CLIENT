@@ -1,25 +1,23 @@
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
-import { tenantsApi, productsApi } from '@/lib/api';
-import {
-  StoreBreadcrumb,
-  ProductGallery,
-  ProductInfo,
-  ProductActions,
-  PaymentShippingInfo,
-  RelatedProducts,
-  ProductGridSkeleton,
-} from '@/components/public/store';
-import {
-  ProductSchema,
-  BreadcrumbSchema,
-  SocialShare,
-  generateProductBreadcrumbs,
-} from '@/components/shared/seo';
+import type { Metadata } from 'next';
+import type { PublicTenant } from '@/types/tenant';
+import type { Product } from '@/types/product';
+import { tenantsApi } from '@/lib/api/tenants';
+import { productsApi } from '@/lib/api/products';
+import { StoreBreadcrumb } from '@/components/layout/store/store-breadcrumb';
+import { ProductGallery } from '@/components/store/showcase/product-gallery';
+import { ProductInfo } from '@/components/store/showcase/product-info';
+import { ProductActions } from '@/components/store/showcase/product-actions';
+import { PaymentShippingInfo } from '@/components/store/showcase/payment-shipping-info';
+import { RelatedProducts } from '@/components/store/showcase/related-products';
+import { ProductGridSkeleton } from '@/components/layout/store/store-skeleton';
+import { ProductSchema } from '@/components/store/shared/product-schema';
+import { BreadcrumbSchema } from '@/components/store/shared/breadcrumb-schema';
+import { SocialShare } from '@/components/store/shared/social-share';
+import { generateProductBreadcrumbs } from '@/lib/shared/seo';
 import { createProductMetadata } from '@/lib/shared/seo';
 import { Separator } from '@/components/ui/separator';
-import type { Metadata } from 'next';
-import type { PublicTenant, Product } from '@/types';
 
 // ==========================================
 // TYPES
@@ -131,9 +129,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           comparePrice: product.comparePrice,
           images: product.images,
           category: product.category,
-          sku: product.sku,
-          stock: product.stock,
-          trackStock: product.trackStock,
         }}
         tenant={{
           name: tenant.name,

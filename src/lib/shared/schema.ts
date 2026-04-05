@@ -1,5 +1,21 @@
-import { seoConfig } from '@/constants/shared';
-import { getFullUrl, getTenantUrl } from '@/lib/shared';
+import { seoConfig } from '@/lib/constants/shared/seo.config';
+
+// ==========================================
+// INTERNAL HELPERS
+// Tidak diimport dari luar — resolve langsung via seoConfig
+// ==========================================
+
+function getFullUrl(path: string = ''): string {
+  return seoConfig.getMainUrl(path);
+}
+
+function getTenantUrl(slug: string, path: string = ''): string {
+  return seoConfig.getTenantUrl(slug, path);
+}
+
+// ==========================================
+// SCHEMA GENERATORS
+// ==========================================
 
 export function generateOrganizationSchema() {
   return {
@@ -95,18 +111,13 @@ export function generateLocalBusinessSchema(tenant: {
     logo: tenant.logo || seoConfig.organization.logo,
     telephone: tenant.phone || `+${tenant.whatsapp}`,
     email: tenant.email || undefined,
-    address: tenant.address ? {
-      '@type': 'PostalAddress',
-      streetAddress: tenant.address,
-      addressCountry: 'ID',
-    } : undefined,
+    address: tenant.address
+      ? { '@type': 'PostalAddress', streetAddress: tenant.address, addressCountry: 'ID' }
+      : undefined,
     priceRange: '$$',
     paymentAccepted: 'Cash, Bank Transfer, E-Wallet',
     currenciesAccepted: 'IDR',
-    areaServed: {
-      '@type': 'Country',
-      name: 'Indonesia',
-    },
+    areaServed: { '@type': 'Country', name: 'Indonesia' },
     contactPoint: {
       '@type': 'ContactPoint',
       telephone: `+${tenant.whatsapp}`,
@@ -151,36 +162,28 @@ export function generateProductSchema(
     url: productUrl,
     image: product.images?.[0] || getFullUrl(seoConfig.defaultOgImage),
     category: product.category || undefined,
-    brand: {
-      '@type': 'Brand',
-      name: tenant.name,
-    },
-    manufacturer: {
-      '@type': 'Organization',
-      name: tenant.name,
-    },
+    brand: { '@type': 'Brand', name: tenant.name },
+    manufacturer: { '@type': 'Organization', name: tenant.name },
     offers: {
       '@type': 'Offer',
       url: productUrl,
       priceCurrency: 'IDR',
       price: product.price,
-      priceValidUntil: priceValidUntil,
+      priceValidUntil,
       availability: 'https://schema.org/InStock',
       itemCondition: 'https://schema.org/NewCondition',
-      seller: {
-        '@type': 'Organization',
-        name: tenant.name,
-        url: tenantUrl,
-      },
+      seller: { '@type': 'Organization', name: tenant.name, url: tenantUrl },
     },
   };
 }
 
-export function generateBreadcrumbSchema(
-  items: Array<{ name: string; url: string }>
-) {
+export function generateBreadcrumbSchema(items: Array<{ name: string; url: string }>) {
   const validItems = items.filter(
-    (item) => item && typeof item.name === 'string' && typeof item.url === 'string' && item.url.length > 0
+    (item) =>
+      item &&
+      typeof item.name === 'string' &&
+      typeof item.url === 'string' &&
+      item.url.length > 0
   );
 
   return {
@@ -203,10 +206,7 @@ export function generateProductListSchema(
     price: number;
     images?: string[];
   }>,
-  tenant: {
-    name: string;
-    slug: string;
-  },
+  tenant: { name: string; slug: string },
   listName: string = 'Daftar Produk'
 ) {
   return {
@@ -227,62 +227,3 @@ export function generateProductListSchema(
   };
 }
 
-export function generateFAQSchema(
-  faqs: Array<{ question: string; answer: string }>
-) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqs.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  };
-}
-
-export function generateWebPageSchema(page: {
-  name: string;
-  description: string;
-  url: string;
-  datePublished?: string;
-  dateModified?: string;
-}) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    '@id': `${getFullUrl(page.url)}/#webpage`,
-    name: page.name,
-    description: page.description,
-    url: getFullUrl(page.url),
-    isPartOf: { '@id': `${seoConfig.siteUrl}/#website` },
-    about: { '@id': `${seoConfig.siteUrl}/#organization` },
-    datePublished: page.datePublished,
-    dateModified: page.dateModified,
-    inLanguage: seoConfig.language,
-  };
-}
-
-export function generateCollectionPageSchema(
-  page: {
-    name: string;
-    description: string;
-    url: string;
-  },
-  numberOfItems: number
-) {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'CollectionPage',
-    '@id': `${getFullUrl(page.url)}/#collectionpage`,
-    name: page.name,
-    description: page.description,
-    url: getFullUrl(page.url),
-    numberOfItems: numberOfItems,
-    isPartOf: { '@id': `${seoConfig.siteUrl}/#website` },
-    inLanguage: seoConfig.language,
-  };
-}

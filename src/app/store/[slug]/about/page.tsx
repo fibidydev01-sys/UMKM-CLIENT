@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { tenantsApi } from '@/lib/api';
-import { TenantAbout } from '@/components/public/store/about/tenant-about';
+import { tenantsApi } from '@/lib/api/tenants';
+import { TenantAbout } from '@/components/store/about/tenant-about';
 
 interface AboutPageProps {
   params: Promise<{ slug: string }>;

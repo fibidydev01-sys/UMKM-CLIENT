@@ -25,20 +25,20 @@ declare global {
 // -----------------------------------------------------------------
 
 /** Config lengkap yang dikirim ke createUploadWidget */
-export interface CloudinaryWidgetConfig extends CloudinaryUploadOptions {
+interface CloudinaryWidgetConfig extends CloudinaryUploadOptions {
   cloudName: string;
   uploadPreset: string;
 }
 
 /** Instance yang dikembalikan createUploadWidget */
-export interface CloudinaryWidget {
+interface CloudinaryWidget {
   open: () => void;
   close: () => void;
   destroy: () => void;
 }
 
 /** Callback signature */
-export type CloudinaryCallback = (
+type CloudinaryCallback = (
   error: Error | null,
   result: CloudinaryUploadResult
 ) => void;
@@ -64,7 +64,7 @@ export interface CloudinaryUploadResult {
   | 'close'
   | 'abort'
   | 'display-changed'
-  | (string & Record<never, never>); // allow unknown events without losing autocomplete
+  | (string & Record<never, never>);
   /** Hanya tersedia saat event === 'success' */
   info?: CloudinaryUploadInfo;
 }
@@ -109,7 +109,7 @@ export interface CloudinaryUploadInfo {
 // 4. Upload options
 // -----------------------------------------------------------------
 
-export interface CloudinaryUploadOptions {
+interface CloudinaryUploadOptions {
   folder?: string;
   uploadPreset?: string;
   maxFiles?: number;
@@ -139,31 +139,4 @@ export interface CloudinaryUploadOptions {
       sourceBg?: string;
     };
   };
-}
-
-// -----------------------------------------------------------------
-// 5. Component props
-// -----------------------------------------------------------------
-
-export interface ImageUploadProps {
-  value?: string;
-  /** Selalu string — gunakan onChange("") untuk clear, bukan undefined */
-  onChange: (url: string) => void;
-  /** Override clear behaviour; kalau tidak diisi, onChange("") dipakai */
-  onRemove?: () => void;
-  folder?: string;
-  aspectRatio?: number;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-  showPreview?: boolean;
-}
-
-export interface MultiImageUploadProps {
-  /** Optional — komponen default ke [] bila tidak diisi */
-  value?: string[];
-  onChange: (urls: string[]) => void;
-  folder?: string;
-  maxImages?: number;
-  disabled?: boolean;
 }

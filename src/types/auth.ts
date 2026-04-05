@@ -1,4 +1,3 @@
-import type { Tenant } from './tenant';
 
 // ==========================================
 // AUTH TYPES
@@ -27,31 +26,3 @@ export interface RegisterInput {
   address?: string;
 }
 
-/**
- * Auth response from API
- */
-export interface AuthResponse {
-  message: string;
-  access_token: string;
-  tenant: Tenant;
-}
-
-/**
- * JWT Payload (decoded token)
- */
-export interface JwtPayload {
-  sub: string;      // tenant id
-  email: string;
-  slug: string;
-  iat: number;
-  exp: number;
-}
-
-/**
- * Change password request
- */
-export interface ChangePasswordInput {
-  currentPassword: string;
-  newPassword: string;
-  confirmPassword: string;
-}

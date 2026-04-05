@@ -11,6 +11,7 @@ interface BuilderStore {
   onNavigateAway: ((href: string) => void) | null;
   setHasUnsavedChanges: (value: boolean) => void;
   setHeroEnabled: (value: boolean) => void;
+  setOnNavigateAway: (fn: ((href: string) => void) | null) => void;
   reset: () => void;
 }
 
@@ -20,5 +21,6 @@ export const useBuilderStore = create<BuilderStore>((set) => ({
   onNavigateAway: null,
   setHasUnsavedChanges: (value) => set({ hasUnsavedChanges: value }),
   setHeroEnabled: (value) => set({ heroEnabled: value }),
+  setOnNavigateAway: (fn) => set({ onNavigateAway: fn }),
   reset: () => set({ hasUnsavedChanges: false, heroEnabled: false, onNavigateAway: null }),
 }));

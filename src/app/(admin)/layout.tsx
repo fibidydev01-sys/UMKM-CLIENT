@@ -6,7 +6,8 @@
 // ==========================================
 
 import type { Metadata } from 'next';
-import { AdminGuard, AdminLayout } from '@/components/admin';
+import { AdminLayout } from '@/components/layout/admin/admin-layout';
+import { AdminGuard } from '@/components/layout/admin/admin-guard';
 
 export const metadata: Metadata = {
   title: {

@@ -4,19 +4,18 @@
 // USE SUBSCRIPTION PLAN HOOK
 // File: src/hooks/dashboard/use-subscription-plan.ts
 //
-// Reads blockVariantLimit from API (plan-limits.ts backend).
-//
-// ⚠️ FIX: Infinity tidak bisa di-serialize JSON (jadi null).
+// Infinity tidak bisa di-serialize JSON (jadi null).
 // Backend kirim 999999 untuk BUSINESS.
 // Frontend treat null / >= 999 sebagai Infinity (unlimited).
 // ==========================================
 
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { subscriptionApi } from '@/lib/api/subscription';
+import { queryKeys } from '@/lib/shared/query-keys';
 
-export interface SubscriptionPlanInfo {
+interface SubscriptionPlanInfo {
   plan: 'STARTER' | 'BUSINESS';
-  blockVariantLimit: number; // 3 untuk STARTER, Infinity untuk BUSINESS
+  blockVariantLimit: number;
   isLoading: boolean;
   isBusiness: boolean;
 }
@@ -33,30 +32,23 @@ function normalizeLimit(raw: number | null | undefined): number {
 }
 
 export function useSubscriptionPlan(): SubscriptionPlanInfo {
-  const [plan, setPlan] = useState<'STARTER' | 'BUSINESS'>('STARTER');
-  const [blockVariantLimit, setBlockVariantLimit] = useState<number>(Infinity); // default safe: jangan lock semua
-  const [isLoading, setIsLoading] = useState(true);
+  const { data, isLoading } = useQuery({
+    queryKey: queryKeys.subscription.plan(),
+    queryFn: () => subscriptionApi.getMyPlan(),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    // Fallback aman: jangan lock apapun kalau fetch gagal
+    placeholderData: {
+      subscription: { plan: 'STARTER' } as never,
+      limits: { componentBlockVariants: Infinity, maxProducts: Infinity },
+      usage: { products: 0 },
+      isAtLimit: { products: false },
+      isOverLimit: { products: false },
+    },
+  });
 
-  useEffect(() => {
-    subscriptionApi
-      .getMyPlan()
-      .then((info) => {
-        const rawPlan = info.subscription.plan;
-        const rawLimit = info.limits.componentBlockVariants;
-
-        setPlan(rawPlan);
-
-        // Normalize: null/999999/Infinity → Infinity (unlock semua untuk BUSINESS)
-        // Angka kecil (3) → pakai apa adanya (STARTER)
-        setBlockVariantLimit(normalizeLimit(rawLimit));
-      })
-      .catch(() => {
-        // Fallback aman: jangan lock apapun kalau fetch gagal
-        setPlan('STARTER');
-        setBlockVariantLimit(Infinity);
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
+  const plan = data?.subscription.plan ?? 'STARTER';
+  const blockVariantLimit = normalizeLimit(data?.limits.componentBlockVariants);
 
   return {
     plan,

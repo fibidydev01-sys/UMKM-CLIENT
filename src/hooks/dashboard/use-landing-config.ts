@@ -7,8 +7,9 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { tenantsApi, ApiRequestError, getErrorMessage } from '@/lib/api';
-import type { TenantLandingConfig } from '@/types';
+import { ApiRequestError, getErrorMessage } from '@/lib/api/client';
+import { tenantsApi } from '@/lib/api/tenants';
+import type { TenantLandingConfig } from '@/types/landing';
 
 // ============================================================================
 // CONSTANTS
@@ -155,7 +156,9 @@ export function useLandingConfig({
       onSaveSuccess?.();
       return true;
     } catch (error) {
-      console.error('[useLandingConfig] Publish error:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[useLandingConfig] Publish error:', error);
+      }
 
       if (error instanceof ApiRequestError && error.isValidationError()) {
         const errors = extractErrorMessages(error);
@@ -205,7 +208,9 @@ export function useLandingConfig({
       onSaveSuccess?.();
       return true;
     } catch (error) {
-      console.error('[useLandingConfig] Reset error:', error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error('[useLandingConfig] Reset error:', error);
+      }
 
       if (error instanceof ApiRequestError && error.isValidationError()) {
         const errors = extractErrorMessages(error);

@@ -7,21 +7,21 @@
 // BLOCK TYPES
 // ==========================================
 
-export type HeroBlock = `hero${number}`;
-export type ProductsBlock = `products${number}`;
+type HeroBlock = `hero${number}`;
+type ProductsBlock = `products${number}`;
 
 // ==========================================
 // SECTION CONFIG INTERFACES
 // ==========================================
 
-export interface HeroSectionConfig {
-  ctaText?: string; // → extractHeroData → hero{N} ctaText
-  ctaLink?: string; // → extractHeroData → hero{N} ctaLink
+interface HeroSectionConfig {
+  ctaText?: string;
+  ctaLink?: string;
 }
 
-export interface ProductsSectionConfig {
-  limit?: number;        // → TenantProducts: config?.config?.limit
-  showViewAll?: boolean; // → TenantProducts: config?.config?.showViewAll
+interface ProductsSectionConfig {
+  limit?: number;
+  showViewAll?: boolean;
 }
 
 // ==========================================
@@ -29,16 +29,16 @@ export interface ProductsSectionConfig {
 // ==========================================
 
 export interface HeroSection {
-  enabled?: boolean; // → store/page.tsx: landingConfig?.hero?.enabled
-  title?: string;    // → extractHeroData: fallback if tenant.heroTitle empty
-  subtitle?: string; // → extractHeroData: fallback if tenant.heroSubtitle empty
-  block?: HeroBlock; // → TenantHero: dynamic import hero{N}
+  enabled?: boolean;
+  title?: string;
+  subtitle?: string;
+  block?: HeroBlock;
   config?: HeroSectionConfig;
 }
 
-export interface ProductsSection {
-  enabled?: boolean;     // → store/page.tsx: products section toggle
-  block?: ProductsBlock; // → future: dynamic import products{N}
+interface ProductsSection {
+  enabled?: boolean;
+  block?: ProductsBlock;
   config?: ProductsSectionConfig;
 }
 

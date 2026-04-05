@@ -71,7 +71,7 @@ export interface AdminTenantDetail extends Omit<AdminTenant, 'subscription'> {
 // PAYMENT
 // ==========================================
 
-export interface AdminPaymentHistory {
+interface AdminPaymentHistory {
   id: string;
   amount: number;
   paymentStatus: 'pending' | 'paid';

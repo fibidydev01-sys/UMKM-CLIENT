@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAdminTenants } from '@/hooks/admin';
+import { useAdminTenants } from '@/hooks/admin/use-admin';
 import { useDebounce } from '@/hooks/shared/use-debounce';
 
 // ==========================================

@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { useSyncExternalStore } from 'react';
-import type { Tenant } from '@/types';
+import type { Tenant } from '@/types/tenant';
 
 // ==========================================
 // AUTH STORE TYPES
@@ -54,13 +54,12 @@ export const useAuthStore = create<AuthStore>()((set) => ({
 }));
 
 // ==========================================
-// ✅ UNAUTHORIZED EVENT LISTENER
+// UNAUTHORIZED EVENT LISTENER
 // Listen for 401 events from API client
 // ==========================================
 
 if (typeof window !== 'undefined') {
   window.addEventListener('auth:unauthorized', () => {
-    console.log('[AuthStore] Received unauthorized event, resetting...');
     useAuthStore.getState().reset();
   });
 }
@@ -98,27 +97,3 @@ export function useAuthHydrated(): boolean {
     () => false,
   );
 }
-
-export function useCurrentTenant(): Tenant | null {
-  return useSyncExternalStore(
-    subscribe,
-    () => useAuthStore.getState().tenant,
-    () => null,
-  );
-}
-
-export function useAuthLoading(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => useAuthStore.getState().isLoading,
-    () => true,
-  );
-}
-
-// ==========================================
-// SELECTORS
-// ==========================================
-
-export const selectTenant = (state: AuthStore) => state.tenant;
-export const selectIsLoading = (state: AuthStore) => state.isLoading;
-export const selectIsChecked = (state: AuthStore) => state.isChecked;

@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAdminLogs } from '@/hooks/admin';
+import { useAdminLogs } from '@/hooks/admin/use-admin';
 
 // ==========================================
 // ACTION BADGE COLOR

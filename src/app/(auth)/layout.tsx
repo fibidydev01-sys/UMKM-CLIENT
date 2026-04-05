@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { GuestGuard } from '@/components/auth';
+import { GuestGuard } from '@/components/layout/auth/auth-guard';
 
 // ==========================================
 // AUTH LAYOUT
@@ -19,7 +19,7 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <GuestGuard redirectTo="/dashboard">
+    <GuestGuard redirectTo="/dashboard/products">
       {children}
     </GuestGuard>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import { AuthLayout, RegisterForm } from '@/components/auth';
+import { AuthLayout } from '@/components/layout/auth/auth-layout';
+import { RegisterForm } from '@/components/auth/register/register';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // ==========================================

@@ -1,10 +1,12 @@
-import { tenantsApi } from '@/lib/api';
-import { StoreHeader, StoreFooter, StoreNotFound } from '@/components/public/store';
-import { LocalBusinessSchema } from '@/components/shared/seo';
-import { generateThemeCSS } from '@/lib/shared';
+import { tenantsApi } from '@/lib/api/tenants';
+import { StoreHeader } from '@/components/layout/store/store-header';
+import { StoreFooter } from '@/components/layout/store/store-footer';
+import { StoreNotFound } from '@/components/layout/store/store-not-found';
+import { LocalBusinessSchema } from '@/components/store/shared/local-business-schema';
+import { generateThemeCSS } from '@/lib/shared/colors';
 import { createTenantMetadata } from '@/lib/shared/seo';
 import type { Metadata } from 'next';
-import type { PublicTenant } from '@/types';
+import type { PublicTenant } from '@/types/tenant';
 
 export const dynamic = 'force-dynamic';
 

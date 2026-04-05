@@ -7,7 +7,7 @@ export default async function HomePage() {
   const token = cookieStore.get('fibidy_auth');
 
   if (token) {
-    redirect('/dashboard');
+    redirect('/dashboard/products');
   } else {
     redirect('/login');
   }

@@ -71,21 +71,17 @@ export const useAdminStore = create<AdminStore>()((set) => ({
 
 if (typeof window !== 'undefined') {
   window.addEventListener('admin:unauthorized', () => {
-    console.log('[AdminStore] Unauthorized event, resetting...');
     useAdminStore.getState().reset();
   });
 }
 
 // ==========================================
 // HYDRATION-SAFE HOOKS
-// Pattern sama dengan auth-store.ts
 // ==========================================
 
 const subscribe = (callback: () => void) => {
   return useAdminStore.subscribe(callback);
 };
-
-const emptySubscribe = () => () => { };
 
 export function useIsAdminAuthenticated(): boolean {
   return useSyncExternalStore(
@@ -103,22 +99,6 @@ export function useAdminChecked(): boolean {
   );
 }
 
-export function useAdminHydrated(): boolean {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-}
-
-export function useCurrentAdmin(): Admin | null {
-  return useSyncExternalStore(
-    subscribe,
-    () => useAdminStore.getState().admin,
-    () => null,
-  );
-}
-
 export function useAdminLoading(): boolean {
   return useSyncExternalStore(
     subscribe,
@@ -126,11 +106,3 @@ export function useAdminLoading(): boolean {
     () => true,
   );
 }
-
-// ==========================================
-// SELECTORS
-// ==========================================
-
-export const selectAdmin = (state: AdminStore) => state.admin;
-export const selectAdminIsLoading = (state: AdminStore) => state.isLoading;
-export const selectAdminIsChecked = (state: AdminStore) => state.isChecked;

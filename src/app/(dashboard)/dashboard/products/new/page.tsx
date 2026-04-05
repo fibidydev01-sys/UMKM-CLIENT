@@ -1,54 +1,21 @@
-'use client';
+import { productsApi } from '@/lib/api/products';
+import { getServerHeaders } from '@/lib/api/server-headers';
+import { ProductForm } from '@/components/dashboard/product/form/product';
 
-import { useState, useEffect } from 'react';
-import { PageHeader } from '@/components/dashboard';
-import { ProductForm } from '@/components/dashboard/products';
-import { productsApi } from '@/lib/api';
+async function getCategories(): Promise<string[]> {
+  try {
+    const headers = await getServerHeaders();
+    const categories = await productsApi.getCategories(headers);
+    if (Array.isArray(categories) && categories.length > 0) {
+      return categories;
+    }
+  } catch {
+    // Fallback ke array kosong
+  }
+  return [];
+}
 
-// ==========================================
-// NEW LISTING PAGE
-// ==========================================
-
-export default function NewProductPage() {
-  const [categories, setCategories] = useState<string[]>([]);
-
-  // Fetch categories di background — form langsung render
-  useEffect(() => {
-    const fetchCategories = async () => {
-      let fetched: string[] = [];
-
-      try {
-        fetched = await productsApi.getCategories();
-      } catch {
-        console.warn('Gagal fetch categories API, fallback ke daftar produk...');
-      }
-
-      // Fallback: ekstrak dari semua produk
-      if (fetched.length === 0) {
-        try {
-          const all = await productsApi.getAll({ limit: 200 });
-          const unique = new Set<string>();
-          all.data.forEach((p) => { if (p.category) unique.add(p.category); });
-          fetched = Array.from(unique).sort();
-        } catch {
-          console.error('Gagal mengekstrak kategori dari produk');
-        }
-      }
-
-      setCategories(fetched);
-    };
-
-    fetchCategories();
-  }, []);
-
-  return (
-    <>
-      <PageHeader
-        title="New listing"
-        description="Add a new product or service to your store"
-      />
-      {/* Form langsung render — categories diinjeksikan saat tersedia */}
-      <ProductForm categories={categories} />
-    </>
-  );
+export default async function NewProductPage() {
+  const categories = await getCategories();
+  return <ProductForm categories={categories} />;
 }

@@ -1,6 +1,6 @@
 import { api } from './client';
-import type { LoginInput, RegisterInput, Tenant } from '@/types';
-
+import type { Tenant } from '@/types/tenant';
+import type { LoginInput, RegisterInput, } from '@/types/auth';
 // ==========================================
 // AUTH RESPONSE TYPES
 // ==========================================

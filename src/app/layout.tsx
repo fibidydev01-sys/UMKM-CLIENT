@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import { Providers } from '@/providers';
+import { Providers } from '@/lib/providers/root-provider';
 import { Toaster } from '@/components/ui/sonner';
-import { seoConfig } from '@/constants/shared/seo.config';
+import { seoConfig } from '@/lib/constants/shared/seo.config';
 import { getFullUrl } from '@/lib/shared/seo';
-import { OrganizationSchema } from '@/components/shared/seo';
-import { CookieConsent } from '@/components/shared/cookie';
+import { OrganizationSchema } from '@/components/store/shared/organization-schema';
+import { PwaInstallPrompt } from '@/components/dashboard/shared/pwa-install-prompt';
 import './globals.css';
 
 // ==========================================
@@ -164,16 +164,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <OrganizationSchema />
       </head>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {/* Staging Banner */}
-        <div className="w-full bg-yellow-400 text-yellow-900 text-center text-xs font-semibold py-1.5 px-4 sticky top-0 z-[9999]">
-          ⚠️ Staging Environment — Data may not reflect production
-        </div>
-
-        {/* Unified Providers (Theme + Hydration + PWA) */}
         <Providers>
           {children}
           <Toaster position="top-center" richColors />
-          <CookieConsent />
+          <PwaInstallPrompt />
         </Providers>
       </body>
     </html>

@@ -1,5 +1,5 @@
-import { API_URL } from '@/constants/shared/constants';
-import type { ApiError } from '@/types';
+import { API_URL } from '@/lib/constants/shared/constants';
+import type { ApiError } from '@/types/api';
 
 // ==========================================
 // API CLIENT CONFIGURATION
@@ -9,10 +9,10 @@ export interface RequestConfig extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   timeout?: number;
   skipAuthRedirect?: boolean;
-  skipCache?: boolean; // 🔥 NEW: Option to bypass cache
+  skipCache?: boolean;
 }
 
-export interface ApiClientConfig {
+interface ApiClientConfig {
   baseURL: string;
   onUnauthorized?: () => void;
 }
@@ -46,7 +46,6 @@ class ApiClient {
       });
     }
 
-    // 🔥 FIX: Add cache buster for GET requests
     if (skipCache !== false) {
       url.searchParams.append('_t', String(Date.now()));
     }
@@ -61,7 +60,6 @@ class ApiClient {
       headers.set('Content-Type', 'application/json');
     }
 
-    // 🔥 FIX: Add cache control headers
     headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
     headers.set('Pragma', 'no-cache');
 
@@ -142,7 +140,7 @@ class ApiClient {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    const url = this.buildURL(endpoint, config?.params, false); // No cache bust for POST
+    const url = this.buildURL(endpoint, config?.params, false);
     const headers = this.getHeaders(config?.headers);
 
     const response = await this.fetchWithTimeout(
@@ -334,7 +332,7 @@ export const api = new ApiClient({
 // HELPER FUNCTIONS
 // ==========================================
 
-export function isApiError(error: unknown): error is ApiRequestError {
+function isApiError(error: unknown): error is ApiRequestError {
   return error instanceof ApiRequestError;
 }
 

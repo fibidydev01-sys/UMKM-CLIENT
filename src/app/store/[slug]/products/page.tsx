@@ -1,14 +1,13 @@
 import { Suspense } from 'react';
-import { productsApi } from '@/lib/api';
-import {
-  CategoryList,
-  ProductFilters,
-  ProductGrid,
-  ProductPagination,
-  ProductGridSkeleton,
-} from '@/components/public/store';
 import type { Metadata } from 'next';
-import type { Product, PaginatedResponse } from '@/types';
+import type { Product } from '@/types/product';
+import type { PaginatedResponse } from '@/types/api';
+import { productsApi } from '@/lib/api/products';
+import { CategoryList } from '@/components/store/showcase/category-list';
+import { ProductFilters } from '@/components/store/showcase/product-filters';
+import { ProductGrid } from '@/components/store/showcase/product-grid';
+import { ProductPagination } from '@/components/store/showcase/product-pagination';
+import { ProductGridSkeleton } from '@/components/layout/store/store-skeleton';
 
 interface ProductsPageProps {
   params: Promise<{ slug: string }>;
@@ -45,20 +44,13 @@ async function getProducts(
   }
 }
 
-async function getCategories(slug: string): Promise<string[]> {
-  try {
-    const response = await productsApi.getByStore(slug, {
-      limit: 100,
-      isActive: true,
-    });
-    const categories = new Set<string>();
-    response.data.forEach((p) => {
-      if (p.category) categories.add(p.category);
-    });
-    return Array.from(categories).sort();
-  } catch {
-    return [];
-  }
+// ✅ Extract categories dari hasil getProducts — tidak ada API call tambahan
+function extractCategories(products: Product[]): string[] {
+  const categories = new Set<string>();
+  products.forEach((p) => {
+    if (p.category) categories.add(p.category);
+  });
+  return Array.from(categories).sort();
 }
 
 export default async function ProductsPage({
@@ -68,12 +60,11 @@ export default async function ProductsPage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
 
-  const [productsResponse, categories] = await Promise.all([
-    getProducts(slug, resolvedSearchParams),
-    getCategories(slug),
-  ]);
-
+  const productsResponse = await getProducts(slug, resolvedSearchParams);
   const { data: products, meta } = productsResponse;
+
+  // ✅ Categories di-derive dari data yang sudah ada — zero extra API call
+  const categories = extractCategories(products);
   const currentCategory = resolvedSearchParams.category as string | undefined;
 
   return (

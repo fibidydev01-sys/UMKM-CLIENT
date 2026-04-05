@@ -2,11 +2,17 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAdminStore } from '@/stores/admin-store';
 import { adminApi } from '@/lib/api/admin';
-import { getErrorMessage } from '@/lib/api';
-import { toast } from '@/providers';
+import { getErrorMessage } from '@/lib/api/client';
+import { queryKeys } from '@/lib/shared/query-keys';
+import { toast } from '@/lib/providers/root-provider';
 import type { TenantQueryParams } from '@/types/admin';
+
+// ==========================================
+// USE ADMIN AUTH CHECK
+// ==========================================
 
 export function useAdminAuthCheck() {
   const { setAdmin, setChecked, isChecked } = useAdminStore();
@@ -27,6 +33,10 @@ export function useAdminAuthCheck() {
 
   return { checkAuth };
 }
+
+// ==========================================
+// USE ADMIN LOGIN
+// ==========================================
 
 export function useAdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
@@ -60,6 +70,10 @@ export function useAdminLogin() {
   return { login, isLoading, error };
 }
 
+// ==========================================
+// USE ADMIN LOGOUT
+// ==========================================
+
 export function useAdminLogout() {
   const { reset } = useAdminStore();
   const router = useRouter();
@@ -78,109 +92,111 @@ export function useAdminLogout() {
   return { logout };
 }
 
+// ==========================================
+// USE ADMIN STATS
+// ==========================================
+
 export function useAdminStats() {
-  const [stats, setStats] = useState<Awaited<ReturnType<typeof adminApi.getStats>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: stats, isLoading, error } = useQuery({
+    queryKey: queryKeys.admin.stats(),
+    queryFn: () => adminApi.getStats(),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
 
-  const fetchStats = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await adminApi.getStats();
-      setStats(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchStats(); }, [fetchStats]);
-
-  return { stats, isLoading, error, refetch: fetchStats };
+  return {
+    stats,
+    isLoading,
+    error: error ? getErrorMessage(error) : null,
+  };
 }
+
+// ==========================================
+// USE ADMIN TENANTS
+// ==========================================
 
 export function useAdminTenants(params: TenantQueryParams = {}) {
-  const [result, setResult] = useState<Awaited<ReturnType<typeof adminApi.getTenants>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: result, isLoading, error } = useQuery({
+    queryKey: queryKeys.admin.tenants(params as Record<string, unknown>),
+    queryFn: () => adminApi.getTenants(params),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
 
-  const fetchTenants = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await adminApi.getTenants(params);
-      setResult(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.page, params.limit, params.search, params.status]);
-
-  useEffect(() => { fetchTenants(); }, [fetchTenants]);
-
-  return { result, isLoading, error, refetch: fetchTenants };
+  return {
+    result,
+    isLoading,
+    error: error ? getErrorMessage(error) : null,
+  };
 }
+
+// ==========================================
+// USE ADMIN TENANT DETAIL
+// ==========================================
 
 export function useAdminTenantDetail(id: string) {
-  const [tenant, setTenant] = useState<Awaited<ReturnType<typeof adminApi.getTenantDetail>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const fetchTenant = useCallback(async () => {
-    if (!id) return;
-    setIsLoading(true);
-    try {
-      const data = await adminApi.getTenantDetail(id);
-      setTenant(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
+  const { data: tenant, isLoading, error } = useQuery({
+    queryKey: queryKeys.admin.tenant(id),
+    queryFn: () => adminApi.getTenantDetail(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
 
-  useEffect(() => { fetchTenant(); }, [fetchTenant]);
+  const refetch = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.admin.tenant(id) });
+  }, [queryClient, id]);
 
-  return { tenant, isLoading, error, refetch: fetchTenant };
+  return {
+    tenant,
+    isLoading,
+    error: error ? getErrorMessage(error) : null,
+    refetch,
+  };
 }
+
+// ==========================================
+// USE SUSPEND TENANT
+// ==========================================
 
 export function useSuspendTenant() {
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
 
-  const suspend = useCallback(async (id: string, reason: string) => {
-    setIsLoading(true);
-    try {
-      const res = await adminApi.suspendTenant(id, reason);
+  const { mutateAsync: suspend, isPending: isLoading } = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      adminApi.suspendTenant(id, reason),
+    onSuccess: (res) => {
       toast.success('Tenant di-suspend', res.message);
-      return res;
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+    onError: (err) => {
       toast.error('Gagal suspend', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
-  const unsuspend = useCallback(async (id: string) => {
-    setIsLoading(true);
-    try {
-      const res = await adminApi.unsuspendTenant(id);
+  const { mutateAsync: unsuspend } = useMutation({
+    mutationFn: (id: string) => adminApi.unsuspendTenant(id),
+    onSuccess: (res) => {
       toast.success('Tenant diaktifkan', res.message);
-      return res;
-    } catch (err) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.all });
+    },
+    onError: (err) => {
       toast.error('Gagal unsuspend', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+  });
 
-  return { suspend, unsuspend, isLoading };
+  return {
+    suspend: (id: string, reason: string) => suspend({ id, reason }),
+    unsuspend,
+    isLoading,
+  };
 }
+
+// ==========================================
+// USE ADMIN LOGS
+// ==========================================
 
 export function useAdminLogs(params: {
   page?: number;
@@ -189,25 +205,16 @@ export function useAdminLogs(params: {
   from?: string;
   to?: string;
 } = {}) {
-  const [result, setResult] = useState<Awaited<ReturnType<typeof adminApi.getLogs>> | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: result, isLoading, error } = useQuery({
+    queryKey: queryKeys.admin.logs(params as Record<string, unknown>),
+    queryFn: () => adminApi.getLogs(params),
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
 
-  const fetchLogs = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await adminApi.getLogs(params);
-      setResult(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.page, params.limit, params.action, params.from, params.to]);
-
-  useEffect(() => { fetchLogs(); }, [fetchLogs]);
-
-  return { result, isLoading, error, refetch: fetchLogs };
+  return {
+    result,
+    isLoading,
+    error: error ? getErrorMessage(error) : null,
+  };
 }

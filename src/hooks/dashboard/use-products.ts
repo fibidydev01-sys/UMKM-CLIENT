@@ -1,384 +1,102 @@
 'use client';
 
-import { useState, useCallback, useEffect, useRef } from 'react';
-import { useProductsStore } from '@/stores';
-import { productsApi, getErrorMessage, isApiError } from '@/lib/api';
-import { toast } from '@/providers';
-import type { Product, CreateProductInput, UpdateProductInput, ProductQueryParams } from '@/types';
-
 // ==========================================
-// USE PRODUCTS HOOK
+// USE PRODUCTS — TanStack Query
+// Menggantikan: useState+useEffect manual + products-store
 // ==========================================
 
-export function useProducts(initialParams?: ProductQueryParams) {
-  const {
-    products,
-    filters,
-    pagination,
-    isLoading,
-    error,
-    setProducts,
-    setFilters,
-    setPagination,
-    setLoading,
-    setError,
-    setCategories,
-  } = useProductsStore();
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { productsApi } from '@/lib/api/products';
+import { getErrorMessage } from '@/lib/api/client';
+import { queryKeys } from '@/lib/shared/query-keys';
+import type { ProductQueryParams, CreateProductInput, UpdateProductInput } from '@/types/product';
 
-  // Track if initial fetch done
-  const hasFetched = useRef(false);
-  const isMounted = useRef(true);
+// ==========================================
+// USE PRODUCTS — list dengan optional filters
+// ==========================================
 
-  // Initialize filters once
-  useEffect(() => {
-    if (initialParams && !hasFetched.current) {
-      setFilters(initialParams);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once — intentionally empty
+export function useProducts(params?: ProductQueryParams) {
+  return useQuery({
+    queryKey: queryKeys.products.list(params as Record<string, unknown>),
+    queryFn: () => productsApi.getAll(params),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  });
+}
 
-  // Fetch products
-  const fetchProducts = useCallback(async () => {
-    if (!isMounted.current) return;
+// ==========================================
+// USE PRODUCT CATEGORIES
+// Di-derive dari cache products — tidak ada API call tambahan
+// Fallback ke productsApi.getCategories() kalau cache kosong
+// ==========================================
 
-    setLoading(true);
-
-    try {
-      const response = await productsApi.getAll(filters);
-
-      if (!isMounted.current) return;
-
-      setProducts(response.data);
-      setPagination(response.meta);
-    } catch (err) {
-      if (!isMounted.current) return;
-      setError(getErrorMessage(err));
-    }
-  }, [filters, setLoading, setProducts, setPagination, setError]);
-
-  // Fetch only once on mount, then on filter change
-  useEffect(() => {
-    isMounted.current = true;
-
-    if (!hasFetched.current) {
-      hasFetched.current = true;
-      fetchProducts();
-    }
-
-    return () => {
-      isMounted.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Mount only — intentionally empty
-
-  // Separate effect for filter changes (after initial fetch)
-  useEffect(() => {
-    if (hasFetched.current) {
-      fetchProducts();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]); // Only when filters change — fetchProducts is stable
-
-  // Fetch categories — only once
-  const fetchCategories = useCallback(async () => {
-    try {
-      const categories = await productsApi.getCategories();
-      if (Array.isArray(categories) && categories.length > 0) {
-        setCategories(categories);
-        return;
+export function useProductCategories() {
+  return useQuery({
+    queryKey: queryKeys.products.categories(),
+    queryFn: async () => {
+      try {
+        const categories = await productsApi.getCategories();
+        if (Array.isArray(categories) && categories.length > 0) {
+          return categories;
+        }
+      } catch {
+        // Fallback ke ekstrak dari semua produk
       }
-    } catch (err) {
-      console.warn('Categories API failed, extracting from products...', err);
-    }
 
-    const currentProducts = useProductsStore.getState().products;
-    if (currentProducts.length > 0) {
-      const extracted = [...new Set(
-        currentProducts
-          .map(p => p.category)
+      const all = await productsApi.getAll({ limit: 200 });
+      return [...new Set(
+        all.data
+          .map((p) => p.category)
           .filter((c): c is string => Boolean(c))
       )].sort();
-
-      if (extracted.length > 0) {
-        setCategories(extracted);
-      }
-    }
-  }, [setCategories]);
-
-  // Categories fetch once
-  const categoriesFetched = useRef(false);
-  useEffect(() => {
-    if (!categoriesFetched.current) {
-      categoriesFetched.current = true;
-      fetchCategories();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once — intentionally empty
-
-  return {
-    products,
-    filters,
-    pagination,
-    isLoading,
-    error,
-    setFilters,
-    refetch: fetchProducts,
-  };
+    },
+    staleTime: 1000 * 60 * 10,
+    gcTime: 1000 * 60 * 30,
+  });
 }
 
 // ==========================================
-// USE PRODUCT HOOK — single product
-// ==========================================
-
-export function useProduct(id: string | null) {
-  const [product, setProduct] = useState<Product | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const hasFetched = useRef(false);
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    isMounted.current = true;
-
-    const fetchProduct = async () => {
-      if (!id || hasFetched.current) {
-        setProduct(null);
-        return;
-      }
-
-      hasFetched.current = true;
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const data = await productsApi.getById(id);
-        if (isMounted.current) {
-          setProduct(data);
-        }
-      } catch (err) {
-        if (isMounted.current) {
-          setError(getErrorMessage(err));
-          setProduct(null);
-        }
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchProduct();
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, [id]);
-
-  const refetch = useCallback(async () => {
-    if (!id) return;
-    hasFetched.current = false;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const data = await productsApi.getById(id);
-      setProduct(data);
-    } catch (err) {
-      setError(getErrorMessage(err));
-      setProduct(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
-
-  return {
-    product,
-    isLoading,
-    error,
-    refetch,
-  };
-}
-
-// ==========================================
-// USE CREATE PRODUCT HOOK
+// USE CREATE PRODUCT
 // ==========================================
 
 export function useCreateProduct() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { addProduct } = useProductsStore();
+  const queryClient = useQueryClient();
 
-  const createProduct = useCallback(async (data: CreateProductInput) => {
-    setIsLoading(true);
-
-    try {
-      const product = await productsApi.create(data);
-      addProduct(product);
+  const { mutate: createProduct, isPending: isLoading } = useMutation({
+    mutationFn: (data: CreateProductInput) => productsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       toast.success('Product added');
-      return product;
-    } catch (err) {
-      toast.error('Failed to add product', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [addProduct]);
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err));
+    },
+  });
 
-  return {
-    createProduct,
-    isLoading,
-  };
+  return { createProduct, isLoading };
 }
 
 // ==========================================
-// USE UPDATE PRODUCT HOOK
+// USE UPDATE PRODUCT
+// FIX: mutationFn terima { id, data } object — konsisten dengan cara panggil
+// di product-form.tsx: updateProduct({ id: product.id, data: payload })
 // ==========================================
 
 export function useUpdateProduct() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { updateProduct: updateInStore } = useProductsStore();
+  const queryClient = useQueryClient();
 
-  const updateProduct = useCallback(async (id: string, data: UpdateProductInput) => {
-    setIsLoading(true);
-
-    try {
-      const product = await productsApi.update(id, data);
-      updateInStore(id, product);
+  const { mutate: updateProduct, isPending: isLoading } = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProductInput }) =>
+      productsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       toast.success('Product updated');
-      return product;
-    } catch (err) {
-      toast.error('Failed to update product', getErrorMessage(err));
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [updateInStore]);
-
-  return {
-    updateProduct,
-    isLoading,
-  };
-}
-
-// ==========================================
-// USE DELETE PRODUCT HOOK
-// ==========================================
-
-export function useDeleteProduct() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { removeProduct } = useProductsStore();
-
-  const deleteProduct = useCallback(async (id: string): Promise<boolean> => {
-    setIsLoading(true);
-
-    try {
-      await productsApi.delete(id);
-      removeProduct(id);
-      toast.success('Product deleted');
-      return true;
-    } catch (err) {
-      if (isApiError(err) && err.isUnauthorized()) {
-        console.log('[useDeleteProduct] 401 error, auth redirect will handle');
-        return false;
-      }
-
-      toast.error('Failed to delete product', getErrorMessage(err));
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [removeProduct]);
-
-  return {
-    deleteProduct,
-    isLoading,
-  };
-}
-
-// ==========================================
-// USE STORE PRODUCTS HOOK — public store
-// ==========================================
-
-export function useStoreProducts(slug: string, params?: ProductQueryParams) {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 20,
-    totalPages: 0,
+    },
+    onError: (err) => {
+      toast.error(getErrorMessage(err));
+    },
   });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const hasFetched = useRef(false);
-  const isMounted = useRef(true);
-
-  useEffect(() => {
-    isMounted.current = true;
-
-    const fetchProducts = async () => {
-      if (!slug || hasFetched.current) return;
-
-      hasFetched.current = true;
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const response = await productsApi.getByStore(slug, {
-          ...params,
-          isActive: true,
-        });
-
-        if (isMounted.current) {
-          setProducts(response.data);
-          setPagination(response.meta);
-        }
-      } catch (err) {
-        if (isMounted.current) {
-          setError(getErrorMessage(err));
-        }
-      } finally {
-        if (isMounted.current) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchProducts();
-
-    return () => {
-      isMounted.current = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]); // Only slug change triggers refetch — params intentionally excluded
-
-  const refetch = useCallback(async () => {
-    if (!slug) return;
-
-    hasFetched.current = false;
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await productsApi.getByStore(slug, {
-        ...params,
-        isActive: true,
-      });
-      setProducts(response.data);
-      setPagination(response.meta);
-    } catch (err) {
-      setError(getErrorMessage(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [slug, params]);
-
-  return {
-    products,
-    pagination,
-    isLoading,
-    error,
-    refetch,
-  };
+  return { updateProduct, isLoading };
 }

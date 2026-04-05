@@ -4,7 +4,7 @@ import type {
   PublicTenant,
   UpdateTenantInput,
   DashboardStats,
-} from '@/types';
+} from '@/types/tenant';
 
 export const tenantsApi = {
   me: async (): Promise<Tenant> =>
@@ -18,6 +18,9 @@ export const tenantsApi = {
 
   getStats: async (): Promise<DashboardStats> =>
     api.get<DashboardStats>('/tenants/me/stats'),
+
+  checkSlug: async (slug: string): Promise<{ slug: string; available: boolean }> =>
+    api.get<{ slug: string; available: boolean }>(`/tenants/check-slug/${slug}`),
 };
 
 export { ApiRequestError, getErrorMessage };

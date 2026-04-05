@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
-import { tenantsApi } from '@/lib/api';
-import { TenantContact } from '@/components/public/store/contact/tenant-contact';
+import { tenantsApi } from '@/lib/api/tenants';
+import { TenantContact } from '@/components/store/contact/tenant-contact';
 
 interface ContactPageProps {
   params: Promise<{ slug: string }>;

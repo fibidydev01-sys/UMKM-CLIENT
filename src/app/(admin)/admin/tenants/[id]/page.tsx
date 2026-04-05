@@ -33,10 +33,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { useAdminTenantDetail, useSuspendTenant } from '@/hooks/admin';
+import { useAdminTenantDetail, useSuspendTenant } from '@/hooks/admin/use-admin';
 import { adminApi } from '@/lib/api/admin';
-import { toast } from '@/providers';
-import { getErrorMessage } from '@/lib/api';
+import { toast } from '@/lib/providers/root-provider';
+import { getErrorMessage } from '@/lib/api/client';
 
 // ==========================================
 // INFO ROW

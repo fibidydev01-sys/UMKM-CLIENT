@@ -5,10 +5,10 @@
 // File: src/app/(admin)/admin/page.tsx
 // ==========================================
 
-import { Users, CreditCard, TrendingUp, Ticket, UserCheck, UserX } from 'lucide-react';
+import { Users, CreditCard, TrendingUp, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAdminStats } from '@/hooks/admin';
+import { useAdminStats } from '@/hooks/admin/use-admin';
 
 // ==========================================
 // STAT CARD
@@ -88,9 +88,9 @@ export default function AdminDashboardPage() {
           isLoading={isLoading}
         />
         <StatCard
-          title="Subscription Aktif"
-          value={stats?.activeSubscriptions ?? 0}
-          sub={`${stats?.expiredSubscriptions ?? 0} expired`}
+          title="Business Plan"
+          value={stats?.businessSubscriptions ?? 0}
+          sub="Subscription aktif"
           icon={<CreditCard className="h-4 w-4" />}
           isLoading={isLoading}
         />
@@ -106,17 +106,17 @@ export default function AdminDashboardPage() {
       {/* Second Row */}
       <div className="grid gap-4 sm:grid-cols-2">
         <StatCard
-          title="Total Redeem Codes"
-          value={stats?.totalRedeemCodes ?? 0}
-          sub={`${stats?.usedRedeemCodes ?? 0} sudah dipakai`}
-          icon={<Ticket className="h-4 w-4" />}
-          isLoading={isLoading}
-        />
-        <StatCard
           title="Tenant Suspended"
           value={stats?.suspendedTenants ?? 0}
           sub="Perlu perhatian"
           icon={<UserX className="h-4 w-4" />}
+          isLoading={isLoading}
+        />
+        <StatCard
+          title="Tenant Baru Bulan Ini"
+          value={stats?.newTenantsThisMonth ?? 0}
+          sub="Registrasi terbaru"
+          icon={<Users className="h-4 w-4" />}
           isLoading={isLoading}
         />
       </div>
