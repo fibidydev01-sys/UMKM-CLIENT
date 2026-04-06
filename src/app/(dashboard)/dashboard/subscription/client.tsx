@@ -2,8 +2,9 @@
 
 // ==========================================
 // SUBSCRIPTION CLIENT
-// TanStack Query dengan initialData dari server
-// Tidak ada useState + useEffect + fetch manual
+// TanStack Query fetch browser-side
+// Browser kirim cookie otomatis → tidak ada 401 di prod
+// initialData dihapus — tidak ada lagi server-side fetch
 // ==========================================
 
 import { useState } from 'react';
@@ -13,7 +14,7 @@ import { Rocket, Crown, Loader2, Calendar, Receipt, AlertTriangle, MessageCircle
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { subscriptionApi, type SubscriptionInfo, type PaymentHistory } from '@/lib/api/subscription';
+import { subscriptionApi } from '@/lib/api/subscription';
 import { queryKeys } from '@/lib/shared/query-keys';
 import { getErrorMessage } from '@/lib/api/client';
 
@@ -45,34 +46,23 @@ function getDaysRemaining(dateStr: string): number {
 }
 
 // ==========================================
-// PROPS
-// ==========================================
-
-interface SubscriptionClientProps {
-  initialPlan: SubscriptionInfo | null;
-  initialPayments: PaymentHistory[];
-}
-
-// ==========================================
 // COMPONENT
 // ==========================================
 
-export function SubscriptionClient({ initialPlan, initialPayments }: SubscriptionClientProps) {
+export function SubscriptionClient() {
   const queryClient = useQueryClient();
   const [requestingUpgrade, setRequestingUpgrade] = useState(false);
 
-  const { data: planInfo } = useQuery({
+  const { data: planInfo, isLoading: isLoadingPlan } = useQuery({
     queryKey: queryKeys.subscription.plan(),
     queryFn: () => subscriptionApi.getMyPlan(),
-    initialData: initialPlan ?? undefined,
     staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 10,
   });
 
-  const { data: payments = [] } = useQuery({
+  const { data: payments = [], isLoading: isLoadingPayments } = useQuery({
     queryKey: queryKeys.subscription.payments(),
     queryFn: () => subscriptionApi.getPaymentHistory(),
-    initialData: initialPayments,
     staleTime: 1000 * 60 * 2,
     gcTime: 1000 * 60 * 10,
   });
@@ -94,6 +84,28 @@ export function SubscriptionClient({ initialPlan, initialPayments }: Subscriptio
       setRequestingUpgrade(false);
     }
   };
+
+  // ==========================================
+  // LOADING STATE
+  // ==========================================
+
+  if (isLoadingPlan || isLoadingPayments) {
+    return (
+      <div className="space-y-6 max-w-2xl mx-auto">
+        <div>
+          <h1 className="text-2xl font-bold">Subscription</h1>
+          <p className="text-muted-foreground">Manage your plan and billing</p>
+        </div>
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <div className="h-8 w-32 bg-muted animate-pulse rounded" />
+            <div className="h-11 w-full bg-muted animate-pulse rounded" />
+            <div className="h-11 w-full bg-muted animate-pulse rounded" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // ==========================================
   // DERIVED STATE
